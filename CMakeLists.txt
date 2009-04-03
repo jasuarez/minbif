@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 2.6)
 SET(BIN_NAME bitlbee2)
 ADD_EXECUTABLE(${BIN_NAME}
 		src/bitlbee.cpp
+		src/util.cpp
+		src/log.cpp
+		src/mutex.cpp
+		src/config.cpp
 	      )
 SET(CONF_NAME bitlbee.conf)
 
