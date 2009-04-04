@@ -39,6 +39,7 @@ static PurpleEventLoopUiOps eventloop_wg_ops = {
 };
 
 Bitlbee::Bitlbee()
+	: loop(0)
 {
 	ConfigSection* section;
 	section = conf.AddSection("path", "Path information", false);
@@ -57,18 +58,31 @@ int Bitlbee::main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	if(!conf.Load(argv[1]))
+	try
 	{
-		b_log[W_ERR] << "Unable to load configuration, exiting..";
-		return EXIT_FAILURE;
+		if(!conf.Load(argv[1]))
+		{
+			b_log[W_ERR] << "Unable to load configuration, exiting..";
+			return EXIT_FAILURE;
+		}
+		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
+
+		loop = g_main_new(FALSE);
+		g_main_run(loop);
+
+		purple_util_set_user_dir(conf.GetSection("path")->GetItem("users")->String().c_str());
+		purple_eventloop_set_ui_ops(&eventloop_wg_ops);
+		purple_core_init("bitlbee2");
+
+		return EXIT_SUCCESS;
 	}
-	b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
+	catch(MyConfig::error_exc &e)
+	{
+		b_log[W_ERR] << "Error while loading:";
+		b_log[W_ERR] << e.Reason();
+	}
 
-	purple_util_set_user_dir(conf.GetSection("path")->GetItem("users")->String().c_str());
-	purple_eventloop_set_ui_ops(&eventloop_wg_ops);
-	purple_core_init("bitlbee2");
-
-	return EXIT_SUCCESS;
+	return EXIT_FAILURE;
 }
 
 int main(int argc, char** argv)

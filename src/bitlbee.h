@@ -17,6 +17,7 @@
 
 class Bitlbee
 {
+	GMainLoop *loop;
 
 public:
 
