@@ -21,7 +21,10 @@
 #include "bitlbee.h"
 #include "config.h"
 #include "log.h"
+#include "util.h"
+#include "irc/irc.h"
 
+#if 0
 static guint purple_wg_input_add(gint fd, PurpleInputCondition condition,
 	PurpleInputFunction function, gpointer data)
 {
@@ -37,6 +40,7 @@ static PurpleEventLoopUiOps eventloop_wg_ops = {
 	/* timeout_add_seconds */ NULL,
 	NULL, NULL, NULL
 };
+#endif
 
 Bitlbee::Bitlbee()
 	: loop(0)
@@ -67,12 +71,16 @@ int Bitlbee::main(int argc, char** argv)
 		}
 		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
+		irc = new IRC(0);
+
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
 
+#if 0
 		purple_util_set_user_dir(conf.GetSection("path")->GetItem("users")->String().c_str());
 		purple_eventloop_set_ui_ops(&eventloop_wg_ops);
 		purple_core_init("bitlbee2");
+#endif
 
 		return EXIT_SUCCESS;
 	}

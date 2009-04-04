@@ -15,33 +15,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifndef IRC_H
+#define IRC_H
+
 #include <string>
-#include <cstdarg>
 
-std::string stringtok(std::string &in, const char * const delimiters)
+#include "message.h"
+
+class IRC
 {
-	std::string::size_type i = 0;
-	std::string s;
+	int fd;
+	string hostname;
 
-	// eat leading whitespace
-	i = in.find_first_not_of (delimiters, i);
+public:
 
-	// find the end of the token
-	std::string::size_type j = in.find_first_of (delimiters, i);
+	IRC(int fd);
+	~IRC();
 
-	if (j == std::string::npos)
-	{
-		if(i == std::string::npos)
-			s = "";
-		else
-			s = in.substr(i);
-		in = "";
-		return s;			  // nothing left but white space
-	}
+	bool sendmsg(Message msg);
 
-	// push token
-	s = in.substr(i, j-i);
-	in = in.substr(j+1);
+	string getServerName() const { return hostname; }
+};
 
-	return s;
-}
+#endif /* IRC_H */

@@ -15,33 +15,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <string>
-#include <cstdarg>
+#include "nick.h"
 
-std::string stringtok(std::string &in, const char * const delimiters)
+Nick::Nick(std::string _nickname, std::string _ident, std::string _hostname)
+	: nickname(_nickname),
+	  ident(_ident),
+	  hostname(_hostname)
 {
-	std::string::size_type i = 0;
-	std::string s;
-
-	// eat leading whitespace
-	i = in.find_first_not_of (delimiters, i);
-
-	// find the end of the token
-	std::string::size_type j = in.find_first_of (delimiters, i);
-
-	if (j == std::string::npos)
-	{
-		if(i == std::string::npos)
-			s = "";
-		else
-			s = in.substr(i);
-		in = "";
-		return s;			  // nothing left but white space
-	}
-
-	// push token
-	s = in.substr(i, j-i);
-	in = in.substr(j+1);
-
-	return s;
 }

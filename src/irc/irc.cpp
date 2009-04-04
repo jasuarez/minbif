@@ -15,33 +15,40 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <string>
-#include <cstdarg>
+#include <sys/socket.h>
+#include <netdb.h>
 
-std::string stringtok(std::string &in, const char * const delimiters)
+#include "../log.h"
+#include "irc.h"
+#include "message.h"
+
+IRC::IRC(int _fd)
+	: fd(_fd),
+	  hostname("localhost.localdomain")
 {
-	std::string::size_type i = 0;
-	std::string s;
+	struct sockaddr_storage sock;
+	socklen_t socklen = sizeof(sock);
 
-	// eat leading whitespace
-	i = in.find_first_not_of (delimiters, i);
-
-	// find the end of the token
-	std::string::size_type j = in.find_first_of (delimiters, i);
-
-	if (j == std::string::npos)
+	if(getsockname(fd, (struct sockaddr*) &sock, &socklen) == 0)
 	{
-		if(i == std::string::npos)
-			s = "";
-		else
-			s = in.substr(i);
-		in = "";
-		return s;			  // nothing left but white space
+		char buf[NI_MAXHOST+1];
+
+		if( getnameinfo((struct sockaddr *) &sock, socklen, buf, NI_MAXHOST, NULL, 0, 0 ) == 0)
+		{
+			hostname = buf;
+		}
 	}
+	sendmsg(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
+}
 
-	// push token
-	s = in.substr(i, j-i);
-	in = in.substr(j+1);
+IRC::~IRC()
+{
+}
 
-	return s;
+bool IRC::sendmsg(Message msg)
+{
+	string s = msg.format();
+	write(fd, s.c_str(), s.size());
+
+	return true;
 }

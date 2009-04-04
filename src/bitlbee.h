@@ -15,9 +15,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifndef BITLBEE_H
+#define BITLBEE_H
+
+class IRC;
+
 class Bitlbee
 {
 	GMainLoop *loop;
+	IRC* irc;
 
 public:
 
@@ -26,3 +32,5 @@ public:
 	int main(int argc, char** argv);
 
 };
+
+#endif /* BITLBEE_H */

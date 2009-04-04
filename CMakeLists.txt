@@ -8,6 +8,9 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/log.cpp
 		src/mutex.cpp
 		src/config.cpp
+		src/irc/irc.cpp
+		src/irc/message.cpp
+		src/irc/nick.cpp
 	      )
 SET(CONF_NAME bitlbee.conf)
 
