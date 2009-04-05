@@ -17,9 +17,13 @@
 
 #include "nick.h"
 
-Nick::Nick(std::string _nickname, std::string _ident, std::string _hostname)
+Nick::Nick(string _nickname, string _ident, string _hostname)
 	: nickname(_nickname),
 	  ident(_ident),
 	  hostname(_hostname)
+{
+}
+
+Nick::~Nick()
 {
 }

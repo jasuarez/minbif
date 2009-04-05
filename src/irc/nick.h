@@ -19,19 +19,20 @@
 #define NICK_H
 
 #include <string>
+using std::string;
 
 class Nick
 {
-	std::string nickname, ident, hostname;
+	string nickname, ident, hostname;
 
 public:
 
-	Nick(std::string nick, std::string ident, std::string hostname);
+	Nick(string nick, string ident, string hostname);
 	~Nick();
 
-	std::string getNickname() const { return nickname; }
-	std::string getIdent() const { return ident; }
-	std::string getHostname() const { return hostname; }
+	string getNickname() const { return nickname; }
+	string getIdent() const { return ident; }
+	string getHostname() const { return hostname; }
 };
 
 #endif /* NICK_H */

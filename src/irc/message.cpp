@@ -49,7 +49,7 @@ string Message::format() const
 	return buf;
 }
 
-Message& Message::setSender(Nick* nick)
+Message& Message::setSender(const Nick* nick)
 {
 	assert (nick != NULL);
 
@@ -59,7 +59,7 @@ Message& Message::setSender(Nick* nick)
 	return *this;
 }
 
-Message& Message::setSender(IRC* me)
+Message& Message::setSender(const IRC* me)
 {
 	assert (me != NULL);
 
@@ -67,7 +67,7 @@ Message& Message::setSender(IRC* me)
 	return *this;
 }
 
-Message& Message::setReceiver(Nick* nick)
+Message& Message::setReceiver(const Nick* nick)
 {
 	assert (nick != NULL);
 

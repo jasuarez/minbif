@@ -56,9 +56,9 @@ public:
 	Message(string command);
 	~Message();
 
-	Message& setSender(Nick* nick);
-	Message& setSender(IRC* me);
-	Message& setReceiver(Nick* nick);
+	Message& setSender(const Nick* nick);
+	Message& setSender(const IRC* me);
+	Message& setReceiver(const Nick* nick);
 	Message& setReceiver(string r);
 	Message& addArg(string);
 

@@ -19,22 +19,32 @@
 #define IRC_H
 
 #include <string>
+#include <exception>
 
 #include "message.h"
+
+using std::string;
+
+class IRCAuthError : public std::exception {};
+
+class Nick;
 
 class IRC
 {
 	int fd;
 	string hostname;
+	Nick* userNick;
 
 public:
 
-	IRC(int fd);
+	IRC(int fd, string hostname="");
 	~IRC();
 
-	bool sendmsg(Message msg);
+	bool sendmsg(Message msg) const;
 
 	string getServerName() const { return hostname; }
+
+	Nick* getUserNick() const { return userNick; }
 };
 
 #endif /* IRC_H */

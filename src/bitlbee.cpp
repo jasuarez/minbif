@@ -49,6 +49,9 @@ Bitlbee::Bitlbee()
 	section = conf.AddSection("path", "Path information", false);
 	section->AddItem(new ConfigItem_string("users", "Users directory"));
 
+	section = conf.AddSection("irc", "Server information", false);
+	section->AddItem(new ConfigItem_string("hostname", "Server hostname", " "));
+
 	section = conf.AddSection("logging", "Log informations", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
@@ -71,7 +74,8 @@ int Bitlbee::main(int argc, char** argv)
 		}
 		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
-		irc = new IRC(0);
+		irc = new IRC(0, conf.GetSection("irc")->GetItem("hostname")->String());
+		b_log.setIRC(irc);
 
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
@@ -88,6 +92,10 @@ int Bitlbee::main(int argc, char** argv)
 	{
 		b_log[W_ERR] << "Error while loading:";
 		b_log[W_ERR] << e.Reason();
+	}
+	catch(IRCAuthError &e)
+	{
+		b_log[W_ERR] << "Unable to start the IRC daemon";
 	}
 
 	return EXIT_FAILURE;
