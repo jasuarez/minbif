@@ -21,8 +21,6 @@
 #include <string>
 #include <sstream>
 
-#include "mutex.h"
-
 enum
 {
 	W_DEBUG      = 1 << 0,			  /* Debug */
@@ -50,11 +48,11 @@ enum
  *   b_log[W_ERR] << "This user isn't allowed to do this!";
  */
 
+class IRC;
+
 class Log
 {
 public:
-	Mutex std_lock;
-
 	Log();
 
 	~Log();
@@ -62,6 +60,9 @@ public:
 	void SetLoggedFlags(std::string s, bool to_syslog = true);
 	uint32_t LoggedFlags() const { return logged_flags; }
 	bool ToSyslog() const { return to_syslog; }
+
+	void setIRC(const IRC* _irc) { irc = _irc; }
+	const IRC* getIRC() const { return irc; }
 
 	class flux
 	{
@@ -94,6 +95,7 @@ private:
 
 	uint32_t logged_flags;
 	bool to_syslog;
+	const IRC* irc;
 };
 
 template<>
