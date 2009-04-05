@@ -23,15 +23,15 @@ using std::string;
 
 class Nick
 {
-	string nickname, ident, hostname;
+	string nickname, identname, hostname;
 
 public:
 
-	Nick(string nick, string ident, string hostname);
+	Nick(string nickname, string identname, string hostname);
 	~Nick();
 
 	string getNickname() const { return nickname; }
-	string getIdent() const { return ident; }
+	string getIdentname() const { return identname; }
 	string getHostname() const { return hostname; }
 };
 

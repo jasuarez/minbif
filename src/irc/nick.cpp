@@ -17,9 +17,9 @@
 
 #include "nick.h"
 
-Nick::Nick(string _nickname, string _ident, string _hostname)
+Nick::Nick(string _nickname, string _identname, string _hostname)
 	: nickname(_nickname),
-	  ident(_ident),
+	  identname(_identname),
 	  hostname(_hostname)
 {
 }

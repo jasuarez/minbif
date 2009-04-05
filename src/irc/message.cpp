@@ -53,8 +53,8 @@ Message& Message::setSender(const Nick* nick)
 {
 	assert (nick != NULL);
 
-	sender = nick->getNickname() + "!" +
-		 nick->getIdent()    + "@" +
+	sender = nick->getNickname()  + "!" +
+		 nick->getIdentname() + "@" +
 		 nick->getHostname();
 	return *this;
 }
