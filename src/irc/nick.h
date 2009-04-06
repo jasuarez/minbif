@@ -23,7 +23,7 @@ using std::string;
 
 class Nick
 {
-	string nickname, identname, hostname;
+	string nickname, identname, hostname, realname;
 	unsigned int flags;
 
 public:
@@ -32,7 +32,7 @@ public:
 		REGISTERED = 1 << 0
 	};
 
-	Nick(string nickname, string identname, string hostname);
+	Nick(string nickname, string identname, string hostname, string realname="");
 	~Nick();
 
 	string getNickname() const { return nickname; }
@@ -43,6 +43,9 @@ public:
 
 	string getHostname() const { return hostname; }
 	void setHostname(string h) { hostname = h; }
+
+	string getRealname() const { return realname; }
+	void setRealname(string r) { realname = r; }
 
 	void setFlag(unsigned flag) { flags |= flag; }
 	void delFlag(unsigned flag) { flags &= ~flag; }

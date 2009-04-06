@@ -31,8 +31,10 @@ static struct
 {
 	const char* cmd;
 	void (IRC::*func)(Message);
+	size_t minargs;
 } commands[] = {
-	{ "NICK", &IRC::m_nick }
+	{ "NICK", &IRC::m_nick,  0 },
+	{ "USER", &IRC::m_user,  4 },
 };
 
 IRC::IRC(int _fd, string _hostname)
@@ -60,7 +62,7 @@ IRC::IRC(int _fd, string _hostname)
 			userhost = buf;
 	}
 
-	userNick = new Nick("AUTH", "auth", userhost);
+	userNick = new Nick("*", "", userhost);
 
 	/* Get my own hostname (if not given in arguments) */
 	if(_hostname.empty() || _hostname == " ")
@@ -82,7 +84,7 @@ IRC::IRC(int _fd, string _hostname)
 	else
 		hostname = _hostname;
 
-	sendmsg(Message(MSG_NOTICE).setSender(this).setReceiver(userNick).addArg("BitlBee-IRCd initialized, please go on"));
+	sendmsg(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
 }
 
 IRC::~IRC()
@@ -99,21 +101,45 @@ bool IRC::sendmsg(Message msg) const
 	return true;
 }
 
+void IRC::sendWelcome()
+{
+	if(userNick->hasFlag(Nick::REGISTERED) || userNick->getNickname() == "*" ||
+	   userNick->getIdentname().empty())
+		return;
+
+	userNick->setFlag(Nick::REGISTERED);
+
+	sendmsg(Message(RPL_WELCOME).setSender(this).setReceiver(userNick).addArg("Welcome to the BitlBee gateway, " + userNick->getNickname() + "!"));
+}
+
 void IRC::readIO(void*)
 {
-	static char line[1024];
-	ssize_t st;
+	static char buf[1024];
+	string sbuf, line;
+	ssize_t r;
 
-	st = read( 0, line, sizeof( line ) - 1 );
-	line[st] = 0;
+	r = read( 0, buf, sizeof buf - 1 );
+	buf[r] = 0;
+	sbuf = buf;
 
-	Message m = Message::parse(line);
-	for(size_t i = 0; i < (sizeof commands / sizeof *commands); ++i)
-		if(!strcmp(commands[i].cmd, m.getCommand().c_str()))
-		{
-			(this->*commands[i].func)(m);
-			return;
-		}
+	while((line = stringtok(sbuf, "\r\n")).empty() == false)
+	{
+		Message m = Message::parse(line);
+		for(size_t i = 0; i < (sizeof commands / sizeof *commands); ++i)
+			if(!strcmp(commands[i].cmd, m.getCommand().c_str()))
+			{
+				if(m.countArgs() < commands[i].minargs)
+				{
+					sendmsg(Message(ERR_NEEDMOREPARAMS).setSender(this)
+									   .setReceiver(userNick)
+									   .addArg(m.getCommand())
+									   .addArg("Not enough parameters"));
+					break;
+				}
+				(this->*commands[i].func)(m);
+				break;
+			}
+	}
 }
 
 /* NICK nickname */
@@ -121,11 +147,31 @@ void IRC::m_nick(Message message)
 {
 	if(message.countArgs() < 1)
 	{
-		sendmsg(Message(RPL_NONICKNAMEGIVEN).setSender(this).setReceiver(userNick).addArg("No nickname given"));
+		sendmsg(Message(ERR_NONICKNAMEGIVEN).setSender(this)
+		                                    .setReceiver(userNick)
+						    .addArg("No nickname given"));
 		return;
 	}
 	if(userNick->hasFlag(Nick::REGISTERED))
 		sendmsg(Message(MSG_NICK).setSender(userNick).setReceiver(message.getArg(0)));
 
 	userNick->setNickname(message.getArg(0));
+
+	sendWelcome();
+}
+
+/* USER identname * * :realname*/
+void IRC::m_user(Message message)
+{
+	if(userNick->hasFlag(Nick::REGISTERED))
+	{
+		sendmsg(Message(ERR_ALREADYREGISTRED).setSender(this)
+		                                     .setReceiver(userNick)
+						     .addArg("Please register only once per session"));
+		return;
+	}
+	userNick->setIdentname(message.getArg(0));
+	userNick->setRealname(message.getArg(3));
+
+	sendWelcome();
 }

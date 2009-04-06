@@ -17,10 +17,11 @@
 
 #include "nick.h"
 
-Nick::Nick(string _nickname, string _identname, string _hostname)
+Nick::Nick(string _nickname, string _identname, string _hostname, string _realname)
 	: nickname(_nickname),
 	  identname(_identname),
-	  hostname(_hostname)
+	  hostname(_hostname),
+	  realname(_realname)
 {
 }
 

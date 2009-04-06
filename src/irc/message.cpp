@@ -114,9 +114,9 @@ Message& Message::addArg(string s)
 	return *this;
 }
 
-Message Message::parse(string s)
+Message Message::parse(string line)
 {
-	string line = stringtok(s, "\r\n");
+	string s;
 	Message m;
 	while((s = stringtok(line, " ")).empty() == false)
 	{

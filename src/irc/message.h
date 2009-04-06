@@ -30,7 +30,11 @@
 #define RPL_MOTDSTART   "375"
 #define RPL_MOTD        "372"
 #define RPL_ENDOFMOTD   "376"
-#define RPL_NONICKNAMEGIVEN "431"
+
+#define ERR_NONICKNAMEGIVEN "431"
+#define ERR_NEEDMOREPARAMS "461"
+#define ERR_ALREADYREGISTRED "462"
+
 #define MSG_PRIVMSG     "PRIVMSG"
 #define MSG_NOTICE      "NOTICE"
 #define MSG_MODE        "MODE"
