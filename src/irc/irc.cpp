@@ -35,6 +35,7 @@ static struct
 } commands[] = {
 	{ "NICK", &IRC::m_nick,  0 },
 	{ "USER", &IRC::m_user,  4 },
+	{ "QUIT", &IRC::m_quit,  0 }
 };
 
 IRC::IRC(int _fd, string _hostname)
@@ -179,4 +180,14 @@ void IRC::m_user(Message message)
 	userNick->setRealname(message.getArg(3));
 
 	sendWelcome();
+}
+
+/* QUIT [message] */
+void IRC::m_quit(Message message)
+{
+	string reason = "Leaving...";
+	if(message.countArgs() >= 1)
+		reason = message.getArg(0);
+	sendmsg(Message(MSG_ERROR).addArg("Closing Link: " + reason));
+	close(fd);
 }
