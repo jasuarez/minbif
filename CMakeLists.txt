@@ -7,6 +7,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/util.cpp
 		src/log.cpp
 		src/mutex.cpp
+		src/callback.cpp
 		src/config.cpp
 		src/irc/irc.cpp
 		src/irc/message.cpp
