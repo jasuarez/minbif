@@ -77,6 +77,7 @@ int Bitlbee::main(int argc, char** argv)
 		irc = new IRC(0, conf.GetSection("irc")->GetItem("hostname")->String());
 		b_log.setIRC(irc);
 
+
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
 

@@ -28,10 +28,12 @@ using std::string;
 class IRCAuthError : public std::exception {};
 
 class Nick;
+class _CallBack;
 
 class IRC
 {
 	int fd;
+	_CallBack *read_cb;
 	string hostname;
 	Nick* userNick;
 
@@ -45,6 +47,8 @@ public:
 	string getServerName() const { return hostname; }
 
 	Nick* getUserNick() const { return userNick; }
+
+	void readIO(void*);
 };
 
 #endif /* IRC_H */

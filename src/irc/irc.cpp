@@ -16,20 +16,28 @@
  */
 
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <netdb.h>
 
 #include "../log.h"
+#include "../util.h"
+#include "../callback.h"
 #include "irc.h"
 #include "message.h"
 #include "nick.h"
 
 IRC::IRC(int _fd, string _hostname)
 	: fd(_fd),
+	  read_cb(NULL),
 	  hostname("localhost.localdomain"),
 	  userNick(NULL)
 {
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
+
+	fcntl(0, F_SETFL, O_NONBLOCK);
+	read_cb = new CallBack<IRC>(this, &IRC::readIO);
+	glib_input_add(0, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback, read_cb);
 
 	/* Get the user's hostname. */
 	string userhost = "localhost.localdomain";
@@ -50,7 +58,7 @@ IRC::IRC(int _fd, string _hostname)
 		{
 			char buf[NI_MAXHOST+1];
 
-			if( getnameinfo((struct sockaddr *) &sock, socklen, buf, NI_MAXHOST, NULL, 0, 0 ) == 0)
+			if(getnameinfo((struct sockaddr *) &sock, socklen, buf, NI_MAXHOST, NULL, 0, 0 ) == 0)
 				hostname = buf;
 		}
 	}
@@ -68,6 +76,7 @@ IRC::IRC(int _fd, string _hostname)
 
 IRC::~IRC()
 {
+	delete read_cb;
 	delete userNick;
 }
 
@@ -77,4 +86,16 @@ bool IRC::sendmsg(Message msg) const
 	write(fd, s.c_str(), s.size());
 
 	return true;
+}
+
+void IRC::readIO(void*)
+{
+	char line[513];
+	ssize_t st;
+
+	st = read( 0, line, sizeof( line ) - 1 );
+	line[st] = 0;
+
+	b_log[W_INFO] << "received: " << line;
+
 }

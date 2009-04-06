@@ -15,4 +15,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <libpurple/purple.h>
+
 std::string stringtok(std::string &in, const char * const delimiters);
+
+guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
+                                                           gpointer data);
+

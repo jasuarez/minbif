@@ -1,6 +1,6 @@
 /* config.cpp - This is a library to make a configuration
  *
- * Copyright (C) 2006-2009 Romain Bignon  <romain@peerfuse.org>
+ * Copyright (C) 2006-2009 Romain Bignon  <romain@symlink.me>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
