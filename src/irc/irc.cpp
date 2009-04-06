@@ -125,20 +125,25 @@ void IRC::readIO(void*)
 	while((line = stringtok(sbuf, "\r\n")).empty() == false)
 	{
 		Message m = Message::parse(line);
-		for(size_t i = 0; i < (sizeof commands / sizeof *commands); ++i)
-			if(!strcmp(commands[i].cmd, m.getCommand().c_str()))
-			{
-				if(m.countArgs() < commands[i].minargs)
-				{
-					sendmsg(Message(ERR_NEEDMOREPARAMS).setSender(this)
-									   .setReceiver(userNick)
-									   .addArg(m.getCommand())
-									   .addArg("Not enough parameters"));
-					break;
-				}
-				(this->*commands[i].func)(m);
-				break;
-			}
+		size_t i;
+		for(i = 0;
+		    i < (sizeof commands / sizeof *commands) &&
+		    strcmp(commands[i].cmd, m.getCommand().c_str());
+		    ++i)
+			;
+
+		if(i >= (sizeof commands / sizeof *commands))
+			sendmsg(Message(ERR_UNKNOWNCOMMAND).setSender(this)
+			                                   .setReceiver(userNick)
+							   .addArg(m.getCommand())
+							   .addArg("Unknown command"));
+		else if(m.countArgs() < commands[i].minargs)
+			sendmsg(Message(ERR_NEEDMOREPARAMS).setSender(this)
+							   .setReceiver(userNick)
+							   .addArg(m.getCommand())
+							   .addArg("Not enough parameters"));
+		else
+			(this->*commands[i].func)(m);
 	}
 }
 
