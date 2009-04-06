@@ -61,7 +61,7 @@ int Bitlbee::main(int argc, char** argv)
 {
 	if(argc < 2)
 	{
-		fprintf(stderr, "Syntax: %s config_file\n", argv[0]);
+		b_log << "Syntax: " << argv[0] << " config_file";
 		return EXIT_FAILURE;
 	}
 

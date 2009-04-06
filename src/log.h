@@ -91,6 +91,12 @@ public:
 		return flux(__n);
 	}
 
+	template<typename T>
+	flux operator<<(T v)
+	{
+		return flux(W_ERR) << v;
+	}
+
 private:
 
 	uint32_t logged_flags;
