@@ -30,12 +30,15 @@
 #define RPL_MOTDSTART   "375"
 #define RPL_MOTD        "372"
 #define RPL_ENDOFMOTD   "376"
+#define RPL_NONICKNAMEGIVEN "431"
 #define MSG_PRIVMSG     "PRIVMSG"
 #define MSG_NOTICE      "NOTICE"
 #define MSG_MODE        "MODE"
 #define MSG_JOIN        "JOIN"
 #define MSG_PART        "PART"
 #define MSG_QUIT        "QUIT"
+#define MSG_ERROR       "ERROR"
+#define MSG_NICK        "NICK"
 
 class Nick;
 class IRC;

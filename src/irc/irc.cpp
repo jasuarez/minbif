@@ -18,6 +18,7 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <cstring>
 
 #include "../log.h"
 #include "../util.h"
@@ -25,6 +26,14 @@
 #include "irc.h"
 #include "message.h"
 #include "nick.h"
+
+static struct
+{
+	const char* cmd;
+	void (IRC::*func)(Message);
+} commands[] = {
+	{ "NICK", &IRC::m_nick }
+};
 
 IRC::IRC(int _fd, string _hostname)
 	: fd(_fd),
@@ -92,12 +101,31 @@ bool IRC::sendmsg(Message msg) const
 
 void IRC::readIO(void*)
 {
-	char line[513];
+	static char line[1024];
 	ssize_t st;
 
 	st = read( 0, line, sizeof( line ) - 1 );
 	line[st] = 0;
 
-	b_log[W_INFO] << "received: " << line;
+	Message m = Message::parse(line);
+	for(size_t i = 0; i < (sizeof commands / sizeof *commands); ++i)
+		if(!strcmp(commands[i].cmd, m.getCommand().c_str()))
+		{
+			(this->*commands[i].func)(m);
+			return;
+		}
+}
 
+/* NICK nickname */
+void IRC::m_nick(Message message)
+{
+	if(message.countArgs() < 1)
+	{
+		sendmsg(Message(RPL_NONICKNAMEGIVEN).setSender(this).setReceiver(userNick).addArg("No nickname given"));
+		return;
+	}
+	if(userNick->hasFlag(Nick::REGISTERED))
+		sendmsg(Message(MSG_NICK).setSender(userNick).setReceiver(message.getArg(0)));
+
+	userNick->setNickname(message.getArg(0));
 }

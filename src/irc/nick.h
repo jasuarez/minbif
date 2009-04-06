@@ -24,15 +24,29 @@ using std::string;
 class Nick
 {
 	string nickname, identname, hostname;
+	unsigned int flags;
 
 public:
+
+	enum {
+		REGISTERED = 1 << 0
+	};
 
 	Nick(string nickname, string identname, string hostname);
 	~Nick();
 
 	string getNickname() const { return nickname; }
+	void setNickname(string n) { nickname = n; }
+
 	string getIdentname() const { return identname; }
+	void setIdentname(string i) { identname = i; }
+
 	string getHostname() const { return hostname; }
+	void setHostname(string h) { hostname = h; }
+
+	void setFlag(unsigned flag) { flags |= flag; }
+	void delFlag(unsigned flag) { flags &= ~flag; }
+	bool hasFlag(unsigned flag) const { return flags & flag; }
 };
 
 #endif /* NICK_H */

@@ -40,9 +40,9 @@ string Message::format() const
 	string buf;
 
 	if(!sender.empty())
-		buf = ":" + sender;
+		buf = ":" + sender + " ";
 
-	buf += " " + cmd;
+	buf += cmd;
 	if(!receiver.empty())
 		buf += " " + receiver;
 
@@ -121,7 +121,7 @@ Message Message::parse(string s)
 	while((s = stringtok(line, " ")).empty() == false)
 	{
 		if(m.getCommand().empty())
-			m.setCommand(s);
+			m.setCommand(strupper(s));
 		else if(s[0] == ':')
 		{
 			m.addArg(s.substr(1) + " " + line);

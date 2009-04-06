@@ -49,6 +49,7 @@ public:
 	Nick* getUserNick() const { return userNick; }
 
 	void readIO(void*);
+	void m_nick(Message m);
 };
 
 #endif /* IRC_H */
