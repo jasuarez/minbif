@@ -20,20 +20,20 @@
 
 #include "util.h"
 
-std::string stringtok(std::string &in, const char * const delimiters)
+string stringtok(string &in, const char * const delimiters)
 {
-	std::string::size_type i = 0;
-	std::string s;
+	string::size_type i = 0;
+	string s;
 
 	// eat leading whitespace
 	i = in.find_first_not_of (delimiters, i);
 
 	// find the end of the token
-	std::string::size_type j = in.find_first_of (delimiters, i);
+	string::size_type j = in.find_first_of (delimiters, i);
 
-	if (j == std::string::npos)
+	if (j == string::npos)
 	{
-		if(i == std::string::npos)
+		if(i == string::npos)
 			s = "";
 		else
 			s = in.substr(i);
@@ -102,3 +102,16 @@ guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunctio
 }
 
 
+string strupper(string s)
+{
+	for(string::iterator it = s.begin(); it != s.end(); ++it)
+		*it = (char)toupper(*it);
+	return s;
+}
+
+string strlower(string s)
+{
+	for(string::iterator it = s.begin(); it != s.end(); ++it)
+		*it = (char)tolower(*it);
+	return s;
+}

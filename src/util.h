@@ -16,9 +16,13 @@
  */
 
 #include <libpurple/purple.h>
+#include <string>
+using std::string;
 
-std::string stringtok(std::string &in, const char * const delimiters);
+string stringtok(string &in, const char * const delimiters);
 
 guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
                                                            gpointer data);
 
+string strupper(string s);
+string strlower(string s);
