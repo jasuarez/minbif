@@ -36,6 +36,8 @@ IRC::IRC(int _fd, string _hostname)
 	socklen_t socklen = sizeof(sock);
 
 	fcntl(0, F_SETFL, O_NONBLOCK);
+
+	/* create a callback on the sock. */
 	read_cb = new CallBack<IRC>(this, &IRC::readIO);
 	glib_input_add(0, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback, read_cb);
 

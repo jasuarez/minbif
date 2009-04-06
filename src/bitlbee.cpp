@@ -57,6 +57,11 @@ Bitlbee::Bitlbee()
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
 }
 
+Bitlbee::~Bitlbee()
+{
+	delete irc;
+}
+
 int Bitlbee::main(int argc, char** argv)
 {
 	if(argc < 2)

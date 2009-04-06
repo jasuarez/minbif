@@ -28,6 +28,7 @@ class Bitlbee
 public:
 
 	Bitlbee();
+	~Bitlbee();
 
 	int main(int argc, char** argv);
 
