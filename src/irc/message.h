@@ -54,15 +54,25 @@ class Message
 public:
 
 	Message(string command);
+	Message();
 	~Message();
 
+	Message& setCommand(string command);
 	Message& setSender(const Nick* nick);
 	Message& setSender(const IRC* me);
 	Message& setReceiver(const Nick* nick);
 	Message& setReceiver(string r);
 	Message& addArg(string);
 
+	string getCommand() const { return cmd; }
+	string getSender() const { return sender; }
+	string getReceiver() const { return receiver; }
+	string getArg(size_t n) const { return args[n]; }
+	size_t countArgs() const { return args.size(); }
+	vector<string> getArgs() const { return args; }
+
 	string format() const;
+	static Message parse(string s);
 };
 
 #endif /* MESSAGE_H */

@@ -20,9 +20,14 @@
 #include "message.h"
 #include "irc.h"
 #include "nick.h"
+#include "../util.h"
 
 Message::Message(string _cmd)
 	: cmd(_cmd)
+{
+}
+
+Message::Message()
 {
 }
 
@@ -42,11 +47,24 @@ string Message::format() const
 		buf += " " + receiver;
 
 	for(vector<string>::const_iterator it = args.begin(); it != args.end(); ++it)
-		buf += " " + *it;
+	{
+		buf += " ";
+		if(it->find(' ') != string::npos)
+			buf += ":";
+		buf += *it;
+	}
 
 	buf += "\r\n";
 
 	return buf;
+}
+
+Message& Message::setCommand(string r)
+{
+	assert (r.empty() == false);
+
+	cmd = r;
+	return *this;
 }
 
 Message& Message::setSender(const Nick* nick)
@@ -91,9 +109,26 @@ Message& Message::addArg(string s)
 		if(last.find(' ') != string::npos)
 			throw MalformedMessage();
 	}
-	if(s.find(' ') != string::npos)
-		s = ":" + s;
 
 	args.push_back(s);
 	return *this;
+}
+
+Message Message::parse(string s)
+{
+	string line = stringtok(s, "\r\n");
+	Message m;
+	while((s = stringtok(line, " ")).empty() == false)
+	{
+		if(m.getCommand().empty())
+			m.setCommand(s);
+		else if(s[0] == ':')
+		{
+			m.addArg(s.substr(1) + " " + line);
+			break;
+		}
+		else
+			m.addArg(s);
+	}
+	return m;
 }
