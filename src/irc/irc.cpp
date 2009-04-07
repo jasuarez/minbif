@@ -124,6 +124,7 @@ void IRC::sendWelcome()
 	user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + hostname + " is running BitlBee 2.0"));
 
 	user->join(cmdChan, ChanUser::OP);
+	rootNick->privmsg(cmdChan, "Welcome to Bitlbee, dear!");
 }
 
 void IRC::readIO(void*)
