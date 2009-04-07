@@ -42,6 +42,9 @@ public:
 
 	void join(Channel* chan, int status = 0);
 
+	void privmsg(Channel* chan, string message);
+	void privmsg(Nick* to, string message);
+
 	string getNickname() const { return nickname; }
 	void setNickname(string n) { nickname = n; }
 

@@ -34,3 +34,18 @@ void Nick::join(Channel* chan, int status)
 {
 	chan->addUser(this, status);
 }
+
+void Nick::privmsg(Channel* chan, string msg)
+{
+	chan->broadcast(Message(MSG_PRIVMSG).setSender(this)
+			                    .setReceiver(chan)
+					    .addArg(msg),
+			this);
+}
+
+void Nick::privmsg(Nick* nick, string msg)
+{
+	nick->send(Message(MSG_PRIVMSG).setSender(this)
+			               .setReceiver(nick)
+				       .addArg(msg));
+}
