@@ -112,15 +112,31 @@ Message& Message::setReceiver(string r)
 
 Message& Message::addArg(string s)
 {
-	if(!args.empty())
-	{
-		string last = args.back();
-		if(last.find(' ') != string::npos)
-			throw MalformedMessage();
-	}
+	if(!args.empty() && args.back().find(' ') != string::npos)
+		throw MalformedMessage();
 
 	args.push_back(s);
 	return *this;
+}
+
+Message& Message::setArg(size_t i, string s)
+{
+	if(i == args.size())
+		return addArg(s);
+
+	assert(i < args.size());
+
+	if((i+1) < args.size() && args.back().find(' ') != string::npos)
+		throw MalformedMessage();
+
+	args[i] = s;
+	return *this;
+}
+
+string Message::getArg(size_t n) const
+{
+	assert(n < args.size());
+	return args[n];
 }
 
 Message Message::parse(string line)

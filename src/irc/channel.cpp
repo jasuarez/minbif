@@ -16,6 +16,9 @@
  */
 
 #include "channel.h"
+#include "nick.h"
+#include "message.h"
+#include "irc.h"
 
 ChanUser::ChanUser(Nick* _nick, int _status)
 	: nick(_nick),
@@ -23,8 +26,9 @@ ChanUser::ChanUser(Nick* _nick, int _status)
 {
 }
 
-Channel::Channel(string _name)
-	: name(_name)
+Channel::Channel(IRC* _irc, string _name)
+	: irc(_irc),
+	  name(_name)
 {}
 
 Channel::~Channel()
@@ -35,4 +39,48 @@ Channel::~Channel()
 void Channel::addUser(Nick* nick, int status)
 {
 	users.push_back(ChanUser(nick, status));
+
+	string names;
+	for(vector<ChanUser>::iterator it = users.begin(); it != users.end(); ++it)
+	{
+		it->getNick()->send(Message(MSG_JOIN).setSender(nick).setReceiver(this));
+		if(status && it->getNick() != nick)
+		{
+			string modes = "+";
+			Message m(MSG_MODE);
+			m.setSender(irc);
+			m.setReceiver(this);
+			m.addArg("");
+			if(status & ChanUser::OP)
+			{
+				modes += "o";
+				m.addArg(nick->getNickname());
+			}
+			if(status & ChanUser::VOICE)
+			{
+				modes += "v";
+				m.addArg(nick->getNickname());
+			}
+			m.setArg(0, modes);
+			it->getNick()->send(m);
+		}
+
+		if(!names.empty())
+			names += " ";
+		if(it->hasStatus(ChanUser::OP))
+			names += "@";
+		else if(it->hasStatus(ChanUser::VOICE))
+			names += "+";
+		names += it->getNick()->getNickname();
+
+	}
+	nick->send(Message(RPL_353).setSender(irc)
+			           .setReceiver(nick)
+				   .addArg("=")
+				   .addArg(getName())
+				   .addArg(names));
+	nick->send(Message(RPL_366).setSender(irc)
+			           .setReceiver(nick)
+				   .addArg(getName())
+				   .addArg("End of /NAMES list"));
 }

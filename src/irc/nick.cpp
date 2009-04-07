@@ -21,10 +21,16 @@ Nick::Nick(string _nickname, string _identname, string _hostname, string _realna
 	: nickname(_nickname),
 	  identname(_identname),
 	  hostname(_hostname),
-	  realname(_realname)
+	  realname(_realname),
+	  flags(0)
 {
 }
 
 Nick::~Nick()
 {
+}
+
+void Nick::join(Channel* chan, int status)
+{
+	chan->addUser(this, status);
 }

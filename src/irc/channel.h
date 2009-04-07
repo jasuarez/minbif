@@ -24,6 +24,7 @@ using std::string;
 using std::vector;
 
 class Nick;
+class IRC;
 
 class ChanUser
 {
@@ -33,21 +34,25 @@ class ChanUser
 public:
 
 	enum {
-		OP,
-		VOICE,
+		OP     = 1 << 0,
+		VOICE  = 1 << 1,
 	};
 
 	ChanUser(Nick* nick, int status = 0);
+
+	bool hasStatus(int flag) const { return status & flag; }
+	Nick* getNick() const { return nick; }
 };
 
 class Channel
 {
+	IRC* irc;
 	string name;
 	vector<ChanUser> users;
 
 public:
 
-	Channel(string name);
+	Channel(IRC* irc, string name);
 	~Channel();
 
 	string getName() const { return name; }

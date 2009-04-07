@@ -51,7 +51,6 @@ public:
 	User* getUser() const { return user; }
 
 	void sendWelcome();
-	void join(Channel* irc);
 
 	void readIO(void*);
 	void m_nick(Message m);

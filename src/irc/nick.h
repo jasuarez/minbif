@@ -22,6 +22,7 @@
 using std::string;
 
 #include "message.h"
+#include "channel.h"
 
 class Nick
 {
@@ -38,6 +39,8 @@ public:
 	~Nick();
 
 	virtual void send(Message m) {}
+
+	void join(Channel* chan, int status = 0);
 
 	string getNickname() const { return nickname; }
 	void setNickname(string n) { nickname = n; }

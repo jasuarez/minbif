@@ -30,6 +30,8 @@
 #define RPL_MOTDSTART   "375"
 #define RPL_MOTD        "372"
 #define RPL_ENDOFMOTD   "376"
+#define RPL_353         "353"
+#define RPL_366         "366"
 
 #define ERR_NONICKNAMEGIVEN "431"
 #define ERR_NEEDMOREPARAMS "461"
@@ -73,11 +75,12 @@ public:
 	Message& setReceiver(const Channel* chan);
 	Message& setReceiver(string r);
 	Message& addArg(string);
+	Message& setArg(size_t, string);
 
 	string getCommand() const { return cmd; }
 	string getSender() const { return sender; }
 	string getReceiver() const { return receiver; }
-	string getArg(size_t n) const { return args[n]; }
+	string getArg(size_t n) const;
 	size_t countArgs() const { return args.size(); }
 	vector<string> getArgs() const { return args; }
 

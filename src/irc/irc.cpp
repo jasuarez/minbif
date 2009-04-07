@@ -53,10 +53,6 @@ IRC::IRC(int _fd, string _hostname, string cmd_chan_name)
 
 	fcntl(0, F_SETFL, O_NONBLOCK);
 
-	/* create a callback on the sock. */
-	read_cb = new CallBack<IRC>(this, &IRC::readIO);
-	glib_input_add(0, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback, read_cb);
-
 	/* Get the user's hostname. */
 	string userhost = "localhost.localdomain";
 	if(getpeername(fd, (struct sockaddr*) &sock, &socklen) == 0)
@@ -94,10 +90,16 @@ IRC::IRC(int _fd, string _hostname, string cmd_chan_name)
 		throw IRCAuthError();
 	}
 
+
+	/* create a callback on the sock. */
+	read_cb = new CallBack<IRC>(this, &IRC::readIO);
+	glib_input_add(0, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback, read_cb);
+
+	/* Create main objects and root joins command channel. */
 	user = new User(fd, "*", "", userhost);
 	rootNick = new RootNick(hostname);
-	cmdChan = new Channel(cmd_chan_name);
-	cmdChan->addUser(rootNick);
+	cmdChan = new Channel(this, cmd_chan_name);
+	rootNick->join(cmdChan, ChanUser::OP);
 
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
 }
@@ -121,13 +123,7 @@ void IRC::sendWelcome()
 	user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
 	user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + hostname + " is running BitlBee 2.0"));
 
-	join(cmdChan);
-}
-
-void IRC::join(Channel* chan)
-{
-	chan->addUser(user);
-	user->send(Message(MSG_JOIN).setSender(user).setReceiver(chan));
+	user->join(cmdChan, ChanUser::OP);
 }
 
 void IRC::readIO(void*)
