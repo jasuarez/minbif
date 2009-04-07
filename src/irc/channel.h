@@ -23,6 +23,8 @@ using std::string;
 #include <vector>
 using std::vector;
 
+#include "message.h"
+
 class Nick;
 class IRC;
 
@@ -58,6 +60,8 @@ public:
 	string getName() const { return name; }
 
 	void addUser(Nick* nick, int status=0);
+
+	void broadcast(Message m, Nick* butone = NULL);
 };
 
 #endif /* CHANNEL_H */

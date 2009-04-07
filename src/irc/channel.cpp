@@ -84,3 +84,10 @@ void Channel::addUser(Nick* nick, int status)
 				   .addArg(getName())
 				   .addArg("End of /NAMES list"));
 }
+
+void Channel::broadcast(Message m, Nick* butone)
+{
+	for(vector<ChanUser>::iterator it = users.begin(); it != users.end(); ++it)
+		if(!butone || it->getNick() != butone)
+			it->getNick()->send(m);
+}
