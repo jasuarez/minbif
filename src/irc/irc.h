@@ -37,6 +37,7 @@ class IRC
 	_CallBack *read_cb;
 	string hostname;
 	Nick* userNick;
+	Nick* rootNick;
 	Channel* cmdChan;
 
 public:
@@ -51,6 +52,7 @@ public:
 	Nick* getUserNick() const { return userNick; }
 
 	void sendWelcome();
+	void join(Channel* irc);
 
 	void readIO(void*);
 	void m_nick(Message m);

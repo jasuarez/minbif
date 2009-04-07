@@ -44,6 +44,7 @@ IRC::IRC(int _fd, string _hostname, string cmd_chan_name)
 	  read_cb(NULL),
 	  hostname("localhost.localdomain"),
 	  userNick(NULL),
+	  rootNick(NULL),
 	  cmdChan(NULL)
 {
 	struct sockaddr_storage sock;
@@ -93,7 +94,9 @@ IRC::IRC(int _fd, string _hostname, string cmd_chan_name)
 	}
 
 	userNick = new Nick("*", "", userhost);
+	rootNick = new Nick("root", "root", hostname, "User Manager");
 	cmdChan = new Channel(cmd_chan_name);
+	cmdChan->addUser(rootNick);
 
 	sendmsg(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
 }
@@ -102,6 +105,8 @@ IRC::~IRC()
 {
 	delete read_cb;
 	delete userNick;
+	delete rootNick;
+	delete cmdChan;
 }
 
 bool IRC::sendmsg(Message msg) const
@@ -123,7 +128,13 @@ void IRC::sendWelcome()
 	sendmsg(Message(RPL_WELCOME).setSender(this).setReceiver(userNick).addArg("Welcome to the BitlBee gateway, " + userNick->getNickname() + "!"));
 	sendmsg(Message(RPL_YOURHOST).setSender(this).setReceiver(userNick).addArg("Host " + hostname + " is running BitlBee 2.0"));
 
-	sendmsg(Message(MSG_JOIN).setSender(userNick).setReceiver(cmdChan));
+	join(cmdChan);
+}
+
+void IRC::join(Channel* chan)
+{
+	chan->addUser(userNick);
+	sendmsg(Message(MSG_JOIN).setSender(userNick).setReceiver(chan));
 }
 
 void IRC::readIO(void*)

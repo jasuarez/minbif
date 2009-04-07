@@ -20,10 +20,30 @@
 
 #include <string>
 using std::string;
+#include <vector>
+using std::vector;
+
+class Nick;
+
+class ChanUser
+{
+	Nick* nick;
+	int status;
+
+public:
+
+	enum {
+		OP,
+		VOICE,
+	};
+
+	ChanUser(Nick* nick, int status = 0);
+};
 
 class Channel
 {
 	string name;
+	vector<ChanUser> users;
 
 public:
 
@@ -31,6 +51,8 @@ public:
 	~Channel();
 
 	string getName() const { return name; }
+
+	void addUser(Nick* nick, int status=0);
 };
 
 #endif /* CHANNEL_H */

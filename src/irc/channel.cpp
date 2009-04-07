@@ -17,10 +17,22 @@
 
 #include "channel.h"
 
+ChanUser::ChanUser(Nick* _nick, int _status)
+	: nick(_nick),
+	  status(_status)
+{
+}
+
 Channel::Channel(string _name)
 	: name(_name)
 {}
 
 Channel::~Channel()
 {
+}
+
+
+void Channel::addUser(Nick* nick, int status)
+{
+	users.push_back(ChanUser(nick, status));
 }
