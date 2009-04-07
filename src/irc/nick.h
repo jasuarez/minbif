@@ -21,6 +21,8 @@
 #include <string>
 using std::string;
 
+#include "message.h"
+
 class Nick
 {
 	string nickname, identname, hostname, realname;
@@ -34,6 +36,8 @@ public:
 
 	Nick(string nickname, string identname, string hostname, string realname="");
 	~Nick();
+
+	virtual void send(Message m) {}
 
 	string getNickname() const { return nickname; }
 	void setNickname(string n) { nickname = n; }

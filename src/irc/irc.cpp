@@ -25,7 +25,8 @@
 #include "../callback.h"
 #include "irc.h"
 #include "message.h"
-#include "nick.h"
+#include "user.h"
+#include "rootnick.h"
 #include "channel.h"
 
 static struct
@@ -43,7 +44,7 @@ IRC::IRC(int _fd, string _hostname, string cmd_chan_name)
 	: fd(_fd),
 	  read_cb(NULL),
 	  hostname("localhost.localdomain"),
-	  userNick(NULL),
+	  user(NULL),
 	  rootNick(NULL),
 	  cmdChan(NULL)
 {
@@ -93,48 +94,40 @@ IRC::IRC(int _fd, string _hostname, string cmd_chan_name)
 		throw IRCAuthError();
 	}
 
-	userNick = new Nick("*", "", userhost);
-	rootNick = new Nick("root", "root", hostname, "User Manager");
+	user = new User(fd, "*", "", userhost);
+	rootNick = new RootNick(hostname);
 	cmdChan = new Channel(cmd_chan_name);
 	cmdChan->addUser(rootNick);
 
-	sendmsg(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
+	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
 }
 
 IRC::~IRC()
 {
 	delete read_cb;
-	delete userNick;
+	delete user;
 	delete rootNick;
 	delete cmdChan;
 }
 
-bool IRC::sendmsg(Message msg) const
-{
-	string s = msg.format();
-	write(fd, s.c_str(), s.size());
-
-	return true;
-}
-
 void IRC::sendWelcome()
 {
-	if(userNick->hasFlag(Nick::REGISTERED) || userNick->getNickname() == "*" ||
-	   userNick->getIdentname().empty())
+	if(user->hasFlag(Nick::REGISTERED) || user->getNickname() == "*" ||
+	   user->getIdentname().empty())
 		return;
 
-	userNick->setFlag(Nick::REGISTERED);
+	user->setFlag(Nick::REGISTERED);
 
-	sendmsg(Message(RPL_WELCOME).setSender(this).setReceiver(userNick).addArg("Welcome to the BitlBee gateway, " + userNick->getNickname() + "!"));
-	sendmsg(Message(RPL_YOURHOST).setSender(this).setReceiver(userNick).addArg("Host " + hostname + " is running BitlBee 2.0"));
+	user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
+	user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + hostname + " is running BitlBee 2.0"));
 
 	join(cmdChan);
 }
 
 void IRC::join(Channel* chan)
 {
-	chan->addUser(userNick);
-	sendmsg(Message(MSG_JOIN).setSender(userNick).setReceiver(chan));
+	chan->addUser(user);
+	user->send(Message(MSG_JOIN).setSender(user).setReceiver(chan));
 }
 
 void IRC::readIO(void*)
@@ -158,13 +151,13 @@ void IRC::readIO(void*)
 			;
 
 		if(i >= (sizeof commands / sizeof *commands))
-			sendmsg(Message(ERR_UNKNOWNCOMMAND).setSender(this)
-			                                   .setReceiver(userNick)
+			user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
+			                                   .setReceiver(user)
 							   .addArg(m.getCommand())
 							   .addArg("Unknown command"));
 		else if(m.countArgs() < commands[i].minargs)
-			sendmsg(Message(ERR_NEEDMOREPARAMS).setSender(this)
-							   .setReceiver(userNick)
+			user->send(Message(ERR_NEEDMOREPARAMS).setSender(this)
+							   .setReceiver(user)
 							   .addArg(m.getCommand())
 							   .addArg("Not enough parameters"));
 		else
@@ -177,15 +170,15 @@ void IRC::m_nick(Message message)
 {
 	if(message.countArgs() < 1)
 	{
-		sendmsg(Message(ERR_NONICKNAMEGIVEN).setSender(this)
-		                                    .setReceiver(userNick)
+		user->send(Message(ERR_NONICKNAMEGIVEN).setSender(this)
+		                                    .setReceiver(user)
 						    .addArg("No nickname given"));
 		return;
 	}
-	if(userNick->hasFlag(Nick::REGISTERED))
-		sendmsg(Message(MSG_NICK).setSender(userNick).setReceiver(message.getArg(0)));
+	if(user->hasFlag(Nick::REGISTERED))
+		user->send(Message(MSG_NICK).setSender(user).setReceiver(message.getArg(0)));
 
-	userNick->setNickname(message.getArg(0));
+	user->setNickname(message.getArg(0));
 
 	sendWelcome();
 }
@@ -193,15 +186,15 @@ void IRC::m_nick(Message message)
 /* USER identname * * :realname*/
 void IRC::m_user(Message message)
 {
-	if(userNick->hasFlag(Nick::REGISTERED))
+	if(user->hasFlag(Nick::REGISTERED))
 	{
-		sendmsg(Message(ERR_ALREADYREGISTRED).setSender(this)
-		                                     .setReceiver(userNick)
+		user->send(Message(ERR_ALREADYREGISTRED).setSender(this)
+		                                     .setReceiver(user)
 						     .addArg("Please register only once per session"));
 		return;
 	}
-	userNick->setIdentname(message.getArg(0));
-	userNick->setRealname(message.getArg(3));
+	user->setIdentname(message.getArg(0));
+	user->setRealname(message.getArg(3));
 
 	sendWelcome();
 }
@@ -212,6 +205,6 @@ void IRC::m_quit(Message message)
 	string reason = "Leaving...";
 	if(message.countArgs() >= 1)
 		reason = message.getArg(0);
-	sendmsg(Message(MSG_ERROR).addArg("Closing Link: " + reason));
+	user->send(Message(MSG_ERROR).addArg("Closing Link: " + reason));
 	close(fd);
 }

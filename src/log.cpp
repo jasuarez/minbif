@@ -22,6 +22,7 @@
 #include "util.h"
 #include "log.h"
 #include "irc/irc.h"
+#include "irc/user.h"
 
 Log b_log;
 
@@ -61,9 +62,9 @@ Log::flux::~flux()
 		struct timeval t;
 		gettimeofday(&t, NULL);
 		if(b_log.getIRC())
-			b_log.getIRC()->sendmsg(Message(MSG_NOTICE).setSender(b_log.getIRC())
-					                          .setReceiver(b_log.getIRC()->getUserNick())
-								  .addArg(string("[") + all_flags[i].s + "] " + str));
+			b_log.getIRC()->getUser()->send(Message(MSG_NOTICE).setSender(b_log.getIRC())
+					                                   .setReceiver(b_log.getIRC()->getUser())
+								           .addArg(string("[") + all_flags[i].s + "] " + str));
 		else
 			std::cout << ":localhost.localdomain NOTICE AUTH :[" << all_flags[i].s << "] " << str << "\r\n";
 
