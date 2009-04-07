@@ -26,6 +26,7 @@
 #include "irc.h"
 #include "message.h"
 #include "nick.h"
+#include "channel.h"
 
 static struct
 {
@@ -38,11 +39,12 @@ static struct
 	{ "QUIT", &IRC::m_quit,  0 }
 };
 
-IRC::IRC(int _fd, string _hostname)
+IRC::IRC(int _fd, string _hostname, string cmd_chan_name)
 	: fd(_fd),
 	  read_cb(NULL),
 	  hostname("localhost.localdomain"),
-	  userNick(NULL)
+	  userNick(NULL),
+	  cmdChan(NULL)
 {
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
@@ -63,8 +65,6 @@ IRC::IRC(int _fd, string _hostname)
 			userhost = buf;
 	}
 
-	userNick = new Nick("*", "", userhost);
-
 	/* Get my own hostname (if not given in arguments) */
 	if(_hostname.empty() || _hostname == " ")
 	{
@@ -84,6 +84,16 @@ IRC::IRC(int _fd, string _hostname)
 	}
 	else
 		hostname = _hostname;
+
+	if(cmd_chan_name.empty() || (cmd_chan_name[0] != '&' and cmd_chan_name[0] != '#') ||
+	   cmd_chan_name.find(' ') != string::npos)
+	{
+		b_log[W_ERR] << "'" << cmd_chan_name << "' is not a valid command channel name";
+		throw IRCAuthError();
+	}
+
+	userNick = new Nick("*", "", userhost);
+	cmdChan = new Channel(cmd_chan_name);
 
 	sendmsg(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
 }
@@ -111,6 +121,9 @@ void IRC::sendWelcome()
 	userNick->setFlag(Nick::REGISTERED);
 
 	sendmsg(Message(RPL_WELCOME).setSender(this).setReceiver(userNick).addArg("Welcome to the BitlBee gateway, " + userNick->getNickname() + "!"));
+	sendmsg(Message(RPL_YOURHOST).setSender(this).setReceiver(userNick).addArg("Host " + hostname + " is running BitlBee 2.0"));
+
+	sendmsg(Message(MSG_JOIN).setSender(userNick).setReceiver(cmdChan));
 }
 
 void IRC::readIO(void*)

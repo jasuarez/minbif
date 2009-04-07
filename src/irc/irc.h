@@ -28,6 +28,7 @@ using std::string;
 class IRCAuthError : public std::exception {};
 
 class Nick;
+class Channel;
 class _CallBack;
 
 class IRC
@@ -36,10 +37,11 @@ class IRC
 	_CallBack *read_cb;
 	string hostname;
 	Nick* userNick;
+	Channel* cmdChan;
 
 public:
 
-	IRC(int fd, string hostname="");
+	IRC(int fd, string hostname, string command_chan);
 	~IRC();
 
 	bool sendmsg(Message msg) const;

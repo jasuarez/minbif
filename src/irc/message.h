@@ -46,6 +46,7 @@
 #define MSG_NICK        "NICK"
 
 class Nick;
+class Channel;
 class IRC;
 
 using std::string;
@@ -69,6 +70,7 @@ public:
 	Message& setSender(const Nick* nick);
 	Message& setSender(const IRC* me);
 	Message& setReceiver(const Nick* nick);
+	Message& setReceiver(const Channel* chan);
 	Message& setReceiver(string r);
 	Message& addArg(string);
 

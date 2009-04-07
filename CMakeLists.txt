@@ -12,6 +12,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/irc/irc.cpp
 		src/irc/message.cpp
 		src/irc/nick.cpp
+		src/irc/channel.cpp
 	      )
 SET(CONF_NAME bitlbee.conf)
 

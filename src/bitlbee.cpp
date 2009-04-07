@@ -51,6 +51,7 @@ Bitlbee::Bitlbee()
 
 	section = conf.AddSection("irc", "Server information", false);
 	section->AddItem(new ConfigItem_string("hostname", "Server hostname", " "));
+	section->AddItem(new ConfigItem_string("command_chan", "Command channel name", "&bitlbee"));
 
 	section = conf.AddSection("logging", "Log informations", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));
@@ -79,9 +80,9 @@ int Bitlbee::main(int argc, char** argv)
 		}
 		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
-		irc = new IRC(0, conf.GetSection("irc")->GetItem("hostname")->String());
+		irc = new IRC(0, conf.GetSection("irc")->GetItem("hostname")->String(),
+				 conf.GetSection("irc")->GetItem("command_chan")->String());
 		b_log.setIRC(irc);
-
 
 		loop = g_main_new(FALSE);
 		g_main_run(loop);

@@ -20,6 +20,7 @@
 #include "message.h"
 #include "irc.h"
 #include "nick.h"
+#include "channel.h"
 #include "../util.h"
 
 Message::Message(string _cmd)
@@ -90,6 +91,14 @@ Message& Message::setReceiver(const Nick* nick)
 	assert (nick != NULL);
 
 	receiver = nick->getNickname();
+	return *this;
+}
+
+Message& Message::setReceiver(const Channel* chan)
+{
+	assert (chan != NULL);
+
+	receiver = chan->getName();
 	return *this;
 }
 
