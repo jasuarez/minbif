@@ -310,7 +310,7 @@ void IRC::m_quit(Message message)
 	string reason = "Leaving...";
 	if(message.countArgs() >= 1)
 		reason = message.getArg(0);
-	quit(reason);
+	quit("Quit: " + reason);
 }
 
 /* PRIVMSG target message */
