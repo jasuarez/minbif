@@ -84,7 +84,6 @@ int Bitlbee::main(int argc, char** argv)
 		server_poll = ServerPoll::build((ServerPoll::poll_type_t)conf.GetSection("irc")->GetItem("type")->Integer(),
 				                this);
 
-
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
 

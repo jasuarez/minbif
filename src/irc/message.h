@@ -33,6 +33,8 @@
 #define RPL_353         "353"
 #define RPL_366         "366"
 
+#define ERR_NOSUCHNICK "401"
+#define ERR_NOSUCHCHANNEL "403"
 #define ERR_NONICKNAMEGIVEN "431"
 #define ERR_NEEDMOREPARAMS "461"
 #define ERR_ALREADYREGISTRED "462"

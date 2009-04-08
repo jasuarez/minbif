@@ -37,9 +37,10 @@ static struct
 	void (IRC::*func)(Message);
 	size_t minargs;
 } commands[] = {
-	{ "NICK", &IRC::m_nick,  0 },
-	{ "USER", &IRC::m_user,  4 },
-	{ "QUIT", &IRC::m_quit,  0 }
+	{ "NICK",    &IRC::m_nick,    0 },
+	{ "USER",    &IRC::m_user,    4 },
+	{ "QUIT",    &IRC::m_quit,    0 },
+	{ "PRIVMSG", &IRC::m_privmsg, 2 },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
@@ -102,7 +103,10 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
 	/* Create main objects and root joins command channel. */
 	user = new User(fd, "*", "", userhost);
 	rootNick = new RootNick(hostname);
+	addNick(rootNick);
+	addNick(user);
 	cmdChan = new Channel(this, cmd_chan_name);
+	addChannel(cmdChan);
 	rootNick->join(cmdChan, ChanUser::OP);
 
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
@@ -116,6 +120,51 @@ IRC::~IRC()
 	delete user;
 	delete rootNick;
 	delete cmdChan;
+}
+
+void IRC::addChannel(Channel* chan)
+{
+	channels[chan->getName()] = chan;
+}
+Channel* IRC::getChannel(string channame) const
+{
+	map<string, Channel*>::const_iterator it = channels.find(channame);
+	if(it == channels.end())
+		return 0;
+
+	return it->second;
+}
+void IRC::removeChannel(string channame)
+{
+	map<string, Channel*>::iterator it = channels.find(channame);
+	if(it != channels.end())
+	{
+		delete it->second;
+		channels.erase(it);
+	}
+}
+
+void IRC::addNick(Nick* nick)
+{
+	users[nick->getNickname()] = nick;
+}
+
+Nick* IRC::getNick(string nickname) const
+{
+	map<string, Nick*>::const_iterator it = users.find(nickname);
+	if(it == users.end())
+		return 0;
+
+	return it->second;
+}
+void IRC::removeNick(string nickname)
+{
+	map<string, Nick*>::iterator it = users.find(nickname);
+	if(it != users.end())
+	{
+		delete it->second;
+		users.erase(it);
+	}
 }
 
 void IRC::quit(string reason)
@@ -223,4 +272,40 @@ void IRC::m_quit(Message message)
 	if(message.countArgs() >= 1)
 		reason = message.getArg(0);
 	quit(reason);
+}
+
+/* PRIVMSG target message */
+void IRC::m_privmsg(Message message)
+{
+	Message relayed(message.getCommand());
+	relayed.setSender(user);
+	relayed.setReceiver(message.getArg(0));
+	relayed.addArg(message.getArg(1));
+
+	if(Channel::isChanName(relayed.getReceiver()))
+	{
+		Channel* c = getChannel(relayed.getReceiver());
+		if(!c)
+		{
+			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+					                     .setReceiver(user)
+							     .addArg(relayed.getReceiver())
+							     .addArg("No suck channel"));
+			return;
+		}
+		c->broadcast(relayed, user);
+	}
+	else
+	{
+		Nick* n = getNick(relayed.getReceiver());
+		if(!n)
+		{
+			user->send(Message(ERR_NOSUCHNICK).setSender(this)
+					                  .setReceiver(user)
+							  .addArg(relayed.getReceiver())
+							  .addArg("No suck nick"));
+			return;
+		}
+		n->send(relayed);
+	}
 }

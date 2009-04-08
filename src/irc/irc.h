@@ -19,11 +19,13 @@
 #define IRC_H
 
 #include <string>
+#include <map>
 #include <exception>
 
 #include "message.h"
 
 using std::string;
+using std::map;
 
 class IRCAuthError : public std::exception {};
 
@@ -44,6 +46,9 @@ class IRC
 	RootNick* rootNick;
 	Channel* cmdChan;
 
+	map<string, Nick*> users;
+	map<string, Channel*> channels;
+
 public:
 
 	IRC(ServerPoll* poll, int fd, string hostname, string command_chan);
@@ -56,10 +61,20 @@ public:
 	void sendWelcome();
 	void quit(string reason = "");
 
+	void addChannel(Channel* chan);
+	Channel* getChannel(string channame) const;
+	void removeChannel(string channame);
+
+	void addNick(Nick* nick);
+	Nick* getNick(string nick) const;
+	void removeNick(string nick);
+
+
 	void readIO(void*);
 	void m_nick(Message m);
 	void m_user(Message m);
 	void m_quit(Message m);
+	void m_privmsg(Message m);
 };
 
 #endif /* IRC_H */

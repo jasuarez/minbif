@@ -57,6 +57,19 @@ public:
 	Channel(IRC* irc, string name);
 	~Channel();
 
+	static bool isChanName(string name)
+	{
+		if(name.empty()) return false;
+		switch(name[0])
+		{
+			case '&':
+			case '#':
+				return true;
+			default:
+				return false;
+		}
+	}
+
 	string getName() const { return name; }
 
 	void addUser(Nick* nick, int status=0);
