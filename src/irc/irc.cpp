@@ -88,8 +88,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
 	else
 		hostname = _hostname;
 
-	if(cmd_chan_name.empty() || (cmd_chan_name[0] != '&' and cmd_chan_name[0] != '#') ||
-	   cmd_chan_name.find(' ') != string::npos)
+	if(Channel::isChanName(cmd_chan_name))
 	{
 		b_log[W_ERR] << "'" << cmd_chan_name << "' is not a valid command channel name";
 		throw IRCAuthError();

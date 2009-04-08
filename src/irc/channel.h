@@ -59,7 +59,7 @@ public:
 
 	static bool isChanName(string name)
 	{
-		if(name.empty()) return false;
+		if(name.empty() || name.find(' ') != string::npos) return false;
 		switch(name[0])
 		{
 			case '&':
