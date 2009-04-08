@@ -74,12 +74,12 @@ void Channel::addUser(Nick* nick, int status)
 		names += it->getNick()->getNickname();
 
 	}
-	nick->send(Message(RPL_353).setSender(irc)
+	nick->send(Message(RPL_NAMREPLY).setSender(irc)
 			           .setReceiver(nick)
 				   .addArg("=")
 				   .addArg(getName())
 				   .addArg(names));
-	nick->send(Message(RPL_366).setSender(irc)
+	nick->send(Message(RPL_ENDOFNAMES).setSender(irc)
 			           .setReceiver(nick)
 				   .addArg(getName())
 				   .addArg("End of /NAMES list"));

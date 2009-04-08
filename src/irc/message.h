@@ -30,8 +30,8 @@
 #define RPL_MOTDSTART   "375"
 #define RPL_MOTD        "372"
 #define RPL_ENDOFMOTD   "376"
-#define RPL_353         "353"
-#define RPL_366         "366"
+#define RPL_NAMREPLY    "353"
+#define RPL_ENDOFNAMES  "366"
 
 #define ERR_NOSUCHNICK "401"
 #define ERR_NOSUCHCHANNEL "403"
