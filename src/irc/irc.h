@@ -37,6 +37,7 @@ class IRC
 {
 	ServerPoll* poll;
 	int fd;
+	int read_id;
 	_CallBack *read_cb;
 	string hostname;
 	User* user;

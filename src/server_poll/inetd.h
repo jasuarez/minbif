@@ -21,10 +21,12 @@
 #include "poll.h"
 
 class IRC;
+class _CallBack;
 
 class InetdServerPoll : public ServerPoll
 {
 	IRC* irc;
+	_CallBack* stop_cb;
 
 public:
 
@@ -32,6 +34,7 @@ public:
 	~InetdServerPoll();
 
 	void kill(IRC* irc);
+	void stopServer_cb(void*);
 };
 
 #endif /* INETD_H */

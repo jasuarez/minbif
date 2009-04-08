@@ -47,6 +47,7 @@ private:
         void *data;
 };
 
-void g_callback(void* data, gint, PurpleInputCondition);
+gboolean g_callback(void* data);
+void g_callback_input(void* data, gint n = 0, PurpleInputCondition input = (PurpleInputCondition)0);
 
 #endif /* CALLBACK_H */

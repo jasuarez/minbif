@@ -45,6 +45,7 @@ static struct
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
 	: poll(_poll),
 	  fd(_fd),
+	  read_id(0),
 	  read_cb(NULL),
 	  hostname("localhost.localdomain"),
 	  user(NULL),
@@ -96,7 +97,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
 
 	/* create a callback on the sock. */
 	read_cb = new CallBack<IRC>(this, &IRC::readIO);
-	glib_input_add(fd, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback, read_cb);
+	read_id = glib_input_add(fd, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback_input, read_cb);
 
 	/* Create main objects and root joins command channel. */
 	user = new User(fd, "*", "", userhost);
@@ -109,6 +110,8 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
 
 IRC::~IRC()
 {
+	if(read_id > 0)
+		g_source_remove(read_id);
 	delete read_cb;
 	delete user;
 	delete rootNick;

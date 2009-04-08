@@ -16,15 +16,19 @@
  */
 
 #include <cassert>
+#include <glib/gmain.h>
 
 #include "inetd.h"
 #include "../irc/irc.h"
 #include "../config.h"
+#include "../callback.h"
 #include "../log.h"
 #include "../bitlbee.h"
 
 InetdServerPoll::InetdServerPoll(Bitlbee* application)
-	: ServerPoll(application)
+	: ServerPoll(application),
+	  irc(NULL),
+	  stop_cb(NULL)
 {
 	try
 	{
@@ -49,8 +53,17 @@ void InetdServerPoll::kill(IRC* irc)
 {
 	assert(irc == this->irc);
 
+	stop_cb = new CallBack<InetdServerPoll>(this, &InetdServerPoll::stopServer_cb);
+	g_timeout_add(0, g_callback, stop_cb);
+}
+
+void InetdServerPoll::stopServer_cb(void*)
+{
+	delete stop_cb;
+	stop_cb = NULL;
+
 	delete irc;
-	this->irc = NULL;
+	irc = NULL;
 
 	getApplication()->quit();
 }

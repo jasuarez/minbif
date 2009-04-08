@@ -18,7 +18,7 @@
 #include "callback.h"
 #include "log.h"
 
-void g_callback(void* data, gint, PurpleInputCondition i)
+void g_callback_input(void* data, gint, PurpleInputCondition i)
 {
 	_CallBack* cb = static_cast<_CallBack*>(data);
 
@@ -29,4 +29,18 @@ void g_callback(void* data, gint, PurpleInputCondition i)
 	}
 
 	cb->run();
+}
+
+gboolean g_callback(void* data)
+{
+	_CallBack* cb = static_cast<_CallBack*>(data);
+
+	if(!data)
+	{
+		b_log[W_ERR] << "g_callback() handled with non CallBack instance";
+		return FALSE;
+	}
+
+	cb->run();
+	return FALSE;
 }
