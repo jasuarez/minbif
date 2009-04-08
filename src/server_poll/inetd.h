@@ -34,7 +34,7 @@ public:
 	~InetdServerPoll();
 
 	void kill(IRC* irc);
-	void stopServer_cb(void*);
+	bool stopServer_cb(void*);
 };
 
 #endif /* INETD_H */

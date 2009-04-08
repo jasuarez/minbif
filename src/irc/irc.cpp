@@ -37,17 +37,20 @@ static struct
 	void (IRC::*func)(Message);
 	size_t minargs;
 } commands[] = {
-	{ "NICK",    &IRC::m_nick,    0 },
-	{ "USER",    &IRC::m_user,    4 },
-	{ "QUIT",    &IRC::m_quit,    0 },
-	{ "PRIVMSG", &IRC::m_privmsg, 2 },
+	{ MSG_NICK,    &IRC::m_nick,    0 },
+	{ MSG_USER,    &IRC::m_user,    4 },
+	{ MSG_QUIT,    &IRC::m_quit,    0 },
+	{ MSG_PRIVMSG, &IRC::m_privmsg, 2 },
+	{ MSG_PING,    &IRC::m_ping,    0 },
+	{ MSG_PONG,    &IRC::m_pong,    1 },
 };
 
-IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
+IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
 	: poll(_poll),
 	  fd(_fd),
 	  read_id(0),
 	  read_cb(NULL),
+	  ping_cb(NULL),
 	  hostname("localhost.localdomain"),
 	  user(NULL),
 	  rootNick(NULL),
@@ -108,6 +111,10 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
 	addChannel(cmdChan);
 	rootNick->join(cmdChan, ChanUser::OP);
 
+	/* Ping callback */
+	ping_cb = new CallBack<IRC>(this, &IRC::ping);
+	g_timeout_add_seconds(ping_freq, g_callback, ping_cb);
+
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
 }
 
@@ -125,6 +132,7 @@ void IRC::addChannel(Channel* chan)
 {
 	channels[chan->getName()] = chan;
 }
+
 Channel* IRC::getChannel(string channame) const
 {
 	map<string, Channel*>::const_iterator it = channels.find(channame);
@@ -133,6 +141,7 @@ Channel* IRC::getChannel(string channame) const
 
 	return it->second;
 }
+
 void IRC::removeChannel(string channame)
 {
 	map<string, Channel*>::iterator it = channels.find(channame);
@@ -156,6 +165,7 @@ Nick* IRC::getNick(string nickname) const
 
 	return it->second;
 }
+
 void IRC::removeNick(string nickname)
 {
 	map<string, Nick*>::iterator it = users.find(nickname);
@@ -188,7 +198,22 @@ void IRC::sendWelcome()
 	rootNick->privmsg(cmdChan, "Welcome to Bitlbee, dear!");
 }
 
-void IRC::readIO(void*)
+bool IRC::ping(void*)
+{
+	if(!user->hasFlag(Nick::REGISTERED) || user->hasFlag(Nick::PING))
+	{
+		quit("Ping timeout");
+		return false;
+	}
+	else
+	{
+		user->setFlag(Nick::PING);
+		user->send(Message(MSG_PING).addArg(hostname));
+		return true;
+	}
+}
+
+bool IRC::readIO(void*)
 {
 	static char buf[1024];
 	string sbuf, line;
@@ -200,7 +225,7 @@ void IRC::readIO(void*)
 			this->quit("Connection reset by peer...");
 		else if(!sockerr_again())
 			this->quit(string("Read error: ") + strerror(errno));
-		return;
+		return false;
 	}
 	buf[r] = 0;
 	sbuf = buf;
@@ -228,6 +253,21 @@ void IRC::readIO(void*)
 		else
 			(this->*commands[i].func)(m);
 	}
+
+	return true;
+}
+
+/* PING [args ...] */
+void IRC::m_ping(Message message)
+{
+	message.setCommand(MSG_PONG);
+	user->send(message);
+}
+
+/* PONG cookie */
+void IRC::m_pong(Message message)
+{
+	user->delFlag(Nick::PING);
 }
 
 /* NICK nickname */

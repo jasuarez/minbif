@@ -48,6 +48,9 @@
 #define MSG_QUIT        "QUIT"
 #define MSG_ERROR       "ERROR"
 #define MSG_NICK        "NICK"
+#define MSG_PING        "PING"
+#define MSG_PONG        "PONG"
+#define MSG_USER        "USER"
 
 class Nick;
 class Channel;

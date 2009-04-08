@@ -41,6 +41,5 @@ gboolean g_callback(void* data)
 		return FALSE;
 	}
 
-	cb->run();
-	return FALSE;
+	return cb->run();
 }

@@ -24,7 +24,7 @@ class _CallBack
 {
 public:
 	virtual ~_CallBack() {}
-	virtual void run() = 0;
+	virtual bool run() = 0;
 };
 
 template<typename T>
@@ -32,13 +32,13 @@ class CallBack : public _CallBack
 {
 public:
 
-        typedef void (T::*TFunc) (void*);
+        typedef bool (T::*TFunc) (void*);
 
         CallBack(T* _obj, TFunc _func, void* _data = 0) : obj(_obj), func(_func), data(_data) {}
 
-        virtual void run()
+        virtual bool run()
         {
-                (obj->*func) (data);
+                return (obj->*func) (data);
         }
 
 private:

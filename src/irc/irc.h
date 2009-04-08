@@ -41,6 +41,7 @@ class IRC
 	int fd;
 	int read_id;
 	_CallBack *read_cb;
+	_CallBack *ping_cb;
 	string hostname;
 	User* user;
 	RootNick* rootNick;
@@ -51,7 +52,7 @@ class IRC
 
 public:
 
-	IRC(ServerPoll* poll, int fd, string hostname, string command_chan);
+	IRC(ServerPoll* poll, int fd, string hostname, string command_chan, unsigned ping_freq);
 	~IRC();
 
 	string getServerName() const { return hostname; }
@@ -69,11 +70,14 @@ public:
 	Nick* getNick(string nick) const;
 	void removeNick(string nick);
 
+	bool ping(void*);
 
-	void readIO(void*);
+	bool readIO(void*);
 	void m_nick(Message m);
 	void m_user(Message m);
 	void m_quit(Message m);
+	void m_ping(Message m);
+	void m_pong(Message m);
 	void m_privmsg(Message m);
 };
 

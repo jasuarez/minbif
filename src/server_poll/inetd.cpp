@@ -34,7 +34,8 @@ InetdServerPoll::InetdServerPoll(Bitlbee* application)
 	{
 		irc = new IRC(this, 0,
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
-			      conf.GetSection("irc")->GetItem("command_chan")->String());
+			      conf.GetSection("irc")->GetItem("command_chan")->String(),
+			      conf.GetSection("irc")->GetItem("ping")->Integer());
 		b_log.setIRC(irc);
 	}
 	catch(IRCAuthError &e)
@@ -57,7 +58,7 @@ void InetdServerPoll::kill(IRC* irc)
 	g_timeout_add(0, g_callback, stop_cb);
 }
 
-void InetdServerPoll::stopServer_cb(void*)
+bool InetdServerPoll::stopServer_cb(void*)
 {
 	delete stop_cb;
 	stop_cb = NULL;
@@ -66,4 +67,5 @@ void InetdServerPoll::stopServer_cb(void*)
 	irc = NULL;
 
 	getApplication()->quit();
+	return false;
 }

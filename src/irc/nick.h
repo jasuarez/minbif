@@ -32,7 +32,8 @@ class Nick
 public:
 
 	enum {
-		REGISTERED = 1 << 0
+		REGISTERED = 1 << 0,
+		PING       = 1 << 1
 	};
 
 	Nick(string nickname, string identname, string hostname, string realname="");
