@@ -96,7 +96,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
 
 	/* create a callback on the sock. */
 	read_cb = new CallBack<IRC>(this, &IRC::readIO);
-	glib_input_add(0, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback, read_cb);
+	glib_input_add(fd, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback, read_cb);
 
 	/* Create main objects and root joins command channel. */
 	user = new User(fd, "*", "", userhost);
