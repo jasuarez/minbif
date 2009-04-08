@@ -23,6 +23,8 @@
 #include "../log.h"
 #include "../util.h"
 #include "../callback.h"
+#include "../sock.h"
+#include "../server_poll/poll.h"
 #include "irc.h"
 #include "message.h"
 #include "user.h"
@@ -40,8 +42,9 @@ static struct
 	{ "QUIT", &IRC::m_quit,  0 }
 };
 
-IRC::IRC(int _fd, string _hostname, string cmd_chan_name)
-	: fd(_fd),
+IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name)
+	: poll(_poll),
+	  fd(_fd),
 	  read_cb(NULL),
 	  hostname("localhost.localdomain"),
 	  user(NULL),
@@ -112,6 +115,13 @@ IRC::~IRC()
 	delete cmdChan;
 }
 
+void IRC::quit(string reason)
+{
+	user->send(Message(MSG_ERROR).addArg("Closing Link: " + reason));
+	close(fd);
+	poll->kill(this);
+}
+
 void IRC::sendWelcome()
 {
 	if(user->hasFlag(Nick::REGISTERED) || user->getNickname() == "*" ||
@@ -133,7 +143,14 @@ void IRC::readIO(void*)
 	string sbuf, line;
 	ssize_t r;
 
-	r = read( 0, buf, sizeof buf - 1 );
+	if((r = read( 0, buf, sizeof buf - 1 )) <= 0)
+	{
+		if(r == 0)
+			this->quit("Connection reset by peer...");
+		else if(!sockerr_again())
+			this->quit(string("Read error: ") + strerror(errno));
+		return;
+	}
 	buf[r] = 0;
 	sbuf = buf;
 
@@ -202,6 +219,5 @@ void IRC::m_quit(Message message)
 	string reason = "Leaving...";
 	if(message.countArgs() >= 1)
 		reason = message.getArg(0);
-	user->send(Message(MSG_ERROR).addArg("Closing Link: " + reason));
-	close(fd);
+	quit(reason);
 }

@@ -18,7 +18,7 @@
 #include "callback.h"
 #include "log.h"
 
-void g_callback(void* data, gint, PurpleInputCondition)
+void g_callback(void* data, gint, PurpleInputCondition i)
 {
 	_CallBack* cb = static_cast<_CallBack*>(data);
 

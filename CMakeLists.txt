@@ -9,6 +9,8 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/mutex.cpp
 		src/callback.cpp
 		src/config.cpp
+		src/server_poll/poll.cpp
+		src/server_poll/inetd.cpp
 		src/irc/irc.cpp
 		src/irc/message.cpp
 		src/irc/nick.cpp

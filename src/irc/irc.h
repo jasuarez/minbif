@@ -31,9 +31,11 @@ class User;
 class RootNick;
 class Channel;
 class _CallBack;
+class ServerPoll;
 
 class IRC
 {
+	ServerPoll* poll;
 	int fd;
 	_CallBack *read_cb;
 	string hostname;
@@ -43,7 +45,7 @@ class IRC
 
 public:
 
-	IRC(int fd, string hostname, string command_chan);
+	IRC(ServerPoll* poll, int fd, string hostname, string command_chan);
 	~IRC();
 
 	string getServerName() const { return hostname; }
@@ -51,6 +53,7 @@ public:
 	User* getUser() const { return user; }
 
 	void sendWelcome();
+	void quit(string reason = "");
 
 	void readIO(void*);
 	void m_nick(Message m);

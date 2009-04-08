@@ -18,12 +18,13 @@
 #ifndef BITLBEE_H
 #define BITLBEE_H
 
-class IRC;
+class ServerPoll;
+struct _GMainLoop;
 
 class Bitlbee
 {
-	GMainLoop *loop;
-	IRC* irc;
+	struct _GMainLoop *loop;
+	ServerPoll* server_poll;
 
 public:
 
@@ -31,6 +32,8 @@ public:
 	~Bitlbee();
 
 	int main(int argc, char** argv);
+
+	void quit();
 
 };
 

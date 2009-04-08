@@ -22,7 +22,7 @@
 #include "config.h"
 #include "log.h"
 #include "util.h"
-#include "irc/irc.h"
+#include "server_poll/poll.h"
 
 #if 0
 static guint purple_wg_input_add(gint fd, PurpleInputCondition condition,
@@ -43,7 +43,7 @@ static PurpleEventLoopUiOps eventloop_wg_ops = {
 #endif
 
 Bitlbee::Bitlbee()
-	: loop(0)
+	: loop(0), server_poll(0)
 {
 	ConfigSection* section;
 	section = conf.AddSection("path", "Path information", false);
@@ -52,6 +52,7 @@ Bitlbee::Bitlbee()
 	section = conf.AddSection("irc", "Server information", false);
 	section->AddItem(new ConfigItem_string("hostname", "Server hostname", " "));
 	section->AddItem(new ConfigItem_string("command_chan", "Command channel name", "&bitlbee"));
+	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 
 	section = conf.AddSection("logging", "Log informations", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));
@@ -60,7 +61,7 @@ Bitlbee::Bitlbee()
 
 Bitlbee::~Bitlbee()
 {
-	delete irc;
+	delete server_poll;
 }
 
 int Bitlbee::main(int argc, char** argv)
@@ -80,9 +81,9 @@ int Bitlbee::main(int argc, char** argv)
 		}
 		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
-		irc = new IRC(0, conf.GetSection("irc")->GetItem("hostname")->String(),
-				 conf.GetSection("irc")->GetItem("command_chan")->String());
-		b_log.setIRC(irc);
+		server_poll = ServerPoll::build((ServerPoll::poll_type_t)conf.GetSection("irc")->GetItem("type")->Integer(),
+				                this);
+
 
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
@@ -100,12 +101,17 @@ int Bitlbee::main(int argc, char** argv)
 		b_log[W_ERR] << "Error while loading:";
 		b_log[W_ERR] << e.Reason();
 	}
-	catch(IRCAuthError &e)
+	catch(ServerPollError &e)
 	{
-		b_log[W_ERR] << "Unable to start the IRC daemon";
+		b_log[W_ERR] << "Unable to load the server poll.";
 	}
 
 	return EXIT_FAILURE;
+}
+
+void Bitlbee::quit()
+{
+	g_main_quit(loop);
 }
 
 int main(int argc, char** argv)
