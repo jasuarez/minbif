@@ -15,8 +15,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef CHANNEL_H
-#define CHANNEL_H
+#ifndef IRC_CHANNEL_H
+#define IRC_CHANNEL_H
 
 #include <string>
 using std::string;
@@ -24,11 +24,12 @@ using std::string;
 using std::vector;
 
 #include "message.h"
+#include "../entity.h"
 
 class Nick;
 class IRC;
 
-class ChanUser
+class ChanUser : public Entity
 {
 	Nick* nick;
 	int status;
@@ -42,14 +43,15 @@ public:
 
 	ChanUser(Nick* nick, int status = 0);
 
+	string getName() const;
+
 	bool hasStatus(int flag) const { return status & flag; }
 	Nick* getNick() const { return nick; }
 };
 
-class Channel
+class Channel : public Entity
 {
 	IRC* irc;
-	string name;
 	vector<ChanUser> users;
 
 public:
@@ -70,11 +72,9 @@ public:
 		}
 	}
 
-	string getName() const { return name; }
-
 	void addUser(Nick* nick, int status=0);
 
 	void broadcast(Message m, Nick* butone = NULL);
 };
 
-#endif /* CHANNEL_H */
+#endif /* IRC_CHANNEL_H */

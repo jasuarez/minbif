@@ -21,8 +21,7 @@
 
 #include "util.h"
 #include "log.h"
-#include "irc/irc.h"
-#include "irc/user.h"
+#include "server_poll/poll.h"
 
 Log b_log;
 
@@ -61,10 +60,8 @@ Log::flux::~flux()
 
 		struct timeval t;
 		gettimeofday(&t, NULL);
-		if(b_log.getIRC())
-			b_log.getIRC()->getUser()->send(Message(MSG_NOTICE).setSender(b_log.getIRC())
-					                                   .setReceiver(b_log.getIRC()->getUser())
-								           .addArg(string("[") + all_flags[i].s + "] " + str));
+		if(b_log.getServerPoll())
+			b_log.getServerPoll()->log(string("[") + all_flags[i].s + "] " + str);
 		else
 			std::cout << ":localhost.localdomain NOTICE AUTH :[" << all_flags[i].s << "] " << str << "\r\n";
 
@@ -73,7 +70,7 @@ Log::flux::~flux()
 
 Log::Log()
 	: logged_flags(DEFAULT_LOGGED_FLAGS),
-	  irc(NULL)
+	  poll(NULL)
 {
 	openlog("bitlbee", LOG_CONS, LOG_DAEMON);
 }

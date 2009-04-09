@@ -17,8 +17,8 @@
 
 #include "nick.h"
 
-Nick::Nick(string _nickname, string _identname, string _hostname, string _realname)
-	: nickname(_nickname),
+Nick::Nick(string nickname, string _identname, string _hostname, string _realname)
+	: Entity(nickname),
 	  identname(_identname),
 	  hostname(_hostname),
 	  realname(_realname),
@@ -28,6 +28,13 @@ Nick::Nick(string _nickname, string _identname, string _hostname, string _realna
 
 Nick::~Nick()
 {
+}
+
+string Nick::getLongName() const
+{
+	return getNickname()  + "!" +
+	       getIdentname() + "@" +
+	       getHostname();
 }
 
 void Nick::join(Channel* chan, int status)

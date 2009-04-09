@@ -19,6 +19,9 @@
 #define SERVER_POLL_H
 
 #include <exception>
+#include <string>
+
+using std::string;
 
 class Bitlbee;
 class IRC;
@@ -47,6 +50,8 @@ public:
 	ServerPoll(Bitlbee* application);
 
 	virtual void kill(IRC* irc) = 0;
+
+	virtual void log(string string) const = 0;
 };
 
 #endif /* SERVER_POLL_H */

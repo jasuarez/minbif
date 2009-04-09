@@ -15,18 +15,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef NICK_H
-#define NICK_H
+#ifndef IRC_NICK_H
+#define IRC_NICK_H
 
-#include <string>
-using std::string;
-
+#include "../entity.h"
 #include "message.h"
 #include "channel.h"
 
-class Nick
+class Nick : public Entity
 {
-	string nickname, identname, hostname, realname;
+	string identname, hostname, realname;
 	unsigned int flags;
 
 public:
@@ -46,8 +44,10 @@ public:
 	void privmsg(Channel* chan, string message);
 	void privmsg(Nick* to, string message);
 
-	string getNickname() const { return nickname; }
-	void setNickname(string n) { nickname = n; }
+	string getLongName() const;
+
+	string getNickname() const { return getName(); }
+	void setNickname(string n) { setName(n); }
 
 	string getIdentname() const { return identname; }
 	void setIdentname(string i) { identname = i; }
@@ -63,4 +63,4 @@ public:
 	bool hasFlag(unsigned flag) const { return flags & flag; }
 };
 
-#endif /* NICK_H */
+#endif /* IRC_NICK_H */

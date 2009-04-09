@@ -46,12 +46,12 @@ static struct
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
-	: poll(_poll),
+	: Entity("localhost.localdomain"),
+	  poll(_poll),
 	  fd(_fd),
 	  read_id(0),
 	  read_cb(NULL),
 	  ping_cb(NULL),
-	  hostname("localhost.localdomain"),
 	  user(NULL),
 	  rootNick(NULL),
 	  cmdChan(NULL)
@@ -79,7 +79,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 			char buf[NI_MAXHOST+1];
 
 			if(getnameinfo((struct sockaddr *) &sock, socklen, buf, NI_MAXHOST, NULL, 0, 0 ) == 0)
-				hostname = buf;
+				setName(buf);
 		}
 	}
 	else if(_hostname.find(" ") != string::npos)
@@ -89,7 +89,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 		throw IRCAuthError();
 	}
 	else
-		hostname = _hostname;
+		setName(_hostname);
 
 	if(!Channel::isChanName(cmd_chan_name))
 	{
@@ -104,7 +104,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 
 	/* Create main objects and root joins command channel. */
 	user = new User(fd, "*", "", userhost);
-	rootNick = new RootNick(hostname);
+	rootNick = new RootNick(this);
 	addNick(rootNick);
 	addNick(user);
 	cmdChan = new Channel(this, cmd_chan_name);
@@ -192,7 +192,7 @@ void IRC::sendWelcome()
 	user->setFlag(Nick::REGISTERED);
 
 	user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
-	user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + hostname + " is running BitlBee 2.0"));
+	user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running BitlBee 2.0"));
 
 	user->join(cmdChan, ChanUser::OP);
 	rootNick->privmsg(cmdChan, "Welcome to Bitlbee, dear!");
@@ -208,7 +208,7 @@ bool IRC::ping(void*)
 	else
 	{
 		user->setFlag(Nick::PING);
-		user->send(Message(MSG_PING).addArg(hostname));
+		user->send(Message(MSG_PING).addArg(getServerName()));
 		return true;
 	}
 }
@@ -318,33 +318,34 @@ void IRC::m_privmsg(Message message)
 {
 	Message relayed(message.getCommand());
 	relayed.setSender(user);
-	relayed.setReceiver(message.getArg(0));
 	relayed.addArg(message.getArg(1));
 
-	if(Channel::isChanName(relayed.getReceiver()))
+	if(Channel::isChanName(message.getArg(0)))
 	{
-		Channel* c = getChannel(relayed.getReceiver());
+		Channel* c = getChannel(message.getArg(0));
 		if(!c)
 		{
 			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 					                     .setReceiver(user)
-							     .addArg(relayed.getReceiver())
+							     .addArg(message.getArg(0))
 							     .addArg("No suck channel"));
 			return;
 		}
+		relayed.setReceiver(c);
 		c->broadcast(relayed, user);
 	}
 	else
 	{
-		Nick* n = getNick(relayed.getReceiver());
+		Nick* n = getNick(message.getArg(0));
 		if(!n)
 		{
 			user->send(Message(ERR_NOSUCHNICK).setSender(this)
 					                  .setReceiver(user)
-							  .addArg(relayed.getReceiver())
+							  .addArg(message.getArg(0))
 							  .addArg("No suck nick"));
 			return;
 		}
+		relayed.setReceiver(n);
 		n->send(relayed);
 	}
 }

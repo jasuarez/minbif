@@ -16,10 +16,29 @@
  */
 
 #include "rootnick.h"
+#include "irc.h"
 
-RootNick::RootNick(string hostname)
-	: Nick("root", "root", hostname, "User Manager")
+#if 0
+static struct
+{
+	const char* cmd;
+	void (RootNick::*func)(vector<string> args);
+	size_t minargs;
+	const char* help;
+} commands[] = {
+	{ "help",      &RootNick::m_help,     0, "Display help" },
+};
+#endif
+
+RootNick::RootNick(IRC* _irc)
+	: Nick("root", "root", _irc->getServerName(), "User Manager"),
+	  irc(_irc)
 {}
 
 RootNick::~RootNick()
 {}
+
+void RootNick::send(Message m)
+{
+
+}

@@ -48,7 +48,7 @@ enum
  *   b_log[W_ERR] << "This user isn't allowed to do this!";
  */
 
-class IRC;
+class ServerPoll;
 
 class Log
 {
@@ -61,8 +61,8 @@ public:
 	uint32_t LoggedFlags() const { return logged_flags; }
 	bool ToSyslog() const { return to_syslog; }
 
-	void setIRC(const IRC* _irc) { irc = _irc; }
-	const IRC* getIRC() const { return irc; }
+	void setServerPoll(const ServerPoll* _poll) { poll = _poll; }
+	const ServerPoll* getServerPoll() const { return poll; }
 
 	class flux
 	{
@@ -101,7 +101,7 @@ private:
 
 	uint32_t logged_flags;
 	bool to_syslog;
-	const IRC* irc;
+	const ServerPoll* poll;
 };
 
 template<>

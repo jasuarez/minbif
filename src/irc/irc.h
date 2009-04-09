@@ -15,14 +15,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IRC_H
-#define IRC_H
+#ifndef IRC_IRC_H
+#define IRC_IRC_H
 
 #include <string>
 #include <map>
 #include <exception>
 
 #include "message.h"
+#include "../entity.h"
 
 using std::string;
 using std::map;
@@ -31,18 +32,18 @@ class IRCAuthError : public std::exception {};
 
 class User;
 class RootNick;
+class Nick;
 class Channel;
 class _CallBack;
 class ServerPoll;
 
-class IRC
+class IRC : public Entity
 {
 	ServerPoll* poll;
 	int fd;
 	int read_id;
 	_CallBack *read_cb;
 	_CallBack *ping_cb;
-	string hostname;
 	User* user;
 	RootNick* rootNick;
 	Channel* cmdChan;
@@ -55,7 +56,7 @@ public:
 	IRC(ServerPoll* poll, int fd, string hostname, string command_chan, unsigned ping_freq);
 	~IRC();
 
-	string getServerName() const { return hostname; }
+	string getServerName() const { return getName(); }
 
 	User* getUser() const { return user; }
 
@@ -81,4 +82,4 @@ public:
 	void m_privmsg(Message m);
 };
 
-#endif /* IRC_H */
+#endif /* IRC_IRC_H */

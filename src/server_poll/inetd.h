@@ -15,8 +15,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef INETD_H
-#define INETD_H
+#ifndef SERVER_POLL_INETD_H
+#define SERVER_POLL_INETD_H
 
 #include "poll.h"
 
@@ -35,6 +35,8 @@ public:
 
 	void kill(IRC* irc);
 	bool stopServer_cb(void*);
+
+	void log(string log) const;
 };
 
-#endif /* INETD_H */
+#endif /* SERVER_POLL_INETD_H */

@@ -22,13 +22,18 @@
 #include "nick.h"
 #include "channel.h"
 #include "../util.h"
+#include "../entity.h"
 
 Message::Message(string _cmd)
-	: cmd(_cmd)
+	: cmd(_cmd),
+	  sender(NULL),
+	  receiver(NULL)
 {
 }
 
 Message::Message()
+	: sender(NULL),
+	  receiver(NULL)
 {
 }
 
@@ -40,12 +45,12 @@ string Message::format() const
 {
 	string buf;
 
-	if(!sender.empty())
-		buf = ":" + sender + " ";
+	if(sender)
+		buf = ":" + sender->getLongName() + " ";
 
 	buf += cmd;
-	if(!receiver.empty())
-		buf += " " + receiver;
+	if(receiver)
+		buf += " " + receiver->getName();
 
 	for(vector<string>::const_iterator it = args.begin(); it != args.end(); ++it)
 	{
@@ -68,45 +73,15 @@ Message& Message::setCommand(string r)
 	return *this;
 }
 
-Message& Message::setSender(const Nick* nick)
+Message& Message::setSender(Entity* entity)
 {
-	assert (nick != NULL);
-
-	sender = nick->getNickname()  + "!" +
-		 nick->getIdentname() + "@" +
-		 nick->getHostname();
+	sender = entity;
 	return *this;
 }
 
-Message& Message::setSender(const IRC* me)
+Message& Message::setReceiver(Entity* entity)
 {
-	assert (me != NULL);
-
-	sender = me->getServerName();
-	return *this;
-}
-
-Message& Message::setReceiver(const Nick* nick)
-{
-	assert (nick != NULL);
-
-	receiver = nick->getNickname();
-	return *this;
-}
-
-Message& Message::setReceiver(const Channel* chan)
-{
-	assert (chan != NULL);
-
-	receiver = chan->getName();
-	return *this;
-}
-
-Message& Message::setReceiver(string r)
-{
-	assert (r.empty() == false);
-
-	receiver = r;
+	receiver = entity;
 	return *this;
 }
 

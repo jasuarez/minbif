@@ -21,14 +21,20 @@
 #include "irc.h"
 
 ChanUser::ChanUser(Nick* _nick, int _status)
-	: nick(_nick),
+	: Entity(_nick->getNickname()),
+	  nick(_nick),
 	  status(_status)
 {
 }
 
-Channel::Channel(IRC* _irc, string _name)
-	: irc(_irc),
-	  name(_name)
+string ChanUser::getName() const
+{
+	return nick->getNickname();
+}
+
+Channel::Channel(IRC* _irc, string name)
+	: Entity(name),
+	  irc(_irc)
 {}
 
 Channel::~Channel()

@@ -15,17 +15,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef ROOTNICK_H
-#define ROOTNICK_H
+#ifndef IRC_ROOTNICK_H
+#define IRC_ROOTNICK_H
+
+#include <string>
+#include <vector>
+
+using std::vector;
+using std::string;
 
 #include "nick.h"
 
+class IRC;
+
 class RootNick : public Nick
 {
+	IRC* irc;
 public:
 
-	RootNick(string hostname);
+	RootNick(IRC* irc);
 	~RootNick();
+
+	void send(Message m);
+
+	void m_help(vector<string> args);
 };
 
-#endif /* ROOTNICK_H */
+#endif /* IRC_ROOTNICK_H */

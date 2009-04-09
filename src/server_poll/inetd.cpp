@@ -20,6 +20,7 @@
 
 #include "inetd.h"
 #include "../irc/irc.h"
+#include "../irc/user.h"
 #include "../config.h"
 #include "../callback.h"
 #include "../log.h"
@@ -36,7 +37,6 @@ InetdServerPoll::InetdServerPoll(Bitlbee* application)
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
 			      conf.GetSection("irc")->GetItem("command_chan")->String(),
 			      conf.GetSection("irc")->GetItem("ping")->Integer());
-		b_log.setIRC(irc);
 	}
 	catch(IRCAuthError &e)
 	{
@@ -48,6 +48,13 @@ InetdServerPoll::InetdServerPoll(Bitlbee* application)
 InetdServerPoll::~InetdServerPoll()
 {
 	delete irc;
+}
+
+void InetdServerPoll::log(string msg) const
+{
+	irc->getUser()->send(Message(MSG_NOTICE).setSender(irc)
+						.setReceiver(irc->getUser())
+						.addArg(msg));
 }
 
 void InetdServerPoll::kill(IRC* irc)

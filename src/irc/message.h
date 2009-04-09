@@ -15,8 +15,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef MESSAGE_H
-#define MESSAGE_H
+#ifndef IRC_MESSAGE_H
+#define IRC_MESSAGE_H
 
 #include <string>
 #include <vector>
@@ -52,9 +52,7 @@
 #define MSG_PONG        "PONG"
 #define MSG_USER        "USER"
 
-class Nick;
-class Channel;
-class IRC;
+class Entity;
 
 using std::string;
 using std::vector;
@@ -64,8 +62,8 @@ class MalformedMessage : public std::exception {};
 class Message
 {
 	string cmd;
-	string sender;
-	string receiver;
+	Entity* sender;
+	Entity* receiver;
 	vector<string> args;
 public:
 
@@ -74,17 +72,14 @@ public:
 	~Message();
 
 	Message& setCommand(string command);
-	Message& setSender(const Nick* nick);
-	Message& setSender(const IRC* me);
-	Message& setReceiver(const Nick* nick);
-	Message& setReceiver(const Channel* chan);
-	Message& setReceiver(string r);
+	Message& setSender(Entity* entity);
+	Message& setReceiver(Entity* entity);
 	Message& addArg(string);
 	Message& setArg(size_t, string);
 
 	string getCommand() const { return cmd; }
-	string getSender() const { return sender; }
-	string getReceiver() const { return receiver; }
+	Entity* getSender() const { return sender; }
+	Entity* getReceiver() const { return receiver; }
 	string getArg(size_t n) const;
 	size_t countArgs() const { return args.size(); }
 	vector<string> getArgs() const { return args; }
@@ -93,4 +88,4 @@ public:
 	static Message parse(string s);
 };
 
-#endif /* MESSAGE_H */
+#endif /* IRC_MESSAGE_H */

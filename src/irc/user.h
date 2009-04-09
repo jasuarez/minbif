@@ -15,8 +15,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef USER_H
-#define USER_H
+#ifndef IRC_USER_H
+#define IRC_USER_H
 
 #include "nick.h"
 
@@ -34,4 +34,4 @@ public:
 
 };
 
-#endif /* USER_H */
+#endif /* IRC_USER_H */
