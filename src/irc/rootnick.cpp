@@ -17,6 +17,7 @@
 
 #include "rootnick.h"
 #include "irc.h"
+#include "user.h"
 
 #if 0
 static struct
@@ -40,5 +41,7 @@ RootNick::~RootNick()
 
 void RootNick::send(Message m)
 {
-
+	User* user = dynamic_cast<User*>(m.getSender());
+	if(!user || user != irc->getUser())
+		return;
 }
