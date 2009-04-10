@@ -24,16 +24,18 @@
 #include "../util.h"
 #include "../entity.h"
 
-Message::Message(string _cmd)
-	: cmd(_cmd),
-	  sender(NULL),
-	  receiver(NULL)
+string _StoredEntity::getName() const
 {
+	return entity ? entity->getName() : name;
 }
 
-Message::Message()
-	: sender(NULL),
-	  receiver(NULL)
+string _StoredEntity::getLongName() const
+{
+	return entity ? entity->getLongName() : name;
+}
+
+Message::Message(string _cmd)
+	: cmd(_cmd)
 {
 }
 
@@ -45,12 +47,12 @@ string Message::format() const
 {
 	string buf;
 
-	if(sender)
-		buf = ":" + sender->getLongName() + " ";
+	if(sender.isSet())
+		buf = ":" + sender.getLongName() + " ";
 
 	buf += cmd;
-	if(receiver)
-		buf += " " + receiver->getName();
+	if(receiver.isSet())
+		buf += " " + receiver.getName();
 
 	for(vector<string>::const_iterator it = args.begin(); it != args.end(); ++it)
 	{
@@ -75,13 +77,25 @@ Message& Message::setCommand(string r)
 
 Message& Message::setSender(Entity* entity)
 {
-	sender = entity;
+	sender.setEntity(entity);
+	return *this;
+}
+
+Message& Message::setSender(string n)
+{
+	sender.setName(n);
 	return *this;
 }
 
 Message& Message::setReceiver(Entity* entity)
 {
-	receiver = entity;
+	receiver.setEntity(entity);
+	return *this;
+}
+
+Message& Message::setReceiver(string n)
+{
+	receiver.setName(n);
 	return *this;
 }
 

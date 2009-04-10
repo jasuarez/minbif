@@ -59,27 +59,46 @@ using std::vector;
 
 class MalformedMessage : public std::exception {};
 
+class _StoredEntity
+{
+	Entity* entity;
+	string name;
+
+public:
+	_StoredEntity() : entity(NULL) {}
+
+	void setEntity(Entity* e) { entity = e; name.clear(); }
+	void setName(string n) { name = n; entity = NULL; }
+
+	bool isSet() const { return entity || !name.empty(); }
+	Entity* getEntity() const { return entity; }
+	string getName() const;
+	string getLongName() const;
+};
+
 class Message
 {
 	string cmd;
-	Entity* sender;
-	Entity* receiver;
+	_StoredEntity sender;
+	_StoredEntity receiver;
 	vector<string> args;
 public:
 
 	Message(string command);
-	Message();
+	Message() {}
 	~Message();
 
 	Message& setCommand(string command);
 	Message& setSender(Entity* entity);
+	Message& setSender(string name);
 	Message& setReceiver(Entity* entity);
+	Message& setReceiver(string name);
 	Message& addArg(string);
 	Message& setArg(size_t, string);
 
 	string getCommand() const { return cmd; }
-	Entity* getSender() const { return sender; }
-	Entity* getReceiver() const { return receiver; }
+	Entity* getSender() const { return sender.getEntity(); }
+	Entity* getReceiver() const { return receiver.getEntity(); }
 	string getArg(size_t n) const;
 	size_t countArgs() const { return args.size(); }
 	vector<string> getArgs() const { return args; }
