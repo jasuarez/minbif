@@ -38,7 +38,9 @@ public:
 
 	void send(Message m);
 
-	void m_help(vector<string> args);
+	void processCommands(Entity* to, Message m);
+
+	void m_help(Message m);
 };
 
 #endif /* IRC_ROOTNICK_H */
