@@ -32,6 +32,7 @@
 #define RPL_ENDOFMOTD   "376"
 #define RPL_NAMREPLY    "353"
 #define RPL_ENDOFNAMES  "366"
+#define RPL_VERSION     "351"
 
 #define ERR_NOSUCHNICK "401"
 #define ERR_NOSUCHCHANNEL "403"
@@ -51,6 +52,7 @@
 #define MSG_PING        "PING"
 #define MSG_PONG        "PONG"
 #define MSG_USER        "USER"
+#define MSG_VERSION     "VERSION"
 
 class Entity;
 

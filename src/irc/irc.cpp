@@ -23,6 +23,7 @@
 #include "../log.h"
 #include "../util.h"
 #include "../callback.h"
+#include "../version.h"
 #include "../sock.h"
 #include "../server_poll/poll.h"
 #include "irc.h"
@@ -43,6 +44,7 @@ static struct
 	{ MSG_PRIVMSG, &IRC::m_privmsg, 2 },
 	{ MSG_PING,    &IRC::m_ping,    0 },
 	{ MSG_PONG,    &IRC::m_pong,    1 },
+	{ MSG_VERSION, &IRC::m_version, 0 },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -311,6 +313,15 @@ void IRC::m_quit(Message message)
 	if(message.countArgs() >= 1)
 		reason = message.getArg(0);
 	quit("Quit: " + reason);
+}
+
+/* VERSION */
+void IRC::m_version(Message message)
+{
+	user->send(Message(RPL_VERSION).setSender(this)
+			               .setReceiver(user)
+				       .addArg(BITLBEE_VERSION)
+				       .addArg(getServerName()));
 }
 
 /* PRIVMSG target message */

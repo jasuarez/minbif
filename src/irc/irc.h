@@ -79,6 +79,7 @@ public:
 	void m_quit(Message m);
 	void m_ping(Message m);
 	void m_pong(Message m);
+	void m_version(Message m);
 	void m_privmsg(Message m);
 };
 
