@@ -15,19 +15,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "user.h"
+#include "server.h"
 
-User::User(int _fd, Server* server, string nickname, string identname, string hostname, string realname)
-	: Nick(server, nickname, identname, hostname, realname),
-	  fd(_fd)
+Server::Server(string name, string _info)
+	: Entity(name),
+	  info(_info)
 {}
-
-User::~User()
-{
-}
-
-void User::send(Message msg)
-{
-	string s = msg.format();
-	write(fd, s.c_str(), s.size());
-}

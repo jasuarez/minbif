@@ -21,10 +21,14 @@
 #include "entity.h"
 #include "message.h"
 #include "channel.h"
+#include "server.h"
+
+class Server;
 
 class Nick : public Entity
 {
 	string identname, hostname, realname;
+	Server* server;
 	unsigned int flags;
 
 public:
@@ -38,7 +42,7 @@ public:
 		PING       = 1 << 1
 	};
 
-	Nick(string nickname, string identname, string hostname, string realname="");
+	Nick(Server* server, string nickname, string identname, string hostname, string realname="");
 	~Nick();
 
 	static bool isValidNickname(const string& n);
@@ -49,6 +53,8 @@ public:
 
 	void privmsg(Channel* chan, string message);
 	void privmsg(Nick* to, string message);
+
+	Server* getServer() const { return server; }
 
 	string getLongName() const;
 

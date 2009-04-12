@@ -27,7 +27,7 @@ class User : public Nick
 
 public:
 
-	User(int fd, string nickname, string username, string hostname, string realname="");
+	User(int fd, Server* server, string nickname, string username, string hostname, string realname="");
 	~User();
 
 	void setPassword(string p) { password = p; }
