@@ -284,30 +284,27 @@ void IRC::m_pong(Message message)
 void IRC::m_nick(Message message)
 {
 	if(message.countArgs() < 1)
-	{
 		user->send(Message(ERR_NONICKNAMEGIVEN).setSender(this)
 		                                    .setReceiver(user)
 						    .addArg("No nickname given"));
-		return;
-	}
-	if(user->hasFlag(Nick::REGISTERED))
-	{
+	else if(user->hasFlag(Nick::REGISTERED))
 		user->send(Message(ERR_NICKTOOFAST).setSender(this)
 				                   .setReceiver(user)
 						   .addArg("The hand of the deity is upon thee, thy nick may not change"));
-		return;
-	}
-	if(!Nick::isValidNickname(message.getArg(0)))
-	{
+	else if(message.getArg(0) == rootNick->getNickname())
+		user->send(Message(ERR_NICKNAMEINUSE).setSender(this)
+				                     .setReceiver(user)
+						     .addArg("This nick is already in use"));
+	else if(!Nick::isValidNickname(message.getArg(0)))
 		user->send(Message(ERR_ERRONEUSNICKNAME).setSender(this)
 				                        .setReceiver(user)
 							.addArg("This nick contains invalid characters"));
-		return;
+	else
+	{
+		user->setNickname(message.getArg(0));
+
+		sendWelcome();
 	}
-
-	user->setNickname(message.getArg(0));
-
-	sendWelcome();
 }
 
 /* USER identname * * :realname*/
