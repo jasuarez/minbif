@@ -291,7 +291,19 @@ void IRC::m_nick(Message message)
 		return;
 	}
 	if(user->hasFlag(Nick::REGISTERED))
-		user->send(Message(MSG_NICK).setSender(user).setReceiver(message.getArg(0)));
+	{
+		user->send(Message(ERR_NICKTOOFAST).setSender(this)
+				                   .setReceiver(user)
+						   .addArg("The hand of the deity is upon thee, thy nick may not change"));
+		return;
+	}
+	if(!Nick::isValidNickname(message.getArg(0)))
+	{
+		user->send(Message(ERR_ERRONEUSNICKNAME).setSender(this)
+				                        .setReceiver(user)
+							.addArg("This nick contains invalid characters"));
+		return;
+	}
 
 	user->setNickname(message.getArg(0));
 

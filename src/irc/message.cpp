@@ -22,7 +22,7 @@
 #include "nick.h"
 #include "channel.h"
 #include "../util.h"
-#include "../entity.h"
+#include "entity.h"
 
 string _StoredEntity::getName() const
 {

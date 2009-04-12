@@ -15,6 +15,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifndef UTIL_H
+#define UTIL_H
+
 #include <libpurple/purple.h>
 #include <string>
 using std::string;
@@ -26,3 +29,5 @@ guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunctio
 
 string strupper(string s);
 string strlower(string s);
+
+#endif /* UTIL_H */

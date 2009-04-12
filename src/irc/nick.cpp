@@ -15,7 +15,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <cstring>
+
 #include "nick.h"
+
+const char *Nick::nick_lc_chars = "0123456789abcdefghijklmnopqrstuvwxyz{}^`-_|";
+const char *Nick::nick_uc_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ[]~`-_\\";
 
 Nick::Nick(string nickname, string _identname, string _hostname, string _realname)
 	: Entity(nickname),
@@ -28,6 +33,20 @@ Nick::Nick(string nickname, string _identname, string _hostname, string _realnam
 
 Nick::~Nick()
 {
+}
+
+bool Nick::isValidNickname(const string& nick)
+{
+	/* Empty/long nicks are not allowed, nor numbers at [0] */
+	if(nick.empty() || isdigit(nick[0]) || nick.size() > Nick::MAX_LENGTH)
+		return false;
+
+	for(string::const_iterator i = nick.begin(); i != nick.end(); ++i)
+		if(!strchr(Nick::nick_lc_chars, *i) && !strchr(Nick::nick_uc_chars, *i))
+			return false;
+
+	return true;
+
 }
 
 string Nick::getLongName() const

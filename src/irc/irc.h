@@ -23,7 +23,7 @@
 #include <exception>
 
 #include "message.h"
-#include "../entity.h"
+#include "entity.h"
 
 using std::string;
 using std::map;

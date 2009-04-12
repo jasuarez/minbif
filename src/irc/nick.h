@@ -18,7 +18,7 @@
 #ifndef IRC_NICK_H
 #define IRC_NICK_H
 
-#include "../entity.h"
+#include "entity.h"
 #include "message.h"
 #include "channel.h"
 
@@ -29,6 +29,10 @@ class Nick : public Entity
 
 public:
 
+	static const char *nick_lc_chars;
+	static const char *nick_uc_chars;
+	static const size_t MAX_LENGTH = 29;
+
 	enum {
 		REGISTERED = 1 << 0,
 		PING       = 1 << 1
@@ -36,6 +40,8 @@ public:
 
 	Nick(string nickname, string identname, string hostname, string realname="");
 	~Nick();
+
+	static bool isValidNickname(const string& n);
 
 	virtual void send(Message m) {}
 
