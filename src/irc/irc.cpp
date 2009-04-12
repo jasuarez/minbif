@@ -29,7 +29,6 @@
 #include "irc.h"
 #include "message.h"
 #include "user.h"
-#include "rootnick.h"
 #include "channel.h"
 
 static struct
@@ -58,9 +57,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 	  read_id(0),
 	  read_cb(NULL),
 	  ping_cb(NULL),
-	  user(NULL),
-	  rootNick(NULL),
-	  cmdChan(NULL)
+	  user(NULL)
 {
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
@@ -110,12 +107,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 
 	/* Create main objects and root joins command channel. */
 	user = new User(fd, "*", "", userhost);
-	rootNick = new RootNick(this);
-	addNick(rootNick);
 	addNick(user);
-	cmdChan = new Channel(this, cmd_chan_name);
-	addChannel(cmdChan);
-	rootNick->join(cmdChan, ChanUser::OP);
 
 	/* Ping callback */
 	ping_cb = new CallBack<IRC>(this, &IRC::ping);
@@ -130,8 +122,6 @@ IRC::~IRC()
 		g_source_remove(read_id);
 	delete read_cb;
 	delete user;
-	delete rootNick;
-	delete cmdChan;
 }
 
 void IRC::addChannel(Channel* chan)
@@ -199,9 +189,6 @@ void IRC::sendWelcome()
 
 	user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
 	user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running BitlBee 2.0"));
-
-	user->join(cmdChan, ChanUser::OP);
-	rootNick->privmsg(cmdChan, "Welcome to Bitlbee, dear!");
 }
 
 bool IRC::ping(void*)
@@ -293,10 +280,6 @@ void IRC::m_nick(Message message)
 		user->send(Message(ERR_NICKTOOFAST).setSender(this)
 				                   .setReceiver(user)
 						   .addArg("The hand of the deity is upon thee, thy nick may not change"));
-	else if(message.getArg(0) == rootNick->getNickname())
-		user->send(Message(ERR_NICKNAMEINUSE).setSender(this)
-				                     .setReceiver(user)
-						     .addArg("This nick is already in use"));
 	else if(!Nick::isValidNickname(message.getArg(0)))
 		user->send(Message(ERR_ERRONEUSNICKNAME).setSender(this)
 				                        .setReceiver(user)

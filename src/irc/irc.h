@@ -31,7 +31,6 @@ using std::map;
 class IRCAuthError : public std::exception {};
 
 class User;
-class RootNick;
 class Nick;
 class Channel;
 class _CallBack;
@@ -45,8 +44,6 @@ class IRC : public Entity
 	_CallBack *read_cb;
 	_CallBack *ping_cb;
 	User* user;
-	RootNick* rootNick;
-	Channel* cmdChan;
 
 	map<string, Nick*> users;
 	map<string, Channel*> channels;
