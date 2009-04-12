@@ -76,6 +76,7 @@ public:
 	bool readIO(void*);
 	void m_nick(Message m);
 	void m_user(Message m);
+	void m_pass(Message m);
 	void m_quit(Message m);
 	void m_ping(Message m);
 	void m_pong(Message m);

@@ -22,13 +22,16 @@
 
 class User : public Nick
 {
-
 	int fd;
+	string password;
 
 public:
 
 	User(int fd, string nickname, string username, string hostname, string realname="");
 	~User();
+
+	void setPassword(string p) { password = p; }
+	string getPassword() const { return password; }
 
 	virtual void send(Message m);
 

@@ -37,6 +37,7 @@
 #define ERR_NOSUCHNICK "401"
 #define ERR_NOSUCHCHANNEL "403"
 #define ERR_NONICKNAMEGIVEN "431"
+#define ERR_NOTREGISTERED "451"
 #define ERR_NEEDMOREPARAMS "461"
 #define ERR_ALREADYREGISTRED "462"
 #define ERR_UNKNOWNCOMMAND "421"
@@ -52,6 +53,7 @@
 #define MSG_PING        "PING"
 #define MSG_PONG        "PONG"
 #define MSG_USER        "USER"
+#define MSG_PASS        "PASS"
 #define MSG_VERSION     "VERSION"
 
 class Entity;

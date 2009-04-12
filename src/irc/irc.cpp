@@ -37,14 +37,16 @@ static struct
 	const char* cmd;
 	void (IRC::*func)(Message);
 	size_t minargs;
+	unsigned flags;
 } commands[] = {
-	{ MSG_NICK,    &IRC::m_nick,    0 },
-	{ MSG_USER,    &IRC::m_user,    4 },
-	{ MSG_QUIT,    &IRC::m_quit,    0 },
-	{ MSG_PRIVMSG, &IRC::m_privmsg, 2 },
-	{ MSG_PING,    &IRC::m_ping,    0 },
-	{ MSG_PONG,    &IRC::m_pong,    1 },
-	{ MSG_VERSION, &IRC::m_version, 0 },
+	{ MSG_NICK,    &IRC::m_nick,    0, 0 },
+	{ MSG_USER,    &IRC::m_user,    4, 0 },
+	{ MSG_PASS,    &IRC::m_pass,    1, 0 },
+	{ MSG_QUIT,    &IRC::m_quit,    0, 0 },
+	{ MSG_PRIVMSG, &IRC::m_privmsg, 2, Nick::REGISTERED },
+	{ MSG_PING,    &IRC::m_ping,    0, Nick::REGISTERED },
+	{ MSG_PONG,    &IRC::m_pong,    1, Nick::REGISTERED },
+	{ MSG_VERSION, &IRC::m_version, 0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -252,6 +254,10 @@ bool IRC::readIO(void*)
 							   .setReceiver(user)
 							   .addArg(m.getCommand())
 							   .addArg("Not enough parameters"));
+		else if(commands[i].flags && !user->hasFlag(commands[i].flags))
+			user->send(Message(ERR_NOTREGISTERED).setSender(this)
+							     .setReceiver(user)
+							     .addArg("Register first"));
 		else
 			(this->*commands[i].func)(m);
 	}
@@ -296,14 +302,29 @@ void IRC::m_user(Message message)
 	if(user->hasFlag(Nick::REGISTERED))
 	{
 		user->send(Message(ERR_ALREADYREGISTRED).setSender(this)
-		                                     .setReceiver(user)
+						     .setReceiver(user)
 						     .addArg("Please register only once per session"));
 		return;
 	}
+
 	user->setIdentname(message.getArg(0));
 	user->setRealname(message.getArg(3));
 
 	sendWelcome();
+}
+
+/* PASS passwd */
+void IRC::m_pass(Message message)
+{
+	if(user->hasFlag(Nick::REGISTERED))
+	{
+		user->send(Message(ERR_ALREADYREGISTRED).setSender(this)
+						     .setReceiver(user)
+						     .addArg("Please register only once per session"));
+		return;
+	}
+
+	user->setPassword(message.getArg(0));
 }
 
 /* QUIT [message] */

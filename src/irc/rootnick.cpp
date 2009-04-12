@@ -96,9 +96,12 @@ void RootNick::processCommands(Entity* to, Message m)
 
 }
 
-
 void RootNick::m_help(Message m)
 {
+	irc->getUser()->send(Message(MSG_PRIVMSG).setSender(this)
+			                         .setReceiver(m.getReceiver())
+						 .addArg("Available commands:"));
+
 	size_t i;
 	for(i = 0; i < (sizeof commands / sizeof *commands); ++i)
 	{
