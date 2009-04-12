@@ -47,6 +47,8 @@ static struct
 	{ MSG_PING,    &IRC::m_ping,    0, Nick::REGISTERED },
 	{ MSG_PONG,    &IRC::m_pong,    1, Nick::REGISTERED },
 	{ MSG_VERSION, &IRC::m_version, 0, Nick::REGISTERED },
+	{ MSG_WHOIS,   &IRC::m_whois,   1, Nick::REGISTERED },
+	{ MSG_WHOWAS,  &IRC::m_whowas,  1, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -301,7 +303,9 @@ void IRC::m_nick(Message message)
 							.addArg("This nick contains invalid characters"));
 	else
 	{
+		users.erase(user->getNickname());
 		user->setNickname(message.getArg(0));
+		users[message.getArg(0)] = user;
 
 		sendWelcome();
 	}
@@ -354,6 +358,55 @@ void IRC::m_version(Message message)
 			               .setReceiver(user)
 				       .addArg(BITLBEE_VERSION)
 				       .addArg(getServerName()));
+}
+
+/* WHOIS nick */
+void IRC::m_whois(Message message)
+{
+	Nick* n = getNick(message.getArg(0));
+	if(!n)
+	{
+		user->send(Message(ERR_NOSUCHNICK).setSender(this)
+				                  .setReceiver(user)
+						  .addArg(message.getArg(0))
+						  .addArg("Nick does not exist"));
+		return;
+	}
+
+	user->send(Message(RPL_WHOISUSER).setSender(this)
+			                 .setReceiver(user)
+					 .addArg(n->getNickname())
+					 .addArg(n->getIdentname())
+					 .addArg(n->getHostname())
+					 .addArg("*")
+					 .addArg(n->getRealname()));
+	user->send(Message(RPL_WHOISSERVER).setSender(this)
+			                   .setReceiver(user)
+					   .addArg(n->getNickname())
+					   .addArg(getServerName())
+					   .addArg(BITLBEE_VERSION));
+
+	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
+			                  .setReceiver(user)
+					  .addArg(n->getNickname())
+					  .addArg("End of /WHOIS list"));
+
+}
+
+/* WHOWAS nick
+ *
+ * As irsii tries a whowas when whois fails and waits for answer...
+ */
+void IRC::m_whowas(Message message)
+{
+	user->send(Message(ERR_WASNOSUCHNICK).setSender(this)
+			                     .setReceiver(user)
+					     .addArg(message.getArg(0))
+					     .addArg("Nick does not exist"));
+	user->send(Message(RPL_ENDOFWHOWAS).setSender(this)
+			                   .setReceiver(user)
+					   .addArg(message.getArg(0))
+					   .addArg("End of WHOWAS"));
 }
 
 /* PRIVMSG target message */
