@@ -16,19 +16,22 @@
  */
 
 #include <cstring>
+#include <cassert>
 
 #include "nick.h"
 
 const char *Nick::nick_lc_chars = "0123456789abcdefghijklmnopqrstuvwxyz{}^`-_|";
 const char *Nick::nick_uc_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ[]~`-_\\";
 
-Nick::Nick(string nickname, string _identname, string _hostname, string _realname)
+Nick::Nick(Server* _server, string nickname, string _identname, string _hostname, string _realname)
 	: Entity(nickname),
 	  identname(_identname),
 	  hostname(_hostname),
 	  realname(_realname),
+	  server(_server),
 	  flags(0)
 {
+	assert(server);
 }
 
 Nick::~Nick()

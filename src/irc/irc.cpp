@@ -25,7 +25,7 @@
 #include "../callback.h"
 #include "../version.h"
 #include "../sock.h"
-#include "../server_poll/poll.h"
+#include "server_poll/poll.h"
 #include "irc.h"
 #include "message.h"
 #include "user.h"
@@ -51,7 +51,7 @@ static struct
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
-	: Entity("localhost.localdomain"),
+	: Server("localhost.localdomain", BITLBEE_VERSION),
 	  poll(_poll),
 	  fd(_fd),
 	  read_id(0),
@@ -106,7 +106,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 	read_id = glib_input_add(fd, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback_input, read_cb);
 
 	/* Create main objects and root joins command channel. */
-	user = new User(fd, "*", "", userhost);
+	user = new User(fd, this, "*", "", userhost);
 	addNick(user);
 
 	/* Ping callback */
@@ -366,8 +366,8 @@ void IRC::m_whois(Message message)
 	user->send(Message(RPL_WHOISSERVER).setSender(this)
 			                   .setReceiver(user)
 					   .addArg(n->getNickname())
-					   .addArg(getServerName())
-					   .addArg(BITLBEE_VERSION));
+					   .addArg(n->getServer()->getServerName())
+					   .addArg(n->getServer()->getServerInfo()));
 
 	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
 			                  .setReceiver(user)

@@ -15,19 +15,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "user.h"
+#ifndef IRC_SERVER_H
+#define IRC_SERVER_H
 
-User::User(int _fd, Server* server, string nickname, string identname, string hostname, string realname)
-	: Nick(server, nickname, identname, hostname, realname),
-	  fd(_fd)
-{}
+#include "entity.h"
 
-User::~User()
+class Server : public Entity
 {
-}
+	string info;
 
-void User::send(Message msg)
-{
-	string s = msg.format();
-	write(fd, s.c_str(), s.size());
-}
+public:
+
+	Server(string name, string info);
+
+	string getServerName() const { return getName(); }
+	string getServerInfo() const { return info; }
+};
+
+#endif /* IRC_SERVER_H */

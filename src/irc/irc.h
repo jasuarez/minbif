@@ -23,7 +23,7 @@
 #include <exception>
 
 #include "message.h"
-#include "entity.h"
+#include "server.h"
 
 using std::string;
 using std::map;
@@ -36,7 +36,7 @@ class Channel;
 class _CallBack;
 class ServerPoll;
 
-class IRC : public Entity
+class IRC : public Server
 {
 	ServerPoll* poll;
 	int fd;
@@ -47,13 +47,12 @@ class IRC : public Entity
 
 	map<string, Nick*> users;
 	map<string, Channel*> channels;
+	map<string, Server*> servers;
 
 public:
 
 	IRC(ServerPoll* poll, int fd, string hostname, string command_chan, unsigned ping_freq);
 	~IRC();
-
-	string getServerName() const { return getName(); }
 
 	User* getUser() const { return user; }
 

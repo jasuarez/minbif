@@ -30,6 +30,7 @@ public:
 	Entity(string _name)
 		: name(_name)
 	{}
+	virtual ~Entity() {}
 
 	string getName() const { return name; }
 	void setName(string n) { name = n; }
