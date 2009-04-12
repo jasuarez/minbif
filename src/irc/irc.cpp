@@ -229,6 +229,8 @@ bool IRC::readIO(void*)
 			this->quit("Connection reset by peer...");
 		else if(!sockerr_again())
 			this->quit(string("Read error: ") + strerror(errno));
+		else
+			return true;
 		return false;
 	}
 	buf[r] = 0;
