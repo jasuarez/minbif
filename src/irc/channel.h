@@ -59,18 +59,13 @@ public:
 	Channel(IRC* irc, string name);
 	~Channel();
 
-	static bool isChanName(string name)
+	static bool isChanName(const string& name)
 	{
-		if(name.empty() || name.find(' ') != string::npos) return false;
-		switch(name[0])
-		{
-			case '&':
-			case '#':
-				return true;
-			default:
-				return false;
-		}
+		return (!name.empty() && name.find(' ') == string::npos &&
+		        (isStatusChannel(name) || isRemoteChannel(name)));
 	}
+	static bool isStatusChannel(const string& name) { return (!name.empty() && name[0] == '&'); }
+	static bool isRemoteChannel(const string& name) { return (!name.empty() && name[0] == '#'); }
 
 	void addUser(Nick* nick, int status=0);
 
