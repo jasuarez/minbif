@@ -16,16 +16,13 @@
  */
 
 #include <stdlib.h>
-#include <cstring>
-#include <cerrno>
-#include <dirent.h>
-#include <sys/stat.h>
 #include <libpurple/purple.h>
 
 #include "bitlbee.h"
 #include "config.h"
 #include "log.h"
 #include "util.h"
+#include "database.h"
 #include "server_poll/poll.h"
 
 #if 0
@@ -86,18 +83,7 @@ int Bitlbee::main(int argc, char** argv)
 		}
 		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
-		/* Check user directory or create it. */
-		DIR* d = opendir(conf.GetSection("path")->GetItem("users")->String().c_str());
-		if(!d)
-		{
-			if(mkdir(conf.GetSection("path")->GetItem("users")->String().c_str(), 0700) < 0)
-			{
-				b_log[W_ERR] << "Unable to create directory '" << conf.GetSection("path")->GetItem("users")->String() << "': " << strerror(errno);
-				return EXIT_FAILURE;
-			}
-		}
-		else
-			closedir(d);
+		Database::setPath(conf.GetSection("path")->GetItem("users")->String());
 
 		server_poll = ServerPoll::build((ServerPoll::poll_type_t)conf.GetSection("irc")->GetItem("type")->Integer(),
 				                this);
@@ -118,6 +104,10 @@ int Bitlbee::main(int argc, char** argv)
 	{
 		b_log[W_ERR] << "Error while loading:";
 		b_log[W_ERR] << e.Reason();
+	}
+	catch(DatabaseError &e)
+	{
+		b_log[W_ERR] << "Unable to load database";
 	}
 	catch(ServerPollError &e)
 	{
