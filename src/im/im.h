@@ -40,6 +40,9 @@ private:
 public:
 
 	IM(string username);
+
+	void setPassword(const string& password);
+	string getPassword() const;
 };
 
 #endif /* IM_IM_H */

@@ -41,6 +41,7 @@
 #define ERR_NOSUCHNICK       "401"
 #define ERR_NOSUCHCHANNEL    "403"
 #define ERR_WASNOSUCHNICK    "406"
+#define ERR_UNKNOWNCOMMAND   "421"
 #define ERR_NONICKNAMEGIVEN  "431"
 #define ERR_ERRONEUSNICKNAME "432"
 #define ERR_NICKNAMEINUSE    "433"
@@ -48,7 +49,7 @@
 #define ERR_NOTREGISTERED    "451"
 #define ERR_NEEDMOREPARAMS   "461"
 #define ERR_ALREADYREGISTRED "462"
-#define ERR_UNKNOWNCOMMAND   "421"
+#define ERR_CHANFORWARDING   "470" /* :lem.freenode.net 470 uei #c ##c :Forwarding to another channel */
 
 #define MSG_PRIVMSG     "PRIVMSG"
 #define MSG_NOTICE      "NOTICE"

@@ -25,6 +25,7 @@
 #include "../callback.h"
 #include "../version.h"
 #include "../sock.h"
+#include "im/im.h"
 #include "server_poll/poll.h"
 #include "irc.h"
 #include "message.h"
@@ -57,7 +58,8 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 	  read_id(0),
 	  read_cb(NULL),
 	  ping_cb(NULL),
-	  user(NULL)
+	  user(NULL),
+	  im(NULL)
 {
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
@@ -121,7 +123,9 @@ IRC::~IRC()
 	if(read_id > 0)
 		g_source_remove(read_id);
 	delete read_cb;
+	close(fd);
 	delete user;
+	delete im;
 }
 
 void IRC::addChannel(Channel* chan)
@@ -175,7 +179,15 @@ void IRC::removeNick(string nickname)
 void IRC::quit(string reason)
 {
 	user->send(Message(MSG_ERROR).addArg("Closing Link: " + reason));
+
+	if(read_id > 0)
+		g_source_remove(read_id);
+	read_id = 0;
+
+	user->close();
 	close(fd);
+	fd = -1;
+
 	poll->kill(this);
 }
 
@@ -185,10 +197,33 @@ void IRC::sendWelcome()
 	   user->getIdentname().empty())
 		return;
 
-	user->setFlag(Nick::REGISTERED);
+	if(user->getPassword().empty())
+	{
+		quit("Please set a password");
+		return;
+	}
 
-	user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
-	user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running BitlBee 2.0"));
+	try
+	{
+		im = new IM(user->getNickname());
+
+		if(im->getPassword().empty())
+			im->setPassword(user->getPassword());
+		else if(im->getPassword() != user->getPassword())
+		{
+			quit("Incorrect password");
+			return;
+		}
+
+		user->setFlag(Nick::REGISTERED);
+
+		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
+		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running BitlBee 2.0"));
+	}
+	catch(IMError& e)
+	{
+		quit("Unable to initialize IM");
+	}
 }
 
 bool IRC::ping(void*)
@@ -314,15 +349,17 @@ void IRC::m_user(Message message)
 /* PASS passwd */
 void IRC::m_pass(Message message)
 {
+	string password = message.getArg(0);
 	if(user->hasFlag(Nick::REGISTERED))
-	{
 		user->send(Message(ERR_ALREADYREGISTRED).setSender(this)
 						     .setReceiver(user)
 						     .addArg("Please register only once per session"));
-		return;
-	}
-
-	user->setPassword(message.getArg(0));
+	else if(password.size() < 8)
+		quit("Password too short");
+	else if(password.find(' ') != string::npos)
+		quit("Password may not contain spaces");
+	else
+		user->setPassword(message.getArg(0));
 }
 
 /* QUIT [message] */

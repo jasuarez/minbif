@@ -33,6 +33,8 @@ public:
 	void setPassword(string p) { password = p; }
 	string getPassword() const { return password; }
 
+	void close() { fd = -1; }
+
 	virtual void send(Message m);
 
 };

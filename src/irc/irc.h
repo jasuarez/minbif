@@ -35,6 +35,7 @@ class Nick;
 class Channel;
 class _CallBack;
 class ServerPoll;
+class IM;
 
 class IRC : public Server
 {
@@ -44,6 +45,7 @@ class IRC : public Server
 	_CallBack *read_cb;
 	_CallBack *ping_cb;
 	User* user;
+	IM* im;
 
 	map<string, Nick*> users;
 	map<string, Channel*> channels;
