@@ -15,46 +15,31 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <cstring>
-#include <cerrno>
-#include <dirent.h>
-#include <sys/stat.h>
+#ifndef IM_IM_H
+#define IM_IM_H
 
-#include "database.h"
-#include "log.h"
+#include <exception>
+#include <string>
+using std::string;
 
-/* STATIC */
-string Database::path;
+class IMError : public std::exception {};
 
-void Database::setPath(const string& _path)
+class IM
 {
-	DIR* d;
+	static string path;
 
-	path = _path;
-	if(!(d = opendir(path.c_str())))
-	{
-		if(mkdir(path.c_str(), 0700) < 0)
-		{
-			b_log[W_ERR] << "Unable to create directory '" << path << "': " << strerror(errno);
-			throw DatabaseError();
-		}
-	}
-	else
-		closedir(d);
-}
+public:
 
-bool Database::exists(const string& username)
-{
-	DIR* d;
-	if(!(d = opendir((path + "/" + username).c_str())))
-		return false;
+	static void setPath(const string& path);
+	static bool exists(const string& username);
 
-	closedir(d);
-	return true;
-}
+private:
 
-/* DATABASE OBJECT */
+	string username;
+	string user_path;
+public:
 
-Database::Database(string _username)
-	: username(_username)
-{}
+	IM(string username);
+};
+
+#endif /* IM_IM_H */
