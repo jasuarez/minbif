@@ -28,6 +28,9 @@ User::~User()
 
 void User::send(Message msg)
 {
-	string s = msg.format();
-	write(fd, s.c_str(), s.size());
+	if(fd >= 0)
+	{
+		string s = msg.format();
+		write(fd, s.c_str(), s.size());
+	}
 }

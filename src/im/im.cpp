@@ -50,9 +50,16 @@ static GHashTable *bitlbee_ui_get_info(void)
         return ui_info;
 }
 
+static void bitlbee_prefs_init()
+{
+	purple_prefs_add_none("/bitlbee");
+
+	purple_prefs_add_string("/bitlbee/password", "");
+}
+
 static PurpleCoreUiOps core_ops =
 {
-        NULL,//bitlbee_prefs_init,
+        bitlbee_prefs_init,
         NULL,//debug_init,
         NULL,//gnt_ui_init,
         NULL,//bitlbee_quit,
@@ -123,4 +130,14 @@ IM::IM(string _username)
 		b_log[W_ERR] << "Initialization of the Purple core failed.";
 		throw IMError();
 	}
+}
+
+void IM::setPassword(const string& password)
+{
+	purple_prefs_set_string("/bitlbee/password", password.c_str());
+}
+
+string IM::getPassword() const
+{
+	return purple_prefs_get_string("/bitlbee/password");
 }
