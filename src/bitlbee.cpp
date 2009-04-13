@@ -22,26 +22,8 @@
 #include "config.h"
 #include "log.h"
 #include "util.h"
-#include "database.h"
+#include "im/im.h"
 #include "server_poll/poll.h"
-
-#if 0
-static guint purple_wg_input_add(gint fd, PurpleInputCondition condition,
-	PurpleInputFunction function, gpointer data)
-{
-	return 0;
-}
-
-static PurpleEventLoopUiOps eventloop_wg_ops = {
-	/* timeout_add */    g_timeout_add,
-	/* timeout_remove */ g_source_remove,
-	/* input_add */      purple_wg_input_add,
-	/* input_remove */   g_source_remove,
-	/* input_get_error*/ NULL,
-	/* timeout_add_seconds */ NULL,
-	NULL, NULL, NULL
-};
-#endif
 
 Bitlbee::Bitlbee()
 	: loop(0), server_poll(0)
@@ -83,7 +65,7 @@ int Bitlbee::main(int argc, char** argv)
 		}
 		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
-		Database::setPath(conf.GetSection("path")->GetItem("users")->String());
+		IM::setPath(conf.GetSection("path")->GetItem("users")->String());
 
 		server_poll = ServerPoll::build((ServerPoll::poll_type_t)conf.GetSection("irc")->GetItem("type")->Integer(),
 				                this);
@@ -105,9 +87,9 @@ int Bitlbee::main(int argc, char** argv)
 		b_log[W_ERR] << "Error while loading:";
 		b_log[W_ERR] << e.Reason();
 	}
-	catch(DatabaseError &e)
+	catch(IMError &e)
 	{
-		b_log[W_ERR] << "Unable to load database";
+		b_log[W_ERR] << "Unable to load IM settings";
 	}
 	catch(ServerPollError &e)
 	{
