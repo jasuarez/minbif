@@ -41,6 +41,8 @@ public:
 
 	IM(string username);
 
+	string getUserPath() const { return user_path; }
+
 	void setPassword(const string& password);
 	string getPassword() const;
 };
