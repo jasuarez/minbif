@@ -35,6 +35,7 @@ class Purple
 public:
 
 	static void Init(IM* im);
+	static void Uninit();
 };
 
 #endif /* IM_PURPLE_H */

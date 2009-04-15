@@ -24,7 +24,6 @@
 #include "purple.h"
 #include "../log.h"
 #include "../util.h"
-#include "../version.h"
 
 /* STATIC */
 string IM::path;
@@ -83,6 +82,11 @@ IM::IM(string _username)
 	{
 		throw IMError();
 	}
+}
+
+IM::~IM()
+{
+	Purple::Uninit();
 }
 
 void IM::setPassword(const string& password)
