@@ -18,11 +18,23 @@
 #ifndef IM_PURPLE_H
 #define IM_PURPLE_H
 
+#include <exception>
+
+class IM;
+
+class PurpleError : public std::exception {};
+
 class Purple
 {
 	/* Instanciation is forbidden */
 	Purple() {}
 	~Purple() {}
+
+	static IM* im;
+
+public:
+
+	static void Init(IM* im);
 };
 
 #endif /* IM_PURPLE_H */

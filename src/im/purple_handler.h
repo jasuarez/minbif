@@ -36,8 +36,6 @@ class PurpleHandler
 	/* Instanciation is forbidden */
 	PurpleHandler() {}
 	~PurpleHandler() {}
-
-	static IM*
 };
 
 #endif /* IM_PURPLE_HANDLER_H */
