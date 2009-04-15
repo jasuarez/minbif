@@ -40,6 +40,7 @@ private:
 public:
 
 	IM(string username);
+	~IM();
 
 	string getUserPath() const { return user_path; }
 

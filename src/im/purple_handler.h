@@ -29,13 +29,25 @@
  *
  ********************************/
 
-class IM;
+#include <libpurple/purple.h>
 
 class PurpleHandler
 {
 	/* Instanciation is forbidden */
 	PurpleHandler() {}
 	~PurpleHandler() {}
+
+	static GHashTable *ui_info;
+	static PurpleEventLoopUiOps eventloop_wg_ops;
+	static PurpleCoreUiOps core_ops;
+
+	static GHashTable *bitlbee_ui_get_info(void);
+	static void bitlbee_prefs_init();
+
+public:
+
+	static void Init();
+
 };
 
 #endif /* IM_PURPLE_HANDLER_H */
