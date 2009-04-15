@@ -27,6 +27,7 @@
 #define RPL_CREATED     "003"
 #define RPL_MYINFO      "004"
 #define RPL_ISUPPORT    "005"
+#define RPL_ENDOFSTATS  "219"
 #define RPL_WHOISUSER   "311"
 #define RPL_WHOISSERVER "312"
 #define RPL_ENDOFWHOIS  "318"
@@ -66,6 +67,7 @@
 #define MSG_VERSION     "VERSION"
 #define MSG_WHOIS       "WHOIS"
 #define MSG_WHOWAS      "WHOWAS"
+#define MSG_STATS       "STATS"
 
 class Entity;
 
