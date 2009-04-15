@@ -38,7 +38,7 @@ class PurpleHandler
 	~PurpleHandler() {}
 
 	static GHashTable *ui_info;
-	static PurpleEventLoopUiOps eventloop_wg_ops;
+	static PurpleEventLoopUiOps eventloop_ops;
 	static PurpleCoreUiOps core_ops;
 
 	static GHashTable *bitlbee_ui_get_info(void);

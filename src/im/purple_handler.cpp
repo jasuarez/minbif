@@ -21,7 +21,7 @@
 #include "../util.h"
 #include "../version.h"
 
-PurpleEventLoopUiOps PurpleHandler::eventloop_wg_ops =
+PurpleEventLoopUiOps PurpleHandler::eventloop_ops =
 {
 	/* timeout_add */    g_timeout_add,
 	/* timeout_remove */ g_source_remove,
@@ -38,7 +38,7 @@ GHashTable *PurpleHandler::bitlbee_ui_get_info(void)
         if (ui_info == NULL) {
                 ui_info = g_hash_table_new(g_str_hash, g_str_equal);
 
-                g_hash_table_insert(ui_info, (void*)"name",         (void*)"bitlbee");
+                g_hash_table_insert(ui_info, (void*)"name",         (void*)BITLBEE_VERSION_NAME);
                 g_hash_table_insert(ui_info, (void*)"version",      (void*)BITLBEE_VERSION);
                 g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/bitlbee");
                 g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/bitlbee2");
@@ -71,5 +71,5 @@ PurpleCoreUiOps PurpleHandler::core_ops =
 void PurpleHandler::Init()
 {
 	purple_core_set_ui_ops(&core_ops);
-	purple_eventloop_set_ui_ops(&eventloop_wg_ops);
+	purple_eventloop_set_ui_ops(&eventloop_ops);
 }
