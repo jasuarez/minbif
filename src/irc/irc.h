@@ -70,6 +70,7 @@ public:
 	void removeNick(string nick);
 
 	bool ping(void*);
+	void notice(Nick* user, string message);
 
 	bool readIO(void*);
 	void m_nick(Message m);
@@ -82,6 +83,7 @@ public:
 	void m_whowas(Message m);
 	void m_version(Message m);
 	void m_privmsg(Message m);
+	void m_stats(Message m);
 };
 
 #endif /* IRC_IRC_H */

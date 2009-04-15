@@ -49,6 +49,7 @@ static struct
 	{ MSG_VERSION, &IRC::m_version, 0, Nick::REGISTERED },
 	{ MSG_WHOIS,   &IRC::m_whois,   1, Nick::REGISTERED },
 	{ MSG_WHOWAS,  &IRC::m_whowas,  1, Nick::REGISTERED },
+	{ MSG_STATS,   &IRC::m_stats,   0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -239,6 +240,13 @@ bool IRC::ping(void*)
 		user->send(Message(MSG_PING).addArg(getServerName()));
 		return true;
 	}
+}
+
+void IRC::notice(Nick* nick, string msg)
+{
+	nick->send(Message(MSG_NOTICE).setSender(this)
+			              .setReceiver(user)
+				      .addArg(msg));
 }
 
 bool IRC::readIO(void*)
@@ -464,4 +472,26 @@ void IRC::m_privmsg(Message message)
 		relayed.setReceiver(n);
 		n->send(relayed);
 	}
+}
+
+/* STATS [p] */
+void IRC::m_stats(Message message)
+{
+	string arg = "*";
+	if(message.countArgs() > 0)
+		arg = message.getArg(0);
+
+	switch(arg[0])
+	{
+		case 'p':
+			break;
+		default:
+			arg = "*";
+			notice(user, "p (protocols) - List all protocols");
+			break;
+	}
+	user->send(Message(RPL_ENDOFSTATS).setSender(this)
+		                          .setReceiver(user)
+					  .addArg(arg)
+					  .addArg("End of /STATS report"));
 }
