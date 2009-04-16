@@ -19,14 +19,84 @@
 #include <cassert>
 
 #include "purple.h"
-#include "purple_handler.h"
 #include "im.h"
 #include "../version.h"
 #include "../log.h"
+#include "../util.h"
 
 namespace im {
 
 IM* Purple::im = NULL;
+
+PurpleEventLoopUiOps Purple::eventloop_ops =
+{
+	/* timeout_add */    g_timeout_add,
+	/* timeout_remove */ g_source_remove,
+	/* input_add */      glib_input_add,
+	/* input_remove */   g_source_remove,
+	/* input_get_error*/ NULL,
+	/* timeout_add_seconds */ NULL,
+	NULL, NULL, NULL
+};
+
+void Purple::debug(PurpleDebugLevel level, const char *category, const char *args)
+{
+	b_log[W_DEBUG] << "[" << category << "] " << args;
+}
+
+PurpleDebugUiOps Purple::debug_ops =
+{
+        Purple::debug,
+        NULL, //finch_debug_is_enabled,
+
+        /* padding */
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+void Purple::debug_init()
+{
+	purple_debug_set_ui_ops(&debug_ops);
+}
+
+void Purple::bitlbee_prefs_init()
+{
+	purple_prefs_add_none("/bitlbee");
+
+	purple_prefs_add_string("/bitlbee/password", "");
+}
+
+GHashTable *Purple::ui_info = NULL;
+GHashTable *Purple::bitlbee_ui_get_info(void)
+{
+        if (ui_info == NULL) {
+                ui_info = g_hash_table_new(g_str_hash, g_str_equal);
+
+                g_hash_table_insert(ui_info, (void*)"name",         (void*)BITLBEE_VERSION_NAME);
+                g_hash_table_insert(ui_info, (void*)"version",      (void*)BITLBEE_VERSION);
+                g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/bitlbee");
+                g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/bitlbee2");
+        }
+
+        return ui_info;
+}
+
+
+PurpleCoreUiOps Purple::core_ops =
+{
+	Purple::bitlbee_prefs_init,
+        Purple::debug_init,
+        Purple::inited,//gnt_ui_init,
+        NULL,//bitlbee_quit,
+        Purple::bitlbee_ui_get_info,
+
+        /* padding */
+        NULL,
+        NULL,
+        NULL
+};
 
 void Purple::init(IM* im)
 {
@@ -37,7 +107,8 @@ void Purple::init(IM* im)
 	}
 	purple_util_set_user_dir(im->getUserPath().c_str());
 
-	PurpleHandler::init();
+	purple_core_set_ui_ops(&core_ops);
+	purple_eventloop_set_ui_ops(&eventloop_ops);
 
 	if (!purple_core_init(BITLBEE_VERSION_NAME))
 	{
@@ -53,6 +124,11 @@ void Purple::init(IM* im)
 	if (!purple_prefs_get_bool("/purple/savedstatus/startup_current_status"))
 		        purple_savedstatus_activate(purple_savedstatus_get_startup());
 	purple_accounts_restore_current_statuses();
+}
+
+void Purple::inited()
+{
+
 }
 
 void Purple::uninit()

@@ -42,6 +42,19 @@ namespace im
 
 		static IM* im;
 
+		static void inited();
+
+		static GHashTable *ui_info;
+		static PurpleEventLoopUiOps eventloop_ops;
+		static PurpleCoreUiOps core_ops;
+		static PurpleDebugUiOps debug_ops;
+
+		static GHashTable *bitlbee_ui_get_info(void);
+		static void bitlbee_prefs_init();
+
+		static void debug_init();
+		static void debug(PurpleDebugLevel level, const char *category, const char *args);
+
 	public:
 
 		static void init(IM* im);

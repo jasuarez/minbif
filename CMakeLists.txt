@@ -15,7 +15,6 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/im/protocol.cpp
 		src/im/account.cpp
 		src/im/purple.cpp
-		src/im/purple_handler.cpp
 		src/irc/irc.cpp
 		src/irc/message.cpp
 		src/irc/server.cpp
