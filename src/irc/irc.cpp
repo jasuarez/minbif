@@ -364,7 +364,7 @@ void IRC::m_pass(Message message)
 						     .setReceiver(user)
 						     .addArg("Please register only once per session"));
 	else if(password.size() < 8)
-		quit("Password too short");
+		quit("Password is too short (at least 8 characters)");
 	else if(password.find(' ') != string::npos)
 		quit("Password may not contain spaces");
 	else

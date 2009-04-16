@@ -65,6 +65,7 @@ int Bitlbee::main(int argc, char** argv)
 		}
 		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
+		/* Set users directory path and if I have rights to write in. */
 		IM::setPath(conf.GetSection("path")->GetItem("users")->String());
 
 		server_poll = ServerPoll::build((ServerPoll::poll_type_t)conf.GetSection("irc")->GetItem("type")->Integer(),
@@ -73,12 +74,6 @@ int Bitlbee::main(int argc, char** argv)
 
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
-
-#if 0
-		purple_util_set_user_dir(conf.GetSection("path")->GetItem("users")->String().c_str());
-		purple_eventloop_set_ui_ops(&eventloop_wg_ops);
-		purple_core_init("bitlbee2");
-#endif
 
 		return EXIT_SUCCESS;
 	}
