@@ -85,7 +85,7 @@ PurpleCoreUiOps PurpleHandler::core_ops =
 {
 	PurpleHandler::bitlbee_prefs_init,
         PurpleHandler::debug_init,
-        NULL,//gnt_ui_init,
+        PurpleHandler::signalsInit,//gnt_ui_init,
         NULL,//bitlbee_quit,
         PurpleHandler::bitlbee_ui_get_info,
 
@@ -95,10 +95,33 @@ PurpleCoreUiOps PurpleHandler::core_ops =
         NULL
 };
 
-void PurpleHandler::Init()
+static gpointer
+bitlbee_accounts_get_handle(void)
+{
+	static int handle;
+
+	return &handle;
+}
+
+
+void PurpleHandler::init()
 {
 	purple_core_set_ui_ops(&core_ops);
 	purple_eventloop_set_ui_ops(&eventloop_ops);
+
+}
+
+void PurpleHandler::signalsInit()
+{
+	purple_signal_connect(purple_accounts_get_handle(), "account-added",
+				bitlbee_accounts_get_handle(), PURPLE_CALLBACK(PurpleHandler::account_added),
+				NULL);
+}
+
+
+void PurpleHandler::account_added(PurpleAccount* account)
+{
+	b_log[W_INFO] << "Account added " << account;
 }
 
 }; /* namespace im */

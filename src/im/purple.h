@@ -44,8 +44,8 @@ namespace im
 
 	public:
 
-		static void Init(IM* im);
-		static void Uninit();
+		static void init(IM* im);
+		static void uninit();
 
 		/** Get protocols list
 		 *

@@ -79,7 +79,7 @@ IM::IM(string _username)
 
 	try
 	{
-		Purple::Init(this);
+		Purple::init(this);
 	}
 	catch(PurpleError &e)
 	{
@@ -89,7 +89,7 @@ IM::IM(string _username)
 
 IM::~IM()
 {
-	Purple::Uninit();
+	Purple::uninit();
 }
 
 void IM::setPassword(const string& password)

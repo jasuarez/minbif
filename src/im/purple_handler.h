@@ -51,11 +51,13 @@ namespace im
 		static void debug_init();
 		static void debug(PurpleDebugLevel level, const char *category, const char *args);
 
+		static void account_added(PurpleAccount*);
 
 	public:
 
-		static void Init();
+		static void init();
 
+		static void signalsInit();
 	};
 
 };

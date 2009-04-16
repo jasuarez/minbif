@@ -19,6 +19,7 @@
 #define IRC_SERVER_H
 
 #include "entity.h"
+#include "im/account.h"
 
 namespace irc
 {
@@ -33,6 +34,15 @@ namespace irc
 
 		string getServerName() const { return getName(); }
 		string getServerInfo() const { return info; }
+	};
+
+	class RemoteServer : public Server
+	{
+		im::Account account;
+
+	public:
+
+		RemoteServer(im::Account account);
 	};
 
 }; /* namespace irc */

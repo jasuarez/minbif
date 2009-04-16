@@ -24,4 +24,10 @@ Server::Server(string name, string _info)
 	  info(_info)
 {}
 
+
+RemoteServer::RemoteServer(im::Account _account)
+	: Server(_account.getUsername(), "msn"),
+	  account(_account)
+{}
+
 }; /* namespace irc */

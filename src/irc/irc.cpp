@@ -220,6 +220,14 @@ void IRC::sendWelcome()
 			return;
 		}
 
+		map<string, im::Account> accounts = im->getAccountsList();
+		for(map<string, im::Account>::iterator it = accounts.begin();
+		    it != accounts.end(); ++it)
+		{
+			servers[it->first] = new RemoteServer(it->second);
+		}
+
+
 		user->setFlag(Nick::REGISTERED);
 
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
@@ -506,7 +514,7 @@ void IRC::m_stats(Message message)
 					  .addArg("End of /STATS report"));
 }
 
-/* SCONNECT proto username password */
+/* CONNECT proto username password */
 void IRC::m_connect(Message message)
 {
 	string proto = message.getArg(0);

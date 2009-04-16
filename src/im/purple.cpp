@@ -28,7 +28,7 @@ namespace im {
 
 IM* Purple::im = NULL;
 
-void Purple::Init(IM* im)
+void Purple::init(IM* im)
 {
 	if(Purple::im)
 	{
@@ -37,7 +37,7 @@ void Purple::Init(IM* im)
 	}
 	purple_util_set_user_dir(im->getUserPath().c_str());
 
-	PurpleHandler::Init();
+	PurpleHandler::init();
 
 	if (!purple_core_init(BITLBEE_VERSION_NAME))
 	{
@@ -55,7 +55,7 @@ void Purple::Init(IM* im)
 	purple_accounts_restore_current_statuses();
 }
 
-void Purple::Uninit()
+void Purple::uninit()
 {
 	assert(im != NULL);
 
