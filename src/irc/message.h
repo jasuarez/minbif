@@ -72,57 +72,59 @@
 
 class Entity;
 
-using std::string;
-using std::vector;
-
-class MalformedMessage : public std::exception {};
-
-class _StoredEntity
+namespace irc
 {
-	Entity* entity;
-	string name;
+	using std::string;
+	using std::vector;
 
-public:
-	_StoredEntity() : entity(NULL) {}
+	class MalformedMessage : public std::exception {};
 
-	void setEntity(Entity* e) { entity = e; name.clear(); }
-	void setName(string n) { name = n; entity = NULL; }
+	class _StoredEntity
+	{
+		Entity* entity;
+		string name;
 
-	bool isSet() const { return entity || !name.empty(); }
-	Entity* getEntity() const { return entity; }
-	string getName() const;
-	string getLongName() const;
-};
+	public:
+		_StoredEntity() : entity(NULL) {}
 
-class Message
-{
-	string cmd;
-	_StoredEntity sender;
-	_StoredEntity receiver;
-	vector<string> args;
-public:
+		void setEntity(Entity* e) { entity = e; name.clear(); }
+		void setName(string n) { name = n; entity = NULL; }
 
-	Message(string command);
-	Message() {}
-	~Message();
+		bool isSet() const { return entity || !name.empty(); }
+		Entity* getEntity() const { return entity; }
+		string getName() const;
+		string getLongName() const;
+	};
 
-	Message& setCommand(string command);
-	Message& setSender(Entity* entity);
-	Message& setSender(string name);
-	Message& setReceiver(Entity* entity);
-	Message& setReceiver(string name);
-	Message& addArg(string);
-	Message& setArg(size_t, string);
+	class Message
+	{
+		string cmd;
+		_StoredEntity sender;
+		_StoredEntity receiver;
+		vector<string> args;
+	public:
 
-	string getCommand() const { return cmd; }
-	Entity* getSender() const { return sender.getEntity(); }
-	Entity* getReceiver() const { return receiver.getEntity(); }
-	string getArg(size_t n) const;
-	size_t countArgs() const { return args.size(); }
-	vector<string> getArgs() const { return args; }
+		Message(string command);
+		Message() {}
+		~Message();
 
-	string format() const;
-	static Message parse(string s);
-};
+		Message& setCommand(string command);
+		Message& setSender(Entity* entity);
+		Message& setSender(string name);
+		Message& setReceiver(Entity* entity);
+		Message& setReceiver(string name);
+		Message& addArg(string);
+		Message& setArg(size_t, string);
 
+		string getCommand() const { return cmd; }
+		Entity* getSender() const { return sender.getEntity(); }
+		Entity* getReceiver() const { return receiver.getEntity(); }
+		string getArg(size_t n) const;
+		size_t countArgs() const { return args.size(); }
+		vector<string> getArgs() const { return args; }
+
+		string format() const;
+		static Message parse(string s);
+	};
+}; /* namespace irc */
 #endif /* IRC_MESSAGE_H */

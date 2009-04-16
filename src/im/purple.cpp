@@ -24,8 +24,9 @@
 #include "../version.h"
 #include "../log.h"
 
-IM* Purple::im = NULL;
+namespace im {
 
+IM* Purple::im = NULL;
 
 void Purple::Init(IM* im)
 {
@@ -38,7 +39,6 @@ void Purple::Init(IM* im)
 
 	PurpleHandler::Init();
 
-	purple_debug_set_enabled(TRUE);
 	if (!purple_core_init(BITLBEE_VERSION_NAME))
 	{
 		b_log[W_ERR] << "Initialization of the Purple core failed.";
@@ -72,3 +72,5 @@ map<string, Protocol> Purple::getProtocolsList()
 
 	return m;
 }
+
+};

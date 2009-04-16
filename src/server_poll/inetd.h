@@ -20,12 +20,14 @@
 
 #include "poll.h"
 
-class IRC;
+namespace irc {
+	class IRC;
+};
 class _CallBack;
 
 class InetdServerPoll : public ServerPoll
 {
-	IRC* irc;
+	irc::IRC* irc;
 	_CallBack* stop_cb;
 
 public:
@@ -33,10 +35,10 @@ public:
 	InetdServerPoll(Bitlbee* application);
 	~InetdServerPoll();
 
-	void kill(IRC* irc);
+	void kill(irc::IRC* irc);
 	bool stopServer_cb(void*);
 
-	void log(string log) const;
+	void log(size_t level, string log) const;
 };
 
 #endif /* SERVER_POLL_INETD_H */

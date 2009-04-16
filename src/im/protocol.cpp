@@ -18,6 +18,8 @@
 #include <cassert>
 #include "protocol.h"
 
+namespace im {
+
 Protocol::Protocol()
 	: plugin(NULL)
 {}
@@ -31,3 +33,5 @@ string Protocol::getName() const
 	assert(plugin);
 	return plugin->info->name;
 }
+
+}; /* namespace im */

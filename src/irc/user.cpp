@@ -17,6 +17,8 @@
 
 #include "user.h"
 
+namespace irc {
+
 User::User(int _fd, Server* server, string nickname, string identname, string hostname, string realname)
 	: Nick(server, nickname, identname, hostname, realname),
 	  fd(_fd)
@@ -34,3 +36,5 @@ void User::send(Message msg)
 		write(fd, s.c_str(), s.size());
 	}
 }
+
+}; /* namespace irc */

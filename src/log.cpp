@@ -61,7 +61,7 @@ Log::flux::~flux()
 		struct timeval t;
 		gettimeofday(&t, NULL);
 		if(b_log.getServerPoll())
-			b_log.getServerPoll()->log(string("[") + all_flags[i].s + "] " + str);
+			b_log.getServerPoll()->log(flag, string("[") + all_flags[i].s + "] " + str);
 		else
 			std::cout << ":localhost.localdomain NOTICE AUTH :[" << all_flags[i].s << "] " << str << "\r\n";
 

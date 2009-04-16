@@ -17,7 +17,11 @@
 
 #include "server.h"
 
+namespace irc {
+
 Server::Server(string name, string _info)
 	: Entity(name),
 	  info(_info)
 {}
+
+}; /* namespace irc */

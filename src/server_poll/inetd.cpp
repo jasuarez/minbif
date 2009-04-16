@@ -33,12 +33,12 @@ InetdServerPoll::InetdServerPoll(Bitlbee* application)
 {
 	try
 	{
-		irc = new IRC(this, 0,
+		irc = new irc::IRC(this, 0,
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
 			      conf.GetSection("irc")->GetItem("command_chan")->String(),
 			      conf.GetSection("irc")->GetItem("ping")->Integer());
 	}
-	catch(IRCAuthError &e)
+	catch(irc::AuthError &e)
 	{
 		b_log[W_ERR] << "Unable to start the IRC daemon";
 		throw ServerPollError();
@@ -50,14 +50,17 @@ InetdServerPoll::~InetdServerPoll()
 	delete irc;
 }
 
-void InetdServerPoll::log(string msg) const
+void InetdServerPoll::log(size_t level, string msg) const
 {
-	irc->getUser()->send(Message(MSG_NOTICE).setSender(irc)
-						.setReceiver(irc->getUser())
-						.addArg(msg));
+	string cmd = MSG_NOTICE;
+	if(level & W_DEBUG)
+		cmd = MSG_PRIVMSG;
+	irc->getUser()->send(irc::Message(cmd).setSender(irc)
+					 	     .setReceiver(irc->getUser())
+					 	     .addArg(msg));
 }
 
-void InetdServerPoll::kill(IRC* irc)
+void InetdServerPoll::kill(irc::IRC* irc)
 {
 	assert(irc == this->irc);
 

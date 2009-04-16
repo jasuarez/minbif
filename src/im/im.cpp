@@ -25,6 +25,9 @@
 #include "../log.h"
 #include "../util.h"
 
+namespace im
+{
+
 /* STATIC */
 string IM::path;
 
@@ -102,4 +105,6 @@ string IM::getPassword() const
 map<string, Protocol> IM::getProtocolsList() const
 {
 	return Purple::getProtocolsList();
+}
+
 }

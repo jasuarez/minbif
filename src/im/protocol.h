@@ -23,17 +23,20 @@
 
 using std::string;
 
-class Protocol
+namespace im
 {
-	PurplePlugin* plugin;
+	class Protocol
+	{
+		PurplePlugin* plugin;
 
 
-public:
+	public:
 
-	Protocol(PurplePlugin* plugin);
-	Protocol();
+		Protocol(PurplePlugin* plugin);
+		Protocol();
 
-	string getName() const;
-};
+		string getName() const;
+	};
+}; /* namespace im */
 
 #endif /* IM_PROTOCOL_H */

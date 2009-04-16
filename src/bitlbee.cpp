@@ -66,7 +66,7 @@ int Bitlbee::main(int argc, char** argv)
 		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
 		/* Set users directory path and if I have rights to write in. */
-		IM::setPath(conf.GetSection("path")->GetItem("users")->String());
+		im::IM::setPath(conf.GetSection("path")->GetItem("users")->String());
 
 		server_poll = ServerPoll::build((ServerPoll::poll_type_t)conf.GetSection("irc")->GetItem("type")->Integer(),
 				                this);
@@ -82,7 +82,7 @@ int Bitlbee::main(int argc, char** argv)
 		b_log[W_ERR] << "Error while loading:";
 		b_log[W_ERR] << e.Reason();
 	}
-	catch(IMError &e)
+	catch(im::IMError &e)
 	{
 		b_log[W_ERR] << "Unable to load IM settings";
 	}

@@ -24,6 +24,8 @@
 #include "../util.h"
 #include "entity.h"
 
+namespace irc {
+
 string _StoredEntity::getName() const
 {
 	return entity ? entity->getName() : name;
@@ -146,3 +148,5 @@ Message Message::parse(string line)
 	}
 	return m;
 }
+
+}; /* namespace irc */

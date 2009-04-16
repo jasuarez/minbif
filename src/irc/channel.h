@@ -19,57 +19,62 @@
 #define IRC_CHANNEL_H
 
 #include <string>
-using std::string;
 #include <vector>
-using std::vector;
 
 #include "message.h"
 #include "../entity.h"
 
-class Nick;
-class IRC;
-
-class ChanUser : public Entity
+namespace irc
 {
-	Nick* nick;
-	int status;
+	using std::vector;
+	using std::string;
 
-public:
 
-	enum {
-		OP     = 1 << 0,
-		VOICE  = 1 << 1,
+	class Nick;
+	class IRC;
+
+	class ChanUser : public Entity
+	{
+		Nick* nick;
+		int status;
+
+	public:
+
+		enum {
+			OP     = 1 << 0,
+			VOICE  = 1 << 1,
+		};
+
+		ChanUser(Nick* nick, int status = 0);
+
+		string getName() const;
+
+		bool hasStatus(int flag) const { return status & flag; }
+		Nick* getNick() const { return nick; }
 	};
 
-	ChanUser(Nick* nick, int status = 0);
-
-	string getName() const;
-
-	bool hasStatus(int flag) const { return status & flag; }
-	Nick* getNick() const { return nick; }
-};
-
-class Channel : public Entity
-{
-	IRC* irc;
-	vector<ChanUser> users;
-
-public:
-
-	Channel(IRC* irc, string name);
-	~Channel();
-
-	static bool isChanName(const string& name)
+	class Channel : public Entity
 	{
-		return (!name.empty() && name.find(' ') == string::npos &&
-		        (isStatusChannel(name) || isRemoteChannel(name)));
-	}
-	static bool isStatusChannel(const string& name) { return (!name.empty() && name[0] == '&'); }
-	static bool isRemoteChannel(const string& name) { return (!name.empty() && name[0] == '#'); }
+		IRC* irc;
+		vector<ChanUser> users;
 
-	void addUser(Nick* nick, int status=0);
+	public:
 
-	void broadcast(Message m, Nick* butone = NULL);
-};
+		Channel(IRC* irc, string name);
+		~Channel();
+
+		static bool isChanName(const string& name)
+		{
+			return (!name.empty() && name.find(' ') == string::npos &&
+				(isStatusChannel(name) || isRemoteChannel(name)));
+		}
+		static bool isStatusChannel(const string& name) { return (!name.empty() && name[0] == '&'); }
+		static bool isRemoteChannel(const string& name) { return (!name.empty() && name[0] == '#'); }
+
+		void addUser(Nick* nick, int status=0);
+
+		void broadcast(Message m, Nick* butone = NULL);
+	};
+}; /*namespace irc*/
 
 #endif /* IRC_CHANNEL_H */

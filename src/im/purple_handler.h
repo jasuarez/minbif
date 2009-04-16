@@ -31,22 +31,32 @@
 
 #include <libpurple/purple.h>
 
-class PurpleHandler
+namespace im
 {
-	/* Instanciation is forbidden */
-	PurpleHandler() {}
-	~PurpleHandler() {}
 
-	static GHashTable *ui_info;
-	static PurpleEventLoopUiOps eventloop_ops;
-	static PurpleCoreUiOps core_ops;
+	class PurpleHandler
+	{
+		/* Instanciation is forbidden */
+		PurpleHandler() {}
+		~PurpleHandler() {}
 
-	static GHashTable *bitlbee_ui_get_info(void);
-	static void bitlbee_prefs_init();
+		static GHashTable *ui_info;
+		static PurpleEventLoopUiOps eventloop_ops;
+		static PurpleCoreUiOps core_ops;
+		static PurpleDebugUiOps debug_ops;
 
-public:
+		static GHashTable *bitlbee_ui_get_info(void);
+		static void bitlbee_prefs_init();
 
-	static void Init();
+		static void debug_init();
+		static void debug(PurpleDebugLevel level, const char *category, const char *args);
+
+
+	public:
+
+		static void Init();
+
+	};
 
 };
 

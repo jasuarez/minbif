@@ -24,35 +24,39 @@
 
 #include "protocol.h"
 
-using std::string;
-using std::map;
-
-class IMError : public std::exception {};
-
-class IM
+namespace im
 {
-	static string path;
+	using std::string;
+	using std::map;
 
-public:
+	class IMError : public std::exception {};
 
-	static void setPath(const string& path);
-	static bool exists(const string& username);
+	class IM
+	{
+		static string path;
 
-private:
+	public:
 
-	string username;
-	string user_path;
-public:
+		static void setPath(const string& path);
+		static bool exists(const string& username);
 
-	IM(string username);
-	~IM();
+	private:
 
-	string getUserPath() const { return user_path; }
+		string username;
+		string user_path;
+	public:
 
-	void setPassword(const string& password);
-	string getPassword() const;
+		IM(string username);
+		~IM();
 
-	map<string, Protocol> getProtocolsList() const;
+		string getUserPath() const { return user_path; }
+
+		void setPassword(const string& password);
+		string getPassword() const;
+
+		map<string, Protocol> getProtocolsList() const;
+	};
+
 };
 
 #endif /* IM_IM_H */

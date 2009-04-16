@@ -32,6 +32,8 @@
 #include "user.h"
 #include "channel.h"
 
+namespace irc {
+
 static struct
 {
 	const char* cmd;
@@ -93,7 +95,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 	{
 		/* An hostname can't contain any space. */
 		b_log[W_ERR] << "'" << _hostname << "' is not a valid server hostname";
-		throw IRCAuthError();
+		throw AuthError();
 	}
 	else
 		setName(_hostname);
@@ -101,7 +103,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 	if(!Channel::isChanName(cmd_chan_name))
 	{
 		b_log[W_ERR] << "'" << cmd_chan_name << "' is not a valid command channel name";
-		throw IRCAuthError();
+		throw AuthError();
 	}
 
 
@@ -207,7 +209,7 @@ void IRC::sendWelcome()
 
 	try
 	{
-		im = new IM(user->getNickname());
+		im = new im::IM(user->getNickname());
 
 		if(im->getPassword().empty())
 			im->setPassword(user->getPassword());
@@ -222,7 +224,7 @@ void IRC::sendWelcome()
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running BitlBee 2.0"));
 	}
-	catch(IMError& e)
+	catch(im::IMError& e)
 	{
 		quit("Unable to initialize IM");
 	}
@@ -486,8 +488,8 @@ void IRC::m_stats(Message message)
 	{
 		case 'p':
 		{
-			map<string, Protocol> m = im->getProtocolsList();
-			for(map<string, Protocol>::iterator it = m.begin();
+			map<string, im::Protocol> m = im->getProtocolsList();
+			for(map<string, im::Protocol>::iterator it = m.begin();
 			    it != m.end(); ++it)
 				notice(user, it->first + ": " + it->second.getName());
 			break;
@@ -522,3 +524,5 @@ void IRC::m_connect(Message message)
 	}
 
 }
+
+}; /* namespace irc */

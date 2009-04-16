@@ -20,6 +20,8 @@
 
 #include "nick.h"
 
+namespace irc {
+
 const char *Nick::nick_lc_chars = "0123456789abcdefghijklmnopqrstuvwxyz{}^`-_|";
 const char *Nick::nick_uc_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ[]~`-_\\";
 
@@ -78,3 +80,5 @@ void Nick::privmsg(Nick* nick, string msg)
 			               .setReceiver(nick)
 				       .addArg(msg));
 }
+
+}; /* namespace irc */

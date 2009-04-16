@@ -25,66 +25,75 @@
 #include "message.h"
 #include "server.h"
 
-using std::string;
-using std::map;
-
-class IRCAuthError : public std::exception {};
-
-class User;
-class Nick;
-class Channel;
 class _CallBack;
 class ServerPoll;
-class IM;
 
-class IRC : public Server
+namespace im
 {
-	ServerPoll* poll;
-	int fd;
-	int read_id;
-	_CallBack *read_cb;
-	_CallBack *ping_cb;
-	User* user;
-	IM* im;
-
-	map<string, Nick*> users;
-	map<string, Channel*> channels;
-	map<string, Server*> servers;
-
-public:
-
-	IRC(ServerPoll* poll, int fd, string hostname, string command_chan, unsigned ping_freq);
-	~IRC();
-
-	User* getUser() const { return user; }
-
-	void sendWelcome();
-	void quit(string reason = "");
-
-	void addChannel(Channel* chan);
-	Channel* getChannel(string channame) const;
-	void removeChannel(string channame);
-
-	void addNick(Nick* nick);
-	Nick* getNick(string nick) const;
-	void removeNick(string nick);
-
-	bool ping(void*);
-	void notice(Nick* user, string message);
-
-	bool readIO(void*);
-	void m_nick(Message m);
-	void m_user(Message m);
-	void m_pass(Message m);
-	void m_quit(Message m);
-	void m_ping(Message m);
-	void m_pong(Message m);
-	void m_whois(Message m);
-	void m_whowas(Message m);
-	void m_version(Message m);
-	void m_privmsg(Message m);
-	void m_stats(Message m);
-	void m_connect(Message m);
+	class IM;
 };
+
+namespace irc
+{
+	using std::string;
+	using std::map;
+
+	class AuthError : public std::exception {};
+
+	class User;
+	class Nick;
+	class Channel;
+
+	class IRC : public Server
+	{
+		ServerPoll* poll;
+		int fd;
+		int read_id;
+		_CallBack *read_cb;
+		_CallBack *ping_cb;
+		User* user;
+		im::IM* im;
+
+		map<string, Nick*> users;
+		map<string, Channel*> channels;
+		map<string, Server*> servers;
+
+	public:
+
+		IRC(ServerPoll* poll, int fd, string hostname, string command_chan, unsigned ping_freq);
+		~IRC();
+
+		User* getUser() const { return user; }
+
+		void sendWelcome();
+		void quit(string reason = "");
+
+		void addChannel(Channel* chan);
+		Channel* getChannel(string channame) const;
+		void removeChannel(string channame);
+
+		void addNick(Nick* nick);
+		Nick* getNick(string nick) const;
+		void removeNick(string nick);
+
+		bool ping(void*);
+		void notice(Nick* user, string message);
+
+		bool readIO(void*);
+		void m_nick(Message m);
+		void m_user(Message m);
+		void m_pass(Message m);
+		void m_quit(Message m);
+		void m_ping(Message m);
+		void m_pong(Message m);
+		void m_whois(Message m);
+		void m_whowas(Message m);
+		void m_version(Message m);
+		void m_privmsg(Message m);
+		void m_stats(Message m);
+		void m_connect(Message m);
+	};
+
+}; /* namespace irc */
 
 #endif /* IRC_IRC_H */

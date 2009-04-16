@@ -19,7 +19,11 @@
 #include "purple_handler.h"
 #include "purple.h"
 #include "../util.h"
+#include "../log.h"
 #include "../version.h"
+
+namespace im
+{
 
 PurpleEventLoopUiOps PurpleHandler::eventloop_ops =
 {
@@ -54,10 +58,32 @@ void PurpleHandler::bitlbee_prefs_init()
 	purple_prefs_add_string("/bitlbee/password", "");
 }
 
+void PurpleHandler::debug(PurpleDebugLevel level, const char *category, const char *args)
+{
+	b_log[W_DEBUG] << "[" << category << "] " << args;
+}
+
+PurpleDebugUiOps PurpleHandler::debug_ops =
+{
+        PurpleHandler::debug,
+        NULL, //finch_debug_is_enabled,
+
+        /* padding */
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+void PurpleHandler::debug_init()
+{
+	purple_debug_set_ui_ops(&debug_ops);
+}
+
 PurpleCoreUiOps PurpleHandler::core_ops =
 {
 	PurpleHandler::bitlbee_prefs_init,
-        NULL,//debug_init,
+        PurpleHandler::debug_init,
         NULL,//gnt_ui_init,
         NULL,//bitlbee_quit,
         PurpleHandler::bitlbee_ui_get_info,
@@ -73,3 +99,5 @@ void PurpleHandler::Init()
 	purple_core_set_ui_ops(&core_ops);
 	purple_eventloop_set_ui_ops(&eventloop_ops);
 }
+
+}; /* namespace im */

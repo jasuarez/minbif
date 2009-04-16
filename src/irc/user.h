@@ -20,23 +20,27 @@
 
 #include "nick.h"
 
-class User : public Nick
+namespace irc
 {
-	int fd;
-	string password;
+	class User : public Nick
+	{
+		int fd;
+		string password;
 
-public:
+	public:
 
-	User(int fd, Server* server, string nickname, string username, string hostname, string realname="");
-	~User();
+		User(int fd, Server* server, string nickname, string username, string hostname, string realname="");
+		~User();
 
-	void setPassword(string p) { password = p; }
-	string getPassword() const { return password; }
+		void setPassword(string p) { password = p; }
+		string getPassword() const { return password; }
 
-	void close() { fd = -1; }
+		void close() { fd = -1; }
 
-	virtual void send(Message m);
+		virtual void send(Message m);
 
-};
+	};
+
+}; /* namespace irc */
 
 #endif /* IRC_USER_H */

@@ -23,56 +23,60 @@
 #include "channel.h"
 #include "server.h"
 
-class Server;
-
-class Nick : public Entity
+namespace irc
 {
-	string identname, hostname, realname;
-	Server* server;
-	unsigned int flags;
+	class Server;
 
-public:
+	class Nick : public Entity
+	{
+		string identname, hostname, realname;
+		Server* server;
+		unsigned int flags;
 
-	static const char *nick_lc_chars;
-	static const char *nick_uc_chars;
-	static const size_t MAX_LENGTH = 29;
+	public:
 
-	enum {
-		REGISTERED = 1 << 0,
-		PING       = 1 << 1
+		static const char *nick_lc_chars;
+		static const char *nick_uc_chars;
+		static const size_t MAX_LENGTH = 29;
+
+		enum {
+			REGISTERED = 1 << 0,
+			PING       = 1 << 1
+		};
+
+		Nick(Server* server, string nickname, string identname, string hostname, string realname="");
+		~Nick();
+
+		static bool isValidNickname(const string& n);
+
+		virtual void send(Message m) {}
+
+		void join(Channel* chan, int status = 0);
+
+		void privmsg(Channel* chan, string message);
+		void privmsg(Nick* to, string message);
+
+		Server* getServer() const { return server; }
+
+		string getLongName() const;
+
+		string getNickname() const { return getName(); }
+		void setNickname(string n) { setName(n); }
+
+		string getIdentname() const { return identname; }
+		void setIdentname(string i) { identname = i; }
+
+		string getHostname() const { return hostname; }
+		void setHostname(string h) { hostname = h; }
+
+		string getRealname() const { return realname; }
+		void setRealname(string r) { realname = r; }
+
+		void setFlag(unsigned flag) { flags |= flag; }
+		void delFlag(unsigned flag) { flags &= ~flag; }
+		bool hasFlag(unsigned flag) const { return flags & flag; }
 	};
 
-	Nick(Server* server, string nickname, string identname, string hostname, string realname="");
-	~Nick();
-
-	static bool isValidNickname(const string& n);
-
-	virtual void send(Message m) {}
-
-	void join(Channel* chan, int status = 0);
-
-	void privmsg(Channel* chan, string message);
-	void privmsg(Nick* to, string message);
-
-	Server* getServer() const { return server; }
-
-	string getLongName() const;
-
-	string getNickname() const { return getName(); }
-	void setNickname(string n) { setName(n); }
-
-	string getIdentname() const { return identname; }
-	void setIdentname(string i) { identname = i; }
-
-	string getHostname() const { return hostname; }
-	void setHostname(string h) { hostname = h; }
-
-	string getRealname() const { return realname; }
-	void setRealname(string r) { realname = r; }
-
-	void setFlag(unsigned flag) { flags |= flag; }
-	void delFlag(unsigned flag) { flags &= ~flag; }
-	bool hasFlag(unsigned flag) const { return flags & flag; }
-};
+}; /* namespace irc */
 
 #endif /* IRC_NICK_H */

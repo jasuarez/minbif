@@ -24,7 +24,11 @@
 using std::string;
 
 class Bitlbee;
-class IRC;
+
+namespace irc
+{
+	class IRC;
+};
 
 class ServerPollError : public std::exception {};
 
@@ -49,9 +53,9 @@ public:
 
 	ServerPoll(Bitlbee* application);
 
-	virtual void kill(IRC* irc) = 0;
+	virtual void kill(irc::IRC* irc) = 0;
 
-	virtual void log(string string) const = 0;
+	virtual void log(size_t level, string string) const = 0;
 };
 
 #endif /* SERVER_POLL_H */

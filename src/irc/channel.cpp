@@ -20,6 +20,8 @@
 #include "message.h"
 #include "irc.h"
 
+namespace irc {
+
 ChanUser::ChanUser(Nick* _nick, int _status)
 	: Entity(_nick->getNickname()),
 	  nick(_nick),
@@ -97,3 +99,5 @@ void Channel::broadcast(Message m, Nick* butone)
 		if(!butone || it->getNick() != butone)
 			it->getNick()->send(m);
 }
+
+}; /* namespace irc */

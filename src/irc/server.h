@@ -20,16 +20,21 @@
 
 #include "entity.h"
 
-class Server : public Entity
+namespace irc
 {
-	string info;
 
-public:
+	class Server : public Entity
+	{
+		string info;
 
-	Server(string name, string info);
+	public:
 
-	string getServerName() const { return getName(); }
-	string getServerInfo() const { return info; }
-};
+		Server(string name, string info);
+
+		string getServerName() const { return getName(); }
+		string getServerInfo() const { return info; }
+	};
+
+}; /* namespace irc */
 
 #endif /* IRC_SERVER_H */

@@ -22,33 +22,36 @@
 #include <map>
 #include <string>
 
-using std::map;
-using std::string;
-
 #include "protocol.h"
 
-class IM;
-
-class PurpleError : public std::exception {};
-
-class Purple
+namespace im
 {
-	/* Instanciation is forbidden */
-	Purple() {}
-	~Purple() {}
+	using std::map;
+	using std::string;
 
-	static IM* im;
+	class IM;
 
-public:
+	class PurpleError : public std::exception {};
 
-	static void Init(IM* im);
-	static void Uninit();
+	class Purple
+	{
+		/* Instanciation is forbidden */
+		Purple() {}
+		~Purple() {}
 
-	/** Get protocols list
-	 *
-	 * @return  map with first=id, second=Protocol object
-	 */
-	static map<string, Protocol> getProtocolsList();
+		static IM* im;
+
+	public:
+
+		static void Init(IM* im);
+		static void Uninit();
+
+		/** Get protocols list
+		 *
+		 * @return  map with first=id, second=Protocol object
+		 */
+		static map<string, Protocol> getProtocolsList();
+	};
 };
 
 #endif /* IM_PURPLE_H */
