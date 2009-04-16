@@ -15,44 +15,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IM_IM_H
-#define IM_IM_H
-
-#include <exception>
-#include <string>
-#include <map>
-
+#include <cassert>
 #include "protocol.h"
 
-using std::string;
-using std::map;
+Protocol::Protocol()
+	: plugin(NULL)
+{}
 
-class IMError : public std::exception {};
+Protocol::Protocol(PurplePlugin* _plugin)
+	: plugin(_plugin)
+{}
 
-class IM
+string Protocol::getName() const
 {
-	static string path;
-
-public:
-
-	static void setPath(const string& path);
-	static bool exists(const string& username);
-
-private:
-
-	string username;
-	string user_path;
-public:
-
-	IM(string username);
-	~IM();
-
-	string getUserPath() const { return user_path; }
-
-	void setPassword(const string& password);
-	string getPassword() const;
-
-	map<string, Protocol> getProtocolsList() const;
-};
-
-#endif /* IM_IM_H */
+	assert(plugin);
+	return plugin->info->name;
+}

@@ -485,10 +485,10 @@ void IRC::m_stats(Message message)
 	{
 		case 'p':
 		{
-			map<string, string> m = im->getProtocolsList();
-			for(map<string, string>::iterator it = m.begin();
+			map<string, Protocol> m = im->getProtocolsList();
+			for(map<string, Protocol>::iterator it = m.begin();
 			    it != m.end(); ++it)
-				notice(user, it->first + ": " + it->second);
+				notice(user, it->first + ": " + it->second.getName());
 			break;
 		}
 		default:

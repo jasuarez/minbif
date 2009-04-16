@@ -25,6 +25,8 @@
 using std::map;
 using std::string;
 
+#include "protocol.h"
+
 class IM;
 
 class PurpleError : public std::exception {};
@@ -44,9 +46,9 @@ public:
 
 	/** Get protocols list
 	 *
-	 * @return  map with first=id, second=name
+	 * @return  map with first=id, second=Protocol object
 	 */
-	static map<string, string> getProtocolsList();
+	static map<string, Protocol> getProtocolsList();
 };
 
 #endif /* IM_PURPLE_H */
