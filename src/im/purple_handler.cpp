@@ -36,28 +36,6 @@ PurpleEventLoopUiOps PurpleHandler::eventloop_ops =
 	NULL, NULL, NULL
 };
 
-GHashTable *PurpleHandler::ui_info = NULL;
-GHashTable *PurpleHandler::bitlbee_ui_get_info(void)
-{
-        if (ui_info == NULL) {
-                ui_info = g_hash_table_new(g_str_hash, g_str_equal);
-
-                g_hash_table_insert(ui_info, (void*)"name",         (void*)BITLBEE_VERSION_NAME);
-                g_hash_table_insert(ui_info, (void*)"version",      (void*)BITLBEE_VERSION);
-                g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/bitlbee");
-                g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/bitlbee2");
-        }
-
-        return ui_info;
-}
-
-void PurpleHandler::bitlbee_prefs_init()
-{
-	purple_prefs_add_none("/bitlbee");
-
-	purple_prefs_add_string("/bitlbee/password", "");
-}
-
 void PurpleHandler::debug(PurpleDebugLevel level, const char *category, const char *args)
 {
 	b_log[W_DEBUG] << "[" << category << "] " << args;
@@ -79,6 +57,29 @@ void PurpleHandler::debug_init()
 {
 	purple_debug_set_ui_ops(&debug_ops);
 }
+
+void PurpleHandler::bitlbee_prefs_init()
+{
+	purple_prefs_add_none("/bitlbee");
+
+	purple_prefs_add_string("/bitlbee/password", "");
+}
+
+GHashTable *PurpleHandler::ui_info = NULL;
+GHashTable *PurpleHandler::bitlbee_ui_get_info(void)
+{
+        if (ui_info == NULL) {
+                ui_info = g_hash_table_new(g_str_hash, g_str_equal);
+
+                g_hash_table_insert(ui_info, (void*)"name",         (void*)BITLBEE_VERSION_NAME);
+                g_hash_table_insert(ui_info, (void*)"version",      (void*)BITLBEE_VERSION);
+                g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/bitlbee");
+                g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/bitlbee2");
+        }
+
+        return ui_info;
+}
+
 
 PurpleCoreUiOps PurpleHandler::core_ops =
 {

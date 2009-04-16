@@ -107,4 +107,9 @@ map<string, Protocol> IM::getProtocolsList() const
 	return Purple::getProtocolsList();
 }
 
+map<string, Account> IM::getAccountsList() const
+{
+	return Purple::getAccountsList();
+}
+
 }

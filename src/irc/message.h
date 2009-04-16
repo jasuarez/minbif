@@ -27,6 +27,8 @@
 #define RPL_CREATED     "003"
 #define RPL_MYINFO      "004"
 #define RPL_ISUPPORT    "005"
+#define RPL_MAP         "015"
+#define RPL_MAPEND      "017"
 #define RPL_ENDOFSTATS  "219"
 #define RPL_WHOISUSER   "311"
 #define RPL_WHOISSERVER "312"
@@ -69,6 +71,7 @@
 #define MSG_WHOWAS      "WHOWAS"
 #define MSG_STATS       "STATS"
 #define MSG_CONNECT     "CONNECT"
+#define MSG_MAP		"MAP"
 
 class Entity;
 

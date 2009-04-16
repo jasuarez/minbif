@@ -22,6 +22,7 @@
 #include <string>
 #include <map>
 
+#include "account.h"
 #include "protocol.h"
 
 namespace im
@@ -55,6 +56,7 @@ namespace im
 		string getPassword() const;
 
 		map<string, Protocol> getProtocolsList() const;
+		map<string, Account> getAccountsList() const;
 	};
 
 };

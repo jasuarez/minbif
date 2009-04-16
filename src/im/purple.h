@@ -23,6 +23,7 @@
 #include <string>
 
 #include "protocol.h"
+#include "account.h"
 
 namespace im
 {
@@ -51,6 +52,8 @@ namespace im
 		 * @return  map with first=id, second=Protocol object
 		 */
 		static map<string, Protocol> getProtocolsList();
+
+		static map<string, Account> getAccountsList();
 	};
 };
 

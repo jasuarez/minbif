@@ -53,6 +53,7 @@ static struct
 	{ MSG_WHOWAS,  &IRC::m_whowas,  1, Nick::REGISTERED },
 	{ MSG_STATS,   &IRC::m_stats,   0, Nick::REGISTERED },
 	{ MSG_CONNECT, &IRC::m_connect, 3, Nick::REGISTERED },
+	{ MSG_MAP,     &IRC::m_map,     0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -523,6 +524,36 @@ void IRC::m_connect(Message message)
 		purple_account_set_enabled(account, BITLBEE_VERSION_NAME, TRUE);
 	}
 
+}
+
+/* MAP */
+void IRC::m_map(Message message)
+{
+	user->send(Message(RPL_MAP).setSender(this)
+			           .setReceiver(user)
+				   .addArg(this->getServerName()));
+
+	for(map<string, Server*>::iterator it = servers.begin();
+	    it != servers.end(); ++it)
+	{
+		map<string, Server*>::iterator next = it;
+		string name;
+
+		if(++next == servers.end())
+			name = "`-";
+		else
+			name = "|-";
+
+		name += it->second->getName();
+
+		user->send(Message(RPL_MAP).setSender(this)
+					   .setReceiver(user)
+					   .addArg(name));
+
+	}
+	user->send(Message(RPL_MAPEND).setSender(this)
+			              .setReceiver(user)
+				      .addArg("End of /MAP"));
 }
 
 }; /* namespace irc */

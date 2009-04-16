@@ -73,4 +73,14 @@ map<string, Protocol> Purple::getProtocolsList()
 	return m;
 }
 
+map<string, Account> Purple::getAccountsList()
+{
+	map<string, Account> m;
+	GList* list = purple_accounts_get_all();
+
+	for(; list; list = list->next)
+		m[((PurpleAccount*)list->data)->protocol_id] = Account((PurpleAccount*)list->data);
+
+	return m;
+}
 };
