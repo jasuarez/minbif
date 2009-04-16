@@ -84,6 +84,7 @@ public:
 	void m_version(Message m);
 	void m_privmsg(Message m);
 	void m_stats(Message m);
+	void m_connect(Message m);
 };
 
 #endif /* IRC_IRC_H */

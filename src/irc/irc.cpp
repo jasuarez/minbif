@@ -50,6 +50,7 @@ static struct
 	{ MSG_WHOIS,   &IRC::m_whois,   1, Nick::REGISTERED },
 	{ MSG_WHOWAS,  &IRC::m_whowas,  1, Nick::REGISTERED },
 	{ MSG_STATS,   &IRC::m_stats,   0, Nick::REGISTERED },
+	{ MSG_CONNECT, &IRC::m_connect, 3, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -500,4 +501,24 @@ void IRC::m_stats(Message message)
 		                          .setReceiver(user)
 					  .addArg(arg)
 					  .addArg("End of /STATS report"));
+}
+
+/* SCONNECT proto username password */
+void IRC::m_connect(Message message)
+{
+	string proto = message.getArg(0);
+	string username = message.getArg(1);
+	string password = message.getArg(2);
+
+	PurpleAccount *account = purple_account_new(username.c_str(), proto.c_str());
+	purple_accounts_add(account);
+	purple_account_set_password(account, password.c_str());
+
+	const PurpleSavedStatus *saved_status;
+	saved_status = purple_savedstatus_get_current();
+	if (saved_status != NULL) {
+		purple_savedstatus_activate_for_account(saved_status, account);
+		purple_account_set_enabled(account, BITLBEE_VERSION_NAME, TRUE);
+	}
+
 }
