@@ -213,13 +213,17 @@ void IRC::sendWelcome()
 		im = new im::IM(user->getNickname());
 
 		if(im->getPassword().empty())
+		{
+			/* New user. */
 			im->setPassword(user->getPassword());
+		}
 		else if(im->getPassword() != user->getPassword())
 		{
 			quit("Incorrect password");
 			return;
 		}
 
+		/* Create servers from accounts. */
 		map<string, im::Account> accounts = im->getAccountsList();
 		for(map<string, im::Account>::iterator it = accounts.begin();
 		    it != accounts.end(); ++it)
@@ -274,7 +278,7 @@ bool IRC::readIO(void*)
 		else if(!sockerr_again())
 			this->quit(string("Read error: ") + strerror(errno));
 		else
-			return true;
+			return true; // continue...
 		return false;
 	}
 	buf[r] = 0;
