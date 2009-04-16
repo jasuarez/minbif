@@ -68,6 +68,7 @@
 #define MSG_WHOIS       "WHOIS"
 #define MSG_WHOWAS      "WHOWAS"
 #define MSG_STATS       "STATS"
+#define MSG_CONNECT     "CONNECT"
 
 class Entity;
 
