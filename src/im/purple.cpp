@@ -47,6 +47,9 @@ void Purple::Init(IM* im)
 
 	Purple::im = im;
 
+	purple_set_blist(purple_blist_new());
+	purple_blist_load();
+
 	if (!purple_prefs_get_bool("/purple/savedstatus/startup_current_status"))
 		        purple_savedstatus_activate(purple_savedstatus_get_startup());
 	purple_accounts_restore_current_statuses();
