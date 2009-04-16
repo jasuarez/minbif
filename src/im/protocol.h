@@ -15,44 +15,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IM_IM_H
-#define IM_IM_H
+#ifndef IM_PROTOCOL_H
+#define IM_PROTOCOL_H
 
-#include <exception>
+#include <libpurple/purple.h>
 #include <string>
-#include <map>
-
-#include "protocol.h"
 
 using std::string;
-using std::map;
 
-class IMError : public std::exception {};
-
-class IM
+class Protocol
 {
-	static string path;
+	PurplePlugin* plugin;
+
 
 public:
 
-	static void setPath(const string& path);
-	static bool exists(const string& username);
+	Protocol(PurplePlugin* plugin);
+	Protocol();
 
-private:
-
-	string username;
-	string user_path;
-public:
-
-	IM(string username);
-	~IM();
-
-	string getUserPath() const { return user_path; }
-
-	void setPassword(const string& password);
-	string getPassword() const;
-
-	map<string, Protocol> getProtocolsList() const;
+	string getName() const;
 };
 
-#endif /* IM_IM_H */
+#endif /* IM_PROTOCOL_H */
