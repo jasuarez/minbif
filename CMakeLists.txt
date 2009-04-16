@@ -13,6 +13,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/server_poll/inetd.cpp
 		src/im/im.cpp
 		src/im/protocol.cpp
+		src/im/account.cpp
 		src/im/purple.cpp
 		src/im/purple_handler.cpp
 		src/irc/irc.cpp
