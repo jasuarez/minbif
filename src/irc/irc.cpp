@@ -484,7 +484,13 @@ void IRC::m_stats(Message message)
 	switch(arg[0])
 	{
 		case 'p':
+		{
+			map<string, string> m = im->getProtocolsList();
+			for(map<string, string>::iterator it = m.begin();
+			    it != m.end(); ++it)
+				notice(user, it->first + ": " + it->second);
 			break;
+		}
 		default:
 			arg = "*";
 			notice(user, "p (protocols) - List all protocols");

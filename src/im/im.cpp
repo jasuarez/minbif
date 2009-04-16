@@ -98,3 +98,8 @@ string IM::getPassword() const
 {
 	return purple_prefs_get_string("/bitlbee/password");
 }
+
+map<string, string> IM::getProtocolsList() const
+{
+	return Purple::getProtocolsList();
+}

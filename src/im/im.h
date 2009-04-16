@@ -20,7 +20,10 @@
 
 #include <exception>
 #include <string>
+#include <map>
+
 using std::string;
+using std::map;
 
 class IMError : public std::exception {};
 
@@ -46,6 +49,8 @@ public:
 
 	void setPassword(const string& password);
 	string getPassword() const;
+
+	map<string, string> getProtocolsList() const;
 };
 
 #endif /* IM_IM_H */

@@ -57,3 +57,14 @@ void Purple::Uninit()
 
 	purple_core_quit();
 }
+
+map<string, string> Purple::getProtocolsList()
+{
+	map<string, string> m;
+	GList* list = purple_plugins_get_protocols();
+
+	for(; list; list = list->next)
+		m[((PurplePlugin*)list->data)->info->id] = ((PurplePlugin*)list->data)->info->name;
+
+	return m;
+}

@@ -19,6 +19,11 @@
 #define IM_PURPLE_H
 
 #include <exception>
+#include <map>
+#include <string>
+
+using std::map;
+using std::string;
 
 class IM;
 
@@ -36,6 +41,12 @@ public:
 
 	static void Init(IM* im);
 	static void Uninit();
+
+	/** Get protocols list
+	 *
+	 * @return  map with first=id, second=name
+	 */
+	static map<string, string> getProtocolsList();
 };
 
 #endif /* IM_PURPLE_H */
