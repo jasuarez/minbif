@@ -31,6 +31,7 @@ namespace im
 	using std::map;
 
 	class IMError : public std::exception {};
+	class ProtocolUnknown : public std::exception {};
 
 	class IM
 	{
@@ -56,7 +57,10 @@ namespace im
 		string getPassword() const;
 
 		map<string, Protocol> getProtocolsList() const;
+		Protocol getProtocol(string id) const;
+
 		map<string, Account> getAccountsList() const;
+		void addAccount(Protocol proto, string username, string password);
 	};
 
 };

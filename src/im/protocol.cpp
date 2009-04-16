@@ -16,6 +16,7 @@
  */
 
 #include <cassert>
+#include <cstring>
 #include "protocol.h"
 
 namespace im {
@@ -32,6 +33,21 @@ string Protocol::getName() const
 {
 	assert(plugin);
 	return plugin->info->name;
+}
+
+string Protocol::getID() const
+{
+	assert(plugin);
+	if(!strncmp(plugin->info->id, "prpl-", 5))
+		return plugin->info->id + 5;
+	else
+		return plugin->info->id;
+}
+
+string Protocol::getPurpleID() const
+{
+	assert(plugin);
+	return plugin->info->id;
 }
 
 }; /* namespace im */

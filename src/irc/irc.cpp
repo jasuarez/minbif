@@ -504,7 +504,10 @@ void IRC::m_stats(Message message)
 			map<string, im::Protocol> m = im->getProtocolsList();
 			for(map<string, im::Protocol>::iterator it = m.begin();
 			    it != m.end(); ++it)
-				notice(user, it->first + ": " + it->second.getName());
+			{
+				im::Protocol proto = it->second;
+				notice(user, proto.getID() + ": " + proto.getName());
+			}
 			break;
 		}
 		default:
@@ -521,21 +524,20 @@ void IRC::m_stats(Message message)
 /* CONNECT proto username password */
 void IRC::m_connect(Message message)
 {
-	string proto = message.getArg(0);
+	string protoname = message.getArg(0);
 	string username = message.getArg(1);
 	string password = message.getArg(2);
 
-	PurpleAccount *account = purple_account_new(username.c_str(), proto.c_str());
-	purple_accounts_add(account);
-	purple_account_set_password(account, password.c_str());
+	try
+	{
+		im::Protocol proto = im->getProtocol(protoname);
 
-	const PurpleSavedStatus *saved_status;
-	saved_status = purple_savedstatus_get_current();
-	if (saved_status != NULL) {
-		purple_savedstatus_activate_for_account(saved_status, account);
-		purple_account_set_enabled(account, BITLBEE_VERSION_NAME, TRUE);
+		im->addAccount(proto, username, password);
 	}
-
+	catch(im::ProtocolUnknown &e)
+	{
+		notice(user, "Error: Protocol " + protoname + " is unknown. Try '/STATS p' to list protocols.");
+	}
 }
 
 /* MAP */

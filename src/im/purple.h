@@ -54,6 +54,7 @@ namespace im
 		static map<string, Protocol> getProtocolsList();
 
 		static map<string, Account> getAccountsList();
+		static void addAccount(Protocol proto, string username, string password);
 	};
 };
 

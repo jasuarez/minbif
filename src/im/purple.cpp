@@ -68,7 +68,10 @@ map<string, Protocol> Purple::getProtocolsList()
 	GList* list = purple_plugins_get_protocols();
 
 	for(; list; list = list->next)
-		m[((PurplePlugin*)list->data)->info->id] = Protocol((PurplePlugin*)list->data);
+	{
+		Protocol protocol = Protocol((PurplePlugin*)list->data);
+		m[protocol.getID()] = protocol;
+	}
 
 	return m;
 }
@@ -79,8 +82,27 @@ map<string, Account> Purple::getAccountsList()
 	GList* list = purple_accounts_get_all();
 
 	for(; list; list = list->next)
-		m[((PurpleAccount*)list->data)->protocol_id] = Account((PurpleAccount*)list->data);
+	{
+		Account account = Account((PurpleAccount*)list->data);
+		m[((PurpleAccount*)list->data)->protocol_id] = account;
+	}
 
 	return m;
 }
-};
+
+void Purple::addAccount(Protocol proto, string username, string password)
+{
+	PurpleAccount *account = purple_account_new(username.c_str(), proto.getPurpleID().c_str());
+	purple_accounts_add(account);
+	purple_account_set_password(account, password.c_str());
+
+	const PurpleSavedStatus *saved_status;
+	saved_status = purple_savedstatus_get_current();
+	if (saved_status != NULL) {
+		purple_savedstatus_activate_for_account(saved_status, account);
+		purple_account_set_enabled(account, BITLBEE_VERSION_NAME, TRUE);
+	}
+}
+
+
+}; /* namespace im */

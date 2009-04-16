@@ -107,9 +107,25 @@ map<string, Protocol> IM::getProtocolsList() const
 	return Purple::getProtocolsList();
 }
 
+Protocol IM::getProtocol(string id) const
+{
+	map<string, Protocol> plist = getProtocolsList();
+	map<string, Protocol>::iterator it = plist.find(id);
+	if(it == plist.end())
+		throw ProtocolUnknown();
+	else
+		return it->second;
+}
+
 map<string, Account> IM::getAccountsList() const
 {
 	return Purple::getAccountsList();
 }
 
+void IM::addAccount(Protocol proto, string username, string password)
+{
+	Purple::addAccount(proto, username, password);
+
 }
+
+}; /* namespace im */

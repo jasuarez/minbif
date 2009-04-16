@@ -36,7 +36,10 @@ namespace im
 		Protocol();
 
 		string getName() const;
+		string getID() const;
+		string getPurpleID() const;
 	};
+
 }; /* namespace im */
 
 #endif /* IM_PROTOCOL_H */

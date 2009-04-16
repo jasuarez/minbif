@@ -65,5 +65,3 @@
 #define MSG_STATS       "STATS"
 #define MSG_CONNECT     "CONNECT"
 #define MSG_MAP		"MAP"
-
-
