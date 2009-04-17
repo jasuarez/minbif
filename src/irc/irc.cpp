@@ -457,17 +457,19 @@ void IRC::m_whowas(Message message)
 void IRC::m_privmsg(Message message)
 {
 	Message relayed(message.getCommand());
+	string target = message.getArg(0);
+
 	relayed.setSender(user);
 	relayed.addArg(message.getArg(1));
 
-	if(Channel::isChanName(message.getArg(0)))
+	if(Channel::isChanName(target))
 	{
-		Channel* c = getChannel(message.getArg(0));
+		Channel* c = getChannel(target);
 		if(!c)
 		{
 			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 					                     .setReceiver(user)
-							     .addArg(message.getArg(0))
+							     .addArg(target)
 							     .addArg("No suck channel"));
 			return;
 		}
@@ -476,12 +478,12 @@ void IRC::m_privmsg(Message message)
 	}
 	else
 	{
-		Nick* n = getNick(message.getArg(0));
+		Nick* n = getNick(target);
 		if(!n)
 		{
 			user->send(Message(ERR_NOSUCHNICK).setSender(this)
 					                  .setReceiver(user)
-							  .addArg(message.getArg(0))
+							  .addArg(target)
 							  .addArg("No suck nick"));
 			return;
 		}
