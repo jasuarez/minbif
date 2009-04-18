@@ -34,7 +34,8 @@ Buddy::Buddy()
 
 Buddy::Buddy(PurpleBuddy* _buddy)
 	: buddy(_buddy)
-{}
+{
+}
 
 bool Buddy::operator==(const Buddy& buddy) const
 {
@@ -109,6 +110,9 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 			n = new irc::Buddy(server, buddy);
 			while(Purple::getIM()->getIRC()->getNick(n->getNickname()))
 				n->setNickname(n->getNickname() + "_");
+			purple_blist_alias_buddy(buddy.buddy, n->getNickname().c_str());
+			serv_alias_buddy(buddy.buddy);
+
 			Purple::getIM()->getIRC()->addNick(n);
 		}
 	}

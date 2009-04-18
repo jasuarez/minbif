@@ -60,10 +60,33 @@ void Conversation::present() const
 
 void Conversation::sendMessage(string text) const
 {
-	if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM)
+	switch(purple_conversation_get_type(conv))
+	{
+		case PURPLE_CONV_TYPE_IM:
 			purple_conv_im_send(PURPLE_CONV_IM(conv), text.c_str());
-	else if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_CHAT)
+			break;
+		case PURPLE_CONV_TYPE_CHAT:
 			purple_conv_chat_send(PURPLE_CONV_CHAT(conv), text.c_str());
+			break;
+		default:
+			break;
+	}
+}
+
+void Conversation::recvMessage(string from, string text) const
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::Nick* n = irc->getNick(from);
+
+	if(!n)
+	{
+		b_log[W_ERR] << "Received message from unknown budy " << from;
+		return;
+	}
+
+	irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+						      .setReceiver(irc->getUser())
+						      .addArg(text));
 }
 
 /* STATIC */
@@ -73,8 +96,8 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 	Conversation::create,//finch_create_conversation,
 	NULL,//finch_destroy_conversation,
 	NULL,//finch_write_chat,
-	Conversation::write_im,//finch_write_im,
-	NULL,//finch_write_conv,
+	Conversation::write_im,
+	Conversation::write_conv,
 	NULL,//finch_chat_add_users,
 	NULL,//finch_chat_rename_user,
 	NULL,//finch_chat_remove_users,
@@ -107,18 +130,38 @@ void Conversation::create(PurpleConversation* c)
 {
 }
 
-void Conversation::write_im(PurpleConversation *conv, const char *who,
-		const char *message, PurpleMessageFlags flags,
-		time_t mtime)
+
+void Conversation::write_im(PurpleConversation *c, const char *who,
+		const char *message, PurpleMessageFlags flags, time_t mtime)
 {
-	if(flags == PURPLE_MESSAGE_RECV && who)
+	if(flags == PURPLE_MESSAGE_RECV)
 	{
+		PurpleAccount *account = purple_conversation_get_account(c);
+		PurpleBuddy *buddy;
+		who = purple_conversation_get_name(c);
+		buddy = purple_find_buddy(account, who);
+		if (buddy)
+			who = purple_buddy_get_contact_alias(buddy);
+	}
+
+	purple_conversation_write(c, who, message, flags, mtime);
+}
+
+void Conversation::write_conv(PurpleConversation *c, const char *who, const char* alias,
+		const char *message, PurpleMessageFlags flags, time_t mtime)
+{
+	if(flags == PURPLE_MESSAGE_RECV)
+	{
+		Conversation conv = Conversation(c);
+
 		char* newline = purple_strdup_withhtml(message);
 		char* strip = purple_markup_strip_html(newline);
 
-		Purple::getIM()->getIRC()->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(who)
-									       .setReceiver(Purple::getIM()->getIRC()->getUser())
-									       .addArg(strip));
+		string from;
+		if(alias && *alias) from = alias;
+		else if(who && *who) from = who;
+
+		conv.recvMessage(from, strip);
 
 		g_free(strip);
 		g_free(newline);

@@ -38,6 +38,9 @@ namespace im
 		static void write_im(PurpleConversation *conv, const char *who,
 				const char *message, PurpleMessageFlags flags,
 				time_t mtime);
+		static void write_conv(PurpleConversation *conv, const char *who, const char* alias,
+				const char *message, PurpleMessageFlags flags,
+				time_t mtime);
 
 	public:
 
@@ -54,7 +57,7 @@ namespace im
 
 		void present() const;
 		void sendMessage(string text) const;
-
+		void recvMessage(string from, string text) const;
 	};
 
 };
