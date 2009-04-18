@@ -45,6 +45,8 @@ namespace irc
 	public:
 
 		RemoteServer(IRC* irc, im::Account account);
+
+		IRC* getIRC() const { return irc; }
 	};
 
 }; /* namespace irc */

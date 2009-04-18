@@ -20,12 +20,14 @@
 
 #include "nick.h"
 #include "im/buddy.h"
+#include "im/conversation.h"
 
 namespace irc
 {
 	class Buddy : public Nick
 	{
 		im::Buddy im_buddy;
+		im::Conversation conv;
 
 	public:
 

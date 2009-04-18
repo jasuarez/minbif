@@ -16,6 +16,7 @@
  */
 
 #include "irc/buddy.h"
+#include "im/account.h"
 #include "../util.h"
 
 namespace irc {
@@ -36,7 +37,17 @@ Buddy::~Buddy()
 {}
 
 void Buddy::send(Message m)
-{}
+{
+	if(m.getCommand() == MSG_PRIVMSG)
+	{
+		if(!conv.isValid())
+		{
+			conv = im::Conversation(im_buddy.getAccount(), im_buddy);
+			conv.present();
+		}
+		conv.sendMessage(m.getArg(0));
+	}
+}
 
 string Buddy::getAwayMessage() const
 {

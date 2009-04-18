@@ -50,6 +50,7 @@ namespace im
 		Account(PurpleAccount* account, Protocol proto = Protocol());
 
 		bool isValid() const { return account != NULL; }
+		PurpleAccount* getPurpleAccount() const { return account; }
 		string getID() const;
 		string getUsername() const;
 		string getServername() const;

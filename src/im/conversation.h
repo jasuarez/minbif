@@ -25,9 +25,11 @@ namespace im
 {
 	using std::string;
 
+	class Account;
+	class Buddy;
 	class Conversation
 	{
-		PurpleConversation* buddy;
+		PurpleConversation* conv;
 
 		static void* getHandler();
 		static PurpleConversationUiOps conv_ui_ops;
@@ -42,12 +44,16 @@ namespace im
 		static void init();
 
 		Conversation();
-		Conversation(PurpleConversation* buddy);
+		Conversation(Account account, Buddy buddy);
+		Conversation(PurpleConversation* conv);
 
-		bool operator==(const Conversation& buddy) const;
-		bool operator!=(const Conversation& buddy) const;
+		bool operator==(const Conversation& conv) const;
+		bool operator!=(const Conversation& conv) const;
 
-		bool isValid() const { return buddy != NULL; }
+		bool isValid() const { return conv != NULL; }
+
+		void present() const;
+		void sendMessage(string text) const;
 
 	};
 

@@ -19,6 +19,7 @@
 
 #include "im/conversation.h"
 #include "im/purple.h"
+#include "im/buddy.h"
 #include "im/im.h"
 #include "irc/irc.h"
 #include "irc/user.h"
@@ -28,21 +29,41 @@
 namespace im {
 
 Conversation::Conversation()
-	: buddy(NULL)
+	: conv(NULL)
 {}
 
-Conversation::Conversation(PurpleConversation* _buddy)
-	: buddy(_buddy)
+Conversation::Conversation(PurpleConversation* _conv)
+	: conv(_conv)
 {}
 
-bool Conversation::operator==(const Conversation& buddy) const
+Conversation::Conversation(Account account, Buddy buddy)
+	: conv(NULL)
 {
-	return buddy.buddy == this->buddy;
+	conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, account.getPurpleAccount(), buddy.getName().c_str());
 }
 
-bool Conversation::operator!=(const Conversation& buddy) const
+bool Conversation::operator==(const Conversation& conv) const
 {
-	return buddy.buddy != this->buddy;
+	return conv.conv == this->conv;
+}
+
+bool Conversation::operator!=(const Conversation& conv) const
+{
+	return conv.conv != this->conv;
+}
+
+void Conversation::present() const
+{
+	assert(isValid());
+	purple_conversation_present(conv);
+}
+
+void Conversation::sendMessage(string text) const
+{
+	if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM)
+			purple_conv_im_send(PURPLE_CONV_IM(conv), text.c_str());
+	else if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_CHAT)
+			purple_conv_chat_send(PURPLE_CONV_CHAT(conv), text.c_str());
 }
 
 /* STATIC */
@@ -90,15 +111,18 @@ void Conversation::write_im(PurpleConversation *conv, const char *who,
 		const char *message, PurpleMessageFlags flags,
 		time_t mtime)
 {
-	char* newline = purple_strdup_withhtml(message);
-	char* strip = purple_markup_strip_html(newline);
+	if(flags == PURPLE_MESSAGE_RECV && who)
+	{
+		char* newline = purple_strdup_withhtml(message);
+		char* strip = purple_markup_strip_html(newline);
 
-	Purple::getIM()->getIRC()->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(who)
-			                                               .setReceiver(Purple::getIM()->getIRC()->getUser())
-								       .addArg(strip));
+		Purple::getIM()->getIRC()->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(who)
+									       .setReceiver(Purple::getIM()->getIRC()->getUser())
+									       .addArg(strip));
 
-	g_free(strip);
-	g_free(newline);
+		g_free(strip);
+		g_free(newline);
+	}
 }
 
 }; /* namespace im */
