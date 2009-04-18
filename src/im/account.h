@@ -54,6 +54,8 @@ namespace im
 		string getID() const;
 		string getUsername() const;
 		string getServername() const;
+		string getStatusChannel() const;
+		void setStatusChannel(string c);
 		Protocol getProtocol() const { return proto; }
 
 		vector<Buddy> getBuddies() const;

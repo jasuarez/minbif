@@ -75,18 +75,30 @@ void Conversation::sendMessage(string text) const
 
 void Conversation::recvMessage(string from, string text) const
 {
-	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc::Nick* n = irc->getNick(from);
-
-	if(!n)
+	switch(purple_conversation_get_type(conv))
 	{
-		b_log[W_ERR] << "Received message from unknown budy " << from;
-		return;
-	}
+		case PURPLE_CONV_TYPE_IM:
+		{
+			irc::IRC* irc = Purple::getIM()->getIRC();
+			irc::Nick* n = irc->getNick(from);
 
-	irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
-						      .setReceiver(irc->getUser())
-						      .addArg(text));
+			if(!n)
+			{
+				b_log[W_ERR] << "Received message from unknown budy " << from;
+				return;
+			}
+
+			irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+								      .setReceiver(irc->getUser())
+								      .addArg(text));
+			break;
+		}
+		case PURPLE_CONV_TYPE_CHAT:
+			b_log[W_ERR] << "Chat messages aren't supported yet";
+			break;
+		default:
+			break;
+	}
 }
 
 /* STATIC */

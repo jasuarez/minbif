@@ -662,20 +662,22 @@ void IRC::m_map(Message message)
 		{
 			case 'a':
 			{
+				if(message.countArgs() < 5)
+				{
+					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD CHANNEL");
+					break;
+				}
 				string protoname = message.getArg(1);
 				string username  = message.getArg(2);
 				string password  = message.getArg(3);
+				string channel   = message.getArg(4);
 
-				if(message.countArgs() < 4)
-				{
-					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD");
-					break;
-				}
 				try
 				{
 					im::Protocol proto = im->getProtocol(protoname);
 
 					added_account = im->addAccount(proto, username, password);
+					added_account.setStatusChannel(channel);
 				}
 				catch(im::ProtocolUnknown &e)
 				{
@@ -700,7 +702,7 @@ void IRC::m_map(Message message)
 				notice(user,"a, add: add ACCOUNT to your accounts");
         			notice(user,"d, del: remove ACCOUNT from your accounts");
         		default:
-				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD] | [del NAME] | [help]");
+				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD CHANNEL] | [del NAME] | [help]");
         			break;
 		}
 	}

@@ -24,6 +24,7 @@
 #include "../version.h"
 #include "im.h"
 #include "irc/irc.h"
+#include "irc/channel.h"
 
 namespace im {
 
@@ -51,6 +52,17 @@ string Account::getID() const
 	if(n.empty())
 		n = Purple::getNewAccountName(proto);
 	return n;
+}
+
+string Account::getStatusChannel() const
+{
+	string n = purple_account_get_ui_string(account, BITLBEE_VERSION_NAME, "channel", "");
+	return n;
+}
+
+void Account::setStatusChannel(string c)
+{
+	purple_account_set_ui_string(account, BITLBEE_VERSION_NAME, "channel", c.c_str());
 }
 
 string Account::getServername() const
@@ -124,8 +136,25 @@ void Account::account_removed(PurpleAccount* account)
 void Account::connected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::Channel* chan;
+	string channame = account.getStatusChannel();
+
 	b_log[W_SNOTICE] << "Connection to " << account.getServername() << " established!";
-	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), account));
+	irc->addServer(new irc::RemoteServer(irc, account));
+
+	if(channame.empty() || channame.find(" ") != string::npos)
+		return;
+
+	if(channame[0] != '&')
+		channame = "&" + channame;
+
+	chan = irc->getChannel(channame);
+	if(!chan)
+	{
+		chan = new irc::Channel(irc, channame);
+		irc->addChannel(chan);
+	}
 }
 
 void Account::disconnected(PurpleConnection* gc)

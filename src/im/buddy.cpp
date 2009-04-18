@@ -114,6 +114,11 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 			serv_alias_buddy(buddy.buddy);
 
 			Purple::getIM()->getIRC()->addNick(n);
+
+			string channame = buddy.getAccount().getStatusChannel();
+			irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
+			if(chan)
+				n->join(chan);
 		}
 	}
 }
