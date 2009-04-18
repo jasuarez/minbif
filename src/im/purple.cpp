@@ -20,6 +20,7 @@
 
 #include "purple.h"
 #include "im.h"
+#include "buddy.h"
 #include "../version.h"
 #include "../log.h"
 #include "../util.h"
@@ -129,6 +130,7 @@ void Purple::init(IM* im)
 void Purple::inited()
 {
 	Account::init();
+	Buddy::init();
 }
 
 void Purple::uninit()

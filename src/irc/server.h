@@ -23,6 +23,7 @@
 
 namespace irc
 {
+	class IRC;
 
 	class Server : public Entity
 	{
@@ -39,10 +40,11 @@ namespace irc
 	class RemoteServer : public Server
 	{
 		im::Account account;
+		IRC* irc;
 
 	public:
 
-		RemoteServer(im::Account account);
+		RemoteServer(IRC* irc, im::Account account);
 	};
 
 }; /* namespace irc */

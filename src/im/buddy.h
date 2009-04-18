@@ -26,6 +26,7 @@
 namespace im
 {
 	using std::string;
+	class Account;
 
 	class Buddy
 	{
@@ -33,13 +34,19 @@ namespace im
 		Account account;
 
 		static void* getHandler();
+		static PurpleBlistUiOps blist_ui_ops;
+		static void update_node(PurpleBuddyList *list, PurpleBlistNode *node);
 
 	public:
 
 		static void init();
 
 		Buddy();
-		Buddy(PurpleBuddy* buddy, Account account);
+		Buddy(PurpleBuddy* buddy, const Account& account);
+
+		bool isValid() const { return buddy != NULL; }
+
+		string getName() const;
 
 	};
 

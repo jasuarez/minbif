@@ -25,10 +25,13 @@ Server::Server(string name, string _info)
 {}
 
 
-RemoteServer::RemoteServer(im::Account _account)
+RemoteServer::RemoteServer(IRC* _irc, im::Account _account)
 	: Server(_account.getUsername() + ":" +_account.getID(),
 	         _account.getProtocol().getName()),
-	  account(_account)
-{}
+	  account(_account),
+	  irc(_irc)
+{
+
+}
 
 }; /* namespace irc */

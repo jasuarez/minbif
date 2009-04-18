@@ -20,21 +20,27 @@
 
 #include <libpurple/purple.h>
 #include <string>
+#include <vector>
 
 #include "im/protocol.h"
 
 namespace im
 {
 	using std::string;
+	using std::vector;
+	class Buddy;
 
 	class Account
 	{
 		PurpleAccount* account;
 		Protocol proto;
 
+		static PurpleConnectionUiOps conn_ops;
 		static void* getHandler();
 		static void account_added(PurpleAccount*);
 		static void account_removed(PurpleAccount*);
+		static void connected(PurpleConnection* gc);
+		static void disconnected(PurpleConnection* gc);
 
 	public:
 
@@ -47,6 +53,8 @@ namespace im
 		string getID() const;
 		string getUsername() const;
 		Protocol getProtocol() const { return proto; }
+
+		vector<Buddy> getBuddies() const;
 	};
 
 };

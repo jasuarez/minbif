@@ -280,7 +280,7 @@ void IRC::sendWelcome()
 		for(map<string, im::Account>::iterator it = accounts.begin();
 		    it != accounts.end(); ++it)
 		{
-			addServer(new RemoteServer(it->second));
+			addServer(new RemoteServer(this, it->second));
 		}
 
 		user->setFlag(Nick::REGISTERED);

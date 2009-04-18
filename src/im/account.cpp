@@ -18,6 +18,7 @@
 #include <cassert>
 
 #include "account.h"
+#include "buddy.h"
 #include "purple.h"
 #include "../log.h"
 #include "../version.h"
@@ -52,8 +53,30 @@ string Account::getID() const
 	return n;
 }
 
+vector<Buddy> Account::getBuddies() const
+{
+	vector<Buddy> buddies;
+	return buddies;
+}
+
 
 /* STATIC */
+
+PurpleConnectionUiOps Account::conn_ops =
+{
+        NULL, /* connect_progress */
+        Account::connected, /* connected */
+        Account::disconnected, /* disconnected */
+        NULL, /* notice */
+        NULL,
+        NULL, /* network_connected */
+        NULL, /* network_disconnected */
+        NULL, //finch_connection_report_disconnect,
+        NULL,
+        NULL,
+        NULL
+};
+
 
 void* Account::getHandler()
 {
@@ -64,6 +87,7 @@ void* Account::getHandler()
 
 void Account::init()
 {
+	purple_connections_set_ui_ops(&conn_ops);
 	purple_signal_connect(purple_accounts_get_handle(), "account-added",
 				getHandler(), PURPLE_CALLBACK(account_added),
 				NULL);
@@ -74,13 +98,23 @@ void Account::init()
 
 void Account::account_added(PurpleAccount* account)
 {
-	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Account(account)));
+	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), Account(account)));
 }
 
 void Account::account_removed(PurpleAccount* account)
 {
 	Account a = Account(account);
 	Purple::getIM()->getIRC()->removeServer(a.getUsername() + ":" + a.getID());
+}
+
+void Account::connected(PurpleConnection* gc)
+{
+	b_log[W_ERR] << "Connected!";
+}
+
+void Account::disconnected(PurpleConnection* gc)
+{
+
 }
 
 }; /* namespace im */
