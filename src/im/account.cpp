@@ -123,13 +123,15 @@ void Account::account_removed(PurpleAccount* account)
 
 void Account::connected(PurpleConnection* gc)
 {
-	b_log[W_ERR] << "Connected!";
-	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), Account(gc->account)));
+	Account account = Account(gc->account);
+	b_log[W_SNOTICE] << "Connection to " << account.getServername() << " established!";
+	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), account));
 }
 
 void Account::disconnected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
+	b_log[W_SNOTICE] << "Closing link with " << account.getServername();
 	Purple::getIM()->getIRC()->removeServer(account.getServername());
 }
 

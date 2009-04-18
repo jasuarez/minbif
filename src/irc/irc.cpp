@@ -54,7 +54,8 @@ static struct
 	{ MSG_WHOIS,   &IRC::m_whois,   1, Nick::REGISTERED },
 	{ MSG_WHOWAS,  &IRC::m_whowas,  1, Nick::REGISTERED },
 	{ MSG_STATS,   &IRC::m_stats,   0, Nick::REGISTERED },
-	{ MSG_CONNECT, &IRC::m_connect, 3, Nick::REGISTERED },
+	{ MSG_CONNECT, &IRC::m_connect, 1, Nick::REGISTERED },
+	{ MSG_SQUIT,   &IRC::m_squit,   1, Nick::REGISTERED },
 	{ MSG_MAP,     &IRC::m_map,     0, Nick::REGISTERED },
 };
 
@@ -626,6 +627,18 @@ void IRC::m_connect(Message message)
 	account.connect();
 }
 
+/* SQUIT servername */
+void IRC::m_squit(Message message)
+{
+	im::Account account = im->getAccount(message.getArg(0));
+	if(!account.isValid())
+	{
+		notice(user, "Error: Account " + message.getArg(0) + " is unknown");
+		return;
+	}
+
+	account.disconnect();
+}
 /* MAP */
 void IRC::m_map(Message message)
 {
@@ -668,9 +681,7 @@ void IRC::m_map(Message message)
 					break;
 				}
 
-				user->send(Message(RPL_MAP).setSender(this)
-        			                           .setReceiver(user)
-        			                           .addArg("Adding "+message.getArg(1)));
+				/* TODO implement it */
         			break;
 			}
         		case 'h':

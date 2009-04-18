@@ -103,6 +103,7 @@ namespace irc
 		void m_privmsg(Message m);
 		void m_stats(Message m);
 		void m_connect(Message m);
+		void m_squit(Message m);
 		void m_map(Message m);
 	};
 

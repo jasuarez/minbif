@@ -68,4 +68,5 @@
 #define MSG_WHOWAS      "WHOWAS"
 #define MSG_STATS       "STATS"
 #define MSG_CONNECT     "CONNECT"
+#define MSG_SQUIT       "SQUIT"
 #define MSG_MAP		"MAP"
