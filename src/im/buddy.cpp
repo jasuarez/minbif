@@ -104,10 +104,8 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 		{
 			irc::Server* server = Purple::getIM()->getIRC()->getServer(buddy.getAccount().getServername());
 			if(!server)
-			{
-				b_log[W_ERR] << "There is no server yet";
 				return;
-			}
+
 			n = new irc::Buddy(server, buddy);
 			while(Purple::getIM()->getIRC()->getNick(n->getNickname()))
 				n->setNickname(n->getNickname() + "_");
