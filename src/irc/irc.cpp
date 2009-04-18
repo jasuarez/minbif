@@ -283,7 +283,6 @@ void IRC::sendWelcome()
 			addServer(new RemoteServer(it->second));
 		}
 
-
 		user->setFlag(Nick::REGISTERED);
 
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));

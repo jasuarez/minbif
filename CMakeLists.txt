@@ -14,12 +14,14 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/im/im.cpp
 		src/im/protocol.cpp
 		src/im/account.cpp
+		src/im/buddy.cpp
 		src/im/purple.cpp
 		src/irc/irc.cpp
 		src/irc/message.cpp
 		src/irc/server.cpp
 		src/irc/nick.cpp
 		src/irc/user.cpp
+		src/irc/buddy.cpp
 		src/irc/channel.cpp
 	      )
 SET(CONF_NAME bitlbee.conf)
