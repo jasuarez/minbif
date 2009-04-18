@@ -20,9 +20,28 @@
 
 #include <libpurple/purple.h>
 #include <string>
+#include <sstream>
 using std::string;
 
 string stringtok(string &in, const char * const delimiters);
+
+template<typename T>
+T s2t(const std::string & Str)
+{
+	T Dest;
+	std::istringstream iss( Str );
+	iss >> Dest;
+	return Dest;
+}
+
+template<typename T>
+std::string t2s( const T & Value )
+{
+	std::ostringstream oss;
+	oss << Value;
+	return oss.str();
+}
+
 
 guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
                                                            gpointer data);
