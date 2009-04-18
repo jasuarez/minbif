@@ -90,14 +90,14 @@ void Account::disconnect() const
 
 PurpleConnectionUiOps Account::conn_ops =
 {
-	Account::connecting, /* connect_progress */
-        Account::connected, /* connected */
-        Account::disconnected, /* disconnected */
+	Account::connecting,
+        Account::connected,
+        Account::disconnected,
         NULL, /* notice */
         NULL,
         NULL, /* network_connected */
         NULL, /* network_disconnected */
-        NULL, //finch_connection_report_disconnect,
+        Account::disconnect_reason,
         NULL,
         NULL,
         NULL
@@ -172,6 +172,13 @@ void Account::disconnected(PurpleConnection* gc)
 	Account account = Account(gc->account);
 	b_log[W_SNOTICE] << "Closing link with " << account.getServername();
 	Purple::getIM()->getIRC()->removeServer(account.getServername());
+}
+
+void Account::disconnect_reason(PurpleConnection *gc,
+				PurpleConnectionError reason,
+				const char *text)
+{
+	b_log[W_SNOTICE] << "Error(" << Account(gc->account).getServername() << "): " << text;
 }
 
 }; /* namespace im */

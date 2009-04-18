@@ -45,6 +45,9 @@ namespace im
 					size_t step_count);
 		static void connected(PurpleConnection* gc);
 		static void disconnected(PurpleConnection* gc);
+		static void disconnect_reason(PurpleConnection *gc,
+				PurpleConnectionError reason,
+				const char *text);
 
 	public:
 
