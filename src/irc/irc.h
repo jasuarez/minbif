@@ -58,6 +58,10 @@ namespace irc
 		map<string, Channel*> channels;
 		map<string, Server*> servers;
 
+		void cleanUpNicks();
+		void cleanUpChannels();
+		void cleanUpServers();
+
 	public:
 
 		IRC(ServerPoll* poll, int fd, string hostname, string command_chan, unsigned ping_freq);
@@ -75,6 +79,10 @@ namespace irc
 		void addNick(Nick* nick);
 		Nick* getNick(string nick) const;
 		void removeNick(string nick);
+
+		void addServer(Server* server);
+		Server* getServer(string server) const;
+		void removeServer(string server);
 
 		bool ping(void*);
 		void notice(Nick* user, string message);

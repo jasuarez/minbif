@@ -129,7 +129,9 @@ IRC::~IRC()
 		g_source_remove(read_id);
 	delete read_cb;
 	close(fd);
-	delete user;
+	cleanUpNicks();
+	cleanUpServers();
+	cleanUpChannels();
 	delete im;
 }
 
@@ -157,6 +159,14 @@ void IRC::removeChannel(string channame)
 	}
 }
 
+void IRC::cleanUpChannels()
+{
+	map<string, Channel*>::iterator it;
+	for(it = channels.begin(); it != channels.end(); ++it)
+		delete it->second;
+	channels.clear();
+}
+
 void IRC::addNick(Nick* nick)
 {
 	users[nick->getNickname()] = nick;
@@ -180,6 +190,47 @@ void IRC::removeNick(string nickname)
 		users.erase(it);
 	}
 }
+
+void IRC::cleanUpNicks()
+{
+	map<string, Nick*>::iterator it;
+	for(it = users.begin(); it != users.end(); ++it)
+		delete it->second;
+	users.clear();
+}
+
+void IRC::addServer(Server* server)
+{
+	servers[server->getName()] = server;
+}
+
+Server* IRC::getServer(string servername) const
+{
+	map<string, Server*>::const_iterator it = servers.find(servername);
+	if(it == servers.end())
+		return 0;
+
+	return it->second;
+}
+
+void IRC::removeServer(string servername)
+{
+	map<string, Server*>::iterator it = servers.find(servername);
+	if(it != servers.end())
+	{
+		delete it->second;
+		servers.erase(it);
+	}
+}
+
+void IRC::cleanUpServers()
+{
+	map<string, Server*>::iterator it;
+	for(it = servers.begin(); it != servers.end(); ++it)
+		delete it->second;
+	servers.clear();
+}
+
 
 void IRC::quit(string reason)
 {
@@ -228,7 +279,7 @@ void IRC::sendWelcome()
 		for(map<string, im::Account>::iterator it = accounts.begin();
 		    it != accounts.end(); ++it)
 		{
-			servers[it->first] = new RemoteServer(it->second);
+			addServer(new RemoteServer(it->second));
 		}
 
 
