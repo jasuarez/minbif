@@ -128,6 +128,8 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 
 IRC::~IRC()
 {
+	delete im;
+
 	if(read_id > 0)
 		g_source_remove(read_id);
 	delete read_cb;
@@ -135,7 +137,6 @@ IRC::~IRC()
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
-	delete im;
 }
 
 void IRC::addChannel(Channel* chan)
@@ -240,6 +241,17 @@ void IRC::removeServer(string servername)
 	map<string, Server*>::iterator it = servers.find(servername);
 	if(it != servers.end())
 	{
+		/* Cleanup server's users */
+		for(map<string, Nick*>::iterator nt = users.begin(); nt != users.end();)
+			if(nt->second->getServer() == it->second)
+			{
+				delete nt->second;
+				users.erase(nt);
+				nt = users.begin();
+			}
+			else
+				++nt;
+
 		delete it->second;
 		servers.erase(it);
 	}
@@ -482,7 +494,7 @@ void IRC::m_who(Message message)
 						.addArg(n->getServer()->getServerName())
 						.addArg(n->getNickname())
 						.addArg(n->isAway() ? "G" : "H")
-						.addArg(":0 " + n->getRealname()));
+						.addArg("0 " + n->getRealname()));
 	}
 	user->send(Message(RPL_ENDOFWHO).setSender(this)
 			                .setReceiver(user)
