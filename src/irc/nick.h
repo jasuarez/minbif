@@ -51,7 +51,7 @@ namespace irc
 		};
 
 		Nick(Server* server, string nickname, string identname, string hostname, string realname="");
-		~Nick();
+		virtual ~Nick();
 
 		static bool isValidNickname(const string& n);
 
