@@ -90,7 +90,7 @@ void Account::disconnect() const
 
 PurpleConnectionUiOps Account::conn_ops =
 {
-        NULL, /* connect_progress */
+	Account::connecting, /* connect_progress */
         Account::connected, /* connected */
         Account::disconnected, /* disconnected */
         NULL, /* notice */
@@ -131,6 +131,19 @@ void Account::account_removed(PurpleAccount* account)
 {
 	Account a = Account(account);
 	Purple::getIM()->getIRC()->removeServer(a.getServername());
+}
+
+void Account::connecting(PurpleConnection *gc,
+		const char *text,
+		size_t step,
+		size_t step_count)
+{
+	Account account = Account(gc->account);
+
+	if(!step)
+		b_log[W_SNOTICE] << "Connection to " << account.getServername() << " in progress...";
+	else
+		b_log[W_SNOTICE] << "" << account.getID() << "(" << step << "/" << step_count-1 << "): " << text;
 }
 
 void Account::connected(PurpleConnection* gc)

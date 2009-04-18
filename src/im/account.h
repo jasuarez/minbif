@@ -39,6 +39,10 @@ namespace im
 		static void* getHandler();
 		static void account_added(PurpleAccount*);
 		static void account_removed(PurpleAccount*);
+		static void connecting(PurpleConnection *gc,
+					const char *text,
+					size_t step,
+					size_t step_count);
 		static void connected(PurpleConnection* gc);
 		static void disconnected(PurpleConnection* gc);
 
