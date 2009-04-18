@@ -21,17 +21,14 @@
 #include <libpurple/purple.h>
 #include <string>
 
-#include "im/account.h"
-
 namespace im
 {
 	using std::string;
-	class Account;
 
+	class Account;
 	class Buddy
 	{
 		PurpleBuddy* buddy;
-		Account account;
 
 		static void* getHandler();
 		static PurpleBlistUiOps blist_ui_ops;
@@ -42,11 +39,13 @@ namespace im
 		static void init();
 
 		Buddy();
-		Buddy(PurpleBuddy* buddy, const Account& account);
+		Buddy(PurpleBuddy* buddy);
 
 		bool isValid() const { return buddy != NULL; }
 
 		string getName() const;
+		bool isOnline() const;
+		Account getAccount() const;
 
 	};
 

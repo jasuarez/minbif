@@ -52,6 +52,7 @@ namespace im
 		bool isValid() const { return account != NULL; }
 		string getID() const;
 		string getUsername() const;
+		string getServername() const;
 		Protocol getProtocol() const { return proto; }
 
 		vector<Buddy> getBuddies() const;

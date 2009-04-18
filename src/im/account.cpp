@@ -53,6 +53,11 @@ string Account::getID() const
 	return n;
 }
 
+string Account::getServername() const
+{
+	return getUsername() + ":" + getID();
+}
+
 vector<Buddy> Account::getBuddies() const
 {
 	vector<Buddy> buddies;
@@ -104,7 +109,7 @@ void Account::account_added(PurpleAccount* account)
 void Account::account_removed(PurpleAccount* account)
 {
 	Account a = Account(account);
-	Purple::getIM()->getIRC()->removeServer(a.getUsername() + ":" + a.getID());
+	Purple::getIM()->getIRC()->removeServer(a.getServername());
 }
 
 void Account::connected(PurpleConnection* gc)
@@ -116,7 +121,7 @@ void Account::connected(PurpleConnection* gc)
 void Account::disconnected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
-	Purple::getIM()->getIRC()->removeServer(account.getUsername() + ":" + account.getID());
+	Purple::getIM()->getIRC()->removeServer(account.getServername());
 }
 
 }; /* namespace im */

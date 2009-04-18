@@ -16,12 +16,21 @@
  */
 
 #include "irc/buddy.h"
+#include "../util.h"
 
 namespace irc {
 
 Buddy::Buddy(Server* server, im::Buddy _buddy)
-	: Nick(server, "","","","")
-{}
+	: Nick(server, "","","",_buddy.getName()),
+	  im_buddy(_buddy)
+{
+	string hostname = im_buddy.getName();
+	string nickname = stringtok(hostname, "@");
+	string identname = nickname;
+	setNickname(nickname);
+	setIdentname(identname);
+	setHostname(hostname);
+}
 
 Buddy::~Buddy()
 {}
