@@ -154,11 +154,27 @@ map<string, Account> Purple::getAccountsList()
 {
 	map<string, Account> m;
 	GList* list = purple_accounts_get_all();
+	map<string, Protocol> protocols = getProtocolsList();
+	map<string, int> counter;
 
 	for(; list; list = list->next)
 	{
-		Account account = Account((PurpleAccount*)list->data);
-		m[((PurpleAccount*)list->data)->protocol_id] = account;
+		string name = ((PurpleAccount*)list->data)->protocol_id;
+		Protocol proto;
+		for(map<string, Protocol>::const_iterator it = protocols.begin(); it != protocols.end(); ++it)
+			if(it->second.getPurpleID() == name)
+			{
+				name = it->second.getID();
+				proto = it->second;
+				break;
+			}
+		if(counter.find(name) != counter.end())
+			counter[name]++;
+		else
+			counter[name] = 0;
+		name += t2s(counter[name]);
+		Account account = Account((PurpleAccount*)list->data, name, proto);
+		m[name] = account;
 	}
 
 	return m;

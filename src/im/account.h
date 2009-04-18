@@ -21,6 +21,8 @@
 #include <libpurple/purple.h>
 #include <string>
 
+#include "im/protocol.h"
+
 namespace im
 {
 	using std::string;
@@ -28,6 +30,8 @@ namespace im
 	class Account
 	{
 		PurpleAccount* account;
+		string id;
+		Protocol proto;
 
 		static void* getHandler();
 		static void account_added(PurpleAccount*);
@@ -37,9 +41,11 @@ namespace im
 		static void init();
 
 		Account();
-		Account(PurpleAccount* account);
+		Account(PurpleAccount* account, string id, Protocol proto);
 
+		string getID() const { return id; }
 		string getUsername() const;
+		Protocol getProtocol() const { return proto; }
 	};
 
 };

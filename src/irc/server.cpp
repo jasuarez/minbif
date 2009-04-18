@@ -26,7 +26,8 @@ Server::Server(string name, string _info)
 
 
 RemoteServer::RemoteServer(im::Account _account)
-	: Server(_account.getUsername(), "msn"),
+	: Server(_account.getUsername() + ":" +_account.getID(),
+	         _account.getProtocol().getName()),
 	  account(_account)
 {}
 

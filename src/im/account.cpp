@@ -15,6 +15,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <cassert>
+
 #include "account.h"
 #include "../log.h"
 
@@ -24,12 +26,15 @@ Account::Account()
 	: account(NULL)
 {}
 
-Account::Account(PurpleAccount* _account)
-	: account(_account)
+Account::Account(PurpleAccount* _account, string _id, Protocol _proto)
+	: account(_account),
+	  id(_id),
+	  proto(_proto)
 {}
 
 string Account::getUsername() const
 {
+	assert(account);
 	return account->username;
 }
 
