@@ -20,12 +20,11 @@
 
 #include "entity.h"
 #include "message.h"
-#include "channel.h"
-#include "server.h"
 
 namespace irc
 {
 	class Server;
+	class Channel;
 
 	class Nick : public Entity
 	{

@@ -34,6 +34,9 @@ namespace im
 		Protocol(PurplePlugin* plugin);
 		Protocol();
 
+		bool operator==(const Protocol& proto) const;
+		bool operator!=(const Protocol& proto) const;
+
 		string getName() const;
 		string getID() const;
 		string getPurpleID() const;

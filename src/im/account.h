@@ -30,7 +30,6 @@ namespace im
 	class Account
 	{
 		PurpleAccount* account;
-		string id;
 		Protocol proto;
 
 		static void* getHandler();
@@ -41,9 +40,9 @@ namespace im
 		static void init();
 
 		Account();
-		Account(PurpleAccount* account, string id, Protocol proto);
+		Account(PurpleAccount* account, Protocol proto);
 
-		string getID() const { return id; }
+		string getID(bool create_if_missing = true) const;
 		string getUsername() const;
 		Protocol getProtocol() const { return proto; }
 	};

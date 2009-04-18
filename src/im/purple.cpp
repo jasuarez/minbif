@@ -155,40 +155,54 @@ map<string, Account> Purple::getAccountsList()
 	map<string, Account> m;
 	GList* list = purple_accounts_get_all();
 	map<string, Protocol> protocols = getProtocolsList();
-	map<string, int> counter; /* count id for each protocol accounts */
 
 	for(; list; list = list->next)
 	{
-		string name = ((PurpleAccount*)list->data)->protocol_id;
-		Protocol proto;
-		/* Lookup protocol */
-		for(map<string, Protocol>::const_iterator it = protocols.begin(); it != protocols.end(); ++it)
-			if(it->second.getPurpleID() == name)
-			{
-				name = it->second.getID();
-				proto = it->second;
-				break;
-			}
+		Protocol proto = getProtocolByPurpleID(((PurpleAccount*)list->data)->protocol_id);
 
-		/* account id is protocol name prefixed with the protocol's account number. */
-		if(counter.find(name) != counter.end())
-			counter[name]++;
-		else
-			counter[name] = 0;
-		name += t2s(counter[name]);
-
-		Account account = Account((PurpleAccount*)list->data, name, proto);
-		m[name] = account;
+		Account account = Account((PurpleAccount*)list->data, proto);
+		m[account.getID()] = account;
 	}
 
 	return m;
 }
 
-void Purple::addAccount(Protocol proto, string username, string password)
+Protocol Purple::getProtocolByPurpleID(string id)
 {
+	map<string, Protocol> protocols = getProtocolsList();
+
+	for(map<string, Protocol>::const_iterator it = protocols.begin(); it != protocols.end(); ++it)
+		if(it->second.getPurpleID() == id)
+			return it->second;
+	return Protocol();
+}
+
+string Purple::getNewAccountName(Protocol proto)
+{
+	GList* list = purple_accounts_get_all();
+	int i = 0;
+
+	for(; list; list = list->next)
+	{
+		Protocol account_proto = getProtocolByPurpleID(((PurpleAccount*)list->data)->protocol_id);
+		if(account_proto != proto)
+			continue;
+
+		string id = purple_account_get_ui_string(((PurpleAccount*)list->data), BITLBEE_VERSION_NAME, "id", "");
+		if(id == proto.getID() + t2s(i))
+			i = s2t<int>(id.substr(proto.getID().size())) + 1;
+	}
+	return proto.getID() + t2s(i);
+}
+
+Account Purple::addAccount(Protocol proto, string username, string password)
+{
+	string id = getNewAccountName(proto);
 	PurpleAccount *account = purple_account_new(username.c_str(), proto.getPurpleID().c_str());
+
 	purple_accounts_add(account);
 	purple_account_set_password(account, password.c_str());
+	purple_account_set_ui_string(account, BITLBEE_VERSION_NAME, "id", id.c_str());
 
 	const PurpleSavedStatus *saved_status;
 	saved_status = purple_savedstatus_get_current();
@@ -196,6 +210,8 @@ void Purple::addAccount(Protocol proto, string username, string password)
 		purple_savedstatus_activate_for_account(saved_status, account);
 		purple_account_set_enabled(account, BITLBEE_VERSION_NAME, TRUE);
 	}
+
+	return Account(account, proto);
 }
 
 

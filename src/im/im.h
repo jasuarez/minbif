@@ -25,6 +25,11 @@
 #include "account.h"
 #include "protocol.h"
 
+namespace irc
+{
+	class IRC;
+};
+
 namespace im
 {
 	using std::string;
@@ -46,9 +51,11 @@ namespace im
 
 		string username;
 		string user_path;
+
+		irc::IRC* irc;
 	public:
 
-		IM(string username);
+		IM(irc::IRC* irc, string username);
 		~IM();
 
 		string getUserPath() const { return user_path; }
@@ -60,7 +67,7 @@ namespace im
 		Protocol getProtocol(string id) const;
 
 		map<string, Account> getAccountsList() const;
-		void addAccount(Protocol proto, string username, string password);
+		Account addAccount(Protocol proto, string username, string password);
 	};
 
 };

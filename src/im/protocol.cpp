@@ -29,6 +29,16 @@ Protocol::Protocol(PurplePlugin* _plugin)
 	: plugin(_plugin)
 {}
 
+bool Protocol::operator==(const Protocol& proto) const
+{
+	return proto.getPurpleID() == getPurpleID();
+}
+
+bool Protocol::operator!=(const Protocol& proto) const
+{
+	return proto.getPurpleID() != getPurpleID();
+}
+
 string Protocol::getName() const
 {
 	assert(plugin);

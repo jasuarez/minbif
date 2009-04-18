@@ -262,7 +262,7 @@ void IRC::sendWelcome()
 
 	try
 	{
-		im = new im::IM(user->getNickname());
+		im = new im::IM(this, user->getNickname());
 
 		if(im->getPassword().empty())
 		{

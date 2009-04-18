@@ -60,9 +60,10 @@ bool IM::exists(const string& username)
 
 /* METHODS */
 
-IM::IM(string _username)
+IM::IM(irc::IRC* _irc, string _username)
 	: username(_username),
-	  user_path(path + "/" + username)
+	  user_path(path + "/" + username),
+	  irc(_irc)
 {
 	DIR* d;
 
@@ -122,9 +123,9 @@ map<string, Account> IM::getAccountsList() const
 	return Purple::getAccountsList();
 }
 
-void IM::addAccount(Protocol proto, string username, string password)
+Account IM::addAccount(Protocol proto, string username, string password)
 {
-	Purple::addAccount(proto, username, password);
+	return Purple::addAccount(proto, username, password);
 
 }
 

@@ -18,7 +18,9 @@
 #include <cassert>
 
 #include "account.h"
+#include "purple.h"
 #include "../log.h"
+#include "../version.h"
 
 namespace im {
 
@@ -26,9 +28,8 @@ Account::Account()
 	: account(NULL)
 {}
 
-Account::Account(PurpleAccount* _account, string _id, Protocol _proto)
+Account::Account(PurpleAccount* _account, Protocol _proto)
 	: account(_account),
-	  id(_id),
 	  proto(_proto)
 {}
 
@@ -36,6 +37,14 @@ string Account::getUsername() const
 {
 	assert(account);
 	return account->username;
+}
+
+string Account::getID(bool create_if_missing) const
+{
+	string n = purple_account_get_ui_string(account, BITLBEE_VERSION_NAME, "id", "");
+	if(n.empty() && create_if_missing)
+		n = Purple::getNewAccountName(proto);
+	return n;
 }
 
 

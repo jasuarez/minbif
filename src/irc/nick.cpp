@@ -19,6 +19,7 @@
 #include <cassert>
 
 #include "nick.h"
+#include "channel.h"
 
 namespace irc {
 

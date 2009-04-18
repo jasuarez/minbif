@@ -60,14 +60,18 @@ namespace im
 		static void init(IM* im);
 		static void uninit();
 
+		static IM* getIM() { return im; }
+
 		/** Get protocols list
 		 *
 		 * @return  map with first=id, second=Protocol object
 		 */
 		static map<string, Protocol> getProtocolsList();
+		static Protocol getProtocolByPurpleID(string id);
 
 		static map<string, Account> getAccountsList();
-		static void addAccount(Protocol proto, string username, string password);
+		static Account addAccount(Protocol proto, string username, string password);
+		static string getNewAccountName(Protocol proto);
 	};
 };
 
