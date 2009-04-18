@@ -76,6 +76,7 @@ namespace irc
 		static bool isRemoteChannel(const string& name) { return (!name.empty() && name[0] == '#'); }
 
 		ChanUser addUser(Nick* nick, int status=0);
+		void delUser(Nick* nick, Message message = Message());
 
 		void broadcast(Message m, Nick* butone = NULL);
 	};

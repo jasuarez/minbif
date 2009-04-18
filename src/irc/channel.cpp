@@ -96,6 +96,19 @@ ChanUser Channel::addUser(Nick* nick, int status)
 	return chanuser;
 }
 
+void Channel::delUser(Nick* nick, Message m)
+{
+	for(vector<ChanUser>::iterator it = users.begin(); it != users.end(); )
+		if(it->getNick() == nick)
+			it = users.erase(it);
+		else
+		{
+			if(m.getCommand().empty() == false)
+				it->getNick()->send(m);
+			++it;
+		}
+}
+
 void Channel::broadcast(Message m, Nick* butone)
 {
 	for(vector<ChanUser>::iterator it = users.begin(); it != users.end(); ++it)

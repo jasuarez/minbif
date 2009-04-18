@@ -25,6 +25,7 @@
 #include "../util.h"
 #include "irc/buddy.h"
 #include "irc/irc.h"
+#include "irc/channel.h"
 
 namespace im {
 
@@ -121,7 +122,7 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 		irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
 
 		if(chan && buddy.isOnline() && !n->isOn(chan))
-			n->join(chan);
+			n->join(chan, !n->isAway() ? irc::ChanUser::VOICE : 0);
 
 	}
 }
