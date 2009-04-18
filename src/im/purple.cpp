@@ -121,6 +121,8 @@ void Purple::init(IM* im)
 	purple_set_blist(purple_blist_new());
 	purple_blist_load();
 
+	if (!purple_prefs_get_bool("/purple/savedstatus/startup_current_status"))
+		purple_savedstatus_activate(purple_savedstatus_get_startup());
 	purple_accounts_restore_current_statuses();
 }
 
@@ -201,6 +203,7 @@ Account Purple::addAccount(Protocol proto, string username, string password)
 	PurpleAccount *account = purple_account_new(username.c_str(), proto.getPurpleID().c_str());
 
 	purple_accounts_add(account);
+	purple_account_set_remember_password(account, TRUE);
 	purple_account_set_password(account, password.c_str());
 	purple_account_set_ui_string(account, BITLBEE_VERSION_NAME, "id", id.c_str());
 
