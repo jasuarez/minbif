@@ -23,6 +23,7 @@
 #define RPL_MAP         "015"
 #define RPL_MAPEND      "017"
 #define RPL_ENDOFSTATS  "219"
+#define RPL_AWAY        "301"
 #define RPL_WHOISUSER   "311"
 #define RPL_WHOISSERVER "312"
 #define RPL_ENDOFWHO    "315"

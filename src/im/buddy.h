@@ -41,6 +41,9 @@ namespace im
 		Buddy();
 		Buddy(PurpleBuddy* buddy);
 
+		bool operator==(const Buddy& buddy) const;
+		bool operator!=(const Buddy& buddy) const;
+
 		bool isValid() const { return buddy != NULL; }
 
 		string getName() const;

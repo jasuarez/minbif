@@ -34,6 +34,11 @@ namespace irc
 
 		virtual void send(Message m);
 
+		virtual string getAwayMessage() const;
+		virtual bool isAway() const;
+
+		im::Buddy getBuddy() const { return im_buddy; }
+
 	};
 
 }; /* namespace irc */

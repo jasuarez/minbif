@@ -31,6 +31,7 @@ class ServerPoll;
 namespace im
 {
 	class IM;
+	class Buddy;
 };
 
 namespace irc
@@ -78,6 +79,7 @@ namespace irc
 
 		void addNick(Nick* nick);
 		Nick* getNick(string nick) const;
+		Nick* getNick(const im::Buddy& buddy) const;
 		void removeNick(string nick);
 
 		void addServer(Server* server);

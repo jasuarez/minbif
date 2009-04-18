@@ -36,6 +36,16 @@ Buddy::Buddy(PurpleBuddy* _buddy)
 	: buddy(_buddy)
 {}
 
+bool Buddy::operator==(const Buddy& buddy) const
+{
+	return buddy.buddy == this->buddy;
+}
+
+bool Buddy::operator!=(const Buddy& buddy) const
+{
+	return buddy.buddy != this->buddy;
+}
+
 string Buddy::getName() const
 {
 	assert(isValid());
@@ -89,9 +99,7 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 	if (PURPLE_BLIST_NODE_IS_BUDDY(node))
 	{
 		Buddy buddy = Buddy((PurpleBuddy*)node);
-		string hostname = buddy.getName();
-		string nick = stringtok(hostname, "@");
-		irc::Nick* n = Purple::getIM()->getIRC()->getNick(nick);
+		irc::Nick* n = Purple::getIM()->getIRC()->getNick(buddy);
 		if(!n)
 		{
 			irc::Server* server = Purple::getIM()->getIRC()->getServer(buddy.getAccount().getServername());
@@ -101,6 +109,8 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 				return;
 			}
 			n = new irc::Buddy(server, buddy);
+			while(Purple::getIM()->getIRC()->getNick(n->getNickname()))
+				n->setNickname(n->getNickname() + "_");
 			Purple::getIM()->getIRC()->addNick(n);
 		}
 	}

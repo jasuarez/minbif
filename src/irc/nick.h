@@ -42,7 +42,6 @@ namespace irc
 		enum {
 			REGISTERED = 1 << 0,
 			PING       = 1 << 1,
-			AWAY       = 1 << 2,
 		};
 
 		Nick(Server* server, string nickname, string identname, string hostname, string realname="");
@@ -77,8 +76,9 @@ namespace irc
 		void delFlag(unsigned flag) { flags &= ~flag; }
 		bool hasFlag(unsigned flag) const { return flags & flag; }
 
-		string getAwayMessage() const { return away; }
 		void setAwayMessage(string a) { away = a; }
+		virtual string getAwayMessage() const { return away; }
+		virtual bool isAway() const { return away.empty() == false; }
 	};
 
 }; /* namespace irc */

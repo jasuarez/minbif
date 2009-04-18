@@ -28,6 +28,7 @@
 #include "im/im.h"
 #include "server_poll/poll.h"
 #include "irc.h"
+#include "buddy.h"
 #include "message.h"
 #include "user.h"
 #include "channel.h"
@@ -175,11 +176,30 @@ void IRC::addNick(Nick* nick)
 
 Nick* IRC::getNick(string nickname) const
 {
-	map<string, Nick*>::const_iterator it = users.find(nickname);
+	map<string, Nick*>::const_iterator it;
+	nickname = strlower(nickname);
+	for(it = users.begin(); it != users.end() && strlower(it->first) != nickname; ++it)
+		;
+
 	if(it == users.end())
 		return 0;
 
 	return it->second;
+}
+
+Nick* IRC::getNick(const im::Buddy& buddy) const
+{
+	map<string, Nick*>::const_iterator it;
+	Buddy* nb;
+	for(it = users.begin();
+	    it != users.end() && (!(nb = dynamic_cast<Buddy*>(it->second)) || nb->getBuddy() != buddy);
+	    ++it)
+		;
+
+	if(it == users.end())
+		return NULL;
+	else
+		return it->second;
 }
 
 void IRC::removeNick(string nickname)
@@ -460,7 +480,7 @@ void IRC::m_who(Message message)
 						.addArg(n->getHostname())
 						.addArg(n->getServer()->getServerName())
 						.addArg(n->getNickname())
-						.addArg(n->hasFlag(Nick::AWAY) ? "G" : "H")
+						.addArg(n->isAway() ? "G" : "H")
 						.addArg(":0 " + n->getRealname()));
 	}
 	user->send(Message(RPL_ENDOFWHO).setSender(this)
@@ -495,6 +515,10 @@ void IRC::m_whois(Message message)
 					   .addArg(n->getServer()->getServerName())
 					   .addArg(n->getServer()->getServerInfo()));
 
+	if(n->isAway())
+		user->send(Message(RPL_AWAY).setSender(this)
+				            .setReceiver(user)
+					    .addArg(n->getAwayMessage()));
 	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
 			                  .setReceiver(user)
 					  .addArg(n->getNickname())

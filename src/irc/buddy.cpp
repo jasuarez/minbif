@@ -38,5 +38,16 @@ Buddy::~Buddy()
 void Buddy::send(Message m)
 {}
 
+string Buddy::getAwayMessage() const
+{
+	if(im_buddy.isOnline() == false)
+		return "User is offline";
+	return Nick::getAwayMessage();
+}
+
+bool Buddy::isAway() const
+{
+	return im_buddy.isOnline() == false || Nick::isAway();
+}
 
 }; /* namespace buddy */
