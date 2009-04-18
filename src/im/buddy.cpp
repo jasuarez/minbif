@@ -39,12 +39,12 @@ Buddy::Buddy(PurpleBuddy* _buddy)
 
 bool Buddy::operator==(const Buddy& buddy) const
 {
-	return buddy.buddy == this->buddy;
+	return this->isValid() && buddy.isValid() && buddy.buddy == this->buddy;
 }
 
 bool Buddy::operator!=(const Buddy& buddy) const
 {
-	return buddy.buddy != this->buddy;
+	return !isValid() || !buddy.isValid() || buddy.buddy != this->buddy;
 }
 
 string Buddy::getName() const
@@ -55,11 +55,13 @@ string Buddy::getName() const
 
 bool Buddy::isOnline() const
 {
+	assert(isValid());
 	return PURPLE_BUDDY_IS_ONLINE(buddy);
 }
 
 Account Buddy::getAccount() const
 {
+	assert(isValid());
 	return Account(buddy->account);
 }
 
@@ -114,12 +116,13 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 			serv_alias_buddy(buddy.buddy);
 
 			Purple::getIM()->getIRC()->addNick(n);
-
-			string channame = buddy.getAccount().getStatusChannel();
-			irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
-			if(chan)
-				n->join(chan);
 		}
+		string channame = buddy.getAccount().getStatusChannel();
+		irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
+
+		if(chan && buddy.isOnline() && !n->isOn(chan))
+			n->join(chan);
+
 	}
 }
 

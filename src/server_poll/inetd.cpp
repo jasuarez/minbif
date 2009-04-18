@@ -52,6 +52,9 @@ InetdServerPoll::~InetdServerPoll()
 
 void InetdServerPoll::log(size_t level, string msg) const
 {
+	if(msg.find("\n") != string::npos)
+		msg = msg.substr(0, msg.find("\n"));
+
 	string cmd = MSG_NOTICE;
 	if(level & W_DEBUG)
 		cmd = MSG_PRIVMSG;

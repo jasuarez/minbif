@@ -32,10 +32,12 @@ namespace irc
 
 	class Nick;
 	class IRC;
+	class Channel;
 
 	class ChanUser : public Entity
 	{
 		Nick* nick;
+		Channel* chan;
 		int status;
 
 	public:
@@ -45,12 +47,14 @@ namespace irc
 			VOICE  = 1 << 1,
 		};
 
-		ChanUser(Nick* nick, int status = 0);
+		ChanUser(Channel* chan, Nick* nick, int status = 0);
 
 		string getName() const;
 
 		bool hasStatus(int flag) const { return status & flag; }
 		Nick* getNick() const { return nick; }
+
+		Channel* getChannel() const { return chan; }
 	};
 
 	class Channel : public Entity
@@ -71,7 +75,7 @@ namespace irc
 		static bool isStatusChannel(const string& name) { return (!name.empty() && name[0] == '&'); }
 		static bool isRemoteChannel(const string& name) { return (!name.empty() && name[0] == '#'); }
 
-		void addUser(Nick* nick, int status=0);
+		ChanUser addUser(Nick* nick, int status=0);
 
 		void broadcast(Message m, Nick* butone = NULL);
 	};

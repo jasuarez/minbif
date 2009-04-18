@@ -22,9 +22,10 @@
 
 namespace irc {
 
-ChanUser::ChanUser(Nick* _nick, int _status)
+ChanUser::ChanUser(Channel* _chan, Nick* _nick, int _status)
 	: Entity(_nick->getNickname()),
 	  nick(_nick),
+	  chan(_chan),
 	  status(_status)
 {
 }
@@ -44,9 +45,10 @@ Channel::~Channel()
 }
 
 
-void Channel::addUser(Nick* nick, int status)
+ChanUser Channel::addUser(Nick* nick, int status)
 {
-	users.push_back(ChanUser(nick, status));
+	ChanUser chanuser = ChanUser(this, nick, status);
+	users.push_back(chanuser);
 
 	string names;
 	for(vector<ChanUser>::iterator it = users.begin(); it != users.end(); ++it)
@@ -91,6 +93,7 @@ void Channel::addUser(Nick* nick, int status)
 			           .setReceiver(nick)
 				   .addArg(getName())
 				   .addArg("End of /NAMES list"));
+	return chanuser;
 }
 
 void Channel::broadcast(Message m, Nick* butone)

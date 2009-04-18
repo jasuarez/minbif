@@ -143,11 +143,8 @@ void Account::connected(PurpleConnection* gc)
 	b_log[W_SNOTICE] << "Connection to " << account.getServername() << " established!";
 	irc->addServer(new irc::RemoteServer(irc, account));
 
-	if(channame.empty() || channame.find(" ") != string::npos)
+	if(!irc::Channel::isStatusChannel(channame))
 		return;
-
-	if(channame[0] != '&')
-		channame = "&" + channame;
 
 	chan = irc->getChannel(channame);
 	if(!chan)

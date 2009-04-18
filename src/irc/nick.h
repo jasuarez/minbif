@@ -18,6 +18,8 @@
 #ifndef IRC_NICK_H
 #define IRC_NICK_H
 
+#include <map>
+
 #include "entity.h"
 #include "message.h"
 
@@ -25,6 +27,9 @@ namespace irc
 {
 	class Server;
 	class Channel;
+	class ChanUser;
+
+	using std::map;
 
 	class Nick : public Entity
 	{
@@ -32,6 +37,7 @@ namespace irc
 		string away;
 		Server* server;
 		unsigned int flags;
+		vector<ChanUser> channels;
 
 	public:
 
@@ -55,6 +61,9 @@ namespace irc
 
 		void privmsg(Channel* chan, string message);
 		void privmsg(Nick* to, string message);
+
+		vector<ChanUser> getChannels() const;
+		bool isOn(const Channel* chan) const;
 
 		Server* getServer() const { return server; }
 

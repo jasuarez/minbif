@@ -62,9 +62,22 @@ string Nick::getLongName() const
 	       getHostname();
 }
 
+vector<ChanUser> Nick::getChannels() const
+{
+	return channels;
+}
+
+bool Nick::isOn(const Channel* chan) const
+{
+	for(vector<ChanUser>::const_iterator it = channels.begin(); it != channels.end(); ++it)
+		if(it->getChannel() == chan)
+			return true;
+	return false;
+}
+
 void Nick::join(Channel* chan, int status)
 {
-	chan->addUser(this, status);
+	channels.push_back(chan->addUser(this, status));
 }
 
 void Nick::privmsg(Channel* chan, string msg)

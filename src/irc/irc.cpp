@@ -57,6 +57,7 @@ static struct
 	{ MSG_CONNECT, &IRC::m_connect, 1, Nick::REGISTERED },
 	{ MSG_SQUIT,   &IRC::m_squit,   1, Nick::REGISTERED },
 	{ MSG_MAP,     &IRC::m_map,     0, Nick::REGISTERED },
+	{ MSG_JOIN,    &IRC::m_join,    1, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -486,9 +487,13 @@ void IRC::m_who(Message message)
 	for(std::map<string, Nick*>::iterator it = users.begin(); it != users.end(); ++it)
 	{
 		Nick* n = it->second;
+		string channame = "*";
+		vector<ChanUser> chans = n->getChannels();
+		if(!chans.empty())
+			channame = chans.front().getChannel()->getName();
 		user->send(Message(RPL_WHOREPLY).setSender(this)
 				                .setReceiver(user)
-						.addArg("*") // channel
+						.addArg(channame)
 						.addArg(n->getIdentname())
 						.addArg(n->getHostname())
 						.addArg(n->getServer()->getServerName())
@@ -672,6 +677,12 @@ void IRC::m_map(Message message)
 				string password  = message.getArg(3);
 				string channel   = message.getArg(4);
 
+				if(!Channel::isStatusChannel(channel))
+				{
+					notice(user, "Status channel must start with '&'");
+					break;
+				}
+
 				try
 				{
 					im::Protocol proto = im->getProtocol(protoname);
@@ -736,6 +747,35 @@ void IRC::m_map(Message message)
 				      .setReceiver(user)
 				      .addArg("End of /MAP"));
 
+}
+
+/* JOIN channame */
+void IRC::m_join(Message message)
+{
+	string channame = message.getArg(0);
+	if(!Channel::isChanName(channame))
+		return;
+
+	switch(channame[0])
+	{
+		case '&':
+		{
+			Channel* chan = getChannel(channame);
+			if(!chan)
+			{
+				b_log[W_ERR] << "This status channel doesn't exist.";
+				return;
+			}
+			user->join(chan);
+			break;
+		}
+		case '#':
+			b_log[W_ERR] << "Remote channels aren't supported yet.";
+			break;
+		default:
+			b_log[W_ERR] << "Invalid channel name";
+			break;
+	}
 }
 
 }; /* namespace irc */
