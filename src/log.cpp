@@ -32,13 +32,14 @@ static struct
 	const char* s;
 } all_flags[] =
 {
+	{ W_SNOTICE,    LOG_NOTICE,  ""           },
 	{ W_DEBUG,      LOG_DEBUG,   "DEBUG"      },
 	{ W_PARSE,      LOG_DEBUG,   "PARSE"      },
 	{ W_ROUTING,    LOG_DEBUG,   "ROUTING"    },
 	{ W_DESYNCH,    LOG_WARNING, "DESYNCH"    },
 	{ W_WARNING,    LOG_WARNING, "WARNING"    },
 	{ W_ERR,        LOG_ERR,     "ERR"        },
-	{ W_INFO,       LOG_NOTICE,  "INFO"       }
+	{ W_INFO,       LOG_NOTICE,  "INFO"       },
 };
 
 Log::flux::~flux()
@@ -60,10 +61,17 @@ Log::flux::~flux()
 
 		struct timeval t;
 		gettimeofday(&t, NULL);
-		if(b_log.getServerPoll())
-			b_log.getServerPoll()->log(flag, string("[") + all_flags[i].s + "] " + str);
+
+		string category;
+		if(flag & W_SNOTICE)
+			category = "*** Notice -- ";
 		else
-			std::cout << ":localhost.localdomain NOTICE AUTH :[" << all_flags[i].s << "] " << str << "\r\n";
+			category = string("[") + all_flags[i].s + "] ";
+
+		if(b_log.getServerPoll())
+			b_log.getServerPoll()->log(flag, category + str);
+		else
+			std::cout << ":localhost.localdomain NOTICE AUTH :" << category << " " << str << "\r\n";
 
 	}
 }
