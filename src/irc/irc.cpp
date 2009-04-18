@@ -613,78 +613,44 @@ void IRC::m_stats(Message message)
 					  .addArg("End of /STATS report"));
 }
 
-/* CONNECT proto username password */
+/* CONNECT servername */
 void IRC::m_connect(Message message)
 {
-	string protoname = message.getArg(0);
-	string username = message.getArg(1);
-	string password = message.getArg(2);
-
-	try
+	im::Account account = im->getAccount(message.getArg(0));
+	if(!account.isValid())
 	{
-		im::Protocol proto = im->getProtocol(protoname);
+		notice(user, "Error: Account " + message.getArg(0) + " is unknown");
+		return;
+	}
 
-		im->addAccount(proto, username, password);
-	}
-	catch(im::ProtocolUnknown &e)
-	{
-		notice(user, "Error: Protocol " + protoname + " is unknown. Try '/STATS p' to list protocols.");
-	}
+	account.connect();
 }
 
 /* MAP */
 void IRC::m_map(Message message)
 {
-	if(message.countArgs() == 0)
-        {
-		string arg = "*";
-		user->send(Message(RPL_MAP).setSender(this)
-					   .setReceiver(user)
-					   .addArg(this->getServerName()));
-		for(map<string, Server*>::iterator it = servers.begin();
-		    it != servers.end(); ++it)
-		{
-		    map<string, Server*>::iterator next = it;
-			string name;
-
-			if(++next == servers.end())
-				name = "`-";
-			else
-				name = "|-";
-
-			name += it->second->getName();
-
-			user->send(Message(RPL_MAP).setSender(this)
-						   .setReceiver(user)
-						   .addArg(name));
-		}
-		user->send(Message(RPL_MAPEND).setSender(this)
-					      .setReceiver(user)
-					      .addArg("End of /MAP"));
-
-        }
-        else
-        {
+	im::Account added_account;
+	if(message.countArgs() > 0)
+	{
 		string arg = message.getArg(0);
-		string protoname = message.getArg(1);
-        	string username  = message.getArg(2);
-		string password  = message.getArg(3);
 		switch(arg[0])
 		{
 			case 'a':
-				if(message.countArgs() != 4)
+			{
+				string protoname = message.getArg(1);
+				string username  = message.getArg(2);
+				string password  = message.getArg(3);
+
+				if(message.countArgs() < 4)
 				{
-					notice(user, "Usage: /MAP add PROTO ACCOUNT PASSWD");
+					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD");
 					break;
 				}
-				user->send(Message(RPL_MAP).setSender(this)
-        			                           .setReceiver(user)
-        			                           .addArg("Adding "+message.getArg(1)));
 				try
 				{
 					im::Protocol proto = im->getProtocol(protoname);
 
-					im->addAccount(proto, username, password);
+					added_account = im->addAccount(proto, username, password);
 				}
 				catch(im::ProtocolUnknown &e)
 				{
@@ -693,10 +659,12 @@ void IRC::m_map(Message message)
 				}
 
         			break;
+			}
         		case 'd':
-				if(message.countArgs() != 4)
+			{
+				if(message.countArgs() < 4)
 				{
-					notice(user, "Usage: /MAP del PROTO ACCOUNT PASSWD");
+					notice(user, "Usage: /MAP del NAME");
 					break;
 				}
 
@@ -704,14 +672,45 @@ void IRC::m_map(Message message)
         			                           .setReceiver(user)
         			                           .addArg("Adding "+message.getArg(1)));
         			break;
+			}
         		case 'h':
 				notice(user,"a, add: add ACCOUNT to your accounts");
         			notice(user,"d, del: remove ACCOUNT from your accounts");
         		default:
-				notice(user,"Usage: /MAP [add|del PROTO ACCOUNT PASSWD] | [help]");
+				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD] | [del NAME] | [help]");
         			break;
 		}
-        }
+	}
+
+	user->send(Message(RPL_MAP).setSender(this)
+				   .setReceiver(user)
+				   .addArg(this->getServerName()));
+
+	if(added_account.isValid())
+		user->send(Message(RPL_MAP).setSender(this)
+					   .setReceiver(user)
+					   .addArg("|-" + added_account.getServername() + " (added)"));
+	for(map<string, Server*>::iterator it = servers.begin();
+	    it != servers.end(); ++it)
+	{
+	    map<string, Server*>::iterator next = it;
+		string name;
+
+		if(++next == servers.end())
+			name = "`-";
+		else
+			name = "|-";
+
+		name += it->second->getName();
+
+		user->send(Message(RPL_MAP).setSender(this)
+					   .setReceiver(user)
+					   .addArg(name));
+	}
+	user->send(Message(RPL_MAPEND).setSender(this)
+				      .setReceiver(user)
+				      .addArg("End of /MAP"));
+
 }
 
 }; /* namespace irc */

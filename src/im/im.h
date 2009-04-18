@@ -69,6 +69,7 @@ namespace im
 		Protocol getProtocol(string id) const;
 
 		map<string, Account> getAccountsList() const;
+		Account getAccount(string name) const;
 		Account addAccount(Protocol proto, string username, string password);
 	};
 

@@ -64,6 +64,15 @@ vector<Buddy> Account::getBuddies() const
 	return buddies;
 }
 
+void Account::connect() const
+{
+	purple_account_set_enabled(account, BITLBEE_VERSION_NAME, true);
+}
+
+void Account::disconnect() const
+{
+	purple_account_set_enabled(account, BITLBEE_VERSION_NAME, false);
+}
 
 /* STATIC */
 

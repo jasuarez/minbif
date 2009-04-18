@@ -123,6 +123,15 @@ map<string, Account> IM::getAccountsList() const
 	return Purple::getAccountsList();
 }
 
+Account IM::getAccount(string name) const
+{
+	map<string, Account> alist = getAccountsList();
+	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)
+		if(it->second.getServername() == name || it->second.getID() == name)
+			return it->second;
+	return Account();
+}
+
 Account IM::addAccount(Protocol proto, string username, string password)
 {
 	return Purple::addAccount(proto, username, password);

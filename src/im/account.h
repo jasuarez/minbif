@@ -57,6 +57,9 @@ namespace im
 		Protocol getProtocol() const { return proto; }
 
 		vector<Buddy> getBuddies() const;
+
+		void connect() const;
+		void disconnect() const;
 	};
 
 };
