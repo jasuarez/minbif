@@ -29,7 +29,6 @@ namespace im
 	{
 		PurplePlugin* plugin;
 
-
 	public:
 
 		Protocol(PurplePlugin* plugin);

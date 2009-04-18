@@ -49,6 +49,7 @@ static struct
 	{ MSG_PING,    &IRC::m_ping,    0, Nick::REGISTERED },
 	{ MSG_PONG,    &IRC::m_pong,    1, Nick::REGISTERED },
 	{ MSG_VERSION, &IRC::m_version, 0, Nick::REGISTERED },
+	{ MSG_WHO,     &IRC::m_who,     0, Nick::REGISTERED },
 	{ MSG_WHOIS,   &IRC::m_whois,   1, Nick::REGISTERED },
 	{ MSG_WHOWAS,  &IRC::m_whowas,  1, Nick::REGISTERED },
 	{ MSG_STATS,   &IRC::m_stats,   0, Nick::REGISTERED },
@@ -453,6 +454,28 @@ void IRC::m_version(Message message)
 			               .setReceiver(user)
 				       .addArg(BITLBEE_VERSION)
 				       .addArg(getServerName()));
+}
+
+/* WHO */
+void IRC::m_who(Message message)
+{
+	for(std::map<string, Nick*>::iterator it = users.begin(); it != users.end(); ++it)
+	{
+		Nick* n = it->second;
+		user->send(Message(RPL_WHOREPLY).setSender(this)
+				                .setReceiver(user)
+						.addArg("*") // channel
+						.addArg(n->getIdentname())
+						.addArg(n->getHostname())
+						.addArg(n->getServer()->getServerName())
+						.addArg(n->getNickname())
+						.addArg(n->hasFlag(Nick::AWAY) ? "G" : "H")
+						.addArg(":0 " + n->getRealname()));
+	}
+	user->send(Message(RPL_ENDOFWHO).setSender(this)
+			                .setReceiver(user)
+				        .addArg("**")
+				        .addArg("End of /WHO list"));
 }
 
 /* WHOIS nick */

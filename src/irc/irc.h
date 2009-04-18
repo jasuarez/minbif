@@ -94,6 +94,7 @@ namespace irc
 		void m_quit(Message m);
 		void m_ping(Message m);
 		void m_pong(Message m);
+		void m_who(Message m);
 		void m_whois(Message m);
 		void m_whowas(Message m);
 		void m_version(Message m);

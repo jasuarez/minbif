@@ -30,6 +30,7 @@ namespace irc
 	class Nick : public Entity
 	{
 		string identname, hostname, realname;
+		string away;
 		Server* server;
 		unsigned int flags;
 
@@ -41,7 +42,8 @@ namespace irc
 
 		enum {
 			REGISTERED = 1 << 0,
-			PING       = 1 << 1
+			PING       = 1 << 1,
+			AWAY       = 1 << 2,
 		};
 
 		Nick(Server* server, string nickname, string identname, string hostname, string realname="");
@@ -75,6 +77,9 @@ namespace irc
 		void setFlag(unsigned flag) { flags |= flag; }
 		void delFlag(unsigned flag) { flags &= ~flag; }
 		bool hasFlag(unsigned flag) const { return flags & flag; }
+
+		string getAwayMessage() const { return away; }
+		void setAwayMessage(string a) { away = a; }
 	};
 
 }; /* namespace irc */
