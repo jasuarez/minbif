@@ -28,7 +28,6 @@
 #include "im/im.h"
 #include "server_poll/poll.h"
 #include "irc.h"
-#include "buddy.h"
 #include "message.h"
 #include "user.h"
 #include "channel.h"
@@ -176,30 +175,11 @@ void IRC::addNick(Nick* nick)
 
 Nick* IRC::getNick(string nickname) const
 {
-	map<string, Nick*>::const_iterator it;
-	nickname = strlower(nickname);
-	for(it = users.begin(); it != users.end() && strlower(it->first) != nickname; ++it)
-		;
-
+	map<string, Nick*>::const_iterator it = users.find(nickname);
 	if(it == users.end())
 		return 0;
 
 	return it->second;
-}
-
-Nick* IRC::getNick(const im::Buddy& buddy) const
-{
-	map<string, Nick*>::const_iterator it;
-	Buddy* nb;
-	for(it = users.begin();
-	    it != users.end() && (!(nb = dynamic_cast<Buddy*>(it->second)) || nb->getBuddy() != buddy);
-	    ++it)
-		;
-
-	if(it == users.end())
-		return NULL;
-	else
-		return it->second;
 }
 
 void IRC::removeNick(string nickname)
@@ -480,7 +460,7 @@ void IRC::m_who(Message message)
 						.addArg(n->getHostname())
 						.addArg(n->getServer()->getServerName())
 						.addArg(n->getNickname())
-						.addArg(n->isAway() ? "G" : "H")
+						.addArg(n->hasFlag(Nick::AWAY) ? "G" : "H")
 						.addArg(":0 " + n->getRealname()));
 	}
 	user->send(Message(RPL_ENDOFWHO).setSender(this)
@@ -515,10 +495,6 @@ void IRC::m_whois(Message message)
 					   .addArg(n->getServer()->getServerName())
 					   .addArg(n->getServer()->getServerInfo()));
 
-	if(n->isAway())
-		user->send(Message(RPL_AWAY).setSender(this)
-				            .setReceiver(user)
-					    .addArg(n->getAwayMessage()));
 	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
 			                  .setReceiver(user)
 					  .addArg(n->getNickname())
@@ -634,31 +610,88 @@ void IRC::m_connect(Message message)
 /* MAP */
 void IRC::m_map(Message message)
 {
-	user->send(Message(RPL_MAP).setSender(this)
-			           .setReceiver(user)
-				   .addArg(this->getServerName()));
+	string arg = "*";
+        user->send(Message(RPL_MAP).setSender(this)
+	      		           .setReceiver(user)
+	       			   .addArg(this->getServerName()));
+	if(message.countArgs() == 0)
+        {
+	    for(map<string, Server*>::iterator it = servers.begin();
+	            it != servers.end(); ++it)
+	    {
+	        map<string, Server*>::iterator next = it;
+	    	string name;
 
-	for(map<string, Server*>::iterator it = servers.begin();
-	    it != servers.end(); ++it)
-	{
-		map<string, Server*>::iterator next = it;
-		string name;
+	    	if(++next == servers.end())
+	    		name = "`-";
+	    	else
+	    		name = "|-";
 
-		if(++next == servers.end())
-			name = "`-";
-		else
-			name = "|-";
+	    	name += it->second->getName();
 
-		name += it->second->getName();
+	    	user->send(Message(RPL_MAP).setSender(this)
+	    				   .setReceiver(user)
+	    				   .addArg(name));
+	    }
+        }
+        else if (message.countArgs() < 4 || message.countArgs() > 4)
+        {
+            notice(user,"Usage: /MAP [add|del PROTO ACCOUNT PASSWD] | [help]");
+        }
+        else 
+        {
+	    arg = message.getArg(0);
+	    string protoname = message.getArg(1);
+            string username  = message.getArg(2);
+	    string password  = message.getArg(3);
+    	    switch(arg[0])
+	    {
 
-		user->send(Message(RPL_MAP).setSender(this)
-					   .setReceiver(user)
-					   .addArg(name));
+                case 'a'    :
+                {        
+                            user->send(Message(RPL_MAP).setSender(this)
+                                                       .setReceiver(user)
+                                                       .addArg("Adding "+message.getArg(1)));
+	                    try
+	                    {
+	                    	im::Protocol proto = im->getProtocol(protoname);
 
-	}
+	                    	im->addAccount(proto, username, password);
+	                    }
+	                    catch(im::ProtocolUnknown &e)
+	                    {
+	                    	notice(user, "Error: Protocol " + protoname + 
+                                             " is unknown. Try '/STATS p' to list protocols.");
+	                    }
+    
+                            break;
+                }
+                                
+                case 'd'    :   
+                {           
+                            user->send(Message(RPL_MAP).setSender(this)
+                                                       .setReceiver(user)
+                                                       .addArg("Adding "+message.getArg(1)));
+                            break;
+                }
+
+                case 'h'    :   
+                {       
+                            notice(user,"a, add : add ACCOUNT to your accounts");
+                            notice(user,"d, del : remove ACCOUNT from your accounts");
+                }
+
+                default     :  
+                {           
+                            notice(user,"Usage: /MAP [add|del PROTO ACCOUNT PASSWD] | [help]");
+                            break;
+                }
+	    }
+        }
+        
 	user->send(Message(RPL_MAPEND).setSender(this)
-			              .setReceiver(user)
-				      .addArg("End of /MAP"));
+	                              .setReceiver(user)
+                                      .addArg("End of /MAP"));
 }
 
 }; /* namespace irc */
