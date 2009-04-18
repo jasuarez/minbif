@@ -21,6 +21,8 @@
 #include "purple.h"
 #include "../log.h"
 #include "../version.h"
+#include "im.h"
+#include "irc/irc.h"
 
 namespace im {
 
@@ -31,7 +33,10 @@ Account::Account()
 Account::Account(PurpleAccount* _account, Protocol _proto)
 	: account(_account),
 	  proto(_proto)
-{}
+{
+	if(!proto.isValid())
+		proto = Purple::getProtocolByPurpleID(account->protocol_id);
+}
 
 string Account::getUsername() const
 {
@@ -39,10 +44,10 @@ string Account::getUsername() const
 	return account->username;
 }
 
-string Account::getID(bool create_if_missing) const
+string Account::getID() const
 {
 	string n = purple_account_get_ui_string(account, BITLBEE_VERSION_NAME, "id", "");
-	if(n.empty() && create_if_missing)
+	if(n.empty())
 		n = Purple::getNewAccountName(proto);
 	return n;
 }
@@ -62,11 +67,20 @@ void Account::init()
 	purple_signal_connect(purple_accounts_get_handle(), "account-added",
 				getHandler(), PURPLE_CALLBACK(account_added),
 				NULL);
+	purple_signal_connect(purple_accounts_get_handle(), "account-removed",
+				getHandler(), PURPLE_CALLBACK(account_removed),
+				NULL);
 }
 
 void Account::account_added(PurpleAccount* account)
 {
-	b_log[W_INFO] << "Account added " << account;
+	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Account(account)));
+}
+
+void Account::account_removed(PurpleAccount* account)
+{
+	Account a = Account(account);
+	Purple::getIM()->getIRC()->removeServer(a.getUsername() + ":" + a.getID());
 }
 
 }; /* namespace im */

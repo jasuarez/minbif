@@ -37,6 +37,7 @@ namespace im
 		bool operator==(const Protocol& proto) const;
 		bool operator!=(const Protocol& proto) const;
 
+		bool isValid() const { return plugin != NULL; }
 		string getName() const;
 		string getID() const;
 		string getPurpleID() const;

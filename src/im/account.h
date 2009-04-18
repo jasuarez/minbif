@@ -34,15 +34,17 @@ namespace im
 
 		static void* getHandler();
 		static void account_added(PurpleAccount*);
+		static void account_removed(PurpleAccount*);
 
 	public:
 
 		static void init();
 
 		Account();
-		Account(PurpleAccount* account, Protocol proto);
+		Account(PurpleAccount* account, Protocol proto = Protocol());
 
-		string getID(bool create_if_missing = true) const;
+		bool isValid() const { return account != NULL; }
+		string getID() const;
 		string getUsername() const;
 		Protocol getProtocol() const { return proto; }
 	};

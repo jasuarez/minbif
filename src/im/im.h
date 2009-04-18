@@ -63,6 +63,8 @@ namespace im
 		void setPassword(const string& password);
 		string getPassword() const;
 
+		irc::IRC* getIRC() const { return irc; }
+
 		map<string, Protocol> getProtocolsList() const;
 		Protocol getProtocol(string id) const;
 
