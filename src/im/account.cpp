@@ -110,11 +110,13 @@ void Account::account_removed(PurpleAccount* account)
 void Account::connected(PurpleConnection* gc)
 {
 	b_log[W_ERR] << "Connected!";
+	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), Account(gc->account)));
 }
 
 void Account::disconnected(PurpleConnection* gc)
 {
-
+	Account account = Account(gc->account);
+	Purple::getIM()->getIRC()->removeServer(account.getUsername() + ":" + account.getID());
 }
 
 }; /* namespace im */

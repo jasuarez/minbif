@@ -275,14 +275,6 @@ void IRC::sendWelcome()
 			return;
 		}
 
-		/* Create servers from accounts. */
-		map<string, im::Account> accounts = im->getAccountsList();
-		for(map<string, im::Account>::iterator it = accounts.begin();
-		    it != accounts.end(); ++it)
-		{
-			addServer(new RemoteServer(this, it->second));
-		}
-
 		user->setFlag(Nick::REGISTERED);
 
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
