@@ -77,6 +77,7 @@ namespace irc
 
 		ChanUser addUser(Nick* nick, int status=0);
 		void delUser(Nick* nick, Message message = Message());
+		size_t countUsers() const { return users.size(); }
 
 		void broadcast(Message m, Nick* butone = NULL);
 	};

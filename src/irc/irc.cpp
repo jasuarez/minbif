@@ -58,6 +58,7 @@ static struct
 	{ MSG_SQUIT,   &IRC::m_squit,   1, Nick::REGISTERED },
 	{ MSG_MAP,     &IRC::m_map,     0, Nick::REGISTERED },
 	{ MSG_JOIN,    &IRC::m_join,    1, Nick::REGISTERED },
+	{ MSG_LIST,    &IRC::m_list,    0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -776,6 +777,25 @@ void IRC::m_join(Message message)
 			b_log[W_ERR] << "Invalid channel name";
 			break;
 	}
+}
+
+/* LIST */
+void IRC::m_list(Message message)
+{
+	user->send(Message(RPL_LISTSTART).setSender(this)
+			                 .setReceiver(user)
+					 .addArg("Channel")
+					 .addArg("Users  Name"));
+
+	for(map<string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
+		user->send(Message(RPL_LIST).setSender(this)
+			                    .setReceiver(user)
+				            .addArg(it->second->getName())
+				            .addArg(t2s(it->second->countUsers())));
+
+	user->send(Message(RPL_LISTEND).setSender(this)
+			               .setReceiver(user)
+				       .addArg("End of /LIST"));
 }
 
 }; /* namespace irc */

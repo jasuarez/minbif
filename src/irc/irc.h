@@ -106,6 +106,7 @@ namespace irc
 		void m_squit(Message m);
 		void m_map(Message m);
 		void m_join(Message m);
+		void m_list(Message m);
 	};
 
 }; /* namespace irc */
