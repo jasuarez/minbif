@@ -230,6 +230,7 @@ Account Purple::addAccount(Protocol proto, string username, string password)
 
 void Purple::delAccount(PurpleAccount* user)
 {
+	purple_request_close_with_handle(account); /* Close any other opened delete window */
         purple_accounts_delete(user);
 }
 
