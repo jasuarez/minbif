@@ -23,6 +23,8 @@
 #include "entity.h"
 #include "message.h"
 
+class CacaImage;
+
 namespace irc
 {
 	class Server;
@@ -89,6 +91,8 @@ namespace irc
 		void setAwayMessage(string a) { away = a; }
 		virtual string getAwayMessage() const { return away; }
 		virtual bool isAway() const { return away.empty() == false; }
+
+		virtual CacaImage getIcon() const;
 	};
 
 }; /* namespace irc */

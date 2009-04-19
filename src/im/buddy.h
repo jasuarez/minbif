@@ -21,6 +21,8 @@
 #include <libpurple/purple.h>
 #include <string>
 
+#include "caca_image.h"
+
 namespace im
 {
 	using std::string;
@@ -49,6 +51,8 @@ namespace im
 		string getName() const;
 		string getAlias() const;
 		bool isOnline() const;
+		CacaImage getIcon() const;
+
 		Account getAccount() const;
 
 	};

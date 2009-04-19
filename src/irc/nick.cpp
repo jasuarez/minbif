@@ -20,6 +20,7 @@
 
 #include "nick.h"
 #include "channel.h"
+#include "caca_image.h"
 
 namespace irc {
 
@@ -64,6 +65,11 @@ string Nick::getLongName() const
 	return getNickname()  + "!" +
 	       getIdentname() + "@" +
 	       getHostname();
+}
+
+CacaImage Nick::getIcon() const
+{
+	return CacaImage();
 }
 
 vector<ChanUser> Nick::getChannels() const

@@ -80,6 +80,15 @@ Account Buddy::getAccount() const
 	return Account(buddy->account);
 }
 
+CacaImage Buddy::getIcon() const
+{
+	PurpleBuddyIcon* bicon = purple_buddy_icons_find(buddy->account, buddy->name);//purple_buddy_get_icon(buddy);
+	if(!bicon)
+		return CacaImage();
+
+	return CacaImage(purple_buddy_icon_get_full_path(bicon));
+}
+
 /* STATIC */
 
 PurpleBlistUiOps Buddy::blist_ui_ops =

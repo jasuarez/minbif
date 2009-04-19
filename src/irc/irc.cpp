@@ -32,6 +32,7 @@
 #include "message.h"
 #include "user.h"
 #include "channel.h"
+#include "caca_image.h"
 
 namespace irc {
 
@@ -557,6 +558,28 @@ void IRC::m_whois(Message message)
 		                            .setReceiver(user)
 		                            .addArg(n->getAwayMessage()));
 
+	CacaImage icon = n->getIcon();
+	try
+	{
+		string buf = icon.getIRCBuffer(0, 10);
+		string line;
+		notice(user, "Icon:");
+		while((line = stringtok(buf, "\n")).empty() == false)
+		{
+			user->send(Message(MSG_NOTICE).setSender(this)
+					               .setReceiver(user)
+						       .addArg(line));
+		}
+	}
+	catch(CacaError &e)
+	{
+		notice(user, "No icon");
+	}
+	catch(CacaNotLoaded &e)
+	{
+		notice(user, "libcaca and imlib2 are required to display icon");
+	}
+
 	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
 			                  .setReceiver(user)
 					  .addArg(n->getNickname())
@@ -708,6 +731,7 @@ void IRC::m_map(Message message)
 
 					added_account = im->addAccount(proto, username, password);
 					added_account.setStatusChannel(channel);
+					added_account.createStatusChannel();
 				}
 				catch(im::ProtocolUnknown &e)
 				{
@@ -741,22 +765,23 @@ void IRC::m_map(Message message)
 				   .setReceiver(user)
 				   .addArg(this->getServerName()));
 
-	if(added_account.isValid())
-		user->send(Message(RPL_MAP).setSender(this)
-					   .setReceiver(user)
-					   .addArg("|-" + added_account.getServername() + " (added)"));
 	for(map<string, Server*>::iterator it = servers.begin();
 	    it != servers.end(); ++it)
 	{
-	    map<string, Server*>::iterator next = it;
+		map<string, Server*>::iterator next = it;
 		string name;
+		RemoteServer* remote = dynamic_cast<RemoteServer*>(it->second);
+		if(!remote)
+			continue;
 
 		if(++next == servers.end())
 			name = "`-";
 		else
 			name = "|-";
 
-		name += it->second->getName();
+		name += remote->getName();
+		if(remote->getAccount() == added_account)
+			name += " (added)";
 
 		user->send(Message(RPL_MAP).setSender(this)
 					   .setReceiver(user)

@@ -81,4 +81,9 @@ bool Buddy::isAway() const
 	return im_buddy.isOnline() == false || Nick::isAway();
 }
 
+CacaImage Buddy::getIcon() const
+{
+	return im_buddy.getIcon();
+}
+
 }; /* namespace buddy */
