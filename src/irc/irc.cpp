@@ -685,7 +685,8 @@ void IRC::m_connect(Message message)
 
 	account.connect();
         Channel* chan = getChannel(account.getStatusChannel());
-        user->join(chan);
+	if(chan)
+		user->join(chan);
 }
 
 /* SQUIT servername */
