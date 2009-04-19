@@ -744,11 +744,6 @@ void IRC::m_map(Message message)
 
         			break;
 			}
-        		case 'd':
-			{
-                                /* TODO some calls to purple_accounts_delete*/
-        			break;
-			}
         		case 'r':
 			{
 				if(message.countArgs() != 2)
@@ -768,10 +763,9 @@ void IRC::m_map(Message message)
 			}
         		case 'h':
 				notice(user,"a, add: add ACCOUNT to your accounts");
-        			notice(user,"d, del: remove ACCOUNT from your account list");
-        			notice(user,"r, rem: remove all information about ACCOUNT from your configuration files");
+        			notice(user,"r, rem: remove ACCOUNT from your accounts");
         		default:
-				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD CHANNEL] | [del NAME] | [help]");
+				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD CHANNEL] | [rem NAME] | [help]");
         			break;
 		}
 	}
