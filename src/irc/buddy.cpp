@@ -18,6 +18,7 @@
 #include <cstring>
 
 #include "irc/buddy.h"
+#include "irc/channel.h"
 #include "im/account.h"
 #include "../util.h"
 
@@ -60,12 +61,20 @@ void Buddy::send(Message m)
 {
 	if(m.getCommand() == MSG_PRIVMSG)
 	{
-		if(!conv.isValid())
+		string text = m.getArg(0);
+		Channel* chan = dynamic_cast<Channel*>(m.getReceiver());
+
+		if((!chan && m.getReceiver() == this) || (chan->isStatusChannel() && text.find(getNickname() + ": ") == 0))
 		{
-			conv = im::Conversation(im_buddy.getAccount(), im_buddy);
-			conv.present();
+			if(chan->isStatusChannel())
+				stringtok(text, " ");
+			if(!conv.isValid())
+			{
+				conv = im::Conversation(im_buddy.getAccount(), im_buddy);
+				conv.present();
+			}
+			conv.sendMessage(text);
 		}
-		conv.sendMessage(m.getArg(0));
 	}
 }
 
