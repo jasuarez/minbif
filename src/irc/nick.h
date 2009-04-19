@@ -58,6 +58,7 @@ namespace irc
 		virtual void send(Message m) {}
 
 		void join(Channel* chan, int status = 0);
+		void part(Channel* chan, string message="");
 
 		void privmsg(Channel* chan, string message);
 		void privmsg(Nick* to, string message);

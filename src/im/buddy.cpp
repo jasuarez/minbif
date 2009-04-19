@@ -121,8 +121,13 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 		string channame = buddy.getAccount().getStatusChannel();
 		irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
 
-		if(chan && buddy.isOnline() && !n->isOn(chan))
-			n->join(chan, !n->isAway() ? irc::ChanUser::VOICE : 0);
+		if(chan)
+		{
+			if(buddy.isOnline() && !n->isOn(chan))
+				n->join(chan, !n->isAway() ? irc::ChanUser::VOICE : 0);
+			else if(!buddy.isOnline() && n->isOn(chan))
+				n->part(chan, "Leaving...");
+		}
 
 	}
 }
