@@ -43,7 +43,15 @@ PurpleEventLoopUiOps Purple::eventloop_ops =
 
 void Purple::debug(PurpleDebugLevel level, const char *category, const char *args)
 {
-	b_log[W_DEBUG] << "[" << category << "] " << args;
+	switch(level)
+	{
+		case PURPLE_DEBUG_WARNING:
+		case PURPLE_DEBUG_ERROR:
+		case PURPLE_DEBUG_FATAL:
+			b_log[W_WARNING] << "[" << category << "] " << args;
+		default:
+			break;
+	}
 }
 
 PurpleDebugUiOps Purple::debug_ops =
