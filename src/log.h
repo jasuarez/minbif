@@ -30,10 +30,10 @@ enum
 	W_WARNING    = 1 << 4,			  /* Warnings */
 	W_ERR        = 1 << 5,			  /* Errors */
 	W_INFO       = 1 << 6,			  /* Info */
-	W_SNOTICE    = 1 << 7                     /* Server notice */
+	W_SNO        = 1 << 7                     /* Server notice */
 };
 
-#define DEFAULT_LOGGED_FLAGS (W_DESYNCH|W_WARNING|W_ERR|W_INFO|W_SNOTICE)
+#define DEFAULT_LOGGED_FLAGS (W_DESYNCH|W_WARNING|W_ERR|W_INFO|W_SNO)
 
 #define FLog(flags, msg) b_log[flags] << __FILE__ << ":" << __PRETTY_FUNCTION << "():" << __LINE__ << ": " << msg
 

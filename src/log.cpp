@@ -32,7 +32,7 @@ static struct
 	const char* s;
 } all_flags[] =
 {
-	{ W_SNOTICE,    LOG_NOTICE,  ""           },
+	{ W_SNO,        LOG_NOTICE,  ""           },
 	{ W_DEBUG,      LOG_DEBUG,   "DEBUG"      },
 	{ W_PARSE,      LOG_DEBUG,   "PARSE"      },
 	{ W_ROUTING,    LOG_DEBUG,   "ROUTING"    },
@@ -63,7 +63,7 @@ Log::flux::~flux()
 		gettimeofday(&t, NULL);
 
 		string category;
-		if(flag & W_SNOTICE)
+		if(flag & W_SNO)
 			category = "*** Notice -- ";
 		else
 			category = string("[") + all_flags[i].s + "] ";

@@ -112,13 +112,12 @@ void Purple::init(IM* im)
 	purple_core_set_ui_ops(&core_ops);
 	purple_eventloop_set_ui_ops(&eventloop_ops);
 
+	Purple::im = im;
 	if (!purple_core_init(BITLBEE_VERSION_NAME))
 	{
 		b_log[W_ERR] << "Initialization of the Purple core failed.";
 		throw PurpleError();
 	}
-
-	Purple::im = im;
 
 	purple_set_blist(purple_blist_new());
 	purple_blist_load();

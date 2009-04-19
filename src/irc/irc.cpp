@@ -764,7 +764,7 @@ void IRC::m_join(Message message)
 			Channel* chan = getChannel(channame);
 			if(!chan)
 			{
-				b_log[W_ERR] << "This status channel doesn't exist.";
+				b_log[W_ERR|W_SNO] << "This status channel doesn't exist.";
 				return;
 			}
 			user->join(chan);

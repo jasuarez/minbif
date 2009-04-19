@@ -86,6 +86,23 @@ void Account::disconnect() const
 	purple_account_set_enabled(account, BITLBEE_VERSION_NAME, false);
 }
 
+void Account::createStatusChannel() const
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::Channel* chan;
+	string channame = getStatusChannel();
+
+	if(!irc::Channel::isStatusChannel(channame))
+		return;
+
+	chan = irc->getChannel(channame);
+	if(!chan)
+	{
+		chan = new irc::Channel(irc, channame);
+		irc->addChannel(chan);
+	}
+}
+
 /* STATIC */
 
 PurpleConnectionUiOps Account::conn_ops =
@@ -120,11 +137,18 @@ void Account::init()
 	purple_signal_connect(purple_accounts_get_handle(), "account-removed",
 				getHandler(), PURPLE_CALLBACK(account_removed),
 				NULL);
+
+	map<string, Account> accounts = Purple::getAccountsList();
+	for(map<string, Account>::iterator it = accounts.begin(); it != accounts.end(); ++it)
+		it->second.createStatusChannel();
 }
 
 void Account::account_added(PurpleAccount* account)
 {
-	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), Account(account)));
+	Account acc = Account(account);
+
+	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), acc));
+	acc.createStatusChannel();
 }
 
 void Account::account_removed(PurpleAccount* account)
@@ -141,36 +165,25 @@ void Account::connecting(PurpleConnection *gc,
 	Account account = Account(gc->account);
 
 	if(!step)
-		b_log[W_SNOTICE] << "Connection to " << account.getServername() << " in progress...";
+		b_log[W_INFO|W_SNO] << "Connection to " << account.getServername() << " in progress...";
 	else
-		b_log[W_SNOTICE] << "" << account.getID() << "(" << step << "/" << step_count-1 << "): " << text;
+		b_log[W_INFO|W_SNO] << "" << account.getID() << "(" << step << "/" << step_count-1 << "): " << text;
 }
 
 void Account::connected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc::Channel* chan;
-	string channame = account.getStatusChannel();
 
-	b_log[W_SNOTICE] << "Connection to " << account.getServername() << " established!";
+	b_log[W_INFO|W_SNO] << "Connection to " << account.getServername() << " established!";
 	irc->addServer(new irc::RemoteServer(irc, account));
-
-	if(!irc::Channel::isStatusChannel(channame))
-		return;
-
-	chan = irc->getChannel(channame);
-	if(!chan)
-	{
-		chan = new irc::Channel(irc, channame);
-		irc->addChannel(chan);
-	}
 }
 
 void Account::disconnected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
-	b_log[W_SNOTICE] << "Closing link with " << account.getServername();
+
+	b_log[W_INFO|W_SNO] << "Closing link with " << account.getServername();
 	Purple::getIM()->getIRC()->removeServer(account.getServername());
 }
 
@@ -178,7 +191,7 @@ void Account::disconnect_reason(PurpleConnection *gc,
 				PurpleConnectionError reason,
 				const char *text)
 {
-	b_log[W_SNOTICE] << "Error(" << Account(gc->account).getServername() << "): " << text;
+	b_log[W_ERR|W_SNO] << "Error(" << Account(gc->account).getServername() << "): " << text;
 }
 
 }; /* namespace im */

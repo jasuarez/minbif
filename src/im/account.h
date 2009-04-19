@@ -69,6 +69,8 @@ namespace im
 
 		void connect() const;
 		void disconnect() const;
+
+		void createStatusChannel() const;
 	};
 
 };
