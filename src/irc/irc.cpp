@@ -782,17 +782,27 @@ void IRC::m_join(Message message)
 			Channel* chan = getChannel(channame);
 			if(!chan)
 			{
-				b_log[W_ERR|W_SNO] << "This status channel doesn't exist.";
+				user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+						                     .setReceiver(user)
+								     .addArg(channame)
+								     .addArg("No such channel"));
 				return;
 			}
 			user->join(chan);
 			break;
 		}
 		case '#':
-			b_log[W_ERR] << "Remote channels aren't supported yet.";
+			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+							     .setReceiver(user)
+							     .addArg(channame)
+							     .addArg("No such channel"));
 			break;
 		default:
-			b_log[W_ERR] << "Invalid channel name";
+			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+							     .setReceiver(user)
+							     .addArg(channame)
+							     .addArg("No such channel"));
+
 			break;
 	}
 }
