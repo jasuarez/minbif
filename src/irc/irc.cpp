@@ -485,26 +485,44 @@ void IRC::m_version(Message message)
 /* WHO */
 void IRC::m_who(Message message)
 {
-	for(std::map<string, Nick*>::iterator it = users.begin(); it != users.end(); ++it)
-	{
-		Nick* n = it->second;
-		string channame = "*";
-		vector<ChanUser> chans = n->getChannels();
-		if(!chans.empty())
-			channame = chans.front().getChannel()->getName();
-		user->send(Message(RPL_WHOREPLY).setSender(this)
-				                .setReceiver(user)
-						.addArg(channame)
-						.addArg(n->getIdentname())
-						.addArg(n->getHostname())
-						.addArg(n->getServer()->getServerName())
-						.addArg(n->getNickname())
-						.addArg(n->isAway() ? "G" : "H")
-						.addArg("0 " + n->getRealname()));
-	}
+	string arg;
+	Channel* chan;
+	if(message.countArgs() > 0)
+		arg = message.getArg(0);
+
+	if(arg.empty() || !Channel::isChanName(arg) || (chan = getChannel(arg)))
+		for(std::map<string, Nick*>::iterator it = users.begin(); it != users.end(); ++it)
+		{
+			Nick* n = it->second;
+			string channame = "*";
+			if(arg.empty() || arg == "*" || arg == "0" || arg == n->getNickname())
+			{
+				vector<ChanUser> chans = n->getChannels();
+				if(!chans.empty())
+					channame = chans.front().getChannel()->getName();
+			}
+			else if(chan)
+			{
+				if(!n->isOn(chan))
+					continue;
+				channame = arg;
+			}
+			else
+				continue;
+
+			user->send(Message(RPL_WHOREPLY).setSender(this)
+							.setReceiver(user)
+							.addArg(channame)
+							.addArg(n->getIdentname())
+							.addArg(n->getHostname())
+							.addArg(n->getServer()->getServerName())
+							.addArg(n->getNickname())
+							.addArg(n->isAway() ? "G" : "H")
+							.addArg("0 " + n->getRealname()));
+		}
 	user->send(Message(RPL_ENDOFWHO).setSender(this)
 			                .setReceiver(user)
-				        .addArg("**")
+				        .addArg(!arg.empty() ? arg : "**")
 				        .addArg("End of /WHO list"));
 }
 
