@@ -71,6 +71,7 @@ namespace im
 
 		static map<string, Account> getAccountsList();
 		static Account addAccount(Protocol proto, string username, string password);
+		static void delAccount(PurpleAccount* account);
 		static string getNewAccountName(Protocol proto);
 	};
 };

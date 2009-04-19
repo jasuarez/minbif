@@ -71,6 +71,7 @@ namespace im
 		map<string, Account> getAccountsList() const;
 		Account getAccount(string name) const;
 		Account addAccount(Protocol proto, string username, string password);
+		void delAccount(Account user);
 	};
 
 };

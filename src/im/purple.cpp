@@ -228,5 +228,9 @@ Account Purple::addAccount(Protocol proto, string username, string password)
 	return Account(account, proto);
 }
 
+void Purple::delAccount(PurpleAccount* user)
+{
+        purple_accounts_delete(user);
+}
 
 }; /* namespace im */

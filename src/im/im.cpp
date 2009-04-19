@@ -138,4 +138,9 @@ Account IM::addAccount(Protocol proto, string username, string password)
 
 }
 
+void IM::delAccount(Account user)
+{
+	Purple::delAccount(user.getPurpleAccount());
+
+}
 }; /* namespace im */

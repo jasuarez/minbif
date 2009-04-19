@@ -746,18 +746,30 @@ void IRC::m_map(Message message)
 			}
         		case 'd':
 			{
-				if(message.countArgs() < 4)
+                                /* TODO some calls to purple_accounts_delete*/
+        			break;
+			}
+        		case 'r':
+			{
+				if(message.countArgs() != 2)
 				{
-					notice(user, "Usage: /MAP del NAME");
+					notice(user, "Usage: /MAP rem NAME");
 					break;
 				}
-
-				/* TODO implement it */
+	                        im::Account account = im->getAccount(message.getArg(1));
+                                if (!account.isValid())
+                                {
+		                    notice(user, "Error: Account " + message.getArg(1) + " is unknown");
+                                    break;
+                                }
+                                notice (user, "Removing account "+account.getUsername());
+                                im->delAccount(account);
         			break;
 			}
         		case 'h':
 				notice(user,"a, add: add ACCOUNT to your accounts");
-        			notice(user,"d, del: remove ACCOUNT from your accounts");
+        			notice(user,"d, del: remove ACCOUNT from your account list");
+        			notice(user,"r, rem: remove all information about ACCOUNT from your configuration files");
         		default:
 				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD CHANNEL] | [del NAME] | [help]");
         			break;
