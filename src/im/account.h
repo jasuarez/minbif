@@ -56,6 +56,9 @@ namespace im
 		Account();
 		Account(PurpleAccount* account, Protocol proto = Protocol());
 
+		bool operator==(const Account&) const;
+		bool operator!=(const Account&) const;
+
 		bool isValid() const { return account != NULL; }
 		PurpleAccount* getPurpleAccount() const { return account; }
 		string getID() const;

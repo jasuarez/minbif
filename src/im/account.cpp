@@ -40,6 +40,17 @@ Account::Account(PurpleAccount* _account, Protocol _proto)
 		proto = Purple::getProtocolByPurpleID(account->protocol_id);
 }
 
+bool Account::operator==(const Account& account) const
+{
+	return this->isValid() && account.isValid() && account.account == this->account;
+}
+
+bool Account::operator!=(const Account& account) const
+{
+	return !isValid() || !account.isValid() || account.account != this->account;
+}
+
+
 string Account::getUsername() const
 {
 	assert(account);
@@ -148,7 +159,6 @@ void Account::account_added(PurpleAccount* account)
 	Account acc = Account(account);
 
 	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), acc));
-	acc.createStatusChannel();
 }
 
 void Account::account_removed(PurpleAccount* account)
