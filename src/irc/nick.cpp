@@ -84,6 +84,20 @@ void Nick::join(Channel* chan, int status)
 	channels.push_back(chan->addUser(this, status));
 }
 
+void Nick::part(Channel* chan, string message)
+{
+	for(vector<ChanUser>::iterator it = channels.begin(); it != channels.end();)
+		if(it->getChannel() == chan)
+		{
+			it->getChannel()->delUser(this, Message(MSG_PART).setSender(this)
+					                                 .setReceiver(it->getChannel())
+									 .addArg(message));
+			it = channels.erase(it);
+		}
+		else
+			++it;
+}
+
 void Nick::privmsg(Channel* chan, string msg)
 {
 	chan->broadcast(Message(MSG_PRIVMSG).setSender(this)
