@@ -15,6 +15,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <cstring>
+
 #include "irc/buddy.h"
 #include "im/account.h"
 #include "../util.h"
@@ -26,8 +28,11 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 	  im_buddy(_buddy)
 {
 	string hostname = im_buddy.getName();
-	string nickname = stringtok(hostname, "@");
-	string identname = nickname;
+	string identname = stringtok(hostname, "@");
+	string nickname = im_buddy.getAlias();
+	if(nickname.find('@') != string::npos)
+		nickname = nickize(identname);
+
 	setNickname(nickname);
 	setIdentname(identname);
 	setHostname(hostname);
@@ -35,6 +40,21 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 
 Buddy::~Buddy()
 {}
+
+string Buddy::nickize(const string& n)
+{
+	string nick;
+	for(string::const_iterator c = n.begin(); c != n.end(); ++c)
+		if(strchr(nick_lc_chars, *c) || strchr(nick_uc_chars, *c))
+			nick += *c;
+	if(isdigit(nick[0]))
+		nick = "_" + nick;
+
+	if(nick.size() > MAX_LENGTH)
+		nick = nick.substr(0, MAX_LENGTH);
+
+	return nick;
+}
 
 void Buddy::send(Message m)
 {

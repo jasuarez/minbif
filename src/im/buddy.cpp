@@ -51,7 +51,21 @@ bool Buddy::operator!=(const Buddy& buddy) const
 string Buddy::getName() const
 {
 	assert(isValid());
-	return buddy->name;
+	const char* n = buddy->name;
+	if(n)
+		return n;
+	else
+		return "";
+}
+
+string Buddy::getAlias() const
+{
+	assert(isValid());
+	const char* a = purple_buddy_get_alias(buddy);
+	if(a && *a)
+		return a;
+	else
+		return getName();
 }
 
 bool Buddy::isOnline() const

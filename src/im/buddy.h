@@ -47,6 +47,7 @@ namespace im
 		bool isValid() const { return buddy != NULL; }
 
 		string getName() const;
+		string getAlias() const;
 		bool isOnline() const;
 		Account getAccount() const;
 

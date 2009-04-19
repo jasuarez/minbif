@@ -29,6 +29,8 @@ namespace irc
 		im::Buddy im_buddy;
 		im::Conversation conv;
 
+		string nickize(const string& n);
+
 	public:
 
 		Buddy(Server* server, im::Buddy buddy);
