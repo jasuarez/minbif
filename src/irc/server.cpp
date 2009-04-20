@@ -26,7 +26,7 @@ Server::Server(string name, string _info)
 
 
 RemoteServer::RemoteServer(IRC* _irc, im::Account _account)
-	: Server(_account.getUsername() + ":" +_account.getID(),
+	: Server(_account.getServername(),
 	         _account.getProtocol().getName()),
 	  account(_account),
 	  irc(_irc)

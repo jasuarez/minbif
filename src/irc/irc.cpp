@@ -774,23 +774,23 @@ void IRC::m_map(Message message)
 				   .setReceiver(user)
 				   .addArg(this->getServerName()));
 
-	for(map<string, Server*>::iterator it = servers.begin();
-	    it != servers.end(); ++it)
+	map<string, im::Account> accounts = im->getAccountsList();
+	for(map<string, im::Account>::iterator it = accounts.begin();
+	    it != accounts.end(); ++it)
 	{
-		map<string, Server*>::iterator next = it;
+		map<string, im::Account>::iterator next = it;
 		string name;
-		RemoteServer* remote = dynamic_cast<RemoteServer*>(it->second);
-		if(!remote)
-			continue;
 
-		if(++next == servers.end())
+		if(++next == accounts.end())
 			name = "`-";
 		else
 			name = "|-";
 
-		name += remote->getName();
-		if(remote->getAccount() == added_account)
+		name += it->second.getServername();
+		if(it->second == added_account)
 			name += " (added)";
+		else if(!it->second.isConnected())
+			name += " (disconnected)";
 
 		user->send(Message(RPL_MAP).setSender(this)
 					   .setReceiver(user)

@@ -67,6 +67,7 @@ namespace im
 		string getStatusChannel() const;
 		void setStatusChannel(string c);
 		Protocol getProtocol() const { return proto; }
+		bool isConnected() const;
 
 		vector<Buddy> getBuddies() const;
 
