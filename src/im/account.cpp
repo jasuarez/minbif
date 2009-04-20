@@ -86,6 +86,11 @@ bool Account::isConnected() const
 	return purple_account_is_connected(account);
 }
 
+bool Account::isConnecting() const
+{
+	return purple_account_is_connecting(account);
+}
+
 vector<Buddy> Account::getBuddies() const
 {
 	vector<Buddy> buddies;
