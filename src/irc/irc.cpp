@@ -60,6 +60,7 @@ static struct
 	{ MSG_MAP,     &IRC::m_map,     0, Nick::REGISTERED },
 	{ MSG_JOIN,    &IRC::m_join,    1, Nick::REGISTERED },
 	{ MSG_LIST,    &IRC::m_list,    0, Nick::REGISTERED },
+	{ MSG_MODE,    &IRC::m_mode,    0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
@@ -353,7 +354,7 @@ bool IRC::readIO(void*)
 	if((r = read( 0, buf, sizeof buf - 1 )) <= 0)
 	{
 		if(r == 0)
-			this->quit("Connection reset by peer...");
+                    this->quit("Connection reset by peer...");
 		else if(!sockerr_again())
 			this->quit(string("Read error: ") + strerror(errno));
 		else
@@ -685,8 +686,7 @@ void IRC::m_connect(Message message)
 
 	account.connect();
         Channel* chan = getChannel(account.getStatusChannel());
-	if(chan)
-		user->join(chan);
+	user->join(chan);
 }
 
 /* SQUIT servername */
@@ -701,6 +701,7 @@ void IRC::m_squit(Message message)
 
 	account.disconnect();
 }
+
 /* MAP */
 void IRC::m_map(Message message)
 {
@@ -751,8 +752,8 @@ void IRC::m_map(Message message)
 					notice(user, "Usage: /MAP rem NAME");
 					break;
 				}
-	                        im::Account account = im->getAccount(message.getArg(1));
-                                if (!account.isValid())
+				im::Account account = im->getAccount(message.getArg(1));
+			                            if (!account.isValid())
                                 {
 		                    notice(user, "Error: Account " + message.getArg(1) + " is unknown");
                                     break;
@@ -860,6 +861,10 @@ void IRC::m_list(Message message)
 	user->send(Message(RPL_LISTEND).setSender(this)
 			               .setReceiver(user)
 				       .addArg("End of /LIST"));
+}
+
+void IRC::m_mode(Message message)
+{
 }
 
 }; /* namespace irc */
