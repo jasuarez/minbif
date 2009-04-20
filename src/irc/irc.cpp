@@ -791,6 +791,8 @@ void IRC::m_map(Message message)
 			name += " (added)";
 		else if(!it->second.isConnected())
 			name += " (disconnected)";
+		else if(it->second.isConnecting())
+			name += " (connecting)";
 
 		user->send(Message(RPL_MAP).setSender(this)
 					   .setReceiver(user)
