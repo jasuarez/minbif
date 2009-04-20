@@ -87,6 +87,8 @@ bool Nick::isOn(const Channel* chan) const
 
 void Nick::join(Channel* chan, int status)
 {
+	if(isOn(chan))
+		return;
 	channels.push_back(chan->addUser(this, status));
 }
 
