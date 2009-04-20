@@ -354,7 +354,7 @@ bool IRC::readIO(void*)
 	if((r = read( 0, buf, sizeof buf - 1 )) <= 0)
 	{
 		if(r == 0)
-                    this->quit("Connection reset by peer...");
+			this->quit("Connection reset by peer...");
 		else if(!sockerr_again())
 			this->quit(string("Read error: ") + strerror(errno));
 		else
@@ -686,7 +686,8 @@ void IRC::m_connect(Message message)
 
 	account.connect();
         Channel* chan = getChannel(account.getStatusChannel());
-	user->join(chan);
+	if(chan)
+		user->join(chan);
 }
 
 /* SQUIT servername */
@@ -740,7 +741,7 @@ void IRC::m_map(Message message)
 				catch(im::ProtocolUnknown &e)
 				{
 					notice(user, "Error: Protocol " + protoname +
-        			                 " is unknown. Try '/STATS p' to list protocols.");
+        			                     " is unknown. Try '/STATS p' to list protocols.");
 				}
 
         			break;
@@ -753,10 +754,10 @@ void IRC::m_map(Message message)
 					break;
 				}
 				im::Account account = im->getAccount(message.getArg(1));
-			                            if (!account.isValid())
+				if (!account.isValid())
                                 {
-		                    notice(user, "Error: Account " + message.getArg(1) + " is unknown");
-                                    break;
+					notice(user, "Error: Account " + message.getArg(1) + " is unknown");
+					break;
                                 }
                                 notice (user, "Removing account "+account.getUsername());
                                 im->delAccount(account);
