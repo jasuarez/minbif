@@ -81,6 +81,11 @@ string Account::getServername() const
 	return getUsername() + ":" + getID();
 }
 
+bool Account::isConnected() const
+{
+	return purple_account_is_connected(account);
+}
+
 vector<Buddy> Account::getBuddies() const
 {
 	vector<Buddy> buddies;
@@ -156,15 +161,10 @@ void Account::init()
 
 void Account::account_added(PurpleAccount* account)
 {
-	Account acc = Account(account);
-
-	Purple::getIM()->getIRC()->addServer(new irc::RemoteServer(Purple::getIM()->getIRC(), acc));
 }
 
 void Account::account_removed(PurpleAccount* account)
 {
-	Account a = Account(account);
-	Purple::getIM()->getIRC()->removeServer(a.getServername());
 }
 
 void Account::connecting(PurpleConnection *gc,
