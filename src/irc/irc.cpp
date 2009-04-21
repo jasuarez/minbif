@@ -557,6 +557,7 @@ void IRC::m_whois(Message message)
 	if(n->isAway())
 		user->send(Message(RPL_AWAY).setSender(this)
 		                            .setReceiver(user)
+					    .addArg(n->getNickname())
 		                            .addArg(n->getAwayMessage()));
 
 	CacaImage icon = n->getIcon();
