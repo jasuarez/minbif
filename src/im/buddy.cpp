@@ -74,6 +74,12 @@ bool Buddy::isOnline() const
 	return PURPLE_BUDDY_IS_ONLINE(buddy);
 }
 
+bool Buddy::isAvailable() const
+{
+	assert(isValid());
+	return purple_presence_is_available(purple_buddy_get_presence(buddy));
+}
+
 Account Buddy::getAccount() const
 {
 	assert(isValid());
@@ -146,8 +152,12 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 
 		if(chan)
 		{
-			if(buddy.isOnline() && !n->isOn(chan))
-				n->join(chan, !n->isAway() ? irc::ChanUser::VOICE : 0);
+			if(buddy.isOnline())
+			{
+				if(!n->isOn(chan))
+					n->join(chan, buddy.isAvailable() ? irc::ChanUser::VOICE : 0);
+				// else if(buddy.isAvailable()) ...
+			}
 			else if(!buddy.isOnline() && n->isOn(chan))
 				n->part(chan, "Leaving...");
 		}

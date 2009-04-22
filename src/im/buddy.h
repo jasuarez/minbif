@@ -51,6 +51,7 @@ namespace im
 		string getName() const;
 		string getAlias() const;
 		bool isOnline() const;
+		bool isAvailable() const;
 		CacaImage getIcon() const;
 
 		Account getAccount() const;
