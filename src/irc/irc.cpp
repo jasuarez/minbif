@@ -499,9 +499,9 @@ void IRC::m_who(Message message)
 			string channame = "*";
 			if(arg.empty() || arg == "*" || arg == "0" || arg == n->getNickname())
 			{
-				vector<ChanUser> chans = n->getChannels();
+				vector<ChanUser*> chans = n->getChannels();
 				if(!chans.empty())
-					channame = chans.front().getChannel()->getName();
+					channame = chans.front()->getChannel()->getName();
 			}
 			else if(chan)
 			{

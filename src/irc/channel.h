@@ -60,7 +60,7 @@ namespace irc
 	class Channel : public Entity
 	{
 		IRC* irc;
-		vector<ChanUser> users;
+		vector<ChanUser*> users;
 
 	public:
 
@@ -78,7 +78,7 @@ namespace irc
 		bool isStatusChannel() const { return (!getName().empty() && getName()[0] == '&'); }
 		bool isRemoteChannel() const { return (!getName().empty() && getName()[0] == '#'); }
 
-		ChanUser addUser(Nick* nick, int status=0);
+		ChanUser* addUser(Nick* nick, int status=0);
 		void delUser(Nick* nick, Message message = Message());
 		size_t countUsers() const { return users.size(); }
 

@@ -40,8 +40,8 @@ Nick::Nick(Server* _server, string nickname, string _identname, string _hostname
 
 Nick::~Nick()
 {
-	for(vector<ChanUser>::iterator it = channels.begin(); it != channels.end(); ++it)
-		it->getChannel()->delUser(this,
+	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end(); ++it)
+		(*it)->getChannel()->delUser(this,
 				          Message(MSG_QUIT).setSender(this)
 						           .addArg("*.net *.split"));
 }
@@ -72,15 +72,15 @@ CacaImage Nick::getIcon() const
 	return CacaImage();
 }
 
-vector<ChanUser> Nick::getChannels() const
+vector<ChanUser*> Nick::getChannels() const
 {
 	return channels;
 }
 
 bool Nick::isOn(const Channel* chan) const
 {
-	for(vector<ChanUser>::const_iterator it = channels.begin(); it != channels.end(); ++it)
-		if(it->getChannel() == chan)
+	for(vector<ChanUser*>::const_iterator it = channels.begin(); it != channels.end(); ++it)
+		if((*it)->getChannel() == chan)
 			return true;
 	return false;
 }
@@ -94,11 +94,11 @@ void Nick::join(Channel* chan, int status)
 
 void Nick::part(Channel* chan, string message)
 {
-	for(vector<ChanUser>::iterator it = channels.begin(); it != channels.end();)
-		if(it->getChannel() == chan)
+	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end();)
+		if((*it)->getChannel() == chan)
 		{
-			it->getChannel()->delUser(this, Message(MSG_PART).setSender(this)
-					                                 .setReceiver(it->getChannel())
+			(*it)->getChannel()->delUser(this, Message(MSG_PART).setSender(this)
+					                                 .setReceiver((*it)->getChannel())
 									 .addArg(message));
 			it = channels.erase(it);
 		}

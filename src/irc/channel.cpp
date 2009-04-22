@@ -42,19 +42,21 @@ Channel::Channel(IRC* _irc, string name)
 
 Channel::~Channel()
 {
+	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
+		delete *it;
 }
 
 
-ChanUser Channel::addUser(Nick* nick, int status)
+ChanUser* Channel::addUser(Nick* nick, int status)
 {
-	ChanUser chanuser = ChanUser(this, nick, status);
+	ChanUser* chanuser = new ChanUser(this, nick, status);
 	users.push_back(chanuser);
 
 	string names;
-	for(vector<ChanUser>::iterator it = users.begin(); it != users.end(); ++it)
+	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
 	{
-		it->getNick()->send(Message(MSG_JOIN).setSender(nick).setReceiver(this));
-		if(status && it->getNick() != nick)
+		(*it)->getNick()->send(Message(MSG_JOIN).setSender(nick).setReceiver(this));
+		if(status && (*it)->getNick() != nick)
 		{
 			string modes = "+";
 			Message m(MSG_MODE);
@@ -72,16 +74,16 @@ ChanUser Channel::addUser(Nick* nick, int status)
 				m.addArg(nick->getNickname());
 			}
 			m.setArg(0, modes);
-			it->getNick()->send(m);
+			(*it)->getNick()->send(m);
 		}
 
 		if(!names.empty())
 			names += " ";
-		if(it->hasStatus(ChanUser::OP))
+		if((*it)->hasStatus(ChanUser::OP))
 			names += "@";
-		else if(it->hasStatus(ChanUser::VOICE))
+		else if((*it)->hasStatus(ChanUser::VOICE))
 			names += "+";
-		names += it->getNick()->getNickname();
+		names += (*it)->getNick()->getNickname();
 
 	}
 	nick->send(Message(RPL_NAMREPLY).setSender(irc)
@@ -98,22 +100,25 @@ ChanUser Channel::addUser(Nick* nick, int status)
 
 void Channel::delUser(Nick* nick, Message m)
 {
-	for(vector<ChanUser>::iterator it = users.begin(); it != users.end(); )
-		if(it->getNick() == nick)
+	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); )
+		if((*it)->getNick() == nick)
+		{
+			delete *it;
 			it = users.erase(it);
+		}
 		else
 		{
 			if(m.getCommand().empty() == false)
-				it->getNick()->send(m);
+				(*it)->getNick()->send(m);
 			++it;
 		}
 }
 
 void Channel::broadcast(Message m, Nick* butone)
 {
-	for(vector<ChanUser>::iterator it = users.begin(); it != users.end(); ++it)
-		if(!butone || it->getNick() != butone)
-			it->getNick()->send(m);
+	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
+		if(!butone || (*it)->getNick() != butone)
+			(*it)->getNick()->send(m);
 }
 
 }; /* namespace irc */

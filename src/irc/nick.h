@@ -39,7 +39,7 @@ namespace irc
 		string away;
 		Server* server;
 		unsigned int flags;
-		vector<ChanUser> channels;
+		vector<ChanUser*> channels;
 
 	public:
 
@@ -65,7 +65,7 @@ namespace irc
 		void privmsg(Channel* chan, string message);
 		void privmsg(Nick* to, string message);
 
-		vector<ChanUser> getChannels() const;
+		vector<ChanUser*> getChannels() const;
 		bool isOn(const Channel* chan) const;
 
 		Server* getServer() const { return server; }
