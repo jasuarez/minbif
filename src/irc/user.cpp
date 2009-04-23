@@ -37,4 +37,9 @@ void User::send(Message msg)
 	}
 }
 
+void User::setLastReadNow()
+{
+	last_read = time(NULL);
+}
+
 }; /* namespace irc */

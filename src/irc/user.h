@@ -26,6 +26,7 @@ namespace irc
 	{
 		int fd;
 		string password;
+		time_t last_read;
 
 	public:
 
@@ -36,6 +37,8 @@ namespace irc
 		string getPassword() const { return password; }
 
 		void close() { fd = -1; }
+		void setLastReadNow();
+		time_t getLastRead() const { return last_read; }
 
 		virtual void send(Message m);
 

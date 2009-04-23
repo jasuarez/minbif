@@ -51,6 +51,7 @@ namespace irc
 		int fd;
 		int read_id;
 		_CallBack *read_cb;
+		unsigned ping_freq;
 		_CallBack *ping_cb;
 		User* user;
 		im::IM* im;

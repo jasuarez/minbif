@@ -63,12 +63,13 @@ static struct
 	{ MSG_MODE,    &IRC::m_mode,    0, Nick::REGISTERED },
 };
 
-IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned ping_freq)
+IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned _ping_freq)
 	: Server("localhost.localdomain", BITLBEE_VERSION),
 	  poll(_poll),
 	  fd(_fd),
 	  read_id(0),
 	  read_cb(NULL),
+	  ping_freq(_ping_freq),
 	  ping_cb(NULL),
 	  user(NULL),
 	  im(NULL)
@@ -325,6 +326,9 @@ void IRC::sendWelcome()
 
 bool IRC::ping(void*)
 {
+	if(user->getLastRead() + ping_freq > time(NULL))
+		return true;
+
 	if(!user->hasFlag(Nick::REGISTERED) || user->hasFlag(Nick::PING))
 	{
 		quit("Ping timeout");
@@ -373,6 +377,8 @@ bool IRC::readIO(void*)
 		    strcmp(commands[i].cmd, m.getCommand().c_str());
 		    ++i)
 			;
+
+		user->setLastReadNow();
 
 		if(i >= (sizeof commands / sizeof *commands))
 			user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
