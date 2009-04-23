@@ -818,7 +818,7 @@ void IRC::m_join(Message message)
 {
 	string names = message.getArg(0);
 	string channame;
-	while((channame = stringtok(names, ",")).empty() != false)
+	while((channame = stringtok(names, ",")).empty() == false)
 	{
 		if(!Channel::isChanName(channame))
 		{
