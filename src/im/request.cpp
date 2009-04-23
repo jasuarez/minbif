@@ -24,6 +24,44 @@
 
 namespace im {
 
+class RequestNick : public irc::Nick
+{
+public:
+
+	RequestNick(irc::Server* server, string nickname, string identname, string hostname, string realname="")
+		: irc::Nick(server, nickname, identname, hostname, realname)
+	{}
+
+	void send(irc::Message m)
+	{
+		if(m.getCommand() != MSG_PRIVMSG || m.getReceiver() != this)
+			return;
+
+		string answer = m.getArg(0);
+		irc::IRC* irc = Purple::getIM()->getIRC();
+		Request* request = Request::getFirstRequest();
+		if(!request)
+		{
+			privmsg(irc->getUser(), "No active question");
+			return;
+		}
+
+		RequestField field;
+		try
+		{
+			field = request->getField(answer);
+		}
+		catch(RequestFieldNotFound &e)
+		{
+			privmsg(irc->getUser(), "ERROR: Answer '" + answer + "' is not valid.");
+			request->display();
+			return;
+		}
+
+		field.runCallback();
+		Request::closeFirstRequest();
+	}
+};
 
 void RequestField::runCallback()
 {
@@ -55,13 +93,13 @@ RequestField Request::getField(const string& label) const
 void Request::display() const
 {
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc->privmsg(irc->getUser(), "New request: " + title);
-	irc->privmsg(irc->getUser(), question);
+	nick->privmsg(irc->getUser(), "New request: " + title);
+	nick->privmsg(irc->getUser(), question);
 	for(map<string, RequestField>::const_iterator it = fields.begin();
 	    it != fields.end();
 	    ++it)
 	{
-		irc->privmsg(irc->getUser(), "- " + it->first + ": " + it->second.getText());
+		nick->privmsg(irc->getUser(), "- " + it->first + ": " + it->second.getText());
 	}
 }
 
@@ -88,38 +126,34 @@ PurpleRequestUiOps Request::uiops =
 };
 
 vector<Request*> Request::requests;
+RequestNick* Request::nick = NULL;
 
 void Request::init()
 {
 	purple_request_set_ui_ops(&uiops);
+
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	nick = new RequestNick(irc, "request", "request", irc->getServerName());
+	irc->addNick(nick);
 }
 
-void Request::answerRequest(const string& answer)
+Request* Request::getFirstRequest()
 {
-	irc::IRC* irc = Purple::getIM()->getIRC();
-	if(requests.empty())
-	{
-		irc->privmsg(irc->getUser(), "No active question");
-		return;
-	}
+	return requests.empty() ? NULL : requests.front();
+}
 
-	Request* request = requests.front();
-	RequestField field;
-	try
-	{
-		field = request->getField(answer);
-	}
-	catch(RequestFieldNotFound &e)
-	{
-		irc->privmsg(irc->getUser(), "ERROR: Answer '" + answer + "' is not valid.");
-		request->display();
+void Request::closeFirstRequest()
+{
+	Request* request = getFirstRequest();
+	if(!request)
 		return;
-	}
 
-	field.runCallback();
 	request->close();
 	delete request;
 	requests.erase(requests.begin());
+
+	if(!requests.empty())
+		requests.front()->display();
 }
 
 void* Request::request_action(const char *title, const char *primary,

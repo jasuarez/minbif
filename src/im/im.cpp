@@ -22,7 +22,6 @@
 
 #include "im.h"
 #include "purple.h"
-#include "request.h"
 #include "../log.h"
 #include "../util.h"
 
@@ -142,11 +141,6 @@ Account IM::addAccount(Protocol proto, string username, string password)
 void IM::delAccount(Account user)
 {
 	Purple::delAccount(user.getPurpleAccount());
-}
-
-void IM::answerRequest(const string& answer) const
-{
-	Request::answerRequest(answer);
 }
 
 }; /* namespace im */

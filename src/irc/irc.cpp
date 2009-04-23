@@ -627,11 +627,7 @@ void IRC::m_privmsg(Message message)
 	relayed.setSender(user);
 	relayed.addArg(message.getArg(1));
 
-	if(strlower(target) == strlower(getServerName()))
-	{
-		im->answerRequest(message.getArg(1));
-	}
-	else if(Channel::isChanName(target))
+	if(Channel::isChanName(target))
 	{
 		Channel* c = getChannel(target);
 		if(!c)

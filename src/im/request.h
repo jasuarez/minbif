@@ -33,6 +33,7 @@ namespace im
 	using std::string;
 
 	class RequestFieldNotFound : public std::exception {};
+	class RequestNick;
 
 	class RequestField
 	{
@@ -69,6 +70,7 @@ namespace im
 		PurpleRequestType type;
 
 		static PurpleRequestUiOps uiops;
+		static RequestNick* nick;
 		static void displayRequest(const Request& request);
 		static void* request_action(const char *title, const char *primary,
 				        const char *secondary, int default_value,
@@ -81,7 +83,8 @@ namespace im
 
 		static vector<Request*> requests;
 		static void init();
-		static void answerRequest(const string& answer);
+		static Request* getFirstRequest();
+		static void closeFirstRequest();
 
 		Request(PurpleRequestType type, string title, string question);
 
