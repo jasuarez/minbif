@@ -87,7 +87,7 @@ string Buddy::getAwayMessage() const
 
 bool Buddy::isAway() const
 {
-	return im_buddy.isOnline() == false || Nick::isAway();
+	return im_buddy.isOnline() == false || im_buddy.isAvailable() == false;
 }
 
 CacaImage Buddy::getIcon() const
