@@ -827,7 +827,7 @@ void IRC::m_join(Message message)
 								     .addArg("No such channel"));
 				return;
 			}
-			user->join(chan);
+			user->join(chan, ChanUser::OP);
 			break;
 		}
 		case '#':
