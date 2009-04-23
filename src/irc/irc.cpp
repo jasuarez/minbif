@@ -810,39 +810,49 @@ void IRC::m_map(Message message)
 /* JOIN channame */
 void IRC::m_join(Message message)
 {
-	string channame = message.getArg(0);
-	if(!Channel::isChanName(channame))
-		return;
-
-	switch(channame[0])
+	string names = message.getArg(0);
+	string channame;
+	while((channame = stringtok(names, ",")).empty() != false)
 	{
-		case '&':
+		if(!Channel::isChanName(channame))
 		{
-			Channel* chan = getChannel(channame);
-			if(!chan)
+			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+						             .setReceiver(user)
+						             .addArg(channame)
+						             .addArg("No such channel"));
+			continue;
+		}
+
+		switch(channame[0])
+		{
+			case '&':
 			{
+				Channel* chan = getChannel(channame);
+				if(!chan)
+				{
+					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+									     .setReceiver(user)
+									     .addArg(channame)
+									     .addArg("No such channel"));
+					continue;
+				}
+				user->join(chan, ChanUser::OP);
+				break;
+			}
+			case '#':
 				user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-						                     .setReceiver(user)
+								     .setReceiver(user)
 								     .addArg(channame)
 								     .addArg("No such channel"));
-				return;
-			}
-			user->join(chan, ChanUser::OP);
-			break;
-		}
-		case '#':
-			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-							     .setReceiver(user)
-							     .addArg(channame)
-							     .addArg("No such channel"));
-			break;
-		default:
-			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-							     .setReceiver(user)
-							     .addArg(channame)
-							     .addArg("No such channel"));
+				break;
+			default:
+				user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+								     .setReceiver(user)
+								     .addArg(channame)
+								     .addArg("No such channel"));
 
-			break;
+				break;
+		}
 	}
 }
 
