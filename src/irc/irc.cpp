@@ -721,20 +721,24 @@ void IRC::m_map(Message message)
 		{
 			case 'a':
 			{
-				if(message.countArgs() < 5)
+				if(message.countArgs() < 4)
 				{
-					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD CHANNEL");
+					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD [CHANNEL]");
 					break;
 				}
 				string protoname = message.getArg(1);
 				string username  = message.getArg(2);
 				string password  = message.getArg(3);
-				string channel   = message.getArg(4);
-
-				if(!Channel::isStatusChannel(channel))
+				string channel;
+				if(message.countArgs() > 4)
 				{
-					notice(user, "Status channel must start with '&'");
-					break;
+					channel  = message.getArg(4);
+
+					if(!Channel::isStatusChannel(channel))
+					{
+						notice(user, "Status channel must start with '&'");
+						break;
+					}
 				}
 
 				try
@@ -774,7 +778,7 @@ void IRC::m_map(Message message)
 				notice(user,"a, add: add ACCOUNT to your accounts");
         			notice(user,"r, rem: remove ACCOUNT from your accounts");
         		default:
-				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD CHANNEL] | [rem NAME] | [help]");
+				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD [CHANNEL] [options] ] | [rem NAME] | [help]");
         			break;
 		}
 	}
