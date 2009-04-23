@@ -154,9 +154,17 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 		{
 			if(buddy.isOnline())
 			{
-				if(!n->isOn(chan))
+				irc::ChanUser* chanuser = n->getChanUser(chan);
+				if(!chanuser)
 					n->join(chan, buddy.isAvailable() ? irc::ChanUser::VOICE : 0);
-				// else if(buddy.isAvailable()) ...
+				else if(buddy.isAvailable() ^ chanuser->hasStatus(irc::ChanUser::VOICE))
+				{
+					if(buddy.isAvailable())
+						chan->setMode(Purple::getIM()->getIRC(), irc::ChanUser::VOICE, chanuser);
+					else
+						chan->delMode(Purple::getIM()->getIRC(), irc::ChanUser::VOICE, chanuser);
+				}
+
 			}
 			else if(!buddy.isOnline() && n->isOn(chan))
 				n->part(chan, "Leaving...");
