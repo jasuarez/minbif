@@ -22,6 +22,7 @@
 #include "im.h"
 #include "buddy.h"
 #include "conversation.h"
+#include "request.h"
 #include "../version.h"
 #include "../log.h"
 #include "../util.h"
@@ -140,6 +141,7 @@ void Purple::inited()
 	Account::init();
 	Buddy::init();
 	Conversation::init();
+	Request::init();
 }
 
 void Purple::uninit()

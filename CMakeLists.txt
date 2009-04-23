@@ -17,6 +17,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/im/account.cpp
 		src/im/buddy.cpp
 		src/im/conversation.cpp
+		src/im/request.cpp
 		src/im/purple.cpp
 		src/irc/irc.cpp
 		src/irc/message.cpp
