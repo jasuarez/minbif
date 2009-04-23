@@ -35,6 +35,55 @@ string ChanUser::getName() const
 	return nick->getNickname();
 }
 
+ChanUser::m2c_t ChanUser::m2c[] = {
+	{ ChanUser::OP,    'o' },
+	{ ChanUser::VOICE, 'v' },
+};
+
+ChanUser::mode_t ChanUser::c2mode(char c)
+{
+	size_t i;
+	for(i=0; i < sizeof m2c / sizeof *m2c && m2c[i].c != c; ++i)
+		;
+
+	if(i < sizeof m2c / sizeof *m2c)
+		return m2c[i].mode;
+	else
+		return (ChanUser::mode_t)0;
+}
+
+char ChanUser::mode2c(ChanUser::mode_t mode)
+{
+	size_t i;
+	for(i=0; i < sizeof m2c / sizeof *m2c && m2c[i].mode != mode; ++i)
+		;
+
+	if(i < sizeof m2c / sizeof *m2c)
+		return m2c[i].c;
+	else
+		return 0;
+}
+
+Message ChanUser::getModeMessage(bool add, int modes) const
+{
+	Message message(MSG_MODE);
+	string modes_str = add ? "+" : "-";
+	size_t i;
+
+	if(!modes)
+		modes = this->status;
+
+	message.addArg(modes_str);
+	for(i = 0; i < sizeof m2c / sizeof *m2c; ++i)
+		if(m2c[i].mode & modes)
+		{
+			modes_str += m2c[i].c;
+			message.addArg(getName());
+		}
+	message.setArg(0, modes_str);
+	return message;
+}
+
 Channel::Channel(IRC* _irc, string name)
 	: Entity(name),
 	  irc(_irc)
@@ -44,6 +93,7 @@ Channel::~Channel()
 {
 	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
 		delete *it;
+		/* TODO try to remove pointer to it from Nick if any */
 }
 
 
@@ -58,22 +108,9 @@ ChanUser* Channel::addUser(Nick* nick, int status)
 		(*it)->getNick()->send(Message(MSG_JOIN).setSender(nick).setReceiver(this));
 		if(status && (*it)->getNick() != nick)
 		{
-			string modes = "+";
-			Message m(MSG_MODE);
+			Message m = chanuser->getModeMessage(true);
 			m.setSender(irc);
 			m.setReceiver(this);
-			m.addArg("");
-			if(status & ChanUser::OP)
-			{
-				modes += "o";
-				m.addArg(nick->getNickname());
-			}
-			if(status & ChanUser::VOICE)
-			{
-				modes += "v";
-				m.addArg(nick->getNickname());
-			}
-			m.setArg(0, modes);
 			(*it)->getNick()->send(m);
 		}
 
@@ -119,6 +156,25 @@ void Channel::broadcast(Message m, Nick* butone)
 	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
 		if(!butone || (*it)->getNick() != butone)
 			(*it)->getNick()->send(m);
+}
+
+void Channel::setMode(const Entity* sender, int modes, ChanUser* chanuser)
+{
+	chanuser->setStatus(modes);
+	Message m = chanuser->getModeMessage(true, modes);
+	m.setSender(sender);
+	m.setReceiver(this);
+	broadcast(m);
+}
+
+void Channel::delMode(const Entity* sender, int modes, ChanUser* chanuser)
+{
+	chanuser->delStatus(modes);
+	Message m = chanuser->getModeMessage(false, modes);
+	m.setSender(sender);
+	m.setReceiver(this);
+	broadcast(m);
+
 }
 
 }; /* namespace irc */

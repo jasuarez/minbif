@@ -35,17 +35,17 @@ namespace irc
 
 	class _StoredEntity
 	{
-		Entity* entity;
+		const Entity* entity;
 		string name;
 
 	public:
 		_StoredEntity() : entity(NULL) {}
 
-		void setEntity(Entity* e) { entity = e; name.clear(); }
+		void setEntity(const Entity* e) { entity = e; name.clear(); }
 		void setName(string n) { name = n; entity = NULL; }
 
 		bool isSet() const { return entity || !name.empty(); }
-		Entity* getEntity() const { return entity; }
+		const Entity* getEntity() const { return entity; }
 		string getName() const;
 		string getLongName() const;
 	};
@@ -63,16 +63,16 @@ namespace irc
 		~Message();
 
 		Message& setCommand(string command);
-		Message& setSender(Entity* entity);
+		Message& setSender(const Entity* entity);
 		Message& setSender(string name);
-		Message& setReceiver(Entity* entity);
+		Message& setReceiver(const Entity* entity);
 		Message& setReceiver(string name);
 		Message& addArg(string);
 		Message& setArg(size_t, string);
 
 		string getCommand() const { return cmd; }
-		Entity* getSender() const { return sender.getEntity(); }
-		Entity* getReceiver() const { return receiver.getEntity(); }
+		const Entity* getSender() const { return sender.getEntity(); }
+		const Entity* getReceiver() const { return receiver.getEntity(); }
 		string getArg(size_t n) const;
 		size_t countArgs() const { return args.size(); }
 		vector<string> getArgs() const { return args; }

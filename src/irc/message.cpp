@@ -77,7 +77,7 @@ Message& Message::setCommand(string r)
 	return *this;
 }
 
-Message& Message::setSender(Entity* entity)
+Message& Message::setSender(const Entity* entity)
 {
 	sender.setEntity(entity);
 	return *this;
@@ -89,7 +89,7 @@ Message& Message::setSender(string n)
 	return *this;
 }
 
-Message& Message::setReceiver(Entity* entity)
+Message& Message::setReceiver(const Entity* entity)
 {
 	receiver.setEntity(entity);
 	return *this;

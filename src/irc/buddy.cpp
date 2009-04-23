@@ -62,7 +62,7 @@ void Buddy::send(Message m)
 	if(m.getCommand() == MSG_PRIVMSG)
 	{
 		string text = m.getArg(0);
-		Channel* chan = dynamic_cast<Channel*>(m.getReceiver());
+		const Channel* chan = dynamic_cast<const Channel*>(m.getReceiver());
 
 		if((!chan && m.getReceiver() == this) || (chan->isStatusChannel() && text.find(getNickname() + ": ") == 0))
 		{

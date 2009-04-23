@@ -42,19 +42,36 @@ namespace irc
 
 	public:
 
-		enum {
+		enum mode_t {
 			OP     = 1 << 0,
 			VOICE  = 1 << 1,
 		};
+		static struct m2c_t
+		{
+			mode_t mode;
+			char c;
+		}  m2c[];
 
 		ChanUser(Channel* chan, Nick* nick, int status = 0);
 
 		string getName() const;
 
 		bool hasStatus(int flag) const { return status & flag; }
+		void setStatus(int flag) { status |= flag; }
+		void delStatus(int flag) { status &= ~flag; }
+
 		Nick* getNick() const { return nick; }
 
 		Channel* getChannel() const { return chan; }
+
+		static mode_t c2mode(char c);
+		static char mode2c(mode_t m);
+
+		/** Create Message object of modes
+		 *
+		 * @param modes  modes used. If = 0, use user modes
+		 */
+		Message getModeMessage(bool add, int modes = 0) const;
 	};
 
 	class Channel : public Entity
@@ -81,6 +98,9 @@ namespace irc
 		ChanUser* addUser(Nick* nick, int status=0);
 		void delUser(Nick* nick, Message message = Message());
 		size_t countUsers() const { return users.size(); }
+
+		void setMode(const Entity* sender, int modes, ChanUser* chanuser);
+		void delMode(const Entity* sender, int modes, ChanUser* chanuser);
 
 		void broadcast(Message m, Nick* butone = NULL);
 	};

@@ -85,6 +85,13 @@ bool Nick::isOn(const Channel* chan) const
 	return false;
 }
 
+ChanUser* Nick::getChanUser(const Channel* chan) const
+{
+	for(vector<ChanUser*>::const_iterator it = channels.begin(); it != channels.end(); ++it)
+		if((*it)->getChannel() == chan)
+			return *it;
+	return NULL;
+}
 void Nick::join(Channel* chan, int status)
 {
 	if(isOn(chan))

@@ -67,6 +67,7 @@ namespace irc
 
 		vector<ChanUser*> getChannels() const;
 		bool isOn(const Channel* chan) const;
+		ChanUser* getChanUser(const Channel* chan) const;
 
 		Server* getServer() const { return server; }
 
