@@ -89,6 +89,7 @@ namespace irc
 
 		bool ping(void*);
 		void notice(Nick* user, string message);
+		void privmsg(Nick* user, string message);
 
 		bool readIO(void*);
 		void m_nick(Message m);

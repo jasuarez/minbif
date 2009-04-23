@@ -140,7 +140,7 @@ Message Message::parse(string line)
 			m.setCommand(strupper(s));
 		else if(s[0] == ':')
 		{
-			m.addArg(s.substr(1) + " " + line);
+			m.addArg(s.substr(1) + (line.empty() ? "" : " " + line));
 			break;
 		}
 		else

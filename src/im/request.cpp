@@ -16,13 +16,24 @@
  */
 
 #include "request.h"
+#include "im.h"
+#include "purple.h"
+#include "irc/irc.h"
+#include "irc/user.h"
+#include "../util.h"
 
 namespace im {
 
-Request::Request(string _title, string _question, PurpleRequestChoiceCb _callback)
+
+void RequestField::runCallback()
+{
+	callback(data, id);
+}
+
+Request::Request(PurpleRequestType _type, string _title, string _question)
 	: title(_title),
 	  question(_question),
-	  callback(_callback)
+	  type(_type)
 {
 
 }
@@ -39,6 +50,24 @@ RequestField Request::getField(const string& label) const
 		throw RequestFieldNotFound();
 
 	return it->second;
+}
+
+void Request::display() const
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc->privmsg(irc->getUser(), "New request: " + title);
+	irc->privmsg(irc->getUser(), question);
+	for(map<string, RequestField>::const_iterator it = fields.begin();
+	    it != fields.end();
+	    ++it)
+	{
+		irc->privmsg(irc->getUser(), "- " + it->first + ": " + it->second.getText());
+	}
+}
+
+void Request::close()
+{
+	purple_request_close(type, this);
 }
 
 /* STATIC */
@@ -58,11 +87,40 @@ PurpleRequestUiOps Request::uiops =
         NULL
 };
 
+vector<Request*> Request::requests;
+
 void Request::init()
 {
 	purple_request_set_ui_ops(&uiops);
 }
 
+void Request::answerRequest(const string& answer)
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	if(requests.empty())
+	{
+		irc->privmsg(irc->getUser(), "No active question");
+		return;
+	}
+
+	Request* request = requests.front();
+	RequestField field;
+	try
+	{
+		field = request->getField(answer);
+	}
+	catch(RequestFieldNotFound &e)
+	{
+		irc->privmsg(irc->getUser(), "ERROR: Answer '" + answer + "' is not valid.");
+		request->display();
+		return;
+	}
+
+	field.runCallback();
+	request->close();
+	delete request;
+	requests.erase(requests.begin());
+}
 
 void* Request::request_action(const char *title, const char *primary,
 			const char *secondary, int default_value,
@@ -70,7 +128,20 @@ void* Request::request_action(const char *title, const char *primary,
 			void *user_data, size_t actioncount,
 			va_list actions)
 {
-	return NULL;
+	Request* request = new Request(PURPLE_REQUEST_ACTION, title, primary);
+	for(size_t i = 0; i < actioncount; ++i)
+	{
+		const char *text = va_arg(actions, const char *);
+		string tmp = text;
+		PurpleRequestActionCb callback = va_arg(actions, PurpleRequestActionCb);
+
+		request->addField(RequestField((int)i, strlower(stringtok(tmp, " ")), text, callback, user_data));
+	}
+	requests.push_back(request);
+	if(requests.size() == 1)
+		request->display();
+
+	return requests.back();
 }
 
 }; /* namespace im */

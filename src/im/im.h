@@ -72,6 +72,8 @@ namespace im
 		Account getAccount(string name) const;
 		Account addAccount(Protocol proto, string username, string password);
 		void delAccount(Account user);
+
+		void answerRequest(const string& answer) const;
 	};
 
 };

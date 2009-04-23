@@ -19,15 +19,17 @@
 #define IM_REQUEST_H
 
 #include <map>
+#include <vector>
 #include <string>
 #include <exception>
-#include <purple.h>
+#include <libpurple/purple.h>
 
 #include "account.h"
 
 namespace im
 {
 	using std::map;
+	using std::vector;
 	using std::string;
 
 	class RequestFieldNotFound : public std::exception {};
@@ -37,20 +39,25 @@ namespace im
 		int id;
 		string label;
 		string text;
+		PurpleRequestChoiceCb callback;
+		void* data;
 
 	public:
 
 		RequestField() : id(-1) {}
 
-		RequestField(int _id, string _label, string _text)
+		RequestField(int _id, string _label, string _text, PurpleRequestChoiceCb _callback, void* _data)
 			: id(_id),
 			  label(_label),
-			  text(_text)
+			  text(_text),
+			  callback(_callback),
+			  data(_data)
 		{}
 
 		int getID() const { return id; }
 		string getLabel() const { return label; }
 		string getText() const { return text; }
+		void runCallback();
 	};
 
 	class Request
@@ -58,10 +65,11 @@ namespace im
 		map<string, RequestField> fields;
 		string title;
 		string question;
-		PurpleRequestChoiceCb callback;
 		Account account;
+		PurpleRequestType type;
 
 		static PurpleRequestUiOps uiops;
+		static void displayRequest(const Request& request);
 		static void* request_action(const char *title, const char *primary,
 				        const char *secondary, int default_value,
 					PurpleAccount *account, const char *who, PurpleConversation *conv,
@@ -71,12 +79,17 @@ namespace im
 
 	public:
 
+		static vector<Request*> requests;
 		static void init();
+		static void answerRequest(const string& answer);
 
-		Request(string title, string question, PurpleRequestChoiceCb callback);
+		Request(PurpleRequestType type, string title, string question);
 
 		void addField(RequestField field);
 		RequestField getField(const string& label) const;
+
+		void display() const;
+		void close();
 	};
 
 }; /* namespace im */

@@ -349,6 +349,13 @@ void IRC::notice(Nick* nick, string msg)
 				      .addArg(msg));
 }
 
+void IRC::privmsg(Nick* nick, string msg)
+{
+	nick->send(Message(MSG_PRIVMSG).setSender(this)
+			              .setReceiver(user)
+				      .addArg(msg));
+}
+
 bool IRC::readIO(void*)
 {
 	static char buf[1024];
@@ -620,7 +627,11 @@ void IRC::m_privmsg(Message message)
 	relayed.setSender(user);
 	relayed.addArg(message.getArg(1));
 
-	if(Channel::isChanName(target))
+	if(strlower(target) == strlower(getServerName()))
+	{
+		im->answerRequest(message.getArg(1));
+	}
+	else if(Channel::isChanName(target))
 	{
 		Channel* c = getChannel(target);
 		if(!c)
