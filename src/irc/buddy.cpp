@@ -25,7 +25,7 @@
 namespace irc {
 
 Buddy::Buddy(Server* server, im::Buddy _buddy)
-	: Nick(server, "","","",_buddy.getName()),
+	: Nick(server, "","","",_buddy.getRealName()),
 	  im_buddy(_buddy)
 {
 	string hostname = im_buddy.getName();
@@ -76,6 +76,11 @@ void Buddy::send(Message m)
 			conv.sendMessage(text);
 		}
 	}
+}
+
+string Buddy::getRealName() const
+{
+	return im_buddy.getRealName();
 }
 
 string Buddy::getAwayMessage() const

@@ -82,7 +82,7 @@ namespace irc
 		string getHostname() const { return hostname; }
 		void setHostname(string h) { hostname = h; }
 
-		string getRealname() const { return realname; }
+		virtual string getRealname() const { return realname; }
 		void setRealname(string r) { realname = r; }
 
 		void setFlag(unsigned flag) { flags |= flag; }

@@ -44,6 +44,7 @@ namespace irc
 		im::Buddy getBuddy() const { return im_buddy; }
 
 		CacaImage getIcon() const;
+		virtual string getRealName() const;
 
 	};
 

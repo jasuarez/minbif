@@ -92,6 +92,7 @@ ChanUser* Nick::getChanUser(const Channel* chan) const
 			return *it;
 	return NULL;
 }
+
 void Nick::join(Channel* chan, int status)
 {
 	if(isOn(chan))

@@ -68,6 +68,12 @@ string Buddy::getAlias() const
 		return getName();
 }
 
+string Buddy::getRealName() const
+{
+	assert(isValid());
+	return purple_buddy_get_name(buddy);
+}
+
 bool Buddy::isOnline() const
 {
 	assert(isValid());
