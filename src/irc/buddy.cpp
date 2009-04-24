@@ -95,6 +95,11 @@ bool Buddy::isAway() const
 	return im_buddy.isOnline() == false || im_buddy.isAvailable() == false;
 }
 
+bool Buddy::isOnline() const
+{
+	return im_buddy.isOnline();
+}
+
 CacaImage Buddy::getIcon() const
 {
 	return im_buddy.getIcon();

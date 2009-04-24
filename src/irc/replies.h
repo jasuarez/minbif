@@ -24,6 +24,7 @@
 #define RPL_MAPEND      "017"
 #define RPL_ENDOFSTATS  "219"
 #define RPL_AWAY        "301"
+#define RPL_ISON        "303"
 #define RPL_WHOISUSER   "311"
 #define RPL_WHOISSERVER "312"
 #define RPL_ENDOFWHO    "315"
@@ -75,3 +76,4 @@
 #define MSG_SQUIT       "SQUIT"
 #define MSG_MAP		"MAP"
 #define MSG_LIST        "LIST"
+#define MSG_ISON        "ISON"

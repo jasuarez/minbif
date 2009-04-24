@@ -40,6 +40,7 @@ namespace irc
 
 		virtual string getAwayMessage() const;
 		virtual bool isAway() const;
+		virtual bool isOnline() const;
 
 		im::Buddy getBuddy() const { return im_buddy; }
 

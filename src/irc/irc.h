@@ -110,6 +110,7 @@ namespace irc
 		void m_join(Message m);
 		void m_list(Message m);
 		void m_mode(Message m);
+		void m_ison(Message m);
 	};
 
 }; /* namespace irc */

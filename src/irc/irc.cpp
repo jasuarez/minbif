@@ -61,6 +61,7 @@ static struct
 	{ MSG_JOIN,    &IRC::m_join,    1, Nick::REGISTERED },
 	{ MSG_LIST,    &IRC::m_list,    0, Nick::REGISTERED },
 	{ MSG_MODE,    &IRC::m_mode,    0, Nick::REGISTERED },
+	{ MSG_ISON,    &IRC::m_ison,    1, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned _ping_freq)
@@ -904,6 +905,27 @@ void IRC::m_list(Message message)
 
 void IRC::m_mode(Message message)
 {
+}
+
+/* ISON [nick list] */
+void IRC::m_ison(Message message)
+{
+	string buf = message.getArg(0);
+	string nick;
+	string list;
+	while((nick = stringtok(buf, " ")).empty() == false)
+	{
+		Nick* n;
+		if((n = getNick(nick)) && n->isOnline())
+		{
+			if(!list.empty())
+				list += " ";
+			list += n->getNickname();
+		}
+	}
+	user->send(Message(RPL_ISON).setSender(this)
+			            .setReceiver(user)
+				    .addArg(list));
 }
 
 }; /* namespace irc */
