@@ -60,7 +60,7 @@ static struct
 	{ MSG_MAP,     &IRC::m_map,     0, Nick::REGISTERED },
 	{ MSG_JOIN,    &IRC::m_join,    1, Nick::REGISTERED },
 	{ MSG_LIST,    &IRC::m_list,    0, Nick::REGISTERED },
-	{ MSG_MODE,    &IRC::m_mode,    0, Nick::REGISTERED },
+	{ MSG_MODE,    &IRC::m_mode,    1, Nick::REGISTERED },
 	{ MSG_ISON,    &IRC::m_ison,    1, Nick::REGISTERED },
 };
 
@@ -375,6 +375,7 @@ bool IRC::readIO(void*)
 	}
 	buf[r] = 0;
 	sbuf = buf;
+
 
 	while((line = stringtok(sbuf, "\r\n")).empty() == false)
 	{
@@ -903,11 +904,57 @@ void IRC::m_list(Message message)
 				       .addArg("End of /LIST"));
 }
 
+/* MODE target [modes ..] */
 void IRC::m_mode(Message message)
 {
+	Message relayed(message.getCommand());
+	string target = message.getArg(0);
+
+	relayed.setSender(user);
+	for(size_t i = 1; i < message.countArgs(); ++i)
+		relayed.addArg(message.getArg(i));
+
+	if(Channel::isChanName(target))
+	{
+		Channel* c = getChannel(target);
+		if(!c)
+		{
+			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+					                     .setReceiver(user)
+							     .addArg(target)
+							     .addArg("No suck channel"));
+			return;
+		}
+		relayed.setReceiver(c);
+		if(relayed.countArgs() == 0)
+		{
+			user->send(Message(RPL_CHANNELMODEIS).setSender(this)
+					                     .setReceiver(user)
+							     .addArg(c->getName())
+							     .addArg("+"));
+			user->send(Message(RPL_CREATIONTIME).setSender(this)
+					                     .setReceiver(user)
+							     .addArg(c->getName())
+							     .addArg("1212313"));
+		}
+	}
+	else
+	{
+		Nick* n = getNick(target);
+		if(!n)
+		{
+			user->send(Message(ERR_NOSUCHNICK).setSender(this)
+					                  .setReceiver(user)
+							  .addArg(target)
+							  .addArg("No suck nick"));
+			return;
+		}
+		relayed.setReceiver(n);
+	}
+
 }
 
-/* ISON [nick list] */
+/* ISON :[nick list] */
 void IRC::m_ison(Message message)
 {
 	string buf = message.getArg(0);

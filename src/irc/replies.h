@@ -32,6 +32,8 @@
 #define RPL_LISTSTART   "321"
 #define RPL_LIST        "322"
 #define RPL_LISTEND     "323"
+#define RPL_CHANNELMODEIS "324"
+#define RPL_CREATIONTIME "329"
 #define RPL_WHOISACTUALLY "338"
 #define RPL_VERSION     "351"
 #define RPL_WHOREPLY    "352"
