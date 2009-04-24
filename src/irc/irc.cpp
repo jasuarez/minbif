@@ -821,10 +821,10 @@ void IRC::m_map(Message message)
 		name += it->second.getServername();
 		if(it->second == added_account)
 			name += " (added)";
-		else if(!it->second.isConnected())
-			name += " (disconnected)";
 		else if(it->second.isConnecting())
 			name += " (connecting)";
+		else if(!it->second.isConnected())
+			name += " (disconnected)";
 
 		user->send(Message(RPL_MAP).setSender(this)
 					   .setReceiver(user)
