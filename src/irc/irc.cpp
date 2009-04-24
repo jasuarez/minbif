@@ -578,21 +578,31 @@ void IRC::m_whois(Message message)
 	{
 		string buf = icon.getIRCBuffer(0, 10);
 		string line;
-		notice(user, "Icon:");
+		user->send(Message(RPL_WHOISACTUALLY).setSender(this)
+					       .setReceiver(user)
+					       .addArg(n->getNickname())
+					       .addArg("Icon:"));
 		while((line = stringtok(buf, "\n")).empty() == false)
 		{
-			user->send(Message(MSG_NOTICE).setSender(this)
+			user->send(Message(RPL_WHOISACTUALLY).setSender(this)
 					               .setReceiver(user)
+						       .addArg(n->getNickname())
 						       .addArg(line));
 		}
 	}
 	catch(CacaError &e)
 	{
-		notice(user, "No icon");
+		user->send(Message(RPL_WHOISACTUALLY).setSender(this)
+					       .setReceiver(user)
+					       .addArg(n->getNickname())
+					       .addArg("No icon"));
 	}
 	catch(CacaNotLoaded &e)
 	{
-		notice(user, "libcaca and imlib2 are required to display icon");
+		user->send(Message(RPL_WHOISACTUALLY).setSender(this)
+					       .setReceiver(user)
+					       .addArg(n->getNickname())
+					       .addArg("libcaca and imlib2 are required to display icon"));
 	}
 
 	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
