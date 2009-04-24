@@ -16,6 +16,7 @@
  */
 
 #include <stdlib.h>
+#include <sys/resource.h>
 #include <libpurple/purple.h>
 
 #include "bitlbee.h"
@@ -58,6 +59,14 @@ int Bitlbee::main(int argc, char** argv)
 
 	try
 	{
+		struct rlimit rlim;
+		if(!getrlimit(RLIMIT_CORE, &rlim) && rlim.rlim_cur != RLIM_INFINITY)
+		{
+			rlim.rlim_cur = RLIM_INFINITY;
+			rlim.rlim_max = RLIM_INFINITY;
+			setrlimit(RLIMIT_CORE, &rlim);
+		}
+
 		if(!conf.Load(argv[1]))
 		{
 			b_log[W_ERR] << "Unable to load configuration, exiting..";
