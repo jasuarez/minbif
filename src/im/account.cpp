@@ -141,6 +141,19 @@ PurpleConnectionUiOps Account::conn_ops =
         NULL
 };
 
+PurpleAccountUiOps Account::acc_ops =
+{
+        NULL,//notify_added,
+        NULL,
+        NULL,//request_add,
+        NULL,//finch_request_authorize,
+        NULL,//finch_request_close,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
 
 void* Account::getHandler()
 {
@@ -152,6 +165,7 @@ void* Account::getHandler()
 void Account::init()
 {
 	purple_connections_set_ui_ops(&conn_ops);
+	purple_accounts_set_ui_ops(&acc_ops);
 	purple_signal_connect(purple_accounts_get_handle(), "account-added",
 				getHandler(), PURPLE_CALLBACK(account_added),
 				NULL);

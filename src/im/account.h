@@ -36,6 +36,7 @@ namespace im
 		Protocol proto;
 
 		static PurpleConnectionUiOps conn_ops;
+		static PurpleAccountUiOps acc_ops;
 		static void* getHandler();
 		static void account_added(PurpleAccount*);
 		static void account_removed(PurpleAccount*);
