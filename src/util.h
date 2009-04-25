@@ -49,4 +49,7 @@ guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunctio
 string strupper(string s);
 string strlower(string s);
 
+#define FOREACH(t, v, it) \
+	for(t::iterator it = v.begin(); it != v.end(); ++it)
+
 #endif /* UTIL_H */
