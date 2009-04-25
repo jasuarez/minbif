@@ -30,8 +30,8 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 {
 	string hostname = im_buddy.getName();
 	string identname = stringtok(hostname, "@");
-	string nickname = im_buddy.getAlias();
-	if(nickname.find('@') != string::npos)
+	string nickname = nickize(im_buddy.getAlias());
+	if(nickname.empty())
 		nickname = nickize(identname);
 
 	setNickname(nickname);
@@ -45,7 +45,7 @@ Buddy::~Buddy()
 string Buddy::nickize(const string& n)
 {
 	string nick;
-	for(string::const_iterator c = n.begin(); c != n.end(); ++c)
+	for(string::const_iterator c = n.begin(); c != n.end() && (nick.empty() || *c != ' '); ++c)
 		if(strchr(nick_lc_chars, *c) || strchr(nick_uc_chars, *c))
 			nick += *c;
 	if(isdigit(nick[0]))

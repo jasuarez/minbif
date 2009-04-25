@@ -71,7 +71,7 @@ string Buddy::getAlias() const
 string Buddy::getRealName() const
 {
 	assert(isValid());
-	return purple_buddy_get_name(buddy);
+	return purple_buddy_get_server_alias(buddy);
 }
 
 bool Buddy::isOnline() const
