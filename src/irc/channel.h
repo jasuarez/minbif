@@ -69,7 +69,9 @@ namespace irc
 
 		/** Create Message object of modes
 		 *
+		 * @param add  is it added or removed modes?
 		 * @param modes  modes used. If = 0, use user modes
+		 * @return  generated message
 		 */
 		Message getModeMessage(bool add, int modes = 0) const;
 	};
