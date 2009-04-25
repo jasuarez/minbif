@@ -26,6 +26,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/irc/user.cpp
 		src/irc/buddy.cpp
 		src/irc/channel.cpp
+		src/irc/status_channel.cpp
 	      )
 SET(CONF_NAME bitlbee.conf)
 

@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -84,7 +85,7 @@ namespace irc
 	public:
 
 		Channel(IRC* irc, string name);
-		~Channel();
+		virtual ~Channel();
 
 		static bool isChanName(const string& name)
 		{
@@ -94,8 +95,8 @@ namespace irc
 		static bool isStatusChannel(const string& name) { return (!name.empty() && name[0] == '&'); }
 		static bool isRemoteChannel(const string& name) { return (!name.empty() && name[0] == '#'); }
 
-		bool isStatusChannel() const { return (!getName().empty() && getName()[0] == '&'); }
-		bool isRemoteChannel() const { return (!getName().empty() && getName()[0] == '#'); }
+		virtual bool isStatusChannel() const { return (!getName().empty() && getName()[0] == '&'); }
+		virtual bool isRemoteChannel() const { return (!getName().empty() && getName()[0] == '#'); }
 
 		ChanUser* addUser(Nick* nick, int status=0);
 		void delUser(Nick* nick, Message message = Message());
