@@ -17,10 +17,12 @@
 
 #include <cstring>
 #include <cassert>
+#include <algorithm>
 
 #include "nick.h"
 #include "channel.h"
 #include "caca_image.h"
+#include "../util.h"
 
 namespace irc {
 
@@ -112,6 +114,30 @@ void Nick::part(Channel* chan, string message)
 		}
 		else
 			++it;
+}
+
+void Nick::quit(string text)
+{
+	Message m = Message(MSG_QUIT).setSender(this)
+		                     .addArg(text);
+	vector<Nick*> sended;
+
+	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end();)
+	{
+		(*it)->getChannel()->delUser(this);
+
+		vector<ChanUser*> users = (*it)->getChannel()->getChanUsers();
+		FOREACH(vector<ChanUser*>, users, u)
+		{
+			Nick* n = (*u)->getNick();
+			if(std::find(sended.begin(), sended.end(), n) == sended.end())
+			{
+				sended.push_back(n);
+				n->send(m);
+			}
+		}
+		it = channels.erase(it);
+	}
 }
 
 void Nick::privmsg(Channel* chan, string msg)

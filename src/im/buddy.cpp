@@ -173,7 +173,7 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 
 			}
 			else if(!buddy.isOnline() && n->isOn(chan))
-				n->part(chan, "Leaving...");
+				n->quit("Leaving...");
 		}
 
 	}
