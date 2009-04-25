@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -71,7 +72,11 @@ string Buddy::getAlias() const
 string Buddy::getRealName() const
 {
 	assert(isValid());
-	return purple_buddy_get_server_alias(buddy);
+	const char* rn = purple_buddy_get_server_alias(buddy);
+	if(rn)
+		return rn;
+	else
+		return "";
 }
 
 bool Buddy::isOnline() const

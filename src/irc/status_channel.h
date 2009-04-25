@@ -16,50 +16,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IM_BUDDY_H
-#define IM_BUDDY_H
+#ifndef IRC_STATUS_CHANNEL_H
+#define IRC_STATUS_CHANNEL_H
 
-#include <libpurple/purple.h>
-#include <string>
+#include "channel.h"
+#include "im/account.h"
 
-#include "caca_image.h"
-
-namespace im
+namespace irc
 {
-	using std::string;
 
-	class Account;
-	class Buddy
+	class StatusChannel : public Channel
 	{
-		PurpleBuddy* buddy;
-
-		static void* getHandler();
-		static PurpleBlistUiOps blist_ui_ops;
-		static void update_node(PurpleBuddyList *list, PurpleBlistNode *node);
-
 	public:
+		StatusChannel(IRC* irc, string name);
 
-		static void init();
-
-		Buddy();
-		Buddy(PurpleBuddy* buddy);
-
-		bool operator==(const Buddy& buddy) const;
-		bool operator!=(const Buddy& buddy) const;
-
-		bool isValid() const { return buddy != NULL; }
-
-		string getName() const;
-		string getAlias() const;
-		string getRealName() const;
-		bool isOnline() const;
-		bool isAvailable() const;
-		CacaImage getIcon() const;
-
-		Account getAccount() const;
+		virtual bool isStatusChannel() const { return true; }
+		virtual bool isRemoteChannel() const { return false; }
 
 	};
 
-};
+}; /* ns irc */
 
-#endif /* IM_BUDDY_H */
+#endif /* IRC_STATUS_CHANNEL_H */

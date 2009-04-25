@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -14,6 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
+
+#ifndef IRC_REPLIES_H
+#define IRC_REPLIES_H
 
 #define RPL_WELCOME     "001"
 #define RPL_YOURHOST    "002"
@@ -79,3 +83,6 @@
 #define MSG_MAP		"MAP"
 #define MSG_LIST        "LIST"
 #define MSG_ISON        "ISON"
+#define MSG_INVITE      "INVITE"
+
+#endif /* IRC_REPLIES_H */

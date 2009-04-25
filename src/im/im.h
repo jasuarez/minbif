@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -70,6 +71,7 @@ namespace im
 
 		map<string, Account> getAccountsList() const;
 		Account getAccount(string name) const;
+		Account getAccountFromChannel(string name) const;
 		Account addAccount(Protocol proto, string username, string password);
 		void delAccount(Account user);
 	};

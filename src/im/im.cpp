@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -131,6 +132,16 @@ Account IM::getAccount(string name) const
 			return it->second;
 	return Account();
 }
+
+Account IM::getAccountFromChannel(string name) const
+{
+	map<string, Account> alist = getAccountsList();
+	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)
+		if(it->second.getStatusChannel() == name)
+			return it->second;
+	return Account();
+}
+
 
 Account IM::addAccount(Protocol proto, string username, string password)
 {

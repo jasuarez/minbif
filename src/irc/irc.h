@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -111,6 +112,7 @@ namespace irc
 		void m_list(Message m);
 		void m_mode(Message m);
 		void m_ison(Message m);
+		void m_invite(Message m);
 	};
 
 }; /* namespace irc */

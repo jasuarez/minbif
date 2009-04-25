@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,6 +33,7 @@
 #include "message.h"
 #include "user.h"
 #include "channel.h"
+#include "status_channel.h"
 #include "caca_image.h"
 
 namespace irc {
@@ -62,6 +64,7 @@ static struct
 	{ MSG_LIST,    &IRC::m_list,    0, Nick::REGISTERED },
 	{ MSG_MODE,    &IRC::m_mode,    1, Nick::REGISTERED },
 	{ MSG_ISON,    &IRC::m_ison,    1, Nick::REGISTERED },
+	{ MSG_INVITE,  &IRC::m_invite,  2, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned _ping_freq)
@@ -346,15 +349,15 @@ bool IRC::ping(void*)
 void IRC::notice(Nick* nick, string msg)
 {
 	nick->send(Message(MSG_NOTICE).setSender(this)
-			              .setReceiver(user)
+				      .setReceiver(user)
 				      .addArg(msg));
 }
 
 void IRC::privmsg(Nick* nick, string msg)
 {
 	nick->send(Message(MSG_PRIVMSG).setSender(this)
-			              .setReceiver(user)
-				      .addArg(msg));
+				       .setReceiver(user)
+				       .addArg(msg));
 }
 
 bool IRC::readIO(void*)
@@ -391,7 +394,7 @@ bool IRC::readIO(void*)
 
 		if(i >= (sizeof commands / sizeof *commands))
 			user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
-			                                   .setReceiver(user)
+							   .setReceiver(user)
 							   .addArg(m.getCommand())
 							   .addArg("Unknown command"));
 		else if(m.countArgs() < commands[i].minargs)
@@ -428,15 +431,15 @@ void IRC::m_nick(Message message)
 {
 	if(message.countArgs() < 1)
 		user->send(Message(ERR_NONICKNAMEGIVEN).setSender(this)
-		                                    .setReceiver(user)
+						    .setReceiver(user)
 						    .addArg("No nickname given"));
 	else if(user->hasFlag(Nick::REGISTERED))
 		user->send(Message(ERR_NICKTOOFAST).setSender(this)
-				                   .setReceiver(user)
+						   .setReceiver(user)
 						   .addArg("The hand of the deity is upon thee, thy nick may not change"));
 	else if(!Nick::isValidNickname(message.getArg(0)))
 		user->send(Message(ERR_ERRONEUSNICKNAME).setSender(this)
-				                        .setReceiver(user)
+							.setReceiver(user)
 							.addArg("This nick contains invalid characters"));
 	else
 	{
@@ -494,7 +497,7 @@ void IRC::m_quit(Message message)
 void IRC::m_version(Message message)
 {
 	user->send(Message(RPL_VERSION).setSender(this)
-			               .setReceiver(user)
+				       .setReceiver(user)
 				       .addArg(BITLBEE_VERSION)
 				       .addArg(getServerName()));
 }
@@ -538,9 +541,9 @@ void IRC::m_who(Message message)
 							.addArg("0 " + n->getRealname()));
 		}
 	user->send(Message(RPL_ENDOFWHO).setSender(this)
-			                .setReceiver(user)
-				        .addArg(!arg.empty() ? arg : "**")
-				        .addArg("End of /WHO list"));
+					.setReceiver(user)
+					.addArg(!arg.empty() ? arg : "**")
+					.addArg("End of /WHO list"));
 }
 
 /* WHOIS nick */
@@ -550,30 +553,30 @@ void IRC::m_whois(Message message)
 	if(!n)
 	{
 		user->send(Message(ERR_NOSUCHNICK).setSender(this)
-				                  .setReceiver(user)
+						  .setReceiver(user)
 						  .addArg(message.getArg(0))
 						  .addArg("Nick does not exist"));
 		return;
 	}
 
 	user->send(Message(RPL_WHOISUSER).setSender(this)
-			                 .setReceiver(user)
+					 .setReceiver(user)
 					 .addArg(n->getNickname())
 					 .addArg(n->getIdentname())
 					 .addArg(n->getHostname())
 					 .addArg("*")
 					 .addArg(n->getRealname()));
 	user->send(Message(RPL_WHOISSERVER).setSender(this)
-			                   .setReceiver(user)
+					   .setReceiver(user)
 					   .addArg(n->getNickname())
 					   .addArg(n->getServer()->getServerName())
 					   .addArg(n->getServer()->getServerInfo()));
 
 	if(n->isAway())
 		user->send(Message(RPL_AWAY).setSender(this)
-		                            .setReceiver(user)
+					    .setReceiver(user)
 					    .addArg(n->getNickname())
-		                            .addArg(n->getAwayMessage()));
+					    .addArg(n->getAwayMessage()));
 
 	CacaImage icon = n->getIcon();
 	try
@@ -587,7 +590,7 @@ void IRC::m_whois(Message message)
 		while((line = stringtok(buf, "\n")).empty() == false)
 		{
 			user->send(Message(RPL_WHOISACTUALLY).setSender(this)
-					               .setReceiver(user)
+						       .setReceiver(user)
 						       .addArg(n->getNickname())
 						       .addArg(line));
 		}
@@ -608,7 +611,7 @@ void IRC::m_whois(Message message)
 	}
 
 	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
-			                  .setReceiver(user)
+					  .setReceiver(user)
 					  .addArg(n->getNickname())
 					  .addArg("End of /WHOIS list"));
 
@@ -621,11 +624,11 @@ void IRC::m_whois(Message message)
 void IRC::m_whowas(Message message)
 {
 	user->send(Message(ERR_WASNOSUCHNICK).setSender(this)
-			                     .setReceiver(user)
+					     .setReceiver(user)
 					     .addArg(message.getArg(0))
 					     .addArg("Nick does not exist"));
 	user->send(Message(RPL_ENDOFWHOWAS).setSender(this)
-			                   .setReceiver(user)
+					   .setReceiver(user)
 					   .addArg(message.getArg(0))
 					   .addArg("End of WHOWAS"));
 }
@@ -645,7 +648,7 @@ void IRC::m_privmsg(Message message)
 		if(!c)
 		{
 			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-					                     .setReceiver(user)
+							     .setReceiver(user)
 							     .addArg(target)
 							     .addArg("No suck channel"));
 			return;
@@ -659,7 +662,7 @@ void IRC::m_privmsg(Message message)
 		if(!n)
 		{
 			user->send(Message(ERR_NOSUCHNICK).setSender(this)
-					                  .setReceiver(user)
+							  .setReceiver(user)
 							  .addArg(target)
 							  .addArg("No suck nick"));
 			return;
@@ -695,7 +698,7 @@ void IRC::m_stats(Message message)
 			break;
 	}
 	user->send(Message(RPL_ENDOFSTATS).setSender(this)
-		                          .setReceiver(user)
+					  .setReceiver(user)
 					  .addArg(arg)
 					  .addArg("End of /STATS report"));
 }
@@ -711,7 +714,7 @@ void IRC::m_connect(Message message)
 	}
 
 	account.connect();
-        Channel* chan = getChannel(account.getStatusChannel());
+	Channel* chan = getChannel(account.getStatusChannel());
 	if(chan)
 		user->join(chan);
 }
@@ -771,12 +774,12 @@ void IRC::m_map(Message message)
 				catch(im::ProtocolUnknown &e)
 				{
 					notice(user, "Error: Protocol " + protoname +
-        			                     " is unknown. Try '/STATS p' to list protocols.");
+						     " is unknown. Try '/STATS p' to list protocols.");
 				}
 
-        			break;
+				break;
 			}
-        		case 'r':
+			case 'r':
 			{
 				if(message.countArgs() != 2)
 				{
@@ -785,20 +788,20 @@ void IRC::m_map(Message message)
 				}
 				im::Account account = im->getAccount(message.getArg(1));
 				if (!account.isValid())
-                                {
+				{
 					notice(user, "Error: Account " + message.getArg(1) + " is unknown");
 					break;
-                                }
-                                notice (user, "Removing account "+account.getUsername());
-                                im->delAccount(account);
-        			break;
+				}
+				notice (user, "Removing account "+account.getUsername());
+				im->delAccount(account);
+				break;
 			}
-        		case 'h':
+			case 'h':
 				notice(user,"a, add: add ACCOUNT to your accounts");
-        			notice(user,"r, rem: remove ACCOUNT from your accounts");
-        		default:
+				notice(user,"r, rem: remove ACCOUNT from your accounts");
+			default:
 				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD [CHANNEL] [options] ] | [rem NAME] | [help]");
-        			break;
+				break;
 		}
 	}
 
@@ -846,9 +849,9 @@ void IRC::m_join(Message message)
 		if(!Channel::isChanName(channame))
 		{
 			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-						             .setReceiver(user)
-						             .addArg(channame)
-						             .addArg("No such channel"));
+							     .setReceiver(user)
+							     .addArg(channame)
+							     .addArg("No such channel"));
 			continue;
 		}
 
@@ -889,18 +892,18 @@ void IRC::m_join(Message message)
 void IRC::m_list(Message message)
 {
 	user->send(Message(RPL_LISTSTART).setSender(this)
-			                 .setReceiver(user)
+					 .setReceiver(user)
 					 .addArg("Channel")
 					 .addArg("Users  Name"));
 
 	for(map<string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
 		user->send(Message(RPL_LIST).setSender(this)
-			                    .setReceiver(user)
-				            .addArg(it->second->getName())
-				            .addArg(t2s(it->second->countUsers())));
+					    .setReceiver(user)
+					    .addArg(it->second->getName())
+					    .addArg(t2s(it->second->countUsers())));
 
 	user->send(Message(RPL_LISTEND).setSender(this)
-			               .setReceiver(user)
+				       .setReceiver(user)
 				       .addArg("End of /LIST"));
 }
 
@@ -920,7 +923,7 @@ void IRC::m_mode(Message message)
 		if(!c)
 		{
 			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-					                     .setReceiver(user)
+							     .setReceiver(user)
 							     .addArg(target)
 							     .addArg("No suck channel"));
 			return;
@@ -929,11 +932,11 @@ void IRC::m_mode(Message message)
 		if(relayed.countArgs() == 0)
 		{
 			user->send(Message(RPL_CHANNELMODEIS).setSender(this)
-					                     .setReceiver(user)
+							     .setReceiver(user)
 							     .addArg(c->getName())
 							     .addArg("+"));
 			user->send(Message(RPL_CREATIONTIME).setSender(this)
-					                     .setReceiver(user)
+							     .setReceiver(user)
 							     .addArg(c->getName())
 							     .addArg("1212313"));
 		}
@@ -944,7 +947,7 @@ void IRC::m_mode(Message message)
 		if(!n)
 		{
 			user->send(Message(ERR_NOSUCHNICK).setSender(this)
-					                  .setReceiver(user)
+							  .setReceiver(user)
 							  .addArg(target)
 							  .addArg("No suck nick"));
 			return;
@@ -971,8 +974,39 @@ void IRC::m_ison(Message message)
 		}
 	}
 	user->send(Message(RPL_ISON).setSender(this)
-			            .setReceiver(user)
+				    .setReceiver(user)
 				    .addArg(list));
+}
+
+/* INVITE nick chan */
+void IRC::m_invite(Message message)
+{
+	Channel* chan = getChannel(message.getArg(1));
+	if(!chan)
+	{
+		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(message.getArg(1))
+						     .addArg("No such channel"));
+		return;
+	}
+
+	if(chan->isStatusChannel())
+	{
+		/* Add a buddy */
+		string acc = message.getArg(0);
+		string username = stringtok(acc, ":");
+		im::Account account;
+		if(acc.empty())
+			account = im->getAccountFromChannel(chan->getName());
+		else
+			account = im->getAccount(acc);
+		account.addBuddy(username, "bite");
+	}
+	else if(chan->isRemoteChannel())
+	{
+		/* TODO */
+	}
 }
 
 }; /* namespace irc */

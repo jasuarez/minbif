@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +25,7 @@
 #include "../version.h"
 #include "im.h"
 #include "irc/irc.h"
-#include "irc/channel.h"
+#include "irc/status_channel.h"
 
 namespace im {
 
@@ -53,12 +54,13 @@ bool Account::operator!=(const Account& account) const
 
 string Account::getUsername() const
 {
-	assert(account);
+	assert(isValid());
 	return account->username;
 }
 
 string Account::getID() const
 {
+	assert(isValid());
 	string n = purple_account_get_ui_string(account, BITLBEE_VERSION_NAME, "id", "");
 	if(n.empty())
 		n = Purple::getNewAccountName(proto);
@@ -67,48 +69,58 @@ string Account::getID() const
 
 string Account::getStatusChannel() const
 {
+	assert(isValid());
 	string n = purple_account_get_ui_string(account, BITLBEE_VERSION_NAME, "channel", "");
 	return n;
 }
 
 void Account::setStatusChannel(string c)
 {
+	assert(isValid());
 	purple_account_set_ui_string(account, BITLBEE_VERSION_NAME, "channel", c.c_str());
 }
 
 string Account::getServername() const
 {
+	assert(isValid());
 	return getUsername() + ":" + getID();
 }
 
 bool Account::isConnected() const
 {
+	assert(isValid());
 	return purple_account_is_connected(account);
 }
 
 bool Account::isConnecting() const
 {
+	assert(isValid());
 	return purple_account_is_connecting(account);
 }
 
 vector<Buddy> Account::getBuddies() const
 {
+	assert(isValid());
 	vector<Buddy> buddies;
 	return buddies;
 }
 
 void Account::connect() const
 {
+	assert(isValid());
 	purple_account_set_enabled(account, BITLBEE_VERSION_NAME, true);
 }
 
 void Account::disconnect() const
 {
+	assert(isValid());
 	purple_account_set_enabled(account, BITLBEE_VERSION_NAME, false);
 }
 
 void Account::createStatusChannel() const
 {
+	assert(isValid());
+
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	irc::Channel* chan;
 	string channame = getStatusChannel();
@@ -119,9 +131,27 @@ void Account::createStatusChannel() const
 	chan = irc->getChannel(channame);
 	if(!chan)
 	{
-		chan = new irc::Channel(irc, channame);
+		chan = new irc::StatusChannel(irc, channame);
 		irc->addChannel(chan);
 	}
+}
+
+void Account::addBuddy(string username, string group) const
+{
+	assert(isValid());
+	assert(username.empty() == false);
+	assert(group.empty() == false);
+
+	PurpleGroup* grp = purple_find_group(group.c_str());
+	if (!grp)
+	{
+		grp = purple_group_new(group.c_str());
+		purple_blist_add_group(grp, NULL);
+	}
+
+	PurpleBuddy* buddy = purple_buddy_new(account, username.c_str(), username.c_str());
+	purple_blist_add_buddy(buddy, NULL, grp, NULL);
+	purple_account_add_buddy(account, buddy);
 }
 
 /* STATIC */
