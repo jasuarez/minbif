@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +19,7 @@
 #include <cstring>
 
 #include "irc/buddy.h"
+#include "irc/server.h"
 #include "irc/channel.h"
 #include "im/account.h"
 #include "../util.h"
@@ -35,6 +37,12 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 		nickname = nickize(identname);
 	else
 		nickname = nickize(nickname);
+	if(hostname.empty())
+	{
+		string tmp = server->getServerName();
+		stringtok(tmp, "@");
+		hostname = tmp;
+	}
 
 	setNickname(nickname);
 	setIdentname(identname);
