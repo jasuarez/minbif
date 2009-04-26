@@ -749,6 +749,7 @@ void IRC::m_map(Message message)
 		{
 			case 'a':
 			{
+				/* XXX Probably not needed. */
 				message.rebuildWithQuotes();
 				if(message.countArgs() < 2)
 				{
