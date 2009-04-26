@@ -153,10 +153,16 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 			n = new irc::Buddy(server, buddy);
 			while(Purple::getIM()->getIRC()->getNick(n->getNickname()))
 				n->setNickname(n->getNickname() + "_");
-			purple_blist_alias_buddy(buddy.buddy, n->getNickname().c_str());
-			serv_alias_buddy(buddy.buddy);
 
 			Purple::getIM()->getIRC()->addNick(n);
+
+			/* WARN! These function probably recalls this one, so it is
+			 *       really NECESSARY to call them at end of this block.
+			 *       If n is not in IRC's user list, two irc::Buddy
+			 *       instances will be inserted, with one lost.
+			 */
+			purple_blist_alias_buddy(buddy.buddy, n->getNickname().c_str());
+			serv_alias_buddy(buddy.buddy);
 		}
 		string channame = buddy.getAccount().getStatusChannel();
 		irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
