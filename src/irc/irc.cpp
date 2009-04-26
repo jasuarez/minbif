@@ -637,39 +637,43 @@ void IRC::m_whowas(Message message)
 void IRC::m_privmsg(Message message)
 {
 	Message relayed(message.getCommand());
-	string target = message.getArg(0);
+	string targets = message.getArg(0);
+	const char * delim=",";
+	string target = stringtok(targets, delim);
+	
+	while (target!=""){
+		relayed.setSender(user);
+		relayed.addArg(message.getArg(1));
 
-	relayed.setSender(user);
-	relayed.addArg(message.getArg(1));
-
-	if(Channel::isChanName(target))
-	{
-		Channel* c = getChannel(target);
-		if(!c)
+		if(Channel::isChanName(target))
 		{
-			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-							     .setReceiver(user)
-							     .addArg(target)
-							     .addArg("No suck channel"));
-			return;
+			Channel* c = getChannel(target);
+			if(!c)
+			{
+				user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+								     .setReceiver(user)
+								     .addArg(target)
+								     .addArg("No suck channel"));
+				return;
+			}
+			relayed.setReceiver(c);
+			c->broadcast(relayed, user);
 		}
-		relayed.setReceiver(c);
-		c->broadcast(relayed, user);
-	}
-	else
-	{
-		Nick* n = getNick(target);
-		if(!n)
+		else
 		{
-			user->send(Message(ERR_NOSUCHNICK).setSender(this)
-							  .setReceiver(user)
-							  .addArg(target)
-							  .addArg("No suck nick"));
-			return;
+			Nick* n = getNick(target);
+			if(!n)
+			{
+				user->send(Message(ERR_NOSUCHNICK).setSender(this)
+								  .setReceiver(user)
+								  .addArg(target)
+								  .addArg("No suck nick"));
+				return;
+			}
+			relayed.setReceiver(n);
+			n->send(relayed);
 		}
-		relayed.setReceiver(n);
-		n->send(relayed);
-	}
+		target=stringtok(targets, delim);
 }
 
 /* STATS [p] */
