@@ -70,7 +70,7 @@ namespace im
 		static Protocol getProtocolByPurpleID(string id);
 
 		static map<string, Account> getAccountsList();
-		static Account addAccount(Protocol proto, string username, string password);
+		static Account addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options);
 		static void delAccount(PurpleAccount* account);
 		static string getNewAccountName(Protocol proto);
 	};

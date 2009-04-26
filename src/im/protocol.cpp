@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,8 +19,42 @@
 #include <cassert>
 #include <cstring>
 #include "protocol.h"
+#include "../util.h"
 
 namespace im {
+
+Protocol::Option::Option()
+	: type(PURPLE_PREF_NONE)
+{}
+
+string Protocol::Option::nameFromText(string s) const
+{
+	FOREACH(string, s, it)
+		if(*it == ' ') *it = '-';
+		else *it = (char)tolower(*it);
+	return s;
+}
+
+Protocol::Option::Option(PurplePrefType _type, string _name, string _text)
+	: type(_type),
+	  name(_name),
+	  text(_text)
+{}
+
+int Protocol::Option::getValueInt() const
+{
+	return s2t<int>(value);
+}
+
+bool Protocol::Option::getValueBool() const
+{
+	return value == "true";
+}
+
+bool Protocol::Option::operator==(string s) const
+{
+	return s == name;
+}
 
 Protocol::Protocol()
 	: plugin(NULL)
@@ -58,6 +93,44 @@ string Protocol::getPurpleID() const
 {
 	assert(plugin);
 	return plugin->info->id;
+}
+
+vector<Protocol::Option> Protocol::getOptions() const
+{
+	vector<Option> options;
+	PurplePluginProtocolInfo* prplinfo = PURPLE_PLUGIN_PROTOCOL_INFO(plugin);
+	GList *iter;
+
+	for (iter = prplinfo->protocol_options; iter; iter = iter->next)
+	{
+		PurpleAccountOption *option = static_cast<PurpleAccountOption*>(iter->data);
+		PurplePrefType type = purple_account_option_get_type(option);
+
+		Option opt = Option(type,
+				    purple_account_option_get_setting(option),
+				    purple_account_option_get_text(option));
+		switch(type)
+		{
+			case PURPLE_PREF_BOOLEAN:
+				opt.setValue(purple_account_option_get_default_bool(option) ? "true" : "false");
+				break;
+			case PURPLE_PREF_STRING:
+			{
+				const char* s = purple_account_option_get_default_string(option);
+				if(s && *s)
+					opt.setValue(s);
+				break;
+			}
+			case PURPLE_PREF_INT:
+				opt.setValue(t2s(purple_account_option_get_default_int(option)));
+				break;
+			default:
+				/* This option is not supported */
+				continue;
+		}
+		options.push_back(opt);
+	}
+	return options;
 }
 
 }; /* namespace im */

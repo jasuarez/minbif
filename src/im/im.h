@@ -72,7 +72,7 @@ namespace im
 		map<string, Account> getAccountsList() const;
 		Account getAccount(string name) const;
 		Account getAccountFromChannel(string name) const;
-		Account addAccount(Protocol proto, string username, string password);
+		Account addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options);
 		void delAccount(Account user);
 	};
 

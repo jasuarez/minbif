@@ -210,7 +210,7 @@ string Purple::getNewAccountName(Protocol proto)
 	return proto.getID() + t2s(i);
 }
 
-Account Purple::addAccount(Protocol proto, string username, string password)
+Account Purple::addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options)
 {
 	string id = getNewAccountName(proto);
 	PurpleAccount *account = purple_account_new(username.c_str(), proto.getPurpleID().c_str());
@@ -219,6 +219,33 @@ Account Purple::addAccount(Protocol proto, string username, string password)
 	purple_account_set_remember_password(account, TRUE);
 	purple_account_set_password(account, password.c_str());
 	purple_account_set_ui_string(account, BITLBEE_VERSION_NAME, "id", id.c_str());
+
+	FOREACH(vector<Protocol::Option>, options, it)
+	{
+		Protocol::Option& option = *it;
+
+		switch(option.getType())
+		{
+			case PURPLE_PREF_STRING:
+				purple_account_set_string(account,
+						          option.getName().c_str(),
+							  option.getValue().c_str());
+				break;
+			case PURPLE_PREF_INT:
+				purple_account_set_int(account,
+						       option.getName().c_str(),
+						       option.getValueInt());
+				break;
+			case PURPLE_PREF_BOOLEAN:
+				purple_account_set_bool(account,
+						        option.getName().c_str(),
+							option.getValueBool());
+				break;
+			default:
+				/* not supported. */
+				break;
+		}
+	}
 
 	const PurpleSavedStatus *saved_status;
 	saved_status = purple_savedstatus_get_current();

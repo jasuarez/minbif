@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,8 +21,10 @@
 
 #include <libpurple/purple.h>
 #include <string>
+#include <vector>
 
 using std::string;
+using std::vector;
 
 namespace im
 {
@@ -30,6 +33,32 @@ namespace im
 		PurplePlugin* plugin;
 
 	public:
+
+		class Option
+		{
+			PurplePrefType type;
+			string name;
+			string value;
+			string text;
+
+			string nameFromText(string s) const;
+
+		public:
+
+			Option(PurplePrefType type, string name, string text);
+			Option();
+
+			bool operator==(string s) const;
+
+			PurplePrefType getType() const { return type; }
+			string getName() const { return name; }
+			string getText() const { return text; }
+
+			void setValue(string v) { value = v; }
+			string getValue() const { return value; }
+			int getValueInt() const;
+			bool getValueBool() const;
+		};
 
 		Protocol(PurplePlugin* plugin);
 		Protocol();
@@ -41,6 +70,8 @@ namespace im
 		string getName() const;
 		string getID() const;
 		string getPurpleID() const;
+
+		vector<Option> getOptions() const;
 	};
 
 }; /* namespace im */

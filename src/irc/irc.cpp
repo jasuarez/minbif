@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <cstring>
+#include <algorithm>
 
 #include "../log.h"
 #include "../util.h"
@@ -748,54 +749,119 @@ void IRC::m_map(Message message)
 		{
 			case 'a':
 			{
-				if(message.countArgs() < 4)
+				if(message.countArgs() < 2)
 				{
-					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD [CHANNEL]");
-					break;
+					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD [OPTIONS] [CHANNEL]");
+					return;
 				}
 				string protoname = message.getArg(1);
-				string username  = message.getArg(2);
-				string password  = message.getArg(3);
-				string channel;
-				if(message.countArgs() > 4)
-				{
-					channel  = message.getArg(4);
-
-					if(!Channel::isStatusChannel(channel))
-					{
-						notice(user, "Status channel must start with '&'");
-						break;
-					}
-				}
-
+				im::Protocol proto;
 				try
 				{
-					im::Protocol proto = im->getProtocol(protoname);
-
-					added_account = im->addAccount(proto, username, password);
-					added_account.setStatusChannel(channel);
-					added_account.createStatusChannel();
+					 proto = im->getProtocol(protoname);
 				}
 				catch(im::ProtocolUnknown &e)
 				{
 					notice(user, "Error: Protocol " + protoname +
 						     " is unknown. Try '/STATS p' to list protocols.");
+					return;
 				}
+
+				vector<im::Protocol::Option> options = proto.getOptions();
+				if(message.countArgs() < 4)
+				{
+					string s;
+					FOREACH(vector<im::Protocol::Option>, options, it)
+					{
+						if(!s.empty()) s += " ";
+						s += "[-";
+						switch(it->getType())
+						{
+							case PURPLE_PREF_BOOLEAN:
+								s += "[!]" + it->getName();
+								break;
+							case PURPLE_PREF_STRING:
+								s += it->getName() + " value";
+								break;
+							case PURPLE_PREF_INT:
+								s += it->getName() + " int";
+								break;
+							default:
+								break;
+						}
+						s += "]";
+					}
+					notice(user, "Usage: /MAP add " + proto.getID() + " USERNAME PASSWD " + s + " [CHANNEL]");
+					return;
+				}
+				string username, password, channel;
+				for(size_t i = 2; i < message.countArgs(); ++i)
+				{
+					string s = message.getArg(i);
+					if(s[0] == '-')
+					{
+						size_t name_pos = 1;
+						string value = "true";
+						if(s[1] == '!')
+						{
+							value = "false";
+							name_pos++;
+						}
+
+						vector<im::Protocol::Option>::iterator it = std::find(options.begin(), options.end(), s.substr(name_pos));
+						if(it == options.end())
+						{
+							notice(user, "Error: Option '" + s + "' is unknown");
+							return;
+						}
+						if(it->getType() == PURPLE_PREF_BOOLEAN)
+						{
+							/* No input value needed, already got above */
+						}
+						else if(i+1 < message.countArgs())
+							value = message.getArg(++i);
+						else
+						{
+							notice(user, "Error: Option '" + s + "' needs a value");
+							return;
+						}
+						it->setValue(value);
+						b_log[W_ERR] << it->getName() << "=" << value;
+					}
+					else if(username.empty())
+						username = s;
+					else if(password.empty())
+						password = s;
+					else if(channel.empty())
+					{
+						channel = s;
+						if(!Channel::isStatusChannel(channel))
+						{
+							notice(user, "Error: Status channel must start with '&'");
+							return;
+						}
+					}
+				}
+
+				added_account = im->addAccount(proto, username, password, options);
+				added_account.setStatusChannel(channel);
+				added_account.createStatusChannel();
 
 				break;
 			}
+			case 'd':
 			case 'r':
 			{
 				if(message.countArgs() != 2)
 				{
 					notice(user, "Usage: /MAP rem NAME");
-					break;
+					return;
 				}
 				im::Account account = im->getAccount(message.getArg(1));
 				if (!account.isValid())
 				{
 					notice(user, "Error: Account " + message.getArg(1) + " is unknown");
-					break;
+					return;
 				}
 				notice (user, "Removing account "+account.getUsername());
 				im->delAccount(account);
@@ -1007,6 +1073,10 @@ void IRC::m_invite(Message message)
 		else
 			account = im->getAccount(acc);
 		account.addBuddy(username, "bite");
+		user->send(Message(RPL_INVITING).setSender(this)
+				                .setReceiver(user)
+						.addArg(username)
+						.addArg(chan->getName()));
 	}
 	else if(chan->isRemoteChannel())
 	{
