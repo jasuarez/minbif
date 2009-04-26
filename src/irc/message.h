@@ -78,6 +78,7 @@ namespace irc
 		vector<string> getArgs() const { return args; }
 
 		string format() const;
+		void rebuildWithQuotes();
 		static Message parse(string s);
 	};
 }; /* namespace irc */

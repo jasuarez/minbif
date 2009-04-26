@@ -149,4 +149,35 @@ Message Message::parse(string line)
 	return m;
 }
 
+void Message::rebuildWithQuotes()
+{
+	for(vector<string>::iterator s = args.begin(); s != args.end(); ++s)
+	{
+		if((*s)[0] == '"' && s->find(' ') == string::npos)
+		{
+			vector<string>::iterator next = s;
+			*s = s->substr(1);
+
+			while((*next)[next->size()-1] != '"')
+			{
+				if(next == s)
+					++next;
+				else
+					next = args.erase(next);
+
+				if(next == args.end())
+					break;
+
+				*s += " " + *next;
+			}
+			if((*s)[s->size()-1] == '"')
+				*s = s->substr(0, s->size()-1);
+			if(next == args.end())
+				break;
+			else if(next != s)
+				next = args.erase(next);
+		}
+	}
+}
+
 }; /* namespace irc */

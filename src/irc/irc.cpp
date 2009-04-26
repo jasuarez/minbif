@@ -131,7 +131,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 
 	/* Ping callback */
 	ping_cb = new CallBack<IRC>(this, &IRC::ping);
-	g_timeout_add_seconds(ping_freq, g_callback, ping_cb);
+	g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
 
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
 }
@@ -641,7 +641,7 @@ void IRC::m_privmsg(Message message)
 	string targets = message.getArg(0);
 	const char * delim=",";
 	string target = stringtok(targets, delim);
-	
+
 	while (target!=""){
 		relayed.setSender(user);
 		relayed.addArg(message.getArg(1));
@@ -749,6 +749,7 @@ void IRC::m_map(Message message)
 		{
 			case 'a':
 			{
+				message.rebuildWithQuotes();
 				if(message.countArgs() < 2)
 				{
 					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD [OPTIONS] [CHANNEL]");
