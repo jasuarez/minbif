@@ -674,6 +674,7 @@ void IRC::m_privmsg(Message message)
 			n->send(relayed);
 		}
 		target=stringtok(targets, delim);
+	}
 }
 
 /* STATS [p] */
