@@ -38,11 +38,7 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 	else
 		nickname = nickize(nickname);
 	if(hostname.empty())
-	{
-		string tmp = server->getServerName();
-		stringtok(tmp, "@");
-		hostname = tmp;
-	}
+		hostname = im_buddy.getAccount().getID();
 
 	setNickname(nickname);
 	setIdentname(identname);
