@@ -42,10 +42,7 @@ Nick::Nick(Server* _server, string nickname, string _identname, string _hostname
 
 Nick::~Nick()
 {
-	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end(); ++it)
-		(*it)->getChannel()->delUser(this,
-				          Message(MSG_QUIT).setSender(this)
-						           .addArg("*.net *.split"));
+	quit("*.net *.split");
 }
 
 bool Nick::isValidNickname(const string& nick)
