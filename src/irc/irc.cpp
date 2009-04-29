@@ -712,30 +712,49 @@ void IRC::m_stats(Message message)
 /* CONNECT servername */
 void IRC::m_connect(Message message)
 {
-	im::Account account = im->getAccount(message.getArg(0));
-	if(!account.isValid())
+	bool found = false;
+	string target = message.getArg(0);
+
+	map<string, im::Account> accounts = im->getAccountsList();
+	for(map<string, im::Account>::iterator it = accounts.begin();
+	    it != accounts.end(); ++it)
 	{
-		notice(user, "Error: Account " + message.getArg(0) + " is unknown");
-		return;
+		im::Account& account = it->second;
+		if(target == "*" || account.getID() == target || account.getServername() == target)
+		{
+			found = true;
+			account.connect();
+			Channel* chan = getChannel(account.getStatusChannel());
+			if(chan)
+				user->join(chan);
+
+		}
 	}
 
-	account.connect();
-	Channel* chan = getChannel(account.getStatusChannel());
-	if(chan)
-		user->join(chan);
+	if(!found && target != "*")
+		notice(user, "Error: Account " + target + " is unknown");
 }
 
 /* SQUIT servername */
 void IRC::m_squit(Message message)
 {
-	im::Account account = im->getAccount(message.getArg(0));
-	if(!account.isValid())
+	bool found = false;
+	string target = message.getArg(0);
+
+	map<string, im::Account> accounts = im->getAccountsList();
+	for(map<string, im::Account>::iterator it = accounts.begin();
+	    it != accounts.end(); ++it)
 	{
-		notice(user, "Error: Account " + message.getArg(0) + " is unknown");
-		return;
+		im::Account& account = it->second;
+		if(target == "*" || account.getID() == target || account.getServername() == target)
+		{
+			found = true;
+			account.disconnect();
+		}
 	}
 
-	account.disconnect();
+	if(!found && target != "*")
+		notice(user, "Error: Account " + target + " is unknown");
 }
 
 /* MAP */
