@@ -102,6 +102,7 @@ namespace irc
 		void delUser(Nick* nick, Message message = Message());
 		size_t countUsers() const { return users.size(); }
 		vector<ChanUser*> getChanUsers() const { return users; }
+		ChanUser* getChanUser(string nick) const;
 
 		void setMode(const Entity* sender, int modes, ChanUser* chanuser);
 		void delMode(const Entity* sender, int modes, ChanUser* chanuser);

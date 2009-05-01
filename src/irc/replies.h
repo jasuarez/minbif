@@ -57,6 +57,7 @@
 #define ERR_ERRONEUSNICKNAME "432"
 #define ERR_NICKNAMEINUSE    "433"
 #define ERR_NICKTOOFAST      "438"
+#define ERR_NOTONCHANNEL     "442"
 #define ERR_NOTREGISTERED    "451"
 #define ERR_NEEDMOREPARAMS   "461"
 #define ERR_ALREADYREGISTRED "462"
@@ -85,5 +86,6 @@
 #define MSG_LIST        "LIST"
 #define MSG_ISON        "ISON"
 #define MSG_INVITE      "INVITE"
+#define MSG_KICK        "KICK"
 
 #endif /* IRC_REPLIES_H */

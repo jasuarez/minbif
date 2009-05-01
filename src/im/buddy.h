@@ -36,6 +36,7 @@ namespace im
 		static void* getHandler();
 		static PurpleBlistUiOps blist_ui_ops;
 		static void update_node(PurpleBuddyList *list, PurpleBlistNode *node);
+		static void removed_node(PurpleBuddyList *list, PurpleBlistNode *node);
 
 	public:
 
@@ -55,6 +56,8 @@ namespace im
 		bool isOnline() const;
 		bool isAvailable() const;
 		CacaImage getIcon() const;
+		PurpleGroup* getPurpleGroup() const;
+		PurpleBuddy* getPurpleBuddy() const { return buddy; }
 
 		Account getAccount() const;
 

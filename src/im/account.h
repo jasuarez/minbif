@@ -79,6 +79,7 @@ namespace im
 
 		void createStatusChannel() const;
 		void addBuddy(string username, string group) const;
+		void removeBuddy(Buddy) const;
 	};
 
 };

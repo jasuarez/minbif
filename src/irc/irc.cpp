@@ -66,6 +66,7 @@ static struct
 	{ MSG_MODE,    &IRC::m_mode,    1, Nick::REGISTERED },
 	{ MSG_ISON,    &IRC::m_ison,    1, Nick::REGISTERED },
 	{ MSG_INVITE,  &IRC::m_invite,  2, Nick::REGISTERED },
+	{ MSG_KICK,    &IRC::m_kick,    2, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned _ping_freq)
@@ -1098,6 +1099,67 @@ void IRC::m_invite(Message message)
 				                .setReceiver(user)
 						.addArg(username)
 						.addArg(chan->getName()));
+	}
+	else if(chan->isRemoteChannel())
+	{
+		/* TODO */
+	}
+}
+
+/* KICK chan nick [:reason] */
+void IRC::m_kick(Message message)
+{
+	Channel* chan = getChannel(message.getArg(0));
+	if(!chan)
+	{
+		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(message.getArg(0))
+						     .addArg("No such channel"));
+		return;
+	}
+
+	ChanUser* user_chanuser = user->getChanUser(chan);
+	if(!user_chanuser)
+	{
+		user->send(Message(ERR_NOTONCHANNEL).setSender(this)
+				                    .setReceiver(user)
+						    .addArg(chan->getName())
+						    .addArg("You're not on that channel"));
+		return;
+	}
+
+	ChanUser* chanuser = chan->getChanUser(message.getArg(1));
+	if(!chanuser)
+	{
+		user->send(Message(ERR_NOSUCHNICK).setSender(this)
+				                  .setReceiver(user)
+						  .addArg(message.getArg(1))
+						  .addArg("No such nick"));
+		return;
+	}
+
+	if(chan->isStatusChannel())
+	{
+		Buddy* buddy = dynamic_cast<Buddy*>(chanuser->getNick());
+		if(!buddy)
+		{
+			notice(user, "You can't kick " + chanuser->getName());
+			return;
+		}
+
+		RemoteServer* rt = dynamic_cast<RemoteServer*>(buddy->getServer());
+		if(!rt)
+		{
+			notice(user, chanuser->getName() + " is not on a remote server");
+			return;
+		}
+		string reason = "Removed from buddy list";
+		if(message.countArgs() > 2 && message.getArg(2).empty() == false)
+			reason += ": " + message.getArg(2);
+
+		buddy->kicked(chan, user_chanuser, reason);
+		rt->getAccount().removeBuddy(buddy->getBuddy());
 	}
 	else if(chan->isRemoteChannel())
 	{

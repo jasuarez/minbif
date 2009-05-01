@@ -113,6 +113,21 @@ void Nick::part(Channel* chan, string message)
 			++it;
 }
 
+void Nick::kicked(Channel* chan, ChanUser* from, string message)
+{
+	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end();)
+		if((*it)->getChannel() == chan)
+		{
+			(*it)->getChannel()->delUser(this, Message(MSG_KICK).setSender(from)
+					                                 .setReceiver((*it)->getChannel())
+									 .addArg(getNickname())
+									 .addArg(message));
+			it = channels.erase(it);
+		}
+		else
+			++it;
+}
+
 void Nick::quit(string text)
 {
 	Message m = Message(MSG_QUIT).setSender(this)

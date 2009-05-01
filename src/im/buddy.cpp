@@ -99,11 +99,18 @@ Account Buddy::getAccount() const
 
 CacaImage Buddy::getIcon() const
 {
+	assert(isValid());
 	PurpleBuddyIcon* bicon = purple_buddy_icons_find(buddy->account, buddy->name);//purple_buddy_get_icon(buddy);
 	if(!bicon)
 		return CacaImage();
 
 	return CacaImage(purple_buddy_icon_get_full_path(bicon));
+}
+
+PurpleGroup* Buddy::getPurpleGroup() const
+{
+	assert(isValid());
+	return purple_buddy_get_group(buddy);
 }
 
 /* STATIC */
@@ -114,7 +121,7 @@ PurpleBlistUiOps Buddy::blist_ui_ops =
         NULL,//new_node,
         NULL,//blist_show,
         Buddy::update_node,//node_update,
-        NULL,//node_remove,
+        Buddy::removed_node,//node_remove,
         NULL,
         NULL,
         NULL,//finch_request_add_buddy,
@@ -187,6 +194,20 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 				n->quit("Leaving...");
 		}
 
+	}
+}
+
+void Buddy::removed_node(PurpleBuddyList *list, PurpleBlistNode *node)
+{
+	if (PURPLE_BLIST_NODE_IS_BUDDY(node))
+	{
+		Buddy buddy = Buddy((PurpleBuddy*)node);
+		irc::Nick* n = Purple::getIM()->getIRC()->getNick(buddy);
+		if(n)
+		{
+			n->quit("Removed");
+			Purple::getIM()->getIRC()->removeNick(n->getNickname());
+		}
 	}
 }
 

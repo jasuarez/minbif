@@ -154,6 +154,12 @@ void Account::addBuddy(string username, string group) const
 	purple_account_add_buddy(account, buddy);
 }
 
+void Account::removeBuddy(Buddy buddy) const
+{
+	purple_account_remove_buddy(account, buddy.getPurpleBuddy(), buddy.getPurpleGroup());
+	purple_blist_remove_buddy(buddy.getPurpleBuddy());
+}
+
 /* STATIC */
 
 PurpleConnectionUiOps Account::conn_ops =

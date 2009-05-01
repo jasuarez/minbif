@@ -151,6 +151,14 @@ void Channel::delUser(Nick* nick, Message m)
 		}
 }
 
+ChanUser* Channel::getChanUser(string nick) const
+{
+	for(vector<ChanUser*>::const_iterator it = users.begin(); it != users.end(); ++it)
+		if((*it)->getNick()->getNickname() == nick)
+			return *it;
+	return NULL;
+}
+
 void Channel::broadcast(Message m, Nick* butone)
 {
 	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)

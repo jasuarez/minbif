@@ -113,6 +113,7 @@ namespace irc
 		void m_mode(Message m);
 		void m_ison(Message m);
 		void m_invite(Message m);
+		void m_kick(Message m);
 	};
 
 }; /* namespace irc */
