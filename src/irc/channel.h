@@ -35,6 +35,7 @@ namespace irc
 	class IRC;
 	class Channel;
 
+	/** This class represents a channel user. */
 	class ChanUser : public Entity
 	{
 		Nick* nick;
@@ -43,16 +44,25 @@ namespace irc
 
 	public:
 
+		/** Channel user modes */
 		enum mode_t {
-			OP     = 1 << 0,
-			VOICE  = 1 << 1,
+			OP     = 1 << 0,  /**< Channel operator */
+			VOICE  = 1 << 1,  /**< Channel voiced */
 		};
+
+		/** Structure used in arraw to convert a mode flag to char. */
 		static struct m2c_t
 		{
 			mode_t mode;
 			char c;
 		}  m2c[];
 
+		/** Build the ChanUser object.
+		 *
+		 * @param chan  channel of this user
+		 * @param nick  nick of this user
+		 * @param status  status of user on channel
+		 */
 		ChanUser(Channel* chan, Nick* nick, int status = 0);
 
 		string getName() const;
@@ -65,7 +75,10 @@ namespace irc
 
 		Channel* getChannel() const { return chan; }
 
+		/** Get the mode flag from char */
 		static mode_t c2mode(char c);
+
+		/** Get the mode char from flag */
 		static char mode2c(mode_t m);
 
 		/** Create Message object of modes
@@ -77,6 +90,7 @@ namespace irc
 		Message getModeMessage(bool add, int modes = 0) const;
 	};
 
+	/** This class represents an IRC Channel. */
 	class Channel : public Entity
 	{
 		IRC* irc;
@@ -84,29 +98,77 @@ namespace irc
 
 	public:
 
+		/** Build the Channel object.
+		 *
+		 * @param irc  the IRC object of main server
+		 * @param name  channel name.
+		 */
 		Channel(IRC* irc, string name);
 		virtual ~Channel();
 
+		/** Check the validity of a channel name
+		 *
+		 * @param name  name to check
+		 * @return  true if channel name is correct
+		 */
 		static bool isChanName(const string& name)
 		{
 			return (!name.empty() && name.find(' ') == string::npos &&
 				(isStatusChannel(name) || isRemoteChannel(name)));
 		}
+
 		static bool isStatusChannel(const string& name) { return (!name.empty() && name[0] == '&'); }
 		static bool isRemoteChannel(const string& name) { return (!name.empty() && name[0] == '#'); }
 
 		virtual bool isStatusChannel() const { return (!getName().empty() && getName()[0] == '&'); }
 		virtual bool isRemoteChannel() const { return (!getName().empty() && getName()[0] == '#'); }
 
+		/** Add a nick on channel.
+		 *
+		 * @param nick  nick to add on channel
+		 * @param status  initial status of user.
+		 * @return  the ChanUser instance
+		 */
 		ChanUser* addUser(Nick* nick, int status=0);
+
+		/** Remove an user from channel.
+		 *
+		 * @param nick  user to remove
+		 * @param message  optionnal message to send to all *other* channel users.
+		 */
 		void delUser(Nick* nick, Message message = Message());
+
+		/** Count users on channel. */
 		size_t countUsers() const { return users.size(); }
+
+		/** Get a vector of channel users. */
 		vector<ChanUser*> getChanUsers() const { return users; }
+
+		/** Get a channel user. */
 		ChanUser* getChanUser(string nick) const;
 
+		/** Set a mode on a channel user.
+		 *
+		 * @param sender  entity which sets mode.
+		 * @param modes  flags set on channel.
+		 * @param chanuser  channel user impacted.
+		 */
 		void setMode(const Entity* sender, int modes, ChanUser* chanuser);
+
+
+		/** Remove a mode on a channel user.
+		 *
+		 * @param sender  entity which removes mode.
+		 * @param modes  flags set on channel.
+		 * @param chanuser  channel user impacted.
+		 */
 		void delMode(const Entity* sender, int modes, ChanUser* chanuser);
 
+		/** Broadcast a message to all channel users.
+		 *
+		 * @param m  message sent to all channel users
+		 * @param butone  optionnal user which will not receive message.
+		 */
 		void broadcast(Message m, Nick* butone = NULL);
 	};
 }; /*namespace irc*/

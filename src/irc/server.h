@@ -25,18 +25,29 @@ namespace irc
 {
 	class IRC;
 
+	/** This class represents an IRC server */
 	class Server : public Entity
 	{
 		string info;
 
 	public:
 
+		/** Build the Server object.
+		 *
+		 * @param name  server's name.
+		 * @param info  string shown to describe this server.
+		 */
 		Server(string name, string info);
 
 		string getServerName() const { return getName(); }
 		string getServerInfo() const { return info; }
 	};
 
+	/** This class represents a remote IRC server.
+	 *
+	 * A remote IRC server is a server linked to
+	 * an IM account.
+	 */
 	class RemoteServer : public Server
 	{
 		im::Account account;
@@ -44,6 +55,11 @@ namespace irc
 
 	public:
 
+		/** Build the RemoteServer object.
+		 *
+		 * @param irc  the IRC instance of main server.
+		 * @param account  IM account linked to this server.
+		 */
 		RemoteServer(IRC* irc, im::Account account);
 
 		IRC* getIRC() const { return irc; }

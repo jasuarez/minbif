@@ -24,6 +24,8 @@
 
 namespace irc
 {
+
+	/** This class represents a buddy on IRC */
 	class Buddy : public Nick
 	{
 		im::Buddy im_buddy;
@@ -33,18 +35,32 @@ namespace irc
 
 	public:
 
+		/** Build buddy object
+		 *
+		 * @param server  up-server
+		 * @param buddy  IM buddy object.
+		 */
 		Buddy(Server* server, im::Buddy buddy);
 		~Buddy();
 
+		/** Implementation of the message routing to this buddy */
 		virtual void send(Message m);
 
+		/** Get buddy's away message. */
 		virtual string getAwayMessage() const;
+
+		/** Check if user is away or not. */
 		virtual bool isAway() const;
+
+		/** Check if buddy is online or not. */
 		virtual bool isOnline() const;
 
 		im::Buddy getBuddy() const { return im_buddy; }
 
+		/** Get icon in an coloured ASCII-art form. */
 		CacaImage getIcon() const;
+
+		/** Get buddy's real name. */
 		virtual string getRealName() const;
 
 	};

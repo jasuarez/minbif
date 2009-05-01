@@ -23,9 +23,13 @@
 
 using std::string;
 
+/** Raised when libcaca can't decode image */
 class CacaError : public std::exception {};
+
+/** Raised when libcaca isn't loaded. */
 class CacaNotLoaded : public std::exception {};
 
+/** Convert an image (JPG/PNG/..) to a beautiful ASCII-art picture. */
 class CacaImage
 {
 	string path;
@@ -47,11 +51,34 @@ class CacaImage
 
 public:
 
+	/** Default constructor */
 	CacaImage();
+
+	/** Constructor with parameters
+	 *
+	 * @param path  path to file
+	 * @param width  render's text width
+	 * @param height  render's text height
+	 * @param font_width  font width
+	 * @param font_height  font height
+	 */
 	CacaImage(string path, unsigned width = 0, unsigned height = 0, unsigned font_width = 6, unsigned font_height = 10);
 	~CacaImage();
 
+	/** Get IRC buffer to ASCII art picture.
+	 * If buffer is empty, it builds it.
+	 *
+	 * @param width  render's text width
+	 * @param height  render's text height
+	 * @param font_width  font width
+	 * @param font_height  font height
+	 * @return  buffer of picture.
+	 */
 	string getIRCBuffer(unsigned width, unsigned height = 0, unsigned font_width = 6, unsigned font_height = 10);
+
+	/** Get IRC buffer to ASCII art picture.
+	 * If buffer is empty, it builds it with default parameters.
+	 */
 	string getIRCBuffer();
 };
 

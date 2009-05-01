@@ -33,6 +33,10 @@ namespace irc
 
 	using std::map;
 
+	/** This class represents a nick on network.
+	 *
+	 * This is a base class.
+	 */
 	class Nick : public Entity
 	{
 		string identname, hostname, realname;
@@ -47,33 +51,96 @@ namespace irc
 		static const char *nick_uc_chars;
 		static const size_t MAX_LENGTH = 29;
 
+		/** States of the user */
 		enum {
 			REGISTERED = 1 << 0,
 			PING       = 1 << 1,
 		};
 
+		/** Build the Nick object.
+		 *
+		 * @param server  up-server of this nick
+		 * @param nickname  nickname of nick
+		 * @param identname  ident of nick
+		 * @param hostname  hostname of nick
+		 * @param realname  realname
+		 */
 		Nick(Server* server, string nickname, string identname, string hostname, string realname="");
 		virtual ~Nick();
 
+		/** Check if the given string is a valid nickname. */
 		static bool isValidNickname(const string& n);
 
+		/** Virtual method called when sending a message to this nick. */
 		virtual void send(Message m) {}
 
+		/** User joins a channel
+		 *
+		 * @param chan  channel to join
+		 * @param status  status on channel (see ChanUser)
+		 */
 		void join(Channel* chan, int status = 0);
-		void part(Channel* chan, string message="");
-		void quit(string message="");
-		void kicked(Channel* chan, ChanUser* chanuser, string reason);
 
+		/** User leaves a channel
+		 *
+		 * @param chan  channel to leave
+		 * @param message  part message
+		 */
+		void part(Channel* chan, string message="");
+
+		/** User quits network
+		 *
+		 * @param message  quit message.
+		 */
+		void quit(string message="");
+
+		/** Used has been kicked by someone else on a channel.
+		 *
+		 * @param chan  channel
+		 * @param kicker  bad guy who kicked me
+		 * @param reason  reason invoked to kick me
+		 */
+		void kicked(Channel* chan, ChanUser* kicker, string reason);
+
+		/** User sends a privmsg to a channel
+		 *
+		 * @param chan  channel target
+		 * @param message  text message
+		 */
 		void privmsg(Channel* chan, string message);
+
+
+		/** User sends a privmsg to an other user.
+		 *
+		 * @param to  user target
+		 * @param message  text message
+		 */
 		void privmsg(Nick* to, string message);
 
+		/** Get all channels user is on. */
 		vector<ChanUser*> getChannels() const;
+
+		/** Check if user is on one specified channel.
+		 *
+		 * @param chan  channel to check
+		 * @return  true if user is on channel.
+		 */
 		bool isOn(const Channel* chan) const;
+
+		/** Get ChanUser object of a channel.
+		 *
+		 * @param chan  channel
+		 * @return  ChanUser instance if user is on channel, NULL othewise
+		 */
 		ChanUser* getChanUser(const Channel* chan) const;
 
 		Server* getServer() const { return server; }
 
-		string getLongName() const;
+		/** Get the full name representation of user.
+		 *
+		 * @return  a string in form "nick!ident@hostname"
+		 */
+		virtual string getLongName() const;
 
 		string getNickname() const { return getName(); }
 		void setNickname(string n) { setName(n); }

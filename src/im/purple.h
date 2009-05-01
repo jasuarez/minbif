@@ -34,9 +34,18 @@ namespace im
 
 	class PurpleError : public std::exception {};
 
+	/** Static class to interface with libpurple.
+	 *
+	 * Problem with libpurple is that it supports only one
+	 * username per process, as there are ugly static variables
+	 * to store states.
+	 *
+	 * This class is used to interface the POO-style of bitlbee2
+	 * with the poor C-static-style of libpurple.
+	 */
 	class Purple
 	{
-		/* Instanciation is forbidden */
+		/** Instanciation is forbidden */
 		Purple() {}
 		~Purple() {}
 
@@ -57,7 +66,10 @@ namespace im
 
 	public:
 
+		/** Initialization */
 		static void init(IM* im);
+
+		/** Uninitialization */
 		static void uninit();
 
 		static IM* getIM() { return im; }

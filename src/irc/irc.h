@@ -40,12 +40,18 @@ namespace irc
 	using std::string;
 	using std::map;
 
+	/** Raised when user can't authenticate himself on server */
 	class AuthError : public std::exception {};
 
 	class User;
 	class Nick;
 	class Channel;
 
+	/** This class represents the user's server.
+	 *
+	 * It provides all user's commands handlers, and several
+	 * mechanismes to control the IRC network.
+	 */
 	class IRC : public Server
 	{
 		ServerPoll* poll;
@@ -67,12 +73,33 @@ namespace irc
 
 	public:
 
+		/** Create an instance of the IRC class
+		 *
+		 * @param poll  the server poll used by bitlbee2
+		 * @param fd  file descriptor where read and write to user
+		 * @param hostname  server's hostname
+		 * @param command_chan  DEPRECATED
+		 * @param ping_freq  frequence of pings
+		 */
 		IRC(ServerPoll* poll, int fd, string hostname, string command_chan, unsigned ping_freq);
 		~IRC();
 
 		User* getUser() const { return user; }
 
+		/** Ends the auth sequence.
+		 *
+		 * It checks if user has sent all requested parameters to
+		 * authenticate himself, and checks for password.
+		 *
+		 * If authentification success, it create the im::IM instance,
+		 * sends all welcome replies, create account servers, etc.
+		 */
 		void sendWelcome();
+
+		/** User quits.
+		 *
+		 * @param reason  text used in the QUIT message
+		 */
 		void quit(string reason = "");
 
 		void addChannel(Channel* chan);
@@ -88,32 +115,47 @@ namespace irc
 		Server* getServer(string server) const;
 		void removeServer(string server);
 
+		/** Callback used by glibc to check user ping */
 		bool ping(void*);
+
+		/** Send a notice to a user.
+		 *
+		 * @param user  destination
+		 * @param message  text message sent
+		 */
 		void notice(Nick* user, string message);
+
+		/** Send a privmsg to a user.
+		 *
+		 * @param user  destination
+		 * @param message text message sent.
+		 */
 		void privmsg(Nick* user, string message);
 
+		/** Callback when it receives a new incoming message from socket. */
 		bool readIO(void*);
-		void m_nick(Message m);
-		void m_user(Message m);
-		void m_pass(Message m);
-		void m_quit(Message m);
-		void m_ping(Message m);
-		void m_pong(Message m);
-		void m_who(Message m);
-		void m_whois(Message m);
-		void m_whowas(Message m);
-		void m_version(Message m);
-		void m_privmsg(Message m);
-		void m_stats(Message m);
-		void m_connect(Message m);
-		void m_squit(Message m);
-		void m_map(Message m);
-		void m_join(Message m);
-		void m_list(Message m);
-		void m_mode(Message m);
-		void m_ison(Message m);
-		void m_invite(Message m);
-		void m_kick(Message m);
+
+		void m_nick(Message m);     /**< Handler for the NICK message */
+		void m_user(Message m);     /**< Handler for the USER message */
+		void m_pass(Message m);     /**< Handler for the PASS message */
+		void m_quit(Message m);     /**< Handler for the QUIT message */
+		void m_ping(Message m);     /**< Handler for the PING message */
+		void m_pong(Message m);     /**< Handler for the PONG message */
+		void m_who(Message m);      /**< Handler for the WHO message */
+		void m_whois(Message m);    /**< Handler for the WHOIS message */
+		void m_whowas(Message m);   /**< Handler for the WHOWAS message */
+		void m_version(Message m);  /**< Handler for the VERSION message */
+		void m_privmsg(Message m);  /**< Handler for the PRIVMSG message */
+		void m_stats(Message m);    /**< Handler for the STATS message */
+		void m_connect(Message m);  /**< Handler for the CONNECT message */
+		void m_squit(Message m);    /**< Handler for the SQUIT message */
+		void m_map(Message m);      /**< Handler for the MAP message */
+		void m_join(Message m);     /**< Handler for the JOIN message */
+		void m_list(Message m);     /**< Handler for the LIST message */
+		void m_mode(Message m);     /**< Handler for the MODE message */
+		void m_ison(Message m);     /**< Handler for the ISON message */
+		void m_invite(Message m);   /**< Handler for the INVITE message */
+		void m_kick(Message m);     /**< Handler for the KICK message */
 	};
 
 }; /* namespace irc */

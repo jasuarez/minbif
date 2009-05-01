@@ -29,6 +29,12 @@ namespace im
 	using std::string;
 
 	class Account;
+
+	/** This class represents a buddy.
+	 *
+	 * This class only interfaces between the bitlbee2 code
+	 * and a libpurple account object.
+	 */
 	class Buddy
 	{
 		PurpleBuddy* buddy;
@@ -40,25 +46,46 @@ namespace im
 
 	public:
 
+		/** Initialization of libpurple buddies' stuffs. */
 		static void init();
 
+		/** Empty constructor */
 		Buddy();
+
+		/** Create a Buddy instance
+		 *
+		 * @param buddy  the libpurple's buddy instance.
+		 */
 		Buddy(PurpleBuddy* buddy);
 
+		/** Comparaisons */
 		bool operator==(const Buddy& buddy) const;
 		bool operator!=(const Buddy& buddy) const;
 
 		bool isValid() const { return buddy != NULL; }
 
+		/** Get username of buddy */
 		string getName() const;
+
+		/** Get bitlbee2 alias */
 		string getAlias() const;
+
+		/** Get IM real name */
 		string getRealName() const;
+
 		bool isOnline() const;
 		bool isAvailable() const;
+
+		/** Get buddy's icon as a colored ASCII-art picture.
+		 *
+		 * @return  an instance of CacaImage
+		 */
 		CacaImage getIcon() const;
+
 		PurpleGroup* getPurpleGroup() const;
 		PurpleBuddy* getPurpleBuddy() const { return buddy; }
 
+		/** Get account this buddy is from. */
 		Account getAccount() const;
 
 	};

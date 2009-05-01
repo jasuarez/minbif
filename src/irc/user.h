@@ -22,6 +22,7 @@
 
 namespace irc
 {
+	/** This class represents user connected to bitlbee2 */
 	class User : public Nick
 	{
 		int fd;
@@ -30,16 +31,28 @@ namespace irc
 
 	public:
 
-		User(int fd, Server* server, string nickname, string username, string hostname, string realname="");
+		/** Build the User object.
+		 *
+		 * @param fd  file descriptor used to write messages to user.
+		 * @param server  up-server (probably an IRC instance)
+		 * @param nickname  nickname of user
+		 * @param identname  identname of user
+		 * @param hostname  hostname of user
+		 * @param realname  realname of user
+		 */
+		User(int fd, Server* server, string nickname, string identname, string hostname, string realname="");
 		~User();
 
 		void setPassword(string p) { password = p; }
 		string getPassword() const { return password; }
 
 		void close() { fd = -1; }
+
+		/** Set last read timestamp to now */
 		void setLastReadNow();
 		time_t getLastRead() const { return last_read; }
 
+		/** Send a message to file descriptor */
 		virtual void send(Message m);
 
 	};

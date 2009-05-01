@@ -31,6 +31,11 @@ namespace im
 	using std::vector;
 	class Buddy;
 
+	/** This class represents an account.
+	 *
+	 * This class only interfaces between the bitlbee2 code
+	 * and a libpurple account object.
+	 */
 	class Account
 	{
 		PurpleAccount* account;
@@ -53,33 +58,74 @@ namespace im
 
 	public:
 
+		/** Initialization of libpurple accounts' stuffs. */
 		static void init();
 
+		/** Empty constructor */
 		Account();
+
+		/** Create an account instance.
+		 *
+		 * @param account  the libpurple's account object.
+		 * @param proto  optional argument to provide the protocol object.
+		 */
 		Account(PurpleAccount* account, Protocol proto = Protocol());
 
+		/** Comparaison between two accounts */
 		bool operator==(const Account&) const;
 		bool operator!=(const Account&) const;
 
 		bool isValid() const { return account != NULL; }
 		PurpleAccount* getPurpleAccount() const { return account; }
+
+		/** Get ID of account.
+		 *
+		 * @return  a string un form "<protocol><number>"
+		 */
 		string getID() const;
+
+		/** Get username of this account */
 		string getUsername() const;
+
+		/** Get name of IRC server linked to this account.
+		 *
+		 * @return  a string in form "<username>:<protocol><number>"
+		 */
 		string getServername() const;
+
+		/** Get status channel name */
 		string getStatusChannel() const;
+
+		/** Set status channel name */
 		void setStatusChannel(string c);
 		Protocol getProtocol() const { return proto; }
 		bool isConnected() const;
 		bool isConnecting() const;
 
+		/** \todo TODO implement it */
 		vector<Buddy> getBuddies() const;
 
+		/** Connect account */
 		void connect() const;
+
+		/** Disconnect account */
 		void disconnect() const;
 
+		/** Create the status channel on the IRC network */
 		void createStatusChannel() const;
+
+		/** Add a buddy on this account
+		 *
+		 * @param username  user name
+		 * @param group  group name
+		 */
 		void addBuddy(string username, string group) const;
-		void removeBuddy(Buddy) const;
+
+		/** Remove a buddy from this account
+		 *
+		 * @param buddy  Buddy's instance
+		 */
+		void removeBuddy(Buddy buddy) const;
 	};
 
 };

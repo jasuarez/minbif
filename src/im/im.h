@@ -36,9 +36,13 @@ namespace im
 	using std::string;
 	using std::map;
 
+	/** Raised when IM can't be initialized. */
 	class IMError : public std::exception {};
+
+	/** Protocol is unknown */
 	class ProtocolUnknown : public std::exception {};
 
+	/** Class used to Instant Messaging things */
 	class IM
 	{
 		static string path;
@@ -56,24 +60,57 @@ namespace im
 		irc::IRC* irc;
 	public:
 
+		/** Constructor.
+		 *
+		 * @param irc  pointer to the IRC instance
+		 * @param username user name
+		 */
 		IM(irc::IRC* irc, string username);
 		~IM();
 
+		/** Get path to user settings */
 		string getUserPath() const { return user_path; }
 
+		/** Set user password */
 		void setPassword(const string& password);
 		string getPassword() const;
 
 		irc::IRC* getIRC() const { return irc; }
 
+		/** Get list of protocols in a map. */
 		map<string, Protocol> getProtocolsList() const;
+
+		/** Get a protocol from id
+		 *
+		 * @param id  protocol's id
+		 * @return  a Protocol instance
+		 */
 		Protocol getProtocol(string id) const;
 
+		/** Get list of accounts in a map. */
 		map<string, Account> getAccountsList() const;
+
+		/** Get an account from name */
 		Account getAccount(string name) const;
+
+		/** Get an account from status channel name. */
 		Account getAccountFromChannel(string name) const;
+
+		/** Create an account.
+		 *
+		 * @param proto  protocol used by this account
+		 * @param username  username of this account
+		 * @param password  password of this account
+		 * @param options  list of specific options of this protocol
+		 * @return  an Account instance.
+		 */
 		Account addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options);
-		void delAccount(Account user);
+
+		/** Remove an account.
+		 *
+		 * @param account  Account instance
+		 */
+		void delAccount(Account account);
 	};
 
 };
