@@ -69,7 +69,7 @@ static struct
 	{ MSG_KICK,    &IRC::m_kick,    2, Nick::REGISTERED },
 };
 
-IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, unsigned _ping_freq)
+IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	: Server("localhost.localdomain", BITLBEE_VERSION),
 	  poll(_poll),
 	  fd(_fd),
@@ -114,13 +114,6 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, string cmd_chan_name, uns
 	}
 	else
 		setName(_hostname);
-
-	if(!Channel::isChanName(cmd_chan_name))
-	{
-		b_log[W_ERR] << "'" << cmd_chan_name << "' is not a valid command channel name";
-		throw AuthError();
-	}
-
 
 	/* create a callback on the sock. */
 	read_cb = new CallBack<IRC>(this, &IRC::readIO);

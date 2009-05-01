@@ -78,10 +78,9 @@ namespace irc
 		 * @param poll  the server poll used by bitlbee2
 		 * @param fd  file descriptor where read and write to user
 		 * @param hostname  server's hostname
-		 * @param command_chan  DEPRECATED
 		 * @param ping_freq  frequence of pings
 		 */
-		IRC(ServerPoll* poll, int fd, string hostname, string command_chan, unsigned ping_freq);
+		IRC(ServerPoll* poll, int fd, string hostname, unsigned ping_freq);
 		~IRC();
 
 		User* getUser() const { return user; }
