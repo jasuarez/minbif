@@ -70,7 +70,7 @@ void Buddy::send(Message m)
 		string text = m.getArg(0);
 		const Channel* chan = dynamic_cast<const Channel*>(m.getReceiver());
 
-		if(m.getReceiver() == this || (!chan && chan->isStatusChannel() && text.find(getNickname() + ": ") == 0))
+		if(m.getReceiver() == this || (chan && chan->isStatusChannel() && text.find(getNickname() + ": ") == 0))
 		{
 			if(chan && chan->isStatusChannel())
 				stringtok(text, " ");
