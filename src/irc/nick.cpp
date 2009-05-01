@@ -136,8 +136,6 @@ void Nick::quit(string text)
 
 	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end();)
 	{
-		(*it)->getChannel()->delUser(this);
-
 		vector<ChanUser*> users = (*it)->getChannel()->getChanUsers();
 		FOREACH(vector<ChanUser*>, users, u)
 		{
@@ -148,6 +146,7 @@ void Nick::quit(string text)
 				n->send(m);
 			}
 		}
+		(*it)->getChannel()->delUser(this);
 		it = channels.erase(it);
 	}
 }

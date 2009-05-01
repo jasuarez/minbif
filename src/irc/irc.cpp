@@ -75,6 +75,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	  fd(_fd),
 	  read_id(0),
 	  read_cb(NULL),
+	  ping_id(0),
 	  ping_freq(_ping_freq),
 	  ping_cb(NULL),
 	  user(NULL),
@@ -125,7 +126,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 
 	/* Ping callback */
 	ping_cb = new CallBack<IRC>(this, &IRC::ping);
-	g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
+	ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
 
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
 }
@@ -136,8 +137,12 @@ IRC::~IRC()
 
 	if(read_id > 0)
 		g_source_remove(read_id);
+	if(ping_id > 0)
+		g_source_remove(ping_id);
 	delete read_cb;
-	close(fd);
+	delete ping_cb;
+	if(fd >= 0)
+		close(fd);
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
