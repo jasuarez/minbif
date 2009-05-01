@@ -317,9 +317,11 @@ void IRC::sendWelcome()
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running BitlBee 2.0"));
 
-		if (im->getAccountsList().empty()){
-			user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Advice: you should start by adding an account using the /MAP command."));
-		}
+		user->send(Message(RPL_MOTDSTART).setSender(this).setReceiver(user).addArg("- " + getServerName() + " Message Of The Day -"));
+		if (im->getAccountsList().empty())
+			user->send(Message(RPL_MOTD).setSender(this).setReceiver(user).addArg("Advice: you should start by adding an account using the /MAP command."));
+
+		user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
 	}
 	catch(im::IMError& e)
 	{
