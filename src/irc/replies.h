@@ -90,5 +90,6 @@
 #define MSG_ISON        "ISON"
 #define MSG_INVITE      "INVITE"
 #define MSG_KICK        "KICK"
+#define MSG_KILL        "KILL"
 
 #endif /* IRC_REPLIES_H */

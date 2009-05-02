@@ -61,6 +61,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_ISON,    &IRC::m_ison,    1, 0, Nick::REGISTERED },
 	{ MSG_INVITE,  &IRC::m_invite,  2, 0, Nick::REGISTERED },
 	{ MSG_KICK,    &IRC::m_kick,    2, 0, Nick::REGISTERED },
+	{ MSG_KILL,    &IRC::m_kill,    1, 0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
@@ -416,20 +417,20 @@ bool IRC::readIO(void*)
 	return true;
 }
 
-/* PING [args ...] */
+/** PING [args ...] */
 void IRC::m_ping(Message message)
 {
 	message.setCommand(MSG_PONG);
 	user->send(message);
 }
 
-/* PONG cookie */
+/** PONG cookie */
 void IRC::m_pong(Message message)
 {
 	user->delFlag(Nick::PING);
 }
 
-/* NICK nickname */
+/** NICK nickname */
 void IRC::m_nick(Message message)
 {
 	if(message.countArgs() < 1)
@@ -454,7 +455,7 @@ void IRC::m_nick(Message message)
 	}
 }
 
-/* USER identname * * :realname*/
+/** USER identname * * :realname*/
 void IRC::m_user(Message message)
 {
 	if(user->hasFlag(Nick::REGISTERED))
@@ -471,7 +472,7 @@ void IRC::m_user(Message message)
 	sendWelcome();
 }
 
-/* PASS passwd */
+/** PASS passwd */
 void IRC::m_pass(Message message)
 {
 	string password = message.getArg(0);
@@ -487,7 +488,7 @@ void IRC::m_pass(Message message)
 		user->setPassword(message.getArg(0));
 }
 
-/* QUIT [message] */
+/** QUIT [message] */
 void IRC::m_quit(Message message)
 {
 	string reason = "Leaving...";
@@ -496,7 +497,7 @@ void IRC::m_quit(Message message)
 	quit("Quit: " + reason);
 }
 
-/* VERSION */
+/** VERSION */
 void IRC::m_version(Message message)
 {
 	user->send(Message(RPL_VERSION).setSender(this)
@@ -505,7 +506,7 @@ void IRC::m_version(Message message)
 				       .addArg(getServerName()));
 }
 
-/* WHO */
+/** WHO */
 void IRC::m_who(Message message)
 {
 	string arg;
@@ -549,7 +550,7 @@ void IRC::m_who(Message message)
 					.addArg("End of /WHO list"));
 }
 
-/* WHOIS nick */
+/** WHOIS nick */
 void IRC::m_whois(Message message)
 {
 	Nick* n = getNick(message.getArg(0));
@@ -620,7 +621,7 @@ void IRC::m_whois(Message message)
 
 }
 
-/* WHOWAS nick
+/** WHOWAS nick
  *
  * As irsii tries a whowas when whois fails and waits for answer...
  */
@@ -636,7 +637,7 @@ void IRC::m_whowas(Message message)
 					   .addArg("End of WHOWAS"));
 }
 
-/* PRIVMSG target message */
+/** PRIVMSG target message */
 void IRC::m_privmsg(Message message)
 {
 	Message relayed(message.getCommand());
@@ -680,7 +681,7 @@ void IRC::m_privmsg(Message message)
 	}
 }
 
-/* STATS [p] */
+/** STATS [p] */
 void IRC::m_stats(Message message)
 {
 	string arg = "*";
@@ -720,7 +721,7 @@ void IRC::m_stats(Message message)
 					  .addArg("End of /STATS report"));
 }
 
-/* CONNECT servername */
+/** CONNECT servername */
 void IRC::m_connect(Message message)
 {
 	bool found = false;
@@ -746,7 +747,7 @@ void IRC::m_connect(Message message)
 		notice(user, "Error: Account " + target + " is unknown");
 }
 
-/* SQUIT servername */
+/** SQUIT servername */
 void IRC::m_squit(Message message)
 {
 	bool found = false;
@@ -768,7 +769,7 @@ void IRC::m_squit(Message message)
 		notice(user, "Error: Account " + target + " is unknown");
 }
 
-/* MAP */
+/** MAP */
 void IRC::m_map(Message message)
 {
 	im::Account added_account;
@@ -942,7 +943,7 @@ void IRC::m_map(Message message)
 
 }
 
-/* JOIN channame */
+/** JOIN channame */
 void IRC::m_join(Message message)
 {
 	string names = message.getArg(0);
@@ -991,7 +992,7 @@ void IRC::m_join(Message message)
 	}
 }
 
-/* LIST */
+/** LIST */
 void IRC::m_list(Message message)
 {
 	user->send(Message(RPL_LISTSTART).setSender(this)
@@ -1010,7 +1011,7 @@ void IRC::m_list(Message message)
 				       .addArg("End of /LIST"));
 }
 
-/* MODE target [modes ..] */
+/** MODE target [modes ..] */
 void IRC::m_mode(Message message)
 {
 	Message relayed(message.getCommand());
@@ -1050,7 +1051,7 @@ void IRC::m_mode(Message message)
 
 }
 
-/* ISON :[nick list] */
+/** ISON :[nick list] */
 void IRC::m_ison(Message message)
 {
 	string buf = message.getArg(0);
@@ -1071,7 +1072,7 @@ void IRC::m_ison(Message message)
 				    .addArg(list));
 }
 
-/* INVITE nick chan */
+/** INVITE nick chan */
 void IRC::m_invite(Message message)
 {
 	Channel* chan = getChannel(message.getArg(1));
@@ -1094,7 +1095,7 @@ void IRC::m_invite(Message message)
 			account = im->getAccountFromChannel(chan->getName());
 		else
 			account = im->getAccount(acc);
-		account.addBuddy(username, "bite");
+		account.addBuddy(username, "bitlbee");
 		user->send(Message(RPL_INVITING).setSender(this)
 				                .setReceiver(user)
 						.addArg(username)
@@ -1106,7 +1107,7 @@ void IRC::m_invite(Message message)
 	}
 }
 
-/* KICK chan nick [:reason] */
+/** KICK chan nick [:reason] */
 void IRC::m_kick(Message message)
 {
 	Channel* chan = getChannel(message.getArg(0));
@@ -1165,6 +1166,34 @@ void IRC::m_kick(Message message)
 	{
 		/* \todo TODO implement /kick on a remote channel */
 	}
+}
+
+/** KILL nick [:reason] */
+void IRC::m_kill(Message message)
+{
+	Buddy* buddy = dynamic_cast<Buddy*>(getNick(message.getArg(0)));
+	if(!buddy)
+	{
+		user->send(Message(ERR_NOSUCHNICK).setSender(this)
+				                  .setReceiver(user)
+						  .addArg(message.getArg(0))
+						  .addArg("No such nick"));
+		return;
+	}
+
+	RemoteServer* rt = dynamic_cast<RemoteServer*>(buddy->getServer());
+	if(!rt)
+	{
+		notice(user, buddy->getName() + " is not on a remote server");
+		return;
+	}
+	string reason = "Removed from buddy list";
+	if(message.countArgs() > 1 && message.getArg(1).empty() == false)
+		reason += ": " + message.getArg(1);
+
+	notice(user, "Received KILL message for " + buddy->getNickname() + ": " + reason);
+	buddy->quit("Killed by " + user->getNickname() + " (" + reason + ")");
+	rt->getAccount().removeBuddy(buddy->getBuddy());
 }
 
 }; /* namespace irc */

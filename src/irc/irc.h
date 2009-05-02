@@ -106,6 +106,7 @@ namespace irc
 		void m_ison(Message m);     /**< Handler for the ISON message */
 		void m_invite(Message m);   /**< Handler for the INVITE message */
 		void m_kick(Message m);     /**< Handler for the KICK message */
+		void m_kill(Message m);     /**< Handler for the KILL message */
 
 	public:
 
