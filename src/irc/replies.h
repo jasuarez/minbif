@@ -26,6 +26,7 @@
 #define RPL_ISUPPORT    "005"
 #define RPL_MAP         "015"
 #define RPL_MAPEND      "017"
+#define RPL_STATSCOMMANDS "212"
 #define RPL_ENDOFSTATS  "219"
 #define RPL_AWAY        "301"
 #define RPL_ISON        "303"
