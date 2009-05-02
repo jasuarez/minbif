@@ -19,20 +19,30 @@
 #ifndef IRC_STATUS_CHANNEL_H
 #define IRC_STATUS_CHANNEL_H
 
+#include <vector>
+
 #include "channel.h"
 #include "im/account.h"
 
 namespace irc
 {
+	using std::vector;
 
 	class StatusChannel : public Channel
 	{
+		vector<im::Account> accounts;
+
 	public:
 		StatusChannel(IRC* irc, string name);
+		virtual ~StatusChannel() {}
 
 		virtual bool isStatusChannel() const { return true; }
 		virtual bool isRemoteChannel() const { return false; }
 
+		void addAccount(const im::Account& account);
+		void removeAccount(const im::Account& account);
+
+		virtual void showBanList(Nick* to);
 	};
 
 }; /* ns irc */

@@ -257,10 +257,10 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 	return Account(account, proto);
 }
 
-void Purple::delAccount(PurpleAccount* user)
+void Purple::delAccount(PurpleAccount* account)
 {
-	purple_request_close_with_handle(user); /* Close any other opened delete window */
-        purple_accounts_delete(user);
+	purple_request_close_with_handle(account); /* Close any other opened delete window */
+        purple_accounts_delete(account);
 }
 
 }; /* namespace im */

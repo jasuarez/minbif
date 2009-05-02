@@ -114,6 +114,11 @@ namespace im
 		/** Create the status channel on the IRC network */
 		void createStatusChannel() const;
 
+		/** Leave the status channel */
+		void leaveStatusChannel() const;
+
+		vector<string> getDenyList() const;
+
 		/** Add a buddy on this account
 		 *
 		 * @param username  user name

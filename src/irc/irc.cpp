@@ -383,6 +383,7 @@ bool IRC::readIO(void*)
 	while((line = stringtok(sbuf, "\r\n")).empty() == false)
 	{
 		Message m = Message::parse(line);
+		b_log[W_DEBUG] << line;
 		size_t i;
 		for(i = 0;
 		    i < (sizeof commands / sizeof *commands) &&
@@ -1032,17 +1033,7 @@ void IRC::m_mode(Message message)
 			return;
 		}
 		relayed.setReceiver(c);
-		if(relayed.countArgs() == 0)
-		{
-			user->send(Message(RPL_CHANNELMODEIS).setSender(this)
-							     .setReceiver(user)
-							     .addArg(c->getName())
-							     .addArg("+"));
-			user->send(Message(RPL_CREATIONTIME).setSender(this)
-							     .setReceiver(user)
-							     .addArg(c->getName())
-							     .addArg("1212313"));
-		}
+		c->m_mode(user, relayed);
 	}
 	else
 	{

@@ -93,8 +93,12 @@ namespace irc
 	/** This class represents an IRC Channel. */
 	class Channel : public Entity
 	{
+	protected:
 		IRC* irc;
+
+	private:
 		vector<ChanUser*> users;
+		string topic;
 
 	public:
 
@@ -146,6 +150,19 @@ namespace irc
 
 		/** Get a channel user. */
 		ChanUser* getChanUser(string nick) const;
+
+		/** Get topic */
+		string getTopic() const { return topic; }
+
+		/** Mode message
+		 *
+		 * @param sender  user who sent message
+		 * @param m  mode message
+		 */
+		void m_mode(Nick* sender, Message m);
+
+		/** Show banlist to user */
+		virtual void showBanList(Nick* to) = 0;
 
 		/** Set a mode on a channel user.
 		 *

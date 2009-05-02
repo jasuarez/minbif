@@ -19,6 +19,7 @@
 #include "nick.h"
 #include "message.h"
 #include "irc.h"
+#include "../util.h"
 
 namespace irc {
 
@@ -164,6 +165,41 @@ void Channel::broadcast(Message m, Nick* butone)
 	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
 		if(!butone || (*it)->getNick() != butone)
 			(*it)->getNick()->send(m);
+}
+
+void Channel::m_mode(Nick* user, Message m)
+{
+	if(m.countArgs() == 0)
+	{
+		user->send(Message(RPL_CHANNELMODEIS).setSender(irc)
+						     .setReceiver(user)
+						     .addArg(getName())
+						     .addArg("+"));
+		user->send(Message(RPL_CREATIONTIME).setSender(irc)
+						     .setReceiver(user)
+						     .addArg(getName())
+						     .addArg("1212313"));
+		return;
+	}
+	string modes = m.getArg(0);
+	bool add = true;
+
+	FOREACH(string, modes, c)
+	{
+		switch(*c)
+		{
+			case '+':
+				add = true;
+				break;
+			case '-':
+				add = false;
+				break;
+			case 'b':
+				showBanList(user);
+				break;
+		}
+	}
+
 }
 
 void Channel::setMode(const Entity* sender, int modes, ChanUser* chanuser)

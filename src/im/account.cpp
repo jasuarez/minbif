@@ -122,18 +122,46 @@ void Account::createStatusChannel() const
 	assert(isValid());
 
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc::Channel* chan;
+	irc::StatusChannel* chan;
 	string channame = getStatusChannel();
 
 	if(!irc::Channel::isStatusChannel(channame))
 		return;
 
-	chan = irc->getChannel(channame);
+	chan = dynamic_cast<irc::StatusChannel*>(irc->getChannel(channame));
 	if(!chan)
 	{
 		chan = new irc::StatusChannel(irc, channame);
 		irc->addChannel(chan);
 	}
+	chan->addAccount(*this);
+}
+
+void Account::leaveStatusChannel() const
+{
+	assert(isValid());
+
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::StatusChannel* chan;
+	string channame = getStatusChannel();
+
+	if(!irc::Channel::isStatusChannel(channame))
+		return;
+
+	chan = dynamic_cast<irc::StatusChannel*>(irc->getChannel(channame));
+	if(chan)
+		chan->removeAccount(*this);
+}
+
+vector<string> Account::getDenyList() const
+{
+	assert(isValid());
+
+	vector<string> list;
+	GSList *l;
+	for (l = account->deny; l != NULL; l = l->next)
+		list.push_back((const char*)l->data);
+	return list;
 }
 
 void Account::addBuddy(string username, string group) const
@@ -218,8 +246,10 @@ void Account::account_added(PurpleAccount* account)
 {
 }
 
-void Account::account_removed(PurpleAccount* account)
+void Account::account_removed(PurpleAccount* a)
 {
+	Account account(account);
+	account.leaveStatusChannel();
 }
 
 void Account::connecting(PurpleConnection *gc,
