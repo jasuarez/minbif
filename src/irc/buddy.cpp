@@ -39,6 +39,8 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 		nickname = nickize(nickname);
 	if(hostname.empty())
 		hostname = im_buddy.getAccount().getID();
+	else
+		hostname += ":" + im_buddy.getAccount().getID();
 
 	setNickname(nickname);
 	setIdentname(identname);

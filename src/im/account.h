@@ -117,7 +117,14 @@ namespace im
 		/** Leave the status channel */
 		void leaveStatusChannel() const;
 
+		/** Get list of denied people */
 		vector<string> getDenyList() const;
+
+		/** Deny a user. */
+		void deny(string who) const;
+
+		/** Allow a user. */
+		void allow(string who) const;
 
 		/** Add a buddy on this account
 		 *

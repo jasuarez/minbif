@@ -21,7 +21,10 @@
 #include "irc.h"
 #include "status_channel.h"
 #include "nick.h"
+#include "buddy.h"
+#include "im/account.h"
 #include "../util.h"
+#include "../log.h"
 
 namespace irc {
 
@@ -50,7 +53,7 @@ void StatusChannel::showBanList(Nick* to)
 		{
 			string ban = "*!" + *str;
 			if(ban.find('@') == string::npos)
-				ban += account->getServername();
+				ban += "@" + account->getID();
 			else
 				ban += ":" + account->getID();
 
@@ -58,7 +61,7 @@ void StatusChannel::showBanList(Nick* to)
 					             .setReceiver(to)
 						     .addArg(getName())
 						     .addArg(ban)
-						     .addArg(to->getLongName())
+						     .addArg(account->getServername())
 						     .addArg("0"));
 		}
 	}
@@ -66,6 +69,108 @@ void StatusChannel::showBanList(Nick* to)
 			                  .setReceiver(to)
 					  .addArg(getName())
 					  .addArg("End of Channel Ban List"));
+}
+
+void StatusChannel::processAddBan(Nick* from, string ban)
+{
+	string nick, ident, host, accid, deny;
+	im::Account account;
+
+	accid = ban;
+	host = stringtok(accid, ":");
+	ident = stringtok(host, "@");
+	if(host.empty() || ident.find('!') != string::npos)
+		nick = stringtok(ident, "!");
+
+	b_log[W_DEBUG] << nick << "!" << ident << "@" << host << ":" << accid;
+
+	if(nick.empty() == false && nick != "*")
+	{
+		/* User gives a nick, perhaps just 'nick', perhaps 'nick!user@host:acc', but in
+		 * this case we only consider this is a connected nick, and find the banned mask
+		 * and account from his buddy.
+		 */
+		Buddy* banned = dynamic_cast<Buddy*>(irc->getNick(nick));
+		if(!banned || banned->getBuddy().getAccount().getStatusChannel() != getName())
+		{
+			from->send(Message(ERR_NOSUCHNICK).setSender(irc)
+					                  .setReceiver(from)
+							  .addArg(nick)
+							  .addArg("No such nick."));
+			return;
+		}
+		b_log[W_DEBUG] << "Nick " << banned->getNickname();
+		deny = banned->getBuddy().getName();
+		account = banned->getBuddy().getAccount();
+	}
+	else
+	{
+		/* No nick given, trying to get account and banned mask. */
+		if(!ident.empty() && ident[0] == '*')
+			ident = ident.substr(1);
+
+		if(accid.empty())
+		{
+			/* User gives a *!user@host mask. Perhaps the host is an account ID... */
+			accid = host;
+			host = "";
+		}
+
+		vector<im::Account>::iterator it;
+		for(it = accounts.begin(); it != accounts.end() && it->getID() != accid; ++it)
+			;
+
+		if(it == accounts.end())
+		{
+			/* So bad, accid is not a valid account ID. If there is only
+			 * one account, we can consider this is it.
+			 * In othes case we warn user.
+			 */
+			if(accounts.size() == 1)
+			{
+				account = accounts.front();
+				if(host.empty())
+					host = accid;
+				accid = account.getID();
+			}
+			else
+			{
+				from->send(Message(ERR_NOSUCHNICK).setSender(irc)
+								  .setReceiver(from)
+								  .addArg(host)
+								  .addArg("Please prefix mask with ':accountID'"));
+				return;
+			}
+		}
+		else
+			account = *it;
+
+		deny = ident;
+		if(host.empty() == false)
+			deny += "@" + host;
+	}
+
+	/* Hm, there is so nothing to ban?? */
+	if(deny.empty())
+		return;
+
+	account.deny(deny);
+
+	ban = "*!" + deny;
+	if(ban.find('@') == string::npos)
+		ban += "@" + account.getID();
+	else
+		ban += ":" + account.getID();
+
+	broadcast(Message(MSG_MODE).setSender(from)
+			           .setReceiver(this)
+				   .addArg("+b")
+				   .addArg(ban));
+}
+
+void StatusChannel::processRemoveBan(Nick* from, string ban)
+{
+
 }
 
 }; /* ns irc */

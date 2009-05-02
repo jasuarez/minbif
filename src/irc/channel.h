@@ -164,6 +164,20 @@ namespace irc
 		/** Show banlist to user */
 		virtual void showBanList(Nick* to) = 0;
 
+		/** Add a ban
+		 *
+		 * @param from  user who adds ban
+		 * @param ban  ban string
+		 */
+		virtual void processAddBan(Nick* from, string ban) = 0;
+
+		/** Remove a ban
+		 *
+		 * @param from  user who removes ban
+		 * @param ban  ban string
+		 */
+		virtual void processRemoveBan(Nick* from, string ban) = 0;
+
 		/** Set a mode on a channel user.
 		 *
 		 * @param sender  entity which sets mode.

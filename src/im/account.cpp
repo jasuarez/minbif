@@ -164,6 +164,20 @@ vector<string> Account::getDenyList() const
 	return list;
 }
 
+void Account::deny(string who) const
+{
+	assert(isValid());
+
+	purple_privacy_deny(account, who.c_str(), FALSE, FALSE);
+}
+
+void Account::allow(string who) const
+{
+	assert(isValid());
+
+	purple_privacy_allow(account, who.c_str(), FALSE, FALSE);
+}
+
 void Account::addBuddy(string username, string group) const
 {
 	assert(isValid());

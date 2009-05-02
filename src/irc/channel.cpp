@@ -181,7 +181,9 @@ void Channel::m_mode(Nick* user, Message m)
 						     .addArg("1212313"));
 		return;
 	}
-	string modes = m.getArg(0);
+	vector<string> args = m.getArgs();
+	vector<string>::iterator arg = args.begin();
+	string modes = *arg++;
 	bool add = true;
 
 	FOREACH(string, modes, c)
@@ -195,7 +197,14 @@ void Channel::m_mode(Nick* user, Message m)
 				add = false;
 				break;
 			case 'b':
-				showBanList(user);
+				if(arg == args.end())
+					showBanList(user);
+				else if(add)
+					processAddBan(user, *arg++);
+				else
+					processRemoveBan(user, *arg++);
+				break;
+			default:
 				break;
 		}
 	}

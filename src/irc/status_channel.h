@@ -43,6 +43,9 @@ namespace irc
 		void removeAccount(const im::Account& account);
 
 		virtual void showBanList(Nick* to);
+
+		virtual void processAddBan(Nick* from, string ban);
+		virtual void processRemoveBan(Nick* from, string ban);
 	};
 
 }; /* ns irc */
