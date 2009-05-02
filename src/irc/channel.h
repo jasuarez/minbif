@@ -167,16 +167,22 @@ namespace irc
 		/** Add a ban
 		 *
 		 * @param from  user who adds ban
-		 * @param ban  ban string
+		 * @param nick  nick in mask
+		 * @param ident  ident in mask
+		 * @param host  hostname in mask
+		 * @param accid  account id in mask
 		 */
-		virtual void processAddBan(Nick* from, string ban) = 0;
+		virtual void processAddBan(Nick* from, string nick, string ident, string host, string accid) = 0;
 
 		/** Remove a ban
 		 *
 		 * @param from  user who removes ban
-		 * @param ban  ban string
+		 * @param nick  nick in mask
+		 * @param ident  ident in mask
+		 * @param host  hostname in mask
+		 * @param accid  account id in mask
 		 */
-		virtual void processRemoveBan(Nick* from, string ban) = 0;
+		virtual void processRemoveBan(Nick* from, string nick, string ident, string host, string accid) = 0;
 
 		/** Set a mode on a channel user.
 		 *
