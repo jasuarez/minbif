@@ -35,6 +35,7 @@ namespace im
 	class Buddy;
 };
 
+/** IRC related classes */
 namespace irc
 {
 	using std::string;
@@ -63,10 +64,19 @@ namespace irc
 		_CallBack *ping_cb;
 		User* user;
 		im::IM* im;
-
 		map<string, Nick*> users;
 		map<string, Channel*> channels;
 		map<string, Server*> servers;
+
+		struct command_t
+		{
+			const char* cmd;
+			void (IRC::*func)(Message);
+			size_t minargs;
+			unsigned count;
+			unsigned flags;
+		};
+		static command_t commands[];
 
 		void cleanUpNicks();
 		void cleanUpChannels();

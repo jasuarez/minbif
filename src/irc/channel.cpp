@@ -93,7 +93,7 @@ Channel::~Channel()
 {
 	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
 		delete *it;
-		/* TODO try to remove pointer to it from Nick if any */
+		/* \todo TODO try to remove pointer to it from Nick if any */
 }
 
 

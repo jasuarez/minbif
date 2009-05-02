@@ -80,7 +80,7 @@ namespace im
 
 		/** Get ID of account.
 		 *
-		 * @return  a string un form "<protocol><number>"
+		 * @return  a string un form \a "<protocol><number>"
 		 */
 		string getID() const;
 
@@ -89,7 +89,7 @@ namespace im
 
 		/** Get name of IRC server linked to this account.
 		 *
-		 * @return  a string in form "<username>:<protocol><number>"
+		 * @return  a string in form \a "<username>:<protocol><number>"
 		 */
 		string getServername() const;
 

@@ -31,6 +31,7 @@ namespace irc
 	class IRC;
 };
 
+/** IM related classes */
 namespace im
 {
 	using std::string;

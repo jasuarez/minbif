@@ -39,14 +39,7 @@
 
 namespace irc {
 
-static struct
-{
-	const char* cmd;
-	void (IRC::*func)(Message);
-	size_t minargs;
-	unsigned count;
-	unsigned flags;
-} commands[] = {
+IRC::command_t IRC::commands[] = {
 	{ MSG_NICK,    &IRC::m_nick,    0, 0, 0 },
 	{ MSG_USER,    &IRC::m_user,    4, 0, 0 },
 	{ MSG_PASS,    &IRC::m_pass,    1, 0, 0 },
@@ -696,6 +689,14 @@ void IRC::m_stats(Message message)
 
 	switch(arg[0])
 	{
+		case 'm':
+			for(size_t i = 0; i < sizeof commands / sizeof *commands; ++i)
+				user->send(Message(RPL_STATSCOMMANDS).setSender(this)
+						                     .setReceiver(user)
+								     .addArg(commands[i].cmd)
+								     .addArg(t2s(commands[i].count))
+								     .addArg("0"));
+			break;
 		case 'p':
 		{
 			map<string, im::Protocol> m = im->getProtocolsList();
@@ -707,16 +708,9 @@ void IRC::m_stats(Message message)
 			}
 			break;
 		}
-		case 'm':
-			for(size_t i = 0; i < sizeof commands / sizeof *commands; ++i)
-				user->send(Message(RPL_STATSCOMMANDS).setSender(this)
-						                     .setReceiver(user)
-								     .addArg(commands[i].cmd)
-								     .addArg(t2s(commands[i].count))
-								     .addArg("0"));
-			break;
 		default:
 			arg = "*";
+			notice(user, "m (commands) - List all IRC commands");
 			notice(user, "p (protocols) - List all protocols");
 			break;
 	}
@@ -1118,7 +1112,7 @@ void IRC::m_invite(Message message)
 	}
 	else if(chan->isRemoteChannel())
 	{
-		/* TODO */
+		/* \todo TODO implement /invite on a remote channel */
 	}
 }
 
@@ -1179,7 +1173,7 @@ void IRC::m_kick(Message message)
 	}
 	else if(chan->isRemoteChannel())
 	{
-		/* TODO */
+		/* \todo TODO implement /kick on a remote channel */
 	}
 }
 
