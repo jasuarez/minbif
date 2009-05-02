@@ -48,10 +48,16 @@ void StatusChannel::showBanList(Nick* to)
 		vector<string> deny_list = account->getDenyList();
 		FOREACH(vector<string>, deny_list, str)
 		{
+			string ban = "*!" + *str;
+			if(ban.find('@') == string::npos)
+				ban += account->getServername();
+			else
+				ban += ":" + account->getID();
+
 			to->send(Message(RPL_BANLIST).setSender(irc)
 					             .setReceiver(to)
 						     .addArg(getName())
-						     .addArg(*str + ":" + account->getID())
+						     .addArg(ban)
 						     .addArg(to->getLongName())
 						     .addArg("0"));
 		}

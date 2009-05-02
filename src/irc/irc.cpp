@@ -383,7 +383,6 @@ bool IRC::readIO(void*)
 	while((line = stringtok(sbuf, "\r\n")).empty() == false)
 	{
 		Message m = Message::parse(line);
-		b_log[W_DEBUG] << line;
 		size_t i;
 		for(i = 0;
 		    i < (sizeof commands / sizeof *commands) &&
