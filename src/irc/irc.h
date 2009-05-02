@@ -82,6 +82,31 @@ namespace irc
 		void cleanUpChannels();
 		void cleanUpServers();
 
+		/** Callback when it receives a new incoming message from socket. */
+		bool readIO(void*);
+
+		void m_nick(Message m);     /**< Handler for the NICK message */
+		void m_user(Message m);     /**< Handler for the USER message */
+		void m_pass(Message m);     /**< Handler for the PASS message */
+		void m_quit(Message m);     /**< Handler for the QUIT message */
+		void m_ping(Message m);     /**< Handler for the PING message */
+		void m_pong(Message m);     /**< Handler for the PONG message */
+		void m_who(Message m);      /**< Handler for the WHO message */
+		void m_whois(Message m);    /**< Handler for the WHOIS message */
+		void m_whowas(Message m);   /**< Handler for the WHOWAS message */
+		void m_version(Message m);  /**< Handler for the VERSION message */
+		void m_privmsg(Message m);  /**< Handler for the PRIVMSG message */
+		void m_stats(Message m);    /**< Handler for the STATS message */
+		void m_connect(Message m);  /**< Handler for the CONNECT message */
+		void m_squit(Message m);    /**< Handler for the SQUIT message */
+		void m_map(Message m);      /**< Handler for the MAP message */
+		void m_join(Message m);     /**< Handler for the JOIN message */
+		void m_list(Message m);     /**< Handler for the LIST message */
+		void m_mode(Message m);     /**< Handler for the MODE message */
+		void m_ison(Message m);     /**< Handler for the ISON message */
+		void m_invite(Message m);   /**< Handler for the INVITE message */
+		void m_kick(Message m);     /**< Handler for the KICK message */
+
 	public:
 
 		/** Create an instance of the IRC class
@@ -142,30 +167,6 @@ namespace irc
 		 */
 		void privmsg(Nick* user, string message);
 
-		/** Callback when it receives a new incoming message from socket. */
-		bool readIO(void*);
-
-		void m_nick(Message m);     /**< Handler for the NICK message */
-		void m_user(Message m);     /**< Handler for the USER message */
-		void m_pass(Message m);     /**< Handler for the PASS message */
-		void m_quit(Message m);     /**< Handler for the QUIT message */
-		void m_ping(Message m);     /**< Handler for the PING message */
-		void m_pong(Message m);     /**< Handler for the PONG message */
-		void m_who(Message m);      /**< Handler for the WHO message */
-		void m_whois(Message m);    /**< Handler for the WHOIS message */
-		void m_whowas(Message m);   /**< Handler for the WHOWAS message */
-		void m_version(Message m);  /**< Handler for the VERSION message */
-		void m_privmsg(Message m);  /**< Handler for the PRIVMSG message */
-		void m_stats(Message m);    /**< Handler for the STATS message */
-		void m_connect(Message m);  /**< Handler for the CONNECT message */
-		void m_squit(Message m);    /**< Handler for the SQUIT message */
-		void m_map(Message m);      /**< Handler for the MAP message */
-		void m_join(Message m);     /**< Handler for the JOIN message */
-		void m_list(Message m);     /**< Handler for the LIST message */
-		void m_mode(Message m);     /**< Handler for the MODE message */
-		void m_ison(Message m);     /**< Handler for the ISON message */
-		void m_invite(Message m);   /**< Handler for the INVITE message */
-		void m_kick(Message m);     /**< Handler for the KICK message */
 	};
 
 }; /* namespace irc */
