@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,6 +17,7 @@
  */
 
 #include <cassert>
+#include <cstring>
 
 #include "im/conversation.h"
 #include "im/purple.h"
@@ -24,10 +26,71 @@
 #include "irc/irc.h"
 #include "irc/user.h"
 #include "irc/message.h"
+#include "irc/conversation_channel.h"
+#include "irc/chat_buddy.h"
 #include "../log.h"
 
 namespace im {
 
+/*****
+ * ChatBuddy
+ */
+
+ChatBuddy::ChatBuddy(Conversation _conv, PurpleConvChatBuddy* _cbuddy)
+	: conv(_conv), cbuddy(_cbuddy)
+{}
+
+ChatBuddy::ChatBuddy()
+	: cbuddy(NULL)
+{}
+
+string ChatBuddy::getName() const
+{
+	assert(isValid());
+	return cbuddy->name;
+}
+
+string ChatBuddy::getRealName() const
+{
+	assert(isValid());
+
+	PurplePluginProtocolInfo* prpl = conv.getAccount().getProtocol().getPurpleProtocol();
+	if(prpl->get_cb_real_name)
+		return prpl->get_cb_real_name(conv.getAccount().getPurpleConnection(), PURPLE_CONV_CHAT(conv.getPurpleConversation())->id, cbuddy->name);
+	else
+		return getName();
+}
+
+Account ChatBuddy::getAccount() const
+{
+	assert(isValid());
+	return conv.getAccount();
+}
+
+bool ChatBuddy::isMe() const
+{
+	assert(isValid());
+	return getName() == purple_conv_chat_get_nick(PURPLE_CONV_CHAT(conv.getPurpleConversation()));
+}
+
+bool ChatBuddy::operator==(const ChatBuddy& cbuddy) const
+{
+	return this->cbuddy == cbuddy.cbuddy;
+}
+
+bool ChatBuddy::operator!=(const ChatBuddy& cbuddy) const
+{
+	return this->cbuddy != cbuddy.cbuddy;
+}
+
+bool ChatBuddy::operator<(const ChatBuddy& cbuddy) const
+{
+	return this->cbuddy < cbuddy.cbuddy;
+}
+
+/****
+ * Conversation
+ */
 Conversation::Conversation()
 	: conv(NULL)
 {}
@@ -42,6 +105,12 @@ Conversation::Conversation(Account account, Buddy buddy)
 	conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, account.getPurpleAccount(), buddy.getName().c_str());
 }
 
+Conversation::Conversation(Account account, string name)
+	: conv(NULL)
+{
+	conv = purple_conversation_new(PURPLE_CONV_TYPE_CHAT, account.getPurpleAccount(), name.c_str());
+}
+
 bool Conversation::operator==(const Conversation& conv) const
 {
 	return conv.conv == this->conv;
@@ -52,10 +121,45 @@ bool Conversation::operator!=(const Conversation& conv) const
 	return conv.conv != this->conv;
 }
 
+Account Conversation::getAccount() const
+{
+	assert(isValid());
+
+	return Account(conv->account);
+}
+
+string Conversation::getName() const
+{
+	assert(isValid());
+
+	return conv->name;
+}
+
+string Conversation::getChanName() const
+{
+	assert(isValid());
+
+	string n = getName() + ":" + getAccount().getID();
+	if(n[0] != '#')
+		n = "#" + n;
+
+	return n;
+}
+
 void Conversation::present() const
 {
 	assert(isValid());
 	purple_conversation_present(conv);
+}
+
+void Conversation::createChannel() const
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::ConversationChannel* chan = new irc::ConversationChannel(irc, *this);
+
+	irc->addChannel(chan);
+
+	irc->getUser()->join(chan);
 }
 
 void Conversation::sendMessage(string text) const
@@ -75,11 +179,11 @@ void Conversation::sendMessage(string text) const
 
 void Conversation::recvMessage(string from, string text) const
 {
+	irc::IRC* irc = Purple::getIM()->getIRC();
 	switch(purple_conversation_get_type(conv))
 	{
 		case PURPLE_CONV_TYPE_IM:
 		{
-			irc::IRC* irc = Purple::getIM()->getIRC();
 			irc::Nick* n = irc->getNick(from);
 
 			if(!n)
@@ -94,8 +198,26 @@ void Conversation::recvMessage(string from, string text) const
 			break;
 		}
 		case PURPLE_CONV_TYPE_CHAT:
-			b_log[W_ERR] << "Chat messages aren't supported yet";
+		{
+			irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(getChanName()));
+			if(!chan)
+			{
+				b_log[W_ERR] << "Received message in unknown chat " << getChanName();
+				return;
+			}
+
+			irc::ChanUser* n = chan->getChanUser(from);
+			if(!n)
+			{
+				b_log[W_ERR] << "Received message on " << getChanName() << " from an unknown budy " << from;
+				return;
+			}
+
+			chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(n)
+					                         .setReceiver(chan)
+								 .addArg(text));
 			break;
+		}
 		default:
 			break;
 	}
@@ -110,7 +232,7 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 	NULL,//finch_write_chat,
 	Conversation::write_im,
 	Conversation::write_conv,
-	NULL,//finch_chat_add_users,
+	Conversation::add_users,
 	NULL,//finch_chat_rename_user,
 	NULL,//finch_chat_remove_users,
 	NULL,//finch_chat_update_user,
@@ -140,8 +262,19 @@ void* Conversation::getHandler()
 
 void Conversation::create(PurpleConversation* c)
 {
-}
+	Conversation conv(c);
 
+	switch(purple_conversation_get_type(c))
+	{
+		case PURPLE_CONV_TYPE_IM:
+			break;
+		case PURPLE_CONV_TYPE_CHAT:
+			conv.createChannel();
+			break;
+		default:
+			break;
+	}
+}
 
 void Conversation::write_im(PurpleConversation *c, const char *who,
 		const char *message, PurpleMessageFlags flags, time_t mtime)
@@ -177,6 +310,30 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 
 		g_free(strip);
 		g_free(newline);
+	}
+}
+
+void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
+			     gboolean new_arrivals)
+{
+	Conversation conv(c);
+	GList* l = cbuddies;
+	for (; l != NULL; l = l->next)
+	{
+		ChatBuddy cbuddy = ChatBuddy(conv, (PurpleConvChatBuddy *)l->data);
+
+		/* Is it me? */
+		if(cbuddy.isMe())
+			continue;
+
+		irc::IRC* irc = Purple::getIM()->getIRC();
+		irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+		if(!chan)
+		{
+			b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
+			return;
+		}
+		chan->addBuddy(cbuddy);
 	}
 }
 

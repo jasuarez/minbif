@@ -1,4 +1,5 @@
 /*
+ * Bitlbee v2 - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +28,7 @@ namespace im
 
 	class Account;
 	class Buddy;
+
 	class Conversation
 	{
 		PurpleConversation* conv;
@@ -41,6 +43,9 @@ namespace im
 		static void write_conv(PurpleConversation *conv, const char *who, const char* alias,
 				const char *message, PurpleMessageFlags flags,
 				time_t mtime);
+		static void add_users(PurpleConversation *conv, GList *cbuddies,
+				      gboolean new_arrivals);
+
 
 	public:
 
@@ -48,16 +53,49 @@ namespace im
 
 		Conversation();
 		Conversation(Account account, Buddy buddy);
+		Conversation(Account account, string name);
 		Conversation(PurpleConversation* conv);
 
 		bool operator==(const Conversation& conv) const;
 		bool operator!=(const Conversation& conv) const;
 
 		bool isValid() const { return conv != NULL; }
+		PurpleConversation* getPurpleConversation() const { return conv; }
+
+		string getName() const;
+		string getChanName() const;
+		Account getAccount() const;
+
+		void createChannel() const;
 
 		void present() const;
 		void sendMessage(string text) const;
 		void recvMessage(string from, string text) const;
+	};
+
+	class ChatBuddy
+	{
+		Conversation conv;
+		PurpleConvChatBuddy* cbuddy;
+
+	public:
+
+		ChatBuddy();
+		ChatBuddy(Conversation conv, PurpleConvChatBuddy* cbuddy);
+
+		bool operator==(const ChatBuddy& cbuddy) const;
+		bool operator!=(const ChatBuddy& cbuddy) const;
+		bool operator<(const ChatBuddy& cbuddy) const;
+
+		bool isValid() const { return cbuddy != NULL; }
+
+		string getName() const;
+		string getRealName() const;
+		bool isMe() const;
+
+		Conversation getConversation() const { return conv; }
+		Account getAccount() const;
+
 	};
 
 };
