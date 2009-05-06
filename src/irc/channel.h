@@ -141,7 +141,7 @@ namespace irc
 		 * @param nick  user to remove
 		 * @param message  optionnal message to send to all *other* channel users.
 		 */
-		void delUser(Nick* nick, Message message = Message());
+		virtual void delUser(Nick* nick, Message message = Message());
 
 		/** Count users on channel. */
 		size_t countUsers() const { return users.size(); }

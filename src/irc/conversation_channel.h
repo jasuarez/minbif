@@ -39,7 +39,7 @@ namespace irc
 	public:
 
 		ConversationChannel(IRC* irc, im::Conversation conv);
-		virtual ~ConversationChannel() {}
+		virtual ~ConversationChannel();
 
 		virtual bool isStatusChannel() const { return false; }
 		virtual bool isRemoteChannel() const { return true; }
@@ -53,6 +53,7 @@ namespace irc
 		virtual ChanUser* getChanUser(string nick) const;
 
 		void addBuddy(im::ChatBuddy cbuddy);
+		virtual void delUser(Nick* nick, Message message = Message());
 	};
 }; /* ns irc */
 

@@ -33,6 +33,26 @@ ConversationChannel::ConversationChannel(IRC* irc, im::Conversation _conv)
 	upserver = dynamic_cast<RemoteServer*>(irc->getServer(conv.getAccount().getServername()));
 }
 
+ConversationChannel::~ConversationChannel()
+{
+	map<im::ChatBuddy, ChanUser*>::iterator it;
+	for(it = cbuddies.begin(); it != cbuddies.end(); ++it)
+	{
+		irc::ChatBuddy* cb = dynamic_cast<irc::ChatBuddy*>(it->second->getNick());
+
+		if(cb)
+		{
+			/* Call the Channel function to not erase chatbuddy from cbuddies,
+			 * because I iterate on.
+			 * I know that Channel destructor will also remove chanuser from list,
+			 * but it may also call some Nick methods, as the object is deleted
+			 * by IRC::removeNick()...
+			 */
+			Channel::delUser(cb);
+			irc->removeNick(cb->getNickname());
+		}
+	}
+}
 
 void ConversationChannel::showBanList(Nick* to)
 {
@@ -74,6 +94,25 @@ void ConversationChannel::addBuddy(im::ChatBuddy cbuddy)
 	}
 
 	cbuddies[cbuddy] = cul;
+}
+
+void ConversationChannel::delUser(Nick* nick, Message message)
+{
+	map<im::ChatBuddy, ChanUser*>::iterator it;
+	for(it = cbuddies.begin(); it != cbuddies.end() && it->second->getNick() != nick; ++it)
+		;
+
+	irc::ChatBuddy* cb = NULL;
+	if(it != cbuddies.end())
+	{
+		cb = dynamic_cast<irc::ChatBuddy*>(it->second->getNick());
+		cbuddies.erase(it);
+	}
+
+	Channel::delUser(nick, message);
+
+	if(cb)
+		irc->removeNick(cb->getNickname());
 }
 
 ChanUser* ConversationChannel::getChanUser(string nick) const
