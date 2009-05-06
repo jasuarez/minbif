@@ -77,6 +77,7 @@ namespace im
 
 		bool isValid() const { return account != NULL; }
 		PurpleAccount* getPurpleAccount() const { return account; }
+		PurpleConnection* getPurpleConnection() const;
 
 		/** Get ID of account.
 		 *
@@ -138,6 +139,9 @@ namespace im
 		 * @param buddy  Buddy's instance
 		 */
 		void removeBuddy(Buddy buddy) const;
+
+		/** Join a chat */
+		void joinChat(string name) const;
 	};
 
 };

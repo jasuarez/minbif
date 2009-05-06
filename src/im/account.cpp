@@ -86,6 +86,12 @@ string Account::getServername() const
 	return getUsername() + ":" + getID();
 }
 
+PurpleConnection* Account::getPurpleConnection() const
+{
+	assert(isValid());
+	return purple_account_get_connection(account);
+}
+
 bool Account::isConnected() const
 {
 	assert(isValid());
@@ -198,8 +204,47 @@ void Account::addBuddy(string username, string group) const
 
 void Account::removeBuddy(Buddy buddy) const
 {
+	assert(isValid());
+
 	purple_account_remove_buddy(account, buddy.getPurpleBuddy(), buddy.getPurpleGroup());
 	purple_blist_remove_buddy(buddy.getPurpleBuddy());
+}
+
+void Account::joinChat(string name) const
+{
+	assert(isValid());
+	if(!isConnected())
+	{
+		b_log[W_SNO] << "Not connected";
+		return;
+	}
+
+	PurpleConnection* gc = purple_account_get_connection(account);
+	PurpleConversation* conv;
+	if (!(conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, name.c_str(), account)))
+	{
+		conv = purple_conversation_new(PURPLE_CONV_TYPE_CHAT, account, name.c_str());
+		purple_conv_chat_left(PURPLE_CONV_CHAT(conv));
+	}
+	else
+		purple_conversation_present(conv);
+
+	PurpleChat *chat;
+	GHashTable *hash = NULL;
+
+	chat = purple_blist_find_chat(account, name.c_str());
+	if (chat == NULL)
+	{
+		PurplePluginProtocolInfo *info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl(gc));
+		if (info->chat_info_defaults != NULL)
+			hash = info->chat_info_defaults(gc, name.c_str());
+	}
+	else
+		hash = purple_chat_get_components(chat);
+
+	serv_join_chat(gc, hash);
+	if (chat == NULL && hash != NULL)
+		g_hash_table_destroy(hash);
 }
 
 /* STATIC */
