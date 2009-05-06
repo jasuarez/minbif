@@ -59,7 +59,7 @@ string Message::format() const
 	for(vector<string>::const_iterator it = args.begin(); it != args.end(); ++it)
 	{
 		buf += " ";
-		if(it->find(' ') != string::npos)
+		if(it->find(' ') != string::npos || it->c_str()[0] == ':')
 			buf += ":";
 		buf += *it;
 	}
