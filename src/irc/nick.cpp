@@ -132,6 +132,15 @@ void Nick::part(Channel* chan, string message)
 			++it;
 }
 
+void Nick::removeChanUser(ChanUser* chanuser)
+{
+	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end();)
+		if(*it == chanuser)
+			it = channels.erase(it);
+		else
+			++it;
+}
+
 void Nick::kicked(Channel* chan, ChanUser* from, string message)
 {
 	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end();)

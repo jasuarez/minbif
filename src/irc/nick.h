@@ -89,6 +89,12 @@ namespace irc
 		 */
 		void part(Channel* chan, string message="");
 
+		/** Remove an ChanUser from list.
+		 *
+		 * @param chanuser  ChanUser object
+		 */
+		void removeChanUser(ChanUser* chanuser);
+
 		/** User quits network
 		 *
 		 * @param message  quit message.
