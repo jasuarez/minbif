@@ -133,4 +133,10 @@ vector<Protocol::Option> Protocol::getOptions() const
 	return options;
 }
 
+
+PurplePluginProtocolInfo* Protocol::getPurpleProtocol() const
+{
+	return PURPLE_PLUGIN_PROTOCOL_INFO(plugin);
+}
+
 }; /* namespace im */

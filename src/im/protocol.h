@@ -72,6 +72,8 @@ namespace im
 		string getPurpleID() const;
 
 		vector<Option> getOptions() const;
+
+		PurplePluginProtocolInfo* getPurpleProtocol() const;
 	};
 
 }; /* namespace im */
