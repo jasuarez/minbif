@@ -976,11 +976,39 @@ void IRC::m_join(Message message)
 				break;
 			}
 			case '#':
-				user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-								     .setReceiver(user)
-								     .addArg(channame)
-								     .addArg("No such channel"));
+			{
+				Channel* chan = getChannel(channame);
+
+				/* Channel already exists, I'm really probably in. */
+				if(chan)
+					return;
+
+				string accid = channame.substr(1);
+				string convname = stringtok(accid, ":");
+				if(accid.empty() || convname.empty())
+				{
+					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+									     .setReceiver(user)
+									     .addArg(channame)
+									     .addArg("No such channel"));
+					return;
+				}
+				im::Account account = im->getAccount(accid);
+
+				account.joinChat(convname);
+
+#if 0
+				chan = new ConversationChannel(this, conv);
+
+				user->send(Message(ERR_CHANFORWARDING).setSender(this)
+						                      .setReceiver(user)
+								      .addArg(channame)
+								      .addArg(chan->getName())
+								      .addArg("Forwarding to another channel"));
+				user->join(chan);
+#endif
 				break;
+			}
 			default:
 				user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 								     .setReceiver(user)

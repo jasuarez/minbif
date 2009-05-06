@@ -36,6 +36,11 @@ string ChanUser::getName() const
 	return nick->getNickname();
 }
 
+string ChanUser::getLongName() const
+{
+	return nick->getLongName();
+}
+
 ChanUser::m2c_t ChanUser::m2c[] = {
 	{ ChanUser::OP,    'o' },
 	{ ChanUser::VOICE, 'v' },

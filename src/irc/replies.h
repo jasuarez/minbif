@@ -64,7 +64,7 @@
 #define ERR_NOTREGISTERED    "451"
 #define ERR_NEEDMOREPARAMS   "461"
 #define ERR_ALREADYREGISTRED "462"
-#define ERR_CHANFORWARDING   "470" /* :lem.freenode.net 470 uei #c ##c :Forwarding to another channel */
+#define ERR_CHANFORWARDING   "470"
 
 #define MSG_PRIVMSG     "PRIVMSG"
 #define MSG_NOTICE      "NOTICE"

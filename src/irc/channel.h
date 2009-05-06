@@ -66,6 +66,7 @@ namespace irc
 		ChanUser(Channel* chan, Nick* nick, int status = 0);
 
 		string getName() const;
+		string getLongName() const;
 
 		bool hasStatus(int flag) const { return status & flag; }
 		void setStatus(int flag) { status |= flag; }
@@ -149,7 +150,7 @@ namespace irc
 		vector<ChanUser*> getChanUsers() const { return users; }
 
 		/** Get a channel user. */
-		ChanUser* getChanUser(string nick) const;
+		virtual ChanUser* getChanUser(string nick) const;
 
 		/** Get topic */
 		string getTopic() const { return topic; }
@@ -206,7 +207,7 @@ namespace irc
 		 * @param m  message sent to all channel users
 		 * @param butone  optionnal user which will not receive message.
 		 */
-		void broadcast(Message m, Nick* butone = NULL);
+		virtual void broadcast(Message m, Nick* butone = NULL);
 	};
 }; /*namespace irc*/
 

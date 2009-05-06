@@ -157,7 +157,6 @@ void StatusChannel::processRemoveBan(Nick* from, string nick, string ident, stri
 	string deny;
 	im::Account account;
 
-	b_log[W_DEBUG] << nick << "!" << ident << "@" << host << ":" << accid;
 	if(nick.empty() == false && nick != "*")
 	{
 		Buddy* banned = dynamic_cast<Buddy*>(irc->getNick(nick));
