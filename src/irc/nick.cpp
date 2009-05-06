@@ -120,13 +120,17 @@ ChanUser* Nick::join(Channel* chan, int status)
 
 void Nick::part(Channel* chan, string message)
 {
+	Message m = Message(MSG_PART).setSender(this)
+				     .setReceiver(chan)
+				     .addArg(message);
 	for(vector<ChanUser*>::iterator it = channels.begin(); it != channels.end();)
 		if((*it)->getChannel() == chan)
 		{
-			(*it)->getChannel()->delUser(this, Message(MSG_PART).setSender(this)
-					                                 .setReceiver((*it)->getChannel())
-									 .addArg(message));
+			ChanUser* chanuser = *it;
 			it = channels.erase(it);
+			send(m);
+			chanuser->getChannel()->delUser(this, m);
+			break;
 		}
 		else
 			++it;

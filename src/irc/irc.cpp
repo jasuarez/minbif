@@ -56,6 +56,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_SQUIT,   &IRC::m_squit,   1, 0, Nick::REGISTERED },
 	{ MSG_MAP,     &IRC::m_map,     0, 0, Nick::REGISTERED },
 	{ MSG_JOIN,    &IRC::m_join,    1, 0, Nick::REGISTERED },
+	{ MSG_PART,    &IRC::m_part,    1, 0, Nick::REGISTERED },
 	{ MSG_LIST,    &IRC::m_list,    0, 0, Nick::REGISTERED },
 	{ MSG_MODE,    &IRC::m_mode,    1, 0, Nick::REGISTERED },
 	{ MSG_ISON,    &IRC::m_ison,    1, 0, Nick::REGISTERED },
@@ -1018,6 +1019,32 @@ void IRC::m_join(Message message)
 				break;
 		}
 	}
+}
+
+/** PART chan [:message] */
+void IRC::m_part(Message message)
+{
+	string channame = message.getArg(0);
+	string reason = "";
+	if(message.countArgs() > 1)
+		reason = message.getArg(1);
+
+	Channel* chan = getChannel(channame);
+	if(!chan)
+	{
+		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+						     .setReceiver(user)
+						     .addArg(channame)
+						     .addArg("No such channel"));
+		return;
+	}
+
+	if(chan->isStatusChannel())
+	{
+
+	}
+	else if(chan->isRemoteChannel())
+		user->part(chan, reason);
 }
 
 /** LIST */

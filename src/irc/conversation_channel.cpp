@@ -49,6 +49,7 @@ ConversationChannel::~ConversationChannel()
 			 * by IRC::removeNick()...
 			 */
 			Channel::delUser(cb);
+			cb->removeChanUser(it->second);
 			irc->removeNick(cb->getNickname());
 		}
 	}
@@ -102,17 +103,16 @@ void ConversationChannel::delUser(Nick* nick, Message message)
 	for(it = cbuddies.begin(); it != cbuddies.end() && it->second->getNick() != nick; ++it)
 		;
 
-	irc::ChatBuddy* cb = NULL;
 	if(it != cbuddies.end())
-	{
-		cb = dynamic_cast<irc::ChatBuddy*>(it->second->getNick());
 		cbuddies.erase(it);
-	}
 
 	Channel::delUser(nick, message);
 
+	irc::ChatBuddy* cb = dynamic_cast<irc::ChatBuddy*>(nick);
 	if(cb)
 		irc->removeNick(cb->getNickname());
+	else if(nick == irc->getUser())
+		conv.leave();
 }
 
 ChanUser* ConversationChannel::getChanUser(string nick) const

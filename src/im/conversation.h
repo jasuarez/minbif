@@ -37,6 +37,7 @@ namespace im
 		static PurpleConversationUiOps conv_ui_ops;
 
 		static void create(PurpleConversation*);
+		static void destroy(PurpleConversation*);
 		static void write_im(PurpleConversation *conv, const char *who,
 				const char *message, PurpleMessageFlags flags,
 				time_t mtime);
@@ -61,14 +62,19 @@ namespace im
 
 		bool isValid() const { return conv != NULL; }
 		PurpleConversation* getPurpleConversation() const { return conv; }
+		PurpleConvChat* getPurpleChat() const;
+		PurpleConvIm* getPurpleIm() const;
 
 		string getName() const;
 		string getChanName() const;
 		Account getAccount() const;
+		PurpleConversationType getType() const;
 
 		void createChannel() const;
+		void destroyChannel() const;
 
 		void present() const;
+		void leave();
 		void sendMessage(string text) const;
 		void recvMessage(string from, string text) const;
 	};

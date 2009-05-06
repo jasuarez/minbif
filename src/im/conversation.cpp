@@ -56,7 +56,7 @@ string ChatBuddy::getRealName() const
 
 	PurplePluginProtocolInfo* prpl = conv.getAccount().getProtocol().getPurpleProtocol();
 	if(prpl->get_cb_real_name)
-		return prpl->get_cb_real_name(conv.getAccount().getPurpleConnection(), PURPLE_CONV_CHAT(conv.getPurpleConversation())->id, cbuddy->name);
+		return prpl->get_cb_real_name(conv.getAccount().getPurpleConnection(), conv.getPurpleChat()->id, cbuddy->name);
 	else
 		return getName();
 }
@@ -70,7 +70,7 @@ Account ChatBuddy::getAccount() const
 bool ChatBuddy::isMe() const
 {
 	assert(isValid());
-	return getName() == purple_conv_chat_get_nick(PURPLE_CONV_CHAT(conv.getPurpleConversation()));
+	return getName() == purple_conv_chat_get_nick(conv.getPurpleChat());
 }
 
 bool ChatBuddy::operator==(const ChatBuddy& cbuddy) const
@@ -132,7 +132,11 @@ string Conversation::getName() const
 {
 	assert(isValid());
 
-	return conv->name;
+	const char* name = conv->name;
+	if(name)
+		return name;
+	else
+		return "";
 }
 
 string Conversation::getChanName() const
@@ -146,14 +150,28 @@ string Conversation::getChanName() const
 	return n;
 }
 
+PurpleConversationType Conversation::getType() const
+{
+	assert(isValid());
+	return purple_conversation_get_type(conv);
+}
+
 void Conversation::present() const
 {
 	assert(isValid());
 	purple_conversation_present(conv);
 }
 
+void Conversation::leave()
+{
+	assert(isValid());
+	purple_conversation_destroy(conv);
+	conv = NULL;
+}
+
 void Conversation::createChannel() const
 {
+	assert(isValid());
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	irc::ConversationChannel* chan = new irc::ConversationChannel(irc, *this);
 
@@ -162,15 +180,34 @@ void Conversation::createChannel() const
 	irc->getUser()->join(chan);
 }
 
+void Conversation::destroyChannel() const
+{
+	assert(isValid());
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc->removeChannel(getChanName());
+}
+
+PurpleConvChat* Conversation::getPurpleChat() const
+{
+	assert(isValid());
+	return PURPLE_CONV_CHAT(conv);
+}
+
+PurpleConvIm* Conversation::getPurpleIm() const
+{
+	assert(isValid());
+	return PURPLE_CONV_IM(conv);
+}
+
 void Conversation::sendMessage(string text) const
 {
-	switch(purple_conversation_get_type(conv))
+	switch(getType())
 	{
 		case PURPLE_CONV_TYPE_IM:
-			purple_conv_im_send(PURPLE_CONV_IM(conv), text.c_str());
+			purple_conv_im_send(getPurpleIm(), text.c_str());
 			break;
 		case PURPLE_CONV_TYPE_CHAT:
-			purple_conv_chat_send(PURPLE_CONV_CHAT(conv), text.c_str());
+			purple_conv_chat_send(getPurpleChat(), text.c_str());
 			break;
 		default:
 			break;
@@ -180,7 +217,7 @@ void Conversation::sendMessage(string text) const
 void Conversation::recvMessage(string from, string text) const
 {
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	switch(purple_conversation_get_type(conv))
+	switch(getType())
 	{
 		case PURPLE_CONV_TYPE_IM:
 		{
@@ -227,8 +264,8 @@ void Conversation::recvMessage(string from, string text) const
 
 PurpleConversationUiOps Conversation::conv_ui_ops =
 {
-	Conversation::create,//finch_create_conversation,
-	NULL,//finch_destroy_conversation,
+	Conversation::create,
+	NULL,//Conversation::destroy,
 	NULL,//finch_write_chat,
 	Conversation::write_im,
 	Conversation::write_conv,
@@ -251,6 +288,9 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 void Conversation::init()
 {
 	purple_conversations_set_ui_ops(&conv_ui_ops);
+	purple_signal_connect(purple_conversations_get_handle(), "deleting-conversation",
+				getHandler(), PURPLE_CALLBACK(destroy),
+				NULL);
 }
 
 void* Conversation::getHandler()
@@ -264,12 +304,28 @@ void Conversation::create(PurpleConversation* c)
 {
 	Conversation conv(c);
 
-	switch(purple_conversation_get_type(c))
+	switch(conv.getType())
 	{
 		case PURPLE_CONV_TYPE_IM:
 			break;
 		case PURPLE_CONV_TYPE_CHAT:
 			conv.createChannel();
+			break;
+		default:
+			break;
+	}
+}
+
+void Conversation::destroy(PurpleConversation* c)
+{
+	Conversation conv(c);
+
+	switch(conv.getType())
+	{
+		case PURPLE_CONV_TYPE_IM:
+			break;
+		case PURPLE_CONV_TYPE_CHAT:
+			conv.destroyChannel();
 			break;
 		default:
 			break;

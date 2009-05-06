@@ -101,6 +101,7 @@ namespace irc
 		void m_squit(Message m);    /**< Handler for the SQUIT message */
 		void m_map(Message m);      /**< Handler for the MAP message */
 		void m_join(Message m);     /**< Handler for the JOIN message */
+		void m_part(Message m);     /**< Handler for the PART message */
 		void m_list(Message m);     /**< Handler for the LIST message */
 		void m_mode(Message m);     /**< Handler for the MODE message */
 		void m_ison(Message m);     /**< Handler for the ISON message */
