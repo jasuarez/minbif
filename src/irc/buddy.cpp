@@ -50,21 +50,6 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 Buddy::~Buddy()
 {}
 
-string Buddy::nickize(const string& n)
-{
-	string nick;
-	for(string::const_iterator c = n.begin(); c != n.end(); ++c)
-		if(strchr(nick_lc_chars, *c) || strchr(nick_uc_chars, *c))
-			nick += *c;
-	if(isdigit(nick[0]))
-		nick = "_" + nick;
-
-	if(nick.size() > MAX_LENGTH)
-		nick = nick.substr(0, MAX_LENGTH);
-
-	return nick;
-}
-
 void Buddy::send(Message m)
 {
 	if(m.getCommand() == MSG_PRIVMSG)
@@ -113,4 +98,4 @@ CacaImage Buddy::getIcon() const
 	return im_buddy.getIcon();
 }
 
-}; /* namespace buddy */
+}; /* namespace irc */

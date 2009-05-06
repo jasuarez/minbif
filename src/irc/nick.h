@@ -50,6 +50,7 @@ namespace irc
 		static const char *nick_lc_chars;
 		static const char *nick_uc_chars;
 		static const size_t MAX_LENGTH = 29;
+		static string nickize(const string& n);
 
 		/** States of the user */
 		enum {
@@ -79,7 +80,7 @@ namespace irc
 		 * @param chan  channel to join
 		 * @param status  status on channel (see ChanUser)
 		 */
-		void join(Channel* chan, int status = 0);
+		ChanUser* join(Channel* chan, int status = 0);
 
 		/** User leaves a channel
 		 *

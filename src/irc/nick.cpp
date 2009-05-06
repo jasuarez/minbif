@@ -59,6 +59,21 @@ bool Nick::isValidNickname(const string& nick)
 
 }
 
+string Nick::nickize(const string& n)
+{
+	string nick;
+	for(string::const_iterator c = n.begin(); c != n.end(); ++c)
+		if(strchr(nick_lc_chars, *c) || strchr(nick_uc_chars, *c))
+			nick += *c;
+	if(isdigit(nick[0]))
+		nick = "_" + nick;
+
+	if(nick.size() > MAX_LENGTH)
+		nick = nick.substr(0, MAX_LENGTH);
+
+	return nick;
+}
+
 string Nick::getLongName() const
 {
 	return getNickname()  + "!" +
@@ -92,11 +107,15 @@ ChanUser* Nick::getChanUser(const Channel* chan) const
 	return NULL;
 }
 
-void Nick::join(Channel* chan, int status)
+ChanUser* Nick::join(Channel* chan, int status)
 {
-	if(isOn(chan))
-		return;
-	channels.push_back(chan->addUser(this, status));
+	ChanUser* chanuser;
+	if((chanuser = getChanUser(chan)))
+		return chanuser;
+
+	chanuser = chan->addUser(this, status);
+	channels.push_back(chanuser);
+	return chanuser;
 }
 
 void Nick::part(Channel* chan, string message)
