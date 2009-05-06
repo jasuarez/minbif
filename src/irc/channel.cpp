@@ -98,8 +98,10 @@ Channel::Channel(IRC* _irc, string name)
 Channel::~Channel()
 {
 	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
+	{
+		(*it)->getNick()->removeChanUser(*it);
 		delete *it;
-		/* \todo TODO try to remove pointer to it from Nick if any */
+	}
 }
 
 
