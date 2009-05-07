@@ -144,8 +144,7 @@ string Conversation::getChanName() const
 	assert(isValid());
 
 	string n = getName() + ":" + getAccount().getID();
-	if(n[0] != '#')
-		n = "#" + n;
+	n = "#" + n;
 
 	return n;
 }
@@ -377,10 +376,6 @@ void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
 	for (; l != NULL; l = l->next)
 	{
 		ChatBuddy cbuddy = ChatBuddy(conv, (PurpleConvChatBuddy *)l->data);
-
-		/* Is it me? */
-		if(cbuddy.isMe())
-			continue;
 
 		irc::IRC* irc = Purple::getIM()->getIRC();
 		irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));

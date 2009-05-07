@@ -77,7 +77,7 @@ void ConversationChannel::addBuddy(im::ChatBuddy cbuddy)
 {
 	ChanUser* cul;
 	if(cbuddy.isMe())
-		cul = irc->getUser()->getChanUser(this);
+		cul = irc->getUser()->join(this);
 	else
 	{
 		map<im::ChatBuddy, ChanUser*>::iterator it = cbuddies.find(cbuddy);
