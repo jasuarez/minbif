@@ -164,8 +164,14 @@ void Conversation::present() const
 void Conversation::leave()
 {
 	assert(isValid());
-	purple_conversation_destroy(conv);
+
+	/* As this method can be called by ConversationChannel, which owns me,
+	 * it isn't a good idea to change myself after call of
+	 * purple_conversation_destroy().
+	 */
+	PurpleConversation* c = conv;
 	conv = NULL;
+	purple_conversation_destroy(c);
 }
 
 void Conversation::createChannel() const

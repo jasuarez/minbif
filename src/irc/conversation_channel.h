@@ -38,7 +38,7 @@ namespace irc
 
 	public:
 
-		ConversationChannel(IRC* irc, im::Conversation conv);
+		ConversationChannel(IRC* irc, const im::Conversation& conv);
 		virtual ~ConversationChannel();
 
 		virtual bool isStatusChannel() const { return false; }

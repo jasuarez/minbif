@@ -24,7 +24,7 @@
 
 namespace irc {
 
-ConversationChannel::ConversationChannel(IRC* irc, im::Conversation _conv)
+ConversationChannel::ConversationChannel(IRC* irc, const im::Conversation& _conv)
 	: Channel(irc, _conv.getChanName()),
 	  conv(_conv),
 	  upserver(NULL)
