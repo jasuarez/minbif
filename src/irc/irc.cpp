@@ -592,7 +592,7 @@ void IRC::m_whois(Message message)
 					       .setReceiver(user)
 					       .addArg(n->getNickname())
 					       .addArg("Icon:"));
-		while((line = stringtok(buf, "\n")).empty() == false)
+		while((line = stringtok(buf, "\r\n")).empty() == false)
 		{
 			user->send(Message(RPL_WHOISACTUALLY).setSender(this)
 						       .setReceiver(user)
