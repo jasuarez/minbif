@@ -25,7 +25,7 @@
 namespace irc
 {
 
-	/** This class represents a buddy on IRC */
+	/** This class represents a chat buddy on IRC */
 	class ChatBuddy : public Nick
 	{
 		im::ChatBuddy im_cbuddy;

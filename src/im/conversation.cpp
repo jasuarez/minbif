@@ -176,6 +176,12 @@ void Conversation::createChannel() const
 
 	irc->addChannel(chan);
 
+	/* XXX As callback add_users will be called and I'll be in added users,
+	 *     a better idea could be do not join here, but wait for the add_users
+	 *     where i'll be.
+	 *     BUT, there is a bug with the jabber plugin, so it is possible this
+	 *     event will never happen.
+	 */
 	irc->getUser()->join(chan);
 }
 
@@ -200,6 +206,7 @@ PurpleConvIm* Conversation::getPurpleIm() const
 
 void Conversation::sendMessage(string text) const
 {
+	assert(isValid());
 	switch(getType())
 	{
 		case PURPLE_CONV_TYPE_IM:
@@ -215,6 +222,7 @@ void Conversation::sendMessage(string text) const
 
 void Conversation::recvMessage(string from, string text) const
 {
+	assert(isValid());
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	switch(getType())
 	{
@@ -264,7 +272,7 @@ void Conversation::recvMessage(string from, string text) const
 PurpleConversationUiOps Conversation::conv_ui_ops =
 {
 	Conversation::create,
-	NULL,//Conversation::destroy,
+	NULL,//finch_destroy (use signal instead)
 	NULL,//finch_write_chat,
 	Conversation::write_im,
 	Conversation::write_conv,

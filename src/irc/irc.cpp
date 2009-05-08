@@ -995,6 +995,14 @@ void IRC::m_join(Message message)
 					return;
 				}
 				im::Account account = im->getAccount(accid);
+				if(account.isConnected() == false)
+				{
+					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+									     .setReceiver(user)
+									     .addArg(channame)
+									     .addArg("No such channel"));
+					return;
+				}
 
 				account.joinChat(convname);
 
