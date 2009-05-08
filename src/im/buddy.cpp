@@ -91,6 +91,15 @@ bool Buddy::isAvailable() const
 	return purple_presence_is_available(purple_buddy_get_presence(buddy));
 }
 
+string Buddy::getStatus() const
+{
+	PurpleStatus* status = purple_presence_get_active_status(buddy->presence);
+	if(status)
+		return purple_status_get_name(status);
+	else
+		return "bite";
+}
+
 Account Buddy::getAccount() const
 {
 	assert(isValid());

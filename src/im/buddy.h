@@ -75,6 +75,7 @@ namespace im
 
 		bool isOnline() const;
 		bool isAvailable() const;
+		string getStatus() const;
 
 		/** Get buddy's icon as a colored ASCII-art picture.
 		 *

@@ -80,7 +80,7 @@ string Buddy::getAwayMessage() const
 {
 	if(im_buddy.isOnline() == false)
 		return "User is offline";
-	return Nick::getAwayMessage();
+	return im_buddy.getStatus();
 }
 
 bool Buddy::isAway() const
