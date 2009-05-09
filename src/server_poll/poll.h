@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +24,7 @@
 
 using std::string;
 
-class Bitlbee;
+class Minbif;
 
 namespace irc
 {
@@ -34,11 +35,11 @@ class ServerPollError : public std::exception {};
 
 class ServerPoll
 {
-	Bitlbee* application;
+	Minbif* application;
 
 protected:
 
-	Bitlbee* getApplication() const { return application; }
+	Minbif* getApplication() const { return application; }
 
 public:
 
@@ -49,9 +50,9 @@ public:
 		DAEMON_FORK
 	};
 
-	static ServerPoll* build(poll_type_t type, Bitlbee* application);
+	static ServerPoll* build(poll_type_t type, Minbif* application);
 
-	ServerPoll(Bitlbee* application);
+	ServerPoll(Minbif* application);
 
 	virtual void kill(irc::IRC* irc) = 0;
 

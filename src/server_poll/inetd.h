@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,7 +33,7 @@ class InetdServerPoll : public ServerPoll
 
 public:
 
-	InetdServerPoll(Bitlbee* application);
+	InetdServerPoll(Minbif* application);
 	~InetdServerPoll();
 
 	void kill(irc::IRC* irc);

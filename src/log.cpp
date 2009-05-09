@@ -1,5 +1,6 @@
 /*
- * Copyright(C) 2008-2009 Laurent Defert, Romain Bignon
+ * Minbif - IRC instant messaging gateway
+ * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,7 +81,7 @@ Log::Log()
 	: logged_flags(DEFAULT_LOGGED_FLAGS),
 	  poll(NULL)
 {
-	openlog("bitlbee", LOG_CONS, LOG_DAEMON);
+	openlog("minbif", LOG_CONS, LOG_DAEMON);
 }
 
 Log::~Log()

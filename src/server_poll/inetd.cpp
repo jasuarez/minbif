@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,9 +25,9 @@
 #include "../config.h"
 #include "../callback.h"
 #include "../log.h"
-#include "../bitlbee.h"
+#include "../minbif.h"
 
-InetdServerPoll::InetdServerPoll(Bitlbee* application)
+InetdServerPoll::InetdServerPoll(Minbif* application)
 	: ServerPoll(application),
 	  irc(NULL),
 	  stop_cb(NULL)

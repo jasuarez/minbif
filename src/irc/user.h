@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +23,7 @@
 
 namespace irc
 {
-	/** This class represents user connected to bitlbee2 */
+	/** This class represents user connected to minbif */
 	class User : public Nick
 	{
 		int fd;

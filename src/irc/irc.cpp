@@ -1,5 +1,5 @@
 /*
- * Bitlbee v2 - IRC instant messaging gateway
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -66,7 +66,7 @@ IRC::command_t IRC::commands[] = {
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
-	: Server("localhost.localdomain", BITLBEE_VERSION),
+	: Server("localhost.localdomain", MINBIF_VERSION),
 	  poll(_poll),
 	  fd(_fd),
 	  read_id(0),
@@ -124,7 +124,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	ping_cb = new CallBack<IRC>(this, &IRC::ping);
 	ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
 
-	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("BitlBee-IRCd initialized, please go on"));
+	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("Minbif-IRCd initialized, please go on"));
 }
 
 IRC::~IRC()
@@ -315,8 +315,8 @@ void IRC::sendWelcome()
 
 		user->setFlag(Nick::REGISTERED);
 
-		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the BitlBee gateway, " + user->getNickname() + "!"));
-		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running BitlBee 2.0"));
+		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif gateway, " + user->getNickname() + "!"));
+		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running Minbif"));
 
 		user->send(Message(RPL_MOTDSTART).setSender(this).setReceiver(user).addArg("- " + getServerName() + " Message Of The Day -"));
 		if (im->getAccountsList().empty())
@@ -503,7 +503,7 @@ void IRC::m_version(Message message)
 {
 	user->send(Message(RPL_VERSION).setSender(this)
 				       .setReceiver(user)
-				       .addArg(BITLBEE_VERSION)
+				       .addArg(MINBIF_VERSION)
 				       .addArg(getServerName()));
 }
 
@@ -1158,7 +1158,7 @@ void IRC::m_invite(Message message)
 			account = im->getAccountFromChannel(chan->getName());
 		else
 			account = im->getAccount(acc);
-		account.addBuddy(username, "bitlbee");
+		account.addBuddy(username, "minbif");
 		user->send(Message(RPL_INVITING).setSender(this)
 				                .setReceiver(user)
 						.addArg(username)

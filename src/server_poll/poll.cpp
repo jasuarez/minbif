@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +20,7 @@
 #include "inetd.h"
 #include "../log.h"
 
-ServerPoll* ServerPoll::build(ServerPoll::poll_type_t type, Bitlbee* application)
+ServerPoll* ServerPoll::build(ServerPoll::poll_type_t type, Minbif* application)
 {
 	switch(type)
 	{
@@ -34,6 +35,6 @@ ServerPoll* ServerPoll::build(ServerPoll::poll_type_t type, Bitlbee* application
 	return 0;
 }
 
-ServerPoll::ServerPoll(Bitlbee* _app)
+ServerPoll::ServerPoll(Minbif* _app)
 	: application(_app)
 {}

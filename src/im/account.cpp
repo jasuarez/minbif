@@ -1,5 +1,5 @@
 /*
- * Bitlbee v2 - IRC instant messaging gateway
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@ string Account::getUsername() const
 string Account::getID() const
 {
 	assert(isValid());
-	string n = purple_account_get_ui_string(account, BITLBEE_VERSION_NAME, "id", "");
+	string n = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "id", "");
 	if(n.empty())
 		n = Purple::getNewAccountName(proto);
 	return n;
@@ -70,14 +70,14 @@ string Account::getID() const
 string Account::getStatusChannel() const
 {
 	assert(isValid());
-	string n = purple_account_get_ui_string(account, BITLBEE_VERSION_NAME, "channel", "");
+	string n = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "channel", "");
 	return n;
 }
 
 void Account::setStatusChannel(string c)
 {
 	assert(isValid());
-	purple_account_set_ui_string(account, BITLBEE_VERSION_NAME, "channel", c.c_str());
+	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "channel", c.c_str());
 }
 
 string Account::getServername() const
@@ -114,13 +114,13 @@ vector<Buddy> Account::getBuddies() const
 void Account::connect() const
 {
 	assert(isValid());
-	purple_account_set_enabled(account, BITLBEE_VERSION_NAME, true);
+	purple_account_set_enabled(account, MINBIF_VERSION_NAME, true);
 }
 
 void Account::disconnect() const
 {
 	assert(isValid());
-	purple_account_set_enabled(account, BITLBEE_VERSION_NAME, false);
+	purple_account_set_enabled(account, MINBIF_VERSION_NAME, false);
 }
 
 void Account::createStatusChannel() const

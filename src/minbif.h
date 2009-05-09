@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,21 +16,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef BITLBEE_H
-#define BITLBEE_H
+#ifndef MINBIF_H
+#define MINBIF_H
 
 class ServerPoll;
 struct _GMainLoop;
 
-class Bitlbee
+class Minbif
 {
 	struct _GMainLoop *loop;
 	ServerPoll* server_poll;
 
 public:
 
-	Bitlbee();
-	~Bitlbee();
+	Minbif();
+	~Minbif();
 
 	int main(int argc, char** argv);
 
@@ -37,4 +38,4 @@ public:
 
 };
 
-#endif /* BITLBEE_H */
+#endif /* MINBIF_H */

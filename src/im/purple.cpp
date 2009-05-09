@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -72,23 +73,23 @@ void Purple::debug_init()
 	purple_debug_set_ui_ops(&debug_ops);
 }
 
-void Purple::bitlbee_prefs_init()
+void Purple::minbif_prefs_init()
 {
-	purple_prefs_add_none("/bitlbee");
+	purple_prefs_add_none("/minbif");
 
-	purple_prefs_add_string("/bitlbee/password", "");
+	purple_prefs_add_string("/minbif/password", "");
 }
 
 GHashTable *Purple::ui_info = NULL;
-GHashTable *Purple::bitlbee_ui_get_info(void)
+GHashTable *Purple::minbif_ui_get_info(void)
 {
         if (ui_info == NULL) {
                 ui_info = g_hash_table_new(g_str_hash, g_str_equal);
 
-                g_hash_table_insert(ui_info, (void*)"name",         (void*)BITLBEE_VERSION_NAME);
-                g_hash_table_insert(ui_info, (void*)"version",      (void*)BITLBEE_VERSION);
-                g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/bitlbee");
-                g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/bitlbee2");
+                g_hash_table_insert(ui_info, (void*)"name",         (void*)MINBIF_VERSION_NAME);
+                g_hash_table_insert(ui_info, (void*)"version",      (void*)MINBIF_VERSION);
+                g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/minbif");
+                g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/minbif");
         }
 
         return ui_info;
@@ -97,11 +98,11 @@ GHashTable *Purple::bitlbee_ui_get_info(void)
 
 PurpleCoreUiOps Purple::core_ops =
 {
-	Purple::bitlbee_prefs_init,
+	Purple::minbif_prefs_init,
         Purple::debug_init,
         Purple::inited,//gnt_ui_init,
-        NULL,//bitlbee_quit,
-        Purple::bitlbee_ui_get_info,
+        NULL,//minbif_quit,
+        Purple::minbif_ui_get_info,
 
         /* padding */
         NULL,
@@ -122,7 +123,7 @@ void Purple::init(IM* im)
 	purple_eventloop_set_ui_ops(&eventloop_ops);
 
 	Purple::im = im;
-	if (!purple_core_init(BITLBEE_VERSION_NAME))
+	if (!purple_core_init(MINBIF_VERSION_NAME))
 	{
 		b_log[W_ERR] << "Initialization of the Purple core failed.";
 		throw PurpleError();
@@ -203,7 +204,7 @@ string Purple::getNewAccountName(Protocol proto)
 		if(account_proto != proto)
 			continue;
 
-		string id = purple_account_get_ui_string(((PurpleAccount*)list->data), BITLBEE_VERSION_NAME, "id", "");
+		string id = purple_account_get_ui_string(((PurpleAccount*)list->data), MINBIF_VERSION_NAME, "id", "");
 		if(id == proto.getID() + t2s(i))
 			i = s2t<int>(id.substr(proto.getID().size())) + 1;
 	}
@@ -218,7 +219,7 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 	purple_accounts_add(account);
 	purple_account_set_remember_password(account, TRUE);
 	purple_account_set_password(account, password.c_str());
-	purple_account_set_ui_string(account, BITLBEE_VERSION_NAME, "id", id.c_str());
+	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "id", id.c_str());
 
 	FOREACH(vector<Protocol::Option>, options, it)
 	{
@@ -251,7 +252,7 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 	saved_status = purple_savedstatus_get_current();
 	if (saved_status != NULL) {
 		purple_savedstatus_activate_for_account(saved_status, account);
-		purple_account_set_enabled(account, BITLBEE_VERSION_NAME, TRUE);
+		purple_account_set_enabled(account, MINBIF_VERSION_NAME, TRUE);
 	}
 
 	return Account(account, proto);

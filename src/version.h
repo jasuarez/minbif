@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,13 +19,13 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define BITLBEE_VERSION_NAME "bitlbee"
+#define MINBIF_VERSION_NAME "minbif"
 
-#define BITLBEE_VERSION_MAJOR   "2"
-#define BITLBEE_VERSION_MINOR   "0"
+#define MINBIF_VERSION_MAJOR   "2"
+#define MINBIF_VERSION_MINOR   "0-alpha"
 
-#define BITLBEE_VERSION       BITLBEE_VERSION_NAME \
-			      BITLBEE_VERSION_MAJOR "." \
-			      BITLBEE_VERSION_MINOR
+#define MINBIF_VERSION       MINBIF_VERSION_NAME \
+			     MINBIF_VERSION_MAJOR "." \
+			     MINBIF_VERSION_MINOR
 
 #endif /* VERSION_H */

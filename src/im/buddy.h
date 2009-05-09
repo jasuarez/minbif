@@ -1,5 +1,5 @@
 /*
- * Bitlbee v2 - IRC instant messaging gateway
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@ namespace im
 
 	/** This class represents a buddy.
 	 *
-	 * This class only interfaces between the bitlbee2 code
+	 * This class only interfaces between the minbif code
 	 * and a libpurple account object.
 	 */
 	class Buddy
@@ -67,7 +67,7 @@ namespace im
 		/** Get username of buddy */
 		string getName() const;
 
-		/** Get bitlbee2 alias */
+		/** Get minbif alias */
 		string getAlias() const;
 
 		/** Get IM real name */

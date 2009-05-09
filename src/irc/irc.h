@@ -1,5 +1,5 @@
 /*
- * Bitlbee v2 - IRC instant messaging gateway
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -113,7 +113,7 @@ namespace irc
 
 		/** Create an instance of the IRC class
 		 *
-		 * @param poll  the server poll used by bitlbee2
+		 * @param poll  the server poll used by minbif
 		 * @param fd  file descriptor where read and write to user
 		 * @param hostname  server's hostname
 		 * @param ping_freq  frequence of pings

@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,7 +41,7 @@ namespace im
 	 * username per process, as there are ugly static variables
 	 * to store states.
 	 *
-	 * This class is used to interface the POO-style of bitlbee2
+	 * This class is used to interface the POO-style of minbif
 	 * with the poor C-static-style of libpurple.
 	 */
 	class Purple
@@ -58,8 +59,8 @@ namespace im
 		static PurpleCoreUiOps core_ops;
 		static PurpleDebugUiOps debug_ops;
 
-		static GHashTable *bitlbee_ui_get_info(void);
-		static void bitlbee_prefs_init();
+		static GHashTable *minbif_ui_get_info(void);
+		static void minbif_prefs_init();
 
 		static void debug_init();
 		static void debug(PurpleDebugLevel level, const char *category, const char *args);

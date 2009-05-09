@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,14 +20,14 @@
 #include <sys/resource.h>
 #include <libpurple/purple.h>
 
-#include "bitlbee.h"
+#include "minbif.h"
 #include "config.h"
 #include "log.h"
 #include "util.h"
 #include "im/im.h"
 #include "server_poll/poll.h"
 
-Bitlbee::Bitlbee()
+Minbif::Minbif()
 	: loop(0), server_poll(0)
 {
 	ConfigSection* section;
@@ -43,12 +44,12 @@ Bitlbee::Bitlbee()
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
 }
 
-Bitlbee::~Bitlbee()
+Minbif::~Minbif()
 {
 	delete server_poll;
 }
 
-int Bitlbee::main(int argc, char** argv)
+int Minbif::main(int argc, char** argv)
 {
 	if(argc < 2)
 	{
@@ -102,13 +103,13 @@ int Bitlbee::main(int argc, char** argv)
 	return EXIT_FAILURE;
 }
 
-void Bitlbee::quit()
+void Minbif::quit()
 {
 	g_main_quit(loop);
 }
 
 int main(int argc, char** argv)
 {
-	Bitlbee bitlbee;
-	exit(bitlbee.main(argc, argv));
+	Minbif minbif;
+	exit(minbif.main(argc, argv));
 }

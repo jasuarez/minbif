@@ -1,5 +1,5 @@
 /*
- * Bitlbee v2 - IRC instant messaging gateway
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@ namespace im
 
 	/** This class represents an account.
 	 *
-	 * This class only interfaces between the bitlbee2 code
+	 * This class only interfaces between the minbif code
 	 * and a libpurple account object.
 	 */
 	class Account

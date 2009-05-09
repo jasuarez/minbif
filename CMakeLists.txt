@@ -1,9 +1,9 @@
-PROJECT(bitlbee2)
+PROJECT(minbif)
 cmake_minimum_required(VERSION 2.6)
 
-SET(BIN_NAME bitlbee2)
+SET(BIN_NAME minbif)
 ADD_EXECUTABLE(${BIN_NAME}
-		src/bitlbee.cpp
+		src/minbif.cpp
 		src/util.cpp
 		src/log.cpp
 		src/mutex.cpp
@@ -30,7 +30,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/irc/status_channel.cpp
 		src/irc/conversation_channel.cpp
 	      )
-SET(CONF_NAME bitlbee.conf)
+SET(CONF_NAME minbif.conf)
 
 target_link_libraries(${BIN_NAME})
 
@@ -75,8 +75,8 @@ MESSAGE(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 INSTALL(TARGETS ${BIN_NAME}
         DESTINATION bin)
 INSTALL(FILES ${CONF_NAME}
-        DESTINATION etc/bitlbee)
+        DESTINATION etc/minbif)
 INSTALL(FILES COPYING README
-        DESTINATION doc/bitlbee)
+        DESTINATION doc/minbif)
 INSTALL(DIRECTORY doc/
-        DESTINATION doc/bitlbee)
+        DESTINATION doc/minbif)

@@ -1,5 +1,5 @@
 /*
- * Bitlbee v2 - IRC instant messaging gateway
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -96,12 +96,12 @@ IM::~IM()
 
 void IM::setPassword(const string& password)
 {
-	purple_prefs_set_string("/bitlbee/password", password.c_str());
+	purple_prefs_set_string("/minbif/password", password.c_str());
 }
 
 string IM::getPassword() const
 {
-	return purple_prefs_get_string("/bitlbee/password");
+	return purple_prefs_get_string("/minbif/password");
 }
 
 map<string, Protocol> IM::getProtocolsList() const
