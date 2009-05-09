@@ -1,0 +1,31 @@
+        Minbif - IRC instant messaging gateway
+        **************************************
+
+1. Abstract
+
+Minbif aims to use the libpurple library from the Pidgin project to provide an
+IRC-friendly instant messaging client.
+
+2. Installation
+
+You can provide several configuration options to make:
+* ENABLE_CACA=(0|1) — Do not use libcaca features to display icons (default=1)
+
+Run:
+$ make [ENABLE_CACA=value]
+
+It isn't possible to install minbif system-wide yet.
+
+3. Configuration
+
+Copy the minbif.conf file and edit it.
+
+Then, edit your /etc/inetd.conf file, and add this line:
+  6667 stream tcp nowait <your-username> /usr/sbin/tcpd PATH_TO_/minbif/build.minbif/minbif PATH_TO_/minbif/minbif.conf
+
+Then, restart inetd, and use an IRC client to connect to minbif.
+
+4. Documentation
+
+You can see an online documentation on the Minbif website at
+http://symlink.me/wiki/minbif
