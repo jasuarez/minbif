@@ -21,7 +21,7 @@
 
 #define MINBIF_VERSION_NAME "minbif"
 
-#define MINBIF_VERSION_MAJOR   "2"
+#define MINBIF_VERSION_MAJOR   "1"
 #define MINBIF_VERSION_MINOR   "0-alpha"
 
 #define MINBIF_VERSION       MINBIF_VERSION_NAME \
