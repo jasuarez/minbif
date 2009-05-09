@@ -26,6 +26,7 @@
 #include "im.h"
 #include "irc/irc.h"
 #include "irc/status_channel.h"
+#include "irc/user.h"
 
 namespace im {
 
@@ -139,6 +140,7 @@ void Account::createStatusChannel() const
 	{
 		chan = new irc::StatusChannel(irc, channame);
 		irc->addChannel(chan);
+		irc->getUser()->join(chan);
 	}
 	chan->addAccount(*this);
 }
