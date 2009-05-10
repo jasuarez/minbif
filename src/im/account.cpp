@@ -309,7 +309,7 @@ void Account::account_added(PurpleAccount* account)
 
 void Account::account_removed(PurpleAccount* a)
 {
-	Account account(account);
+	Account account(a);
 	account.leaveStatusChannel();
 }
 
