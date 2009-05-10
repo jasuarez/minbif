@@ -36,7 +36,7 @@ target_link_libraries(${BIN_NAME})
 
 INCLUDE(FindPkgConfig)
 
-PKG_CHECK_MODULES(PURPLE REQUIRED purple>=2.5)
+PKG_CHECK_MODULES(PURPLE REQUIRED purple>=2.4)
 
 OPTION(ENABLE_CACA "Enable libcaca library" ON)
 IF(ENABLE_CACA)
