@@ -3,7 +3,7 @@ Section: net
 Priority: extra
 Maintainer: Romain Bignon <romain@peerfuse.org>
 Build-Depends: debhelper (>= 7), cmake,
-               imlib11-dev,
+               libimlib2-dev,
                libcaca-dev,
                libpurple-dev
 Standards-Version: 3.8.1
@@ -13,7 +13,7 @@ Package: minbif
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
          libcaca0,
-         imlib11,
+         libimlib2,
          libpurple0
 Description: IRC instant messaging gateway
  It provides these features:
