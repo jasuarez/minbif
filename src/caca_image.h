@@ -41,7 +41,7 @@ class CacaImage
 	{
 	    char *pixels;
 	    unsigned int w, h;
-	    struct caca_dither *dither;
+	    struct cucul_dither *dither;
 	    void *priv;
 	};
 

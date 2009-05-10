@@ -63,17 +63,17 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 	font_width = _font_width;
 	font_height = _font_height;
 
-	caca_canvas_t *cv;
+	cucul_canvas_t *cv;
 	struct image *i;
 
-	cv = caca_create_canvas(0, 0);
+	cv = cucul_create_canvas(0, 0);
 	if(!cv)
 		throw CacaError();
 
 	i = load_image(path.c_str());
 	if(!i)
 	{
-		caca_free_canvas(cv);
+		cucul_free_canvas(cv);
 		throw CacaError();
 	}
 
@@ -87,23 +87,23 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 	else if(!width && height)
 		width = height * i->w * font_height / i->h / font_width;
 
-	caca_set_canvas_size(cv, width, height);
-	caca_set_color_ansi(cv, CACA_DEFAULT, CACA_TRANSPARENT);
-	caca_clear_canvas(cv);
-	if(caca_set_dither_algorithm(i->dither, "fstein"))
+	cucul_set_canvas_size(cv, width, height);
+	cucul_set_color_ansi(cv, CUCUL_DEFAULT, CUCUL_TRANSPARENT);
+	cucul_clear_canvas(cv);
+	if(cucul_set_dither_algorithm(i->dither, "fstein"))
 	{
 		unload_image(i);
-		caca_free_canvas(cv);
+		cucul_free_canvas(cv);
 		throw CacaError();
 	}
 
-	caca_dither_bitmap(cv, 0, 0, width, height, i->dither, i->pixels);
+	cucul_dither_bitmap(cv, 0, 0, width, height, i->dither, i->pixels);
 
 	unload_image(i);
 
 	size_t len;
 	char* tmp;
-	tmp = (char*)caca_export_memory(cv, "irc", &len);
+	tmp = (char*)cucul_export_memory(cv, "irc", &len);
 	if(!tmp)
 		throw CacaError();
 
@@ -112,7 +112,7 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 
 	free(tmp);
 
-	caca_free_canvas(cv);
+	cucul_free_canvas(cv);
 
 	return buf;
 #endif /* USE_CACA */
@@ -147,7 +147,7 @@ struct CacaImage::image * CacaImage::load_image(char const * name)
     depth = 4;
 
     /* Create the libcaca dither */
-    im->dither = caca_create_dither(bpp, im->w, im->h, depth * im->w,
+    im->dither = cucul_create_dither(bpp, im->w, im->h, depth * im->w,
                                      rmask, gmask, bmask, amask);
     if(!im->dither)
     {
@@ -165,6 +165,6 @@ void CacaImage::unload_image(struct image * im)
 {
     /* Imlib_Image image = (Imlib_Image)im->priv; */
     imlib_free_image();
-    caca_free_dither(im->dither);
+    cucul_free_dither(im->dither);
 }
 #endif /* USE_CACA */
