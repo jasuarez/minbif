@@ -23,6 +23,19 @@
 
 #include "caca_image.h"
 
+#ifdef USE_CACA
+	struct image
+	{
+		char *pixels;
+		unsigned int w, h;
+		cucul_dither_t *dither;
+		void *priv;
+
+		static struct image * load(char const * name);
+		void unload();
+	};
+#endif /* USE_CACA */
+
 CacaImage::CacaImage()
 {}
 
@@ -70,7 +83,7 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 	if(!cv)
 		throw CacaError();
 
-	i = load_image(path.c_str());
+	i = image::load(path.c_str());
 	if(!i)
 	{
 		cucul_free_canvas(cv);
@@ -92,14 +105,14 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 	cucul_clear_canvas(cv);
 	if(cucul_set_dither_algorithm(i->dither, "fstein"))
 	{
-		unload_image(i);
+		i->unload();
 		cucul_free_canvas(cv);
 		throw CacaError();
 	}
 
 	cucul_dither_bitmap(cv, 0, 0, width, height, i->dither, i->pixels);
 
-	unload_image(i);
+	i->unload();
 
 	size_t len;
 	char* tmp;
@@ -119,7 +132,7 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 }
 
 #ifdef USE_CACA
-struct CacaImage::image * CacaImage::load_image(char const * name)
+struct image* image::load(char const * name)
 {
     struct image * im = (struct image*)malloc(sizeof(struct image));
     unsigned int depth, bpp, rmask, gmask, bmask, amask;
@@ -161,10 +174,10 @@ struct CacaImage::image * CacaImage::load_image(char const * name)
     return im;
 }
 
-void CacaImage::unload_image(struct image * im)
+void image::unload()
 {
     /* Imlib_Image image = (Imlib_Image)im->priv; */
     imlib_free_image();
-    cucul_free_dither(im->dither);
+    cucul_free_dither(dither);
 }
 #endif /* USE_CACA */

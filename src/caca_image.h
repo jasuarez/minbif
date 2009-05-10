@@ -36,19 +36,6 @@ class CacaImage
 	string buf;
 	unsigned width, height, font_width, font_height;
 
-#ifdef USE_CACA
-	struct image
-	{
-	    char *pixels;
-	    unsigned int w, h;
-	    struct cucul_dither *dither;
-	    void *priv;
-	};
-
-	struct image * load_image(char const * name);
-	void unload_image(struct image * im);
-#endif /* USE_CACA */
-
 public:
 
 	/** Default constructor */
