@@ -46,7 +46,7 @@ namespace im
 				time_t mtime);
 		static void add_users(PurpleConversation *conv, GList *cbuddies,
 				      gboolean new_arrivals);
-
+		static void topic_changed(PurpleConversation* conv, const char* who, const char* topic);
 
 	public:
 
@@ -67,6 +67,7 @@ namespace im
 
 		string getName() const;
 		string getChanName() const;
+		string getChanTopic() const;
 		Account getAccount() const;
 		PurpleConversationType getType() const;
 

@@ -54,6 +54,8 @@ namespace irc
 
 		void addBuddy(im::ChatBuddy cbuddy);
 		virtual void delUser(Nick* nick, Message message = Message());
+
+		virtual string getTopic() const;
 	};
 }; /* ns irc */
 

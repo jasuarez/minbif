@@ -134,4 +134,9 @@ void ConversationChannel::broadcast(Message m, Nick* butone)
 		Channel::broadcast(m, butone);
 }
 
+string ConversationChannel::getTopic() const
+{
+	return conv.getChanTopic();
+}
+
 }; /* namespace irc */

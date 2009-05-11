@@ -153,7 +153,9 @@ namespace irc
 		virtual ChanUser* getChanUser(string nick) const;
 
 		/** Get topic */
-		string getTopic() const { return topic; }
+		virtual string getTopic() const { return topic; }
+
+		void setTopic(Entity* who, string topic);
 
 		/** Mode message
 		 *

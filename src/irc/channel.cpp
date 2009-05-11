@@ -131,6 +131,11 @@ ChanUser* Channel::addUser(Nick* nick, int status)
 		names += (*it)->getNick()->getNickname();
 
 	}
+	nick->send(Message(RPL_TOPIC).setSender(irc)
+			             .setReceiver(nick)
+				     .addArg(getName())
+				     .addArg(getTopic()));
+
 	nick->send(Message(RPL_NAMREPLY).setSender(irc)
 			           .setReceiver(nick)
 				   .addArg("=")
@@ -252,6 +257,14 @@ void Channel::delMode(const Entity* sender, int modes, ChanUser* chanuser)
 	m.setReceiver(this);
 	broadcast(m);
 
+}
+
+void Channel::setTopic(Entity* chanuser, string topic)
+{
+	this->topic = topic;
+	broadcast(Message(MSG_TOPIC).setSender(chanuser ? chanuser : irc)
+			            .setReceiver(this)
+				    .addArg(topic));
 }
 
 }; /* namespace irc */

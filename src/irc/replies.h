@@ -34,12 +34,13 @@
 #define RPL_WHOISSERVER "312"
 #define RPL_ENDOFWHO    "315"
 #define RPL_ENDOFWHOIS  "318"
+#define RPL_WHOISACTUALLY "320"
 #define RPL_LISTSTART   "321"
 #define RPL_LIST        "322"
 #define RPL_LISTEND     "323"
 #define RPL_CHANNELMODEIS "324"
 #define RPL_CREATIONTIME "329"
-#define RPL_WHOISACTUALLY "320"
+#define RPL_TOPIC       "332"
 #define RPL_INVITING    "341"
 #define RPL_VERSION     "351"
 #define RPL_WHOREPLY    "352"
@@ -91,5 +92,6 @@
 #define MSG_INVITE      "INVITE"
 #define MSG_KICK        "KICK"
 #define MSG_KILL        "KILL"
+#define MSG_TOPIC       "TOPIC"
 
 #endif /* IRC_REPLIES_H */

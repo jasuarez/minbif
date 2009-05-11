@@ -149,6 +149,17 @@ string Conversation::getChanName() const
 	return n;
 }
 
+string Conversation::getChanTopic() const
+{
+	assert(isValid());
+
+	const char* topic = purple_conv_chat_get_topic(getPurpleChat());
+	if(topic)
+		return topic;
+	else
+		return "";
+}
+
 PurpleConversationType Conversation::getType() const
 {
 	assert(isValid());
@@ -304,6 +315,9 @@ void Conversation::init()
 	purple_signal_connect(purple_conversations_get_handle(), "deleting-conversation",
 				getHandler(), PURPLE_CALLBACK(destroy),
 				NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "chat-topic-changed",
+			        getHandler(), PURPLE_CALLBACK(topic_changed),
+				NULL);
 }
 
 void* Conversation::getHandler()
@@ -400,6 +414,22 @@ void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
 		}
 		chan->addBuddy(cbuddy);
 	}
+}
+
+void Conversation::topic_changed(PurpleConversation* c, const char* who, const char* topic)
+{
+	Conversation conv(c);
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+	if(!chan)
+	{
+		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
+		return;
+	}
+	irc::ChanUser* chanuser = 0;
+	if(who)
+		chan->getChanUser(who);
+	chan->setTopic(chanuser, topic ? topic : "");
 }
 
 }; /* namespace im */
