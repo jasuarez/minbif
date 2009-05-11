@@ -995,7 +995,7 @@ void IRC::m_join(Message message)
 					return;
 				}
 				im::Account account = im->getAccount(accid);
-				if(account.isConnected() == false)
+				if(!account.isValid() || account.isConnected() == false)
 				{
 					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 									     .setReceiver(user)
@@ -1158,6 +1158,14 @@ void IRC::m_invite(Message message)
 			account = im->getAccountFromChannel(chan->getName());
 		else
 			account = im->getAccount(acc);
+		if(!account.isValid())
+		{
+			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+							     .setReceiver(user)
+							     .addArg(message.getArg(1))
+							     .addArg("No such channel"));
+			return;
+		}
 		account.addBuddy(username, "minbif");
 		user->send(Message(RPL_INVITING).setSender(this)
 				                .setReceiver(user)
