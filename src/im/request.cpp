@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -114,6 +115,20 @@ void RequestFieldList::display() const
 	}
 }
 
+void RequestInput::process(const string& answer) const
+{
+	callback(user_data, answer.c_str());
+}
+
+void RequestInput::display() const
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	nick->privmsg(irc->getUser(), "New request: " + title);
+	nick->privmsg(irc->getUser(), question);
+	nick->privmsg(irc->getUser(), "Default value is: " + default_value);
+	nick->privmsg(irc->getUser(), "Type answer:");
+}
+
 void Request::close()
 {
 	purple_request_close(type, this);
@@ -175,6 +190,11 @@ void* Request::request_input(const char *title, const char *primary,
 			PurpleAccount *account, const char *who, PurpleConversation *conv,
 			void *user_data)
 {
+	RequestInput* request = new RequestInput(PURPLE_REQUEST_INPUT, title, primary, default_value, (PurpleRequestInputCb)ok_cb, user_data);
+	requests.push_back(request);
+	if(requests.size() == 1)
+		request->display();
+
 	return requests.back();
 }
 

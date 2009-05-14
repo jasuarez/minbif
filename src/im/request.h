@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -119,10 +120,18 @@ namespace im
 
 	class RequestInput : public Request
 	{
+		string default_value;
+		PurpleRequestInputCb callback;
+		void* user_data;
+
 	public:
 
-		RequestInput(PurpleRequestType type, const string& title, const string& question)
-			: Request(type, title, question)
+		RequestInput(PurpleRequestType type, const string& title, const string& question,
+		             const string& _default_value, PurpleRequestInputCb _callback, void* _user_data)
+			: Request(type, title, question),
+			  default_value(_default_value),
+			  callback(_callback),
+			  user_data(_user_data)
 		{}
 
 		virtual void process(const string& answer) const;
