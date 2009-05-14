@@ -250,6 +250,7 @@ void IRC::removeServer(string servername)
 		for(map<string, Nick*>::iterator nt = users.begin(); nt != users.end();)
 			if(nt->second->getServer() == it->second)
 			{
+				nt->second->quit(getServerName() + " " + it->second->getName());
 				delete nt->second;
 				users.erase(nt);
 				nt = users.begin();
@@ -1046,13 +1047,7 @@ void IRC::m_part(Message message)
 						     .addArg("No such channel"));
 		return;
 	}
-
-	if(chan->isStatusChannel())
-	{
-
-	}
-	else if(chan->isRemoteChannel())
-		user->part(chan, reason);
+	user->part(chan, reason);
 }
 
 /** LIST */
