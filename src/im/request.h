@@ -79,6 +79,10 @@ namespace im
 		string question;
 		PurpleRequestType type;
 
+		static PurpleNotifyUiOps notify_ops;
+		static void* notify_message(PurpleNotifyMsgType type, const char *title,
+				                const char *primary, const char *secondary);
+
 		static PurpleRequestUiOps uiops;
 		static RequestNick* nick;
 		static void displayRequest(const Request& request);

@@ -151,12 +151,32 @@ PurpleRequestUiOps Request::uiops =
         NULL
 };
 
+PurpleNotifyUiOps Request::notify_ops =
+{
+	Request::notify_message,
+        NULL,//finch_notify_email,
+        NULL,//finch_notify_emails,
+        NULL,//finch_notify_formatted,
+        NULL,//finch_notify_searchresults,
+        NULL,//finch_notify_sr_new_rows,
+        NULL,//finch_notify_userinfo,
+        NULL,//finch_notify_uri,
+        NULL,//finch_close_notify,       /* The rest of the notify-uiops return a GntWidget.
+             //                             These widgets should be destroyed from here. */
+        NULL,
+        NULL,
+        NULL,
+        NULL
+
+};
+
 vector<Request*> Request::requests;
 RequestNick* Request::nick = NULL;
 
 void Request::init()
 {
 	purple_request_set_ui_ops(&uiops);
+	purple_notify_set_ui_ops(&notify_ops);
 
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	nick = new RequestNick(irc, "request", "request", irc->getServerName());
@@ -180,6 +200,28 @@ void Request::closeFirstRequest()
 
 	if(!requests.empty())
 		requests.front()->display();
+}
+
+void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
+				const char *primary, const char *secondary)
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+
+	nick->privmsg(irc->getUser(), string(":: ") + title + " ::");
+
+	const char* texts[] = {primary, secondary, NULL};
+	for(const char** ptr = texts; *ptr != NULL; ++ptr)
+	{
+		if(!**ptr) continue;
+
+		string txt = *ptr, line;
+		nick->privmsg(irc->getUser(), " ");
+		while((line = stringtok(txt, "\r\n")).empty() == false)
+			nick->privmsg(irc->getUser(), line);
+	}
+
+	nick->privmsg(irc->getUser(), primary);
+	return NULL;
 }
 
 void* Request::request_input(const char *title, const char *primary,
@@ -211,7 +253,7 @@ void* Request::request_action(const char *title, const char *primary,
 		string tmp = text;
 		PurpleRequestActionCb callback = va_arg(actions, PurpleRequestActionCb);
 
-		request->addField(new RequestFieldAction((int)i, strlower(stringtok(tmp, " ")), text, callback, user_data));
+		request->addField(new RequestFieldAction((int)i, strlower(stringtok(tmp, "_ ")), text, callback, user_data));
 	}
 	requests.push_back(request);
 	if(requests.size() == 1)
@@ -235,7 +277,7 @@ void* Request::request_choice(const char *title, const char *primary,
 		int val = va_arg(choices, int);
 		string tmp;
 
-		request->addField(new RequestFieldAction(val, strlower(stringtok(tmp, " ")), text, (PurpleRequestChoiceCb)ok_cb, user_data));
+		request->addField(new RequestFieldAction(val, strlower(stringtok(tmp, "_ ")), text, (PurpleRequestChoiceCb)ok_cb, user_data));
 	}
 	request->addField(new RequestFieldAction(0, "cancel", "Cancel", (PurpleRequestChoiceCb)cancel_cb, user_data));
 
