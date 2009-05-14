@@ -41,6 +41,7 @@ namespace im
 	public:
 
 		virtual int getID() const = 0;
+		virtual void setLabel(const string& label) = 0;
 		virtual string getLabel() const = 0;
 		virtual string getText() const = 0;
 		virtual void runCallback() = 0;
@@ -67,6 +68,7 @@ namespace im
 		{}
 
 		int getID() const { return id; }
+		void setLabel(const string& l) { label = l; }
 		string getLabel() const { return label; }
 		string getText() const { return text; }
 		void runCallback();

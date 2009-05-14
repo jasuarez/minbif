@@ -84,6 +84,9 @@ RequestFieldList::~RequestFieldList()
 
 void RequestFieldList::addField(RequestField* field)
 {
+	while(fields.find(field->getLabel()) != fields.end())
+		field->setLabel(field->getLabel() + "_");
+
 	fields[field->getLabel()] = field;
 }
 
