@@ -207,6 +207,12 @@ void Conversation::createChannel() const
 	 *     event will never happen.
 	 */
 	irc->getUser()->join(chan);
+	GList* l = purple_conv_chat_get_users(getPurpleChat());
+	for (; l != NULL; l = l->next)
+	{
+		ChatBuddy cbuddy = ChatBuddy(conv, (PurpleConvChatBuddy *)l->data);
+		b_log[W_ERR] << cbuddy.getName();
+	}
 }
 
 void Conversation::destroyChannel() const
@@ -304,7 +310,7 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 	NULL,//finch_chat_rename_user,
 	NULL,//finch_chat_remove_users,
 	NULL,//finch_chat_update_user,
-	NULL,//finch_conv_present, /* present */
+	Conversation::conv_present,//finch_conv_present, /* present */
 	NULL,//finch_conv_has_focus, /* has_focus */
 	NULL, /* custom_smiley_add */
 	NULL, /* custom_smiley_write */
@@ -364,6 +370,11 @@ void Conversation::destroy(PurpleConversation* c)
 		default:
 			break;
 	}
+}
+
+void Conversation::conv_present(PurpleConversation* c)
+{
+	b_log[W_ERR] << "present!";
 }
 
 void Conversation::write_im(PurpleConversation *c, const char *who,

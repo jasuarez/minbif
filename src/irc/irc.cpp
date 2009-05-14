@@ -1005,7 +1005,14 @@ void IRC::m_join(Message message)
 					return;
 				}
 
-				account.joinChat(convname);
+				if(!account.joinChat(convname))
+				{
+					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+									     .setReceiver(user)
+									     .addArg(channame)
+									     .addArg("No such channel"));
+				}
+
 
 #if 0
 				chan = new ConversationChannel(this, conv);

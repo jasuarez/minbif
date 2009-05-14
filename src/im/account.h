@@ -98,7 +98,7 @@ namespace im
 		string getStatusChannel() const;
 
 		/** Set status channel name */
-		void setStatusChannel(string c);
+		void setStatusChannel(const string& c);
 		Protocol getProtocol() const { return proto; }
 		bool isConnected() const;
 		bool isConnecting() const;
@@ -122,17 +122,17 @@ namespace im
 		vector<string> getDenyList() const;
 
 		/** Deny a user. */
-		void deny(string who) const;
+		void deny(const string& who) const;
 
 		/** Allow a user. */
-		void allow(string who) const;
+		void allow(const string& who) const;
 
 		/** Add a buddy on this account
 		 *
 		 * @param username  user name
 		 * @param group  group name
 		 */
-		void addBuddy(string username, string group) const;
+		void addBuddy(const string& username, const string& group) const;
 
 		/** Remove a buddy from this account
 		 *
@@ -141,7 +141,7 @@ namespace im
 		void removeBuddy(Buddy buddy) const;
 
 		/** Join a chat */
-		void joinChat(string name) const;
+		bool joinChat(const string& name) const;
 	};
 
 };

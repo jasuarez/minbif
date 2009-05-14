@@ -88,7 +88,6 @@ namespace im
 
 		/** Get account this buddy is from. */
 		Account getAccount() const;
-
 	};
 
 };

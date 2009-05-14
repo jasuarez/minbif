@@ -38,6 +38,7 @@ namespace im
 
 		static void create(PurpleConversation*);
 		static void destroy(PurpleConversation*);
+		static void conv_present(PurpleConversation*);
 		static void write_im(PurpleConversation *conv, const char *who,
 				const char *message, PurpleMessageFlags flags,
 				time_t mtime);

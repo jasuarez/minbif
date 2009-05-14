@@ -75,7 +75,7 @@ string Account::getStatusChannel() const
 	return n;
 }
 
-void Account::setStatusChannel(string c)
+void Account::setStatusChannel(const string& c)
 {
 	assert(isValid());
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "channel", c.c_str());
@@ -172,21 +172,21 @@ vector<string> Account::getDenyList() const
 	return list;
 }
 
-void Account::deny(string who) const
+void Account::deny(const string& who) const
 {
 	assert(isValid());
 
 	purple_privacy_deny(account, who.c_str(), FALSE, FALSE);
 }
 
-void Account::allow(string who) const
+void Account::allow(const string& who) const
 {
 	assert(isValid());
 
 	purple_privacy_allow(account, who.c_str(), FALSE, FALSE);
 }
 
-void Account::addBuddy(string username, string group) const
+void Account::addBuddy(const string& username, const string& group) const
 {
 	assert(isValid());
 	assert(username.empty() == false);
@@ -212,15 +212,16 @@ void Account::removeBuddy(Buddy buddy) const
 	purple_blist_remove_buddy(buddy.getPurpleBuddy());
 }
 
-void Account::joinChat(string name) const
+bool Account::joinChat(const string& name) const
 {
 	assert(isValid());
 	if(!isConnected())
 	{
 		b_log[W_SNO] << "Not connected";
-		return;
+		return false;
 	}
 
+#if 0
 	PurpleConnection* gc = purple_account_get_connection(account);
 	PurpleConversation* conv;
 	if (!(conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, name.c_str(), account)))
@@ -247,6 +248,53 @@ void Account::joinChat(string name) const
 	serv_join_chat(gc, hash);
 	if (chat == NULL && hash != NULL)
 		g_hash_table_destroy(hash);
+#endif
+
+	PurpleChat *chat;
+	GHashTable *hash = NULL;
+	PurpleConnection *gc;
+	PurplePluginProtocolInfo *info;
+
+
+	gc = purple_account_get_connection(account);
+	info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl(gc));
+	if (info->chat_info_defaults != NULL)
+		hash = info->chat_info_defaults(gc, name.c_str());
+
+	chat = purple_chat_new(account, name.c_str(), hash);
+
+	if (chat != NULL) {
+		//if ((grp = purple_find_group(group)) == NULL) {
+		//	grp = purple_group_new(group);
+		//	purple_blist_add_group(grp, NULL);
+		//}
+		//purple_blist_add_chat(chat, grp, NULL);
+		//purple_blist_alias_chat(chat, alias);
+		//purple_blist_node_set_bool((PurpleBlistNode*)chat, "gnt-autojoin", autojoin);
+		const char *name;
+		PurpleConversation *conv;
+		const char *alias;
+
+		/* This hack here is to work around the fact that there's no good way of
+		 * getting the actual name of a chat. I don't understand why we return
+		 * the alias for a chat when all we want is the name. */
+		alias = chat->alias;
+		chat->alias = NULL;
+		name = purple_chat_get_name(chat);
+		conv = purple_find_conversation_with_account(
+				PURPLE_CONV_TYPE_CHAT, name, account);
+		chat->alias = (char *)alias;
+
+		if (!conv || purple_conv_chat_has_left(PURPLE_CONV_CHAT(conv))) {
+			serv_join_chat(purple_account_get_connection(account),
+					purple_chat_get_components(chat));
+		} else if (conv) {
+			purple_conversation_present(conv);
+		}
+	}
+
+	return chat != NULL;
+
 }
 
 /* STATIC */
