@@ -46,10 +46,9 @@ public:
 			return;
 		}
 
-		RequestField field;
 		try
 		{
-			field = request->getField(answer);
+			request->process(answer);
 		}
 		catch(RequestFieldNotFound &e)
 		{
@@ -58,17 +57,16 @@ public:
 			return;
 		}
 
-		field.runCallback();
 		Request::closeFirstRequest();
 	}
 };
 
-void RequestField::runCallback()
+void RequestFieldAction::runCallback()
 {
 	callback(data, id);
 }
 
-Request::Request(PurpleRequestType _type, string _title, string _question)
+Request::Request(PurpleRequestType _type, const string& _title, const string& _question)
 	: title(_title),
 	  question(_question),
 	  type(_type)
@@ -76,30 +74,43 @@ Request::Request(PurpleRequestType _type, string _title, string _question)
 
 }
 
-void Request::addField(RequestField field)
+RequestFieldList::~RequestFieldList()
 {
-	fields[field.getLabel()] = field;
+	map<string, RequestField*>::iterator it;
+	for(it = fields.begin(); it != fields.end(); ++it)
+		delete it->second;
 }
 
-RequestField Request::getField(const string& label) const
+void RequestFieldList::addField(RequestField* field)
 {
-	map<string, RequestField>::const_iterator it = fields.find(label);
+	fields[field->getLabel()] = field;
+}
+
+RequestField* RequestFieldList::getField(const string& label) const
+{
+	map<string, RequestField*>::const_iterator it = fields.find(label);
 	if(it == fields.end())
 		throw RequestFieldNotFound();
 
 	return it->second;
 }
 
-void Request::display() const
+void RequestFieldList::process(const string& answer) const
+{
+	RequestField* field = getField(answer);
+	field->runCallback();
+}
+
+void RequestFieldList::display() const
 {
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	nick->privmsg(irc->getUser(), "New request: " + title);
 	nick->privmsg(irc->getUser(), question);
-	for(map<string, RequestField>::const_iterator it = fields.begin();
+	for(map<string, RequestField*>::const_iterator it = fields.begin();
 	    it != fields.end();
 	    ++it)
 	{
-		nick->privmsg(irc->getUser(), "- " + it->first + ": " + it->second.getText());
+		nick->privmsg(irc->getUser(), "- " + it->first + ": " + it->second->getText());
 	}
 }
 
@@ -112,9 +123,9 @@ void Request::close()
 
 PurpleRequestUiOps Request::uiops =
 {
-        NULL,//finch_request_input,
-        NULL,//finch_request_choice,
-	Request::request_action,
+	Request::request_input,
+        Request::request_choice,
+        Request::request_action,
         NULL,//finch_request_fields,
         NULL,//finch_request_file,
         NULL,//finch_close_request,
@@ -156,21 +167,58 @@ void Request::closeFirstRequest()
 		requests.front()->display();
 }
 
+void* Request::request_input(const char *title, const char *primary,
+			const char *secondary, const char *default_value,
+			gboolean multiline, gboolean masked, gchar *hint,
+			const char *ok_text, GCallback ok_cb,
+			const char *cancel_text, GCallback cancel_cb,
+			PurpleAccount *account, const char *who, PurpleConversation *conv,
+			void *user_data)
+{
+	return requests.back();
+}
+
 void* Request::request_action(const char *title, const char *primary,
 			const char *secondary, int default_value,
 			PurpleAccount *account, const char *who, PurpleConversation *conv,
 			void *user_data, size_t actioncount,
 			va_list actions)
 {
-	Request* request = new Request(PURPLE_REQUEST_ACTION, title, primary);
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_ACTION, title, primary);
 	for(size_t i = 0; i < actioncount; ++i)
 	{
 		const char *text = va_arg(actions, const char *);
 		string tmp = text;
 		PurpleRequestActionCb callback = va_arg(actions, PurpleRequestActionCb);
 
-		request->addField(RequestField((int)i, strlower(stringtok(tmp, " ")), text, callback, user_data));
+		request->addField(new RequestFieldAction((int)i, strlower(stringtok(tmp, " ")), text, callback, user_data));
 	}
+	requests.push_back(request);
+	if(requests.size() == 1)
+		request->display();
+
+	return requests.back();
+}
+
+void* Request::request_choice(const char *title, const char *primary,
+			const char *secondary, int default_value,
+			const char *ok_text, GCallback ok_cb,
+			const char *cancel_text, GCallback cancel_cb,
+			PurpleAccount *account, const char *who, PurpleConversation *conv,
+			void *user_data, va_list choices)
+{
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_CHOICE, title, primary);
+	const char* text;
+
+	while ((text = va_arg(choices, const char *)))
+	{
+		int val = va_arg(choices, int);
+		string tmp;
+
+		request->addField(new RequestFieldAction(val, strlower(stringtok(tmp, " ")), text, (PurpleRequestChoiceCb)ok_cb, user_data));
+	}
+	request->addField(new RequestFieldAction(0, "cancel", "Cancel", (PurpleRequestChoiceCb)cancel_cb, user_data));
+
 	requests.push_back(request);
 	if(requests.size() == 1)
 		request->display();
