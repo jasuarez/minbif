@@ -99,6 +99,7 @@ namespace im
 		string getName() const;
 		string getRealName() const;
 		bool isMe() const;
+		int getChanStatus() const;
 
 		Conversation getConversation() const { return conv; }
 		Account getAccount() const;

@@ -42,8 +42,9 @@ string ChanUser::getLongName() const
 }
 
 ChanUser::m2c_t ChanUser::m2c[] = {
-	{ ChanUser::OP,    'o' },
 	{ ChanUser::VOICE, 'v' },
+	{ ChanUser::HALFOP,'h' },
+	{ ChanUser::OP,    'o' },
 };
 
 ChanUser::mode_t ChanUser::c2mode(char c)
@@ -126,6 +127,8 @@ ChanUser* Channel::addUser(Nick* nick, int status)
 			names += " ";
 		if((*it)->hasStatus(ChanUser::OP))
 			names += "@";
+		else if((*it)->hasStatus(ChanUser::HALFOP))
+			names += "%";
 		else if((*it)->hasStatus(ChanUser::VOICE))
 			names += "+";
 		names += (*it)->getNick()->getNickname();

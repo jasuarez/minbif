@@ -61,6 +61,13 @@ string ChatBuddy::getRealName() const
 		return getName();
 }
 
+int ChatBuddy::getChanStatus() const
+{
+	assert(isValid());
+
+	return cbuddy->flags;
+}
+
 Account ChatBuddy::getAccount() const
 {
 	assert(isValid());
@@ -412,7 +419,7 @@ void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
 			b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
 			return;
 		}
-		chan->addBuddy(cbuddy);
+		chan->addBuddy(cbuddy, cbuddy.getChanStatus());
 	}
 }
 

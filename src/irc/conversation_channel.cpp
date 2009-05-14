@@ -73,11 +73,11 @@ void ConversationChannel::processRemoveBan(Nick* from, string nick, string ident
 
 }
 
-void ConversationChannel::addBuddy(im::ChatBuddy cbuddy)
+void ConversationChannel::addBuddy(im::ChatBuddy cbuddy, int status)
 {
 	ChanUser* cul;
 	if(cbuddy.isMe())
-		cul = irc->getUser()->join(this);
+		cul = irc->getUser()->join(this, status);
 	else
 	{
 		map<im::ChatBuddy, ChanUser*>::iterator it = cbuddies.find(cbuddy);
@@ -88,7 +88,7 @@ void ConversationChannel::addBuddy(im::ChatBuddy cbuddy)
 				n->setNickname(n->getNickname() + "_");
 
 			irc->addNick(n);
-			cul = n->join(this);
+			cul = n->join(this, status);
 		}
 		else
 			cul = it->second;

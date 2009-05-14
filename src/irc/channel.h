@@ -24,6 +24,7 @@
 
 #include "message.h"
 #include "../entity.h"
+#include "../util.h"
 
 namespace irc
 {
@@ -46,8 +47,11 @@ namespace irc
 
 		/** Channel user modes */
 		enum mode_t {
-			OP     = 1 << 0,  /**< Channel operator */
-			VOICE  = 1 << 1,  /**< Channel voiced */
+			VOICE   = PURPLE_CBFLAGS_VOICE,
+			HALFOP  = PURPLE_CBFLAGS_HALFOP,
+			OP      = PURPLE_CBFLAGS_OP,
+			FOUNDER = PURPLE_CBFLAGS_FOUNDER,
+			TYPING  = PURPLE_CBFLAGS_TYPING,
 		};
 
 		/** Structure used in arraw to convert a mode flag to char. */

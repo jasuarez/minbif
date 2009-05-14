@@ -52,7 +52,7 @@ namespace irc
 		virtual void broadcast(Message m, Nick* butone = NULL);
 		virtual ChanUser* getChanUser(string nick) const;
 
-		void addBuddy(im::ChatBuddy cbuddy);
+		void addBuddy(im::ChatBuddy cbuddy, int status = 0);
 		virtual void delUser(Nick* nick, Message message = Message());
 
 		virtual string getTopic() const;
