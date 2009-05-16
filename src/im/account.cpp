@@ -248,8 +248,8 @@ bool Account::joinChat(const string& name) const
 	serv_join_chat(gc, hash);
 	if (chat == NULL && hash != NULL)
 		g_hash_table_destroy(hash);
-#endif
 
+#else /* !0 */
 	PurpleChat *chat;
 	GHashTable *hash = NULL;
 	PurpleConnection *gc;
@@ -292,6 +292,7 @@ bool Account::joinChat(const string& name) const
 			purple_conversation_present(conv);
 		}
 	}
+#endif /* !0 */
 
 	return chat != NULL;
 

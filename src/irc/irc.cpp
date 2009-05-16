@@ -250,7 +250,6 @@ void IRC::removeServer(string servername)
 		for(map<string, Nick*>::iterator nt = users.begin(); nt != users.end();)
 			if(nt->second->getServer() == it->second)
 			{
-				nt->second->quit(getServerName() + " " + it->second->getName());
 				delete nt->second;
 				users.erase(nt);
 				nt = users.begin();
