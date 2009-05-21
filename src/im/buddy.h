@@ -70,6 +70,9 @@ namespace im
 		/** Get minbif alias */
 		string getAlias() const;
 
+		/** Set minbif alias */
+		void setAlias(string alias) const;
+
 		/** Get IM real name */
 		string getRealName() const;
 

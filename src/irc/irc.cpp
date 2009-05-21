@@ -63,6 +63,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_INVITE,  &IRC::m_invite,  2, 0, Nick::REGISTERED },
 	{ MSG_KICK,    &IRC::m_kick,    2, 0, Nick::REGISTERED },
 	{ MSG_KILL,    &IRC::m_kill,    1, 0, Nick::REGISTERED },
+	{ MSG_SVSNICK, &IRC::m_svsnick, 2, 0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
@@ -1217,7 +1218,9 @@ void IRC::m_kick(Message message)
 		Buddy* buddy = dynamic_cast<Buddy*>(chanuser->getNick());
 		if(!buddy)
 		{
-			notice(user, "You can't kick " + chanuser->getName());
+			user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+					                    .setReceiver(user)
+							    .addArg("Permission denied: you can only kick a buddy"));
 			return;
 		}
 
@@ -1243,13 +1246,21 @@ void IRC::m_kick(Message message)
 /** KILL nick [:reason] */
 void IRC::m_kill(Message message)
 {
-	Buddy* buddy = dynamic_cast<Buddy*>(getNick(message.getArg(0)));
-	if(!buddy)
+	Nick* n = getNick(message.getArg(0));
+	if(!n)
 	{
 		user->send(Message(ERR_NOSUCHNICK).setSender(this)
 				                  .setReceiver(user)
 						  .addArg(message.getArg(0))
 						  .addArg("No such nick"));
+		return;
+	}
+	Buddy* buddy = dynamic_cast<Buddy*>(n);
+	if(!buddy)
+	{
+		user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+						    .setReceiver(user)
+						    .addArg("Permission denied: you can only kill a buddy"));
 		return;
 	}
 
@@ -1266,6 +1277,45 @@ void IRC::m_kill(Message message)
 	notice(user, "Received KILL message for " + buddy->getNickname() + ": " + reason);
 	buddy->quit("Killed by " + user->getNickname() + " (" + reason + ")");
 	rt->getAccount().removeBuddy(buddy->getBuddy());
+}
+
+/** SVSNICK nick new_nick */
+void IRC::m_svsnick(Message message)
+{
+	Nick* n = getNick(message.getArg(0));
+	if(!n)
+	{
+		user->send(Message(ERR_NOSUCHNICK).setSender(this)
+				                  .setReceiver(user)
+						  .addArg(message.getArg(0))
+						  .addArg("No such nick"));
+		return;
+	}
+	Buddy* buddy = dynamic_cast<Buddy*>(n);
+	if(!buddy)
+	{
+		user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+						    .setReceiver(user)
+						    .addArg("Permission denied: you can only change buddy nickname"));
+		return;
+	}
+
+	if(getNick(message.getArg(1)))
+	{
+		user->send(Message(ERR_NICKNAMEINUSE).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(message.getArg(1))
+						     .addArg("Nickname is already in use"));
+		return;
+	}
+
+	user->send(Message(MSG_NICK).setSender(buddy)
+				    .addArg(message.getArg(1)));
+
+	users.erase(buddy->getNickname());
+	buddy->setNickname(message.getArg(1));
+	addNick(buddy);
+	buddy->getBuddy().setAlias(message.getArg(1));
 }
 
 }; /* namespace irc */

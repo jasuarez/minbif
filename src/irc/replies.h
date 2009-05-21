@@ -66,6 +66,7 @@
 #define ERR_NEEDMOREPARAMS   "461"
 #define ERR_ALREADYREGISTRED "462"
 #define ERR_CHANFORWARDING   "470"
+#define ERR_NOPRIVILEGES     "481"
 
 #define MSG_PRIVMSG     "PRIVMSG"
 #define MSG_NOTICE      "NOTICE"
@@ -92,6 +93,7 @@
 #define MSG_INVITE      "INVITE"
 #define MSG_KICK        "KICK"
 #define MSG_KILL        "KILL"
+#define MSG_SVSNICK     "SVSNICK"
 #define MSG_TOPIC       "TOPIC"
 
 #endif /* IRC_REPLIES_H */

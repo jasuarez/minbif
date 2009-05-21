@@ -69,6 +69,12 @@ string Buddy::getAlias() const
 		return getName();
 }
 
+void Buddy::setAlias(string alias) const
+{
+	purple_blist_alias_buddy(buddy, alias.c_str());
+	serv_alias_buddy(buddy);
+}
+
 string Buddy::getRealName() const
 {
 	assert(isValid());
@@ -172,13 +178,12 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 
 			Purple::getIM()->getIRC()->addNick(n);
 
-			/* WARN! These function probably recalls this one, so it is
+			/* WARN! This function probably recalls this one, so it is
 			 *       really NECESSARY to call them at end of this block.
 			 *       If n is not in IRC's user list, two irc::Buddy
 			 *       instances will be inserted, with one lost.
 			 */
-			purple_blist_alias_buddy(buddy.buddy, n->getNickname().c_str());
-			serv_alias_buddy(buddy.buddy);
+			buddy.setAlias(n->getNickname());
 		}
 		string channame = buddy.getAccount().getStatusChannel();
 		irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);

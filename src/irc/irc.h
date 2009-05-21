@@ -108,6 +108,7 @@ namespace irc
 		void m_invite(Message m);   /**< Handler for the INVITE message */
 		void m_kick(Message m);     /**< Handler for the KICK message */
 		void m_kill(Message m);     /**< Handler for the KILL message */
+		void m_svsnick(Message m);  /**< Handler for the SVSNICK message */
 
 	public:
 
