@@ -19,6 +19,7 @@
 #define LOG_H
 
 #include <string>
+#include <stdint.h>
 #include <sstream>
 
 enum
