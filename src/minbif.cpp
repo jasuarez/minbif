@@ -37,7 +37,7 @@ Minbif::Minbif()
 	section = conf.AddSection("irc", "Server information", false);
 	section->AddItem(new ConfigItem_string("hostname", "Server hostname", " "));
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
-	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 1, 65535, "60"));
+	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 
 	section = conf.AddSection("logging", "Log informations", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));

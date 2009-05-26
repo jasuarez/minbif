@@ -122,8 +122,11 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	addNick(user);
 
 	/* Ping callback */
-	ping_cb = new CallBack<IRC>(this, &IRC::ping);
-	ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
+	if(ping_freq > 0)
+	{
+		ping_cb = new CallBack<IRC>(this, &IRC::ping);
+		ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
+	}
 
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("Minbif-IRCd initialized, please go on"));
 }
