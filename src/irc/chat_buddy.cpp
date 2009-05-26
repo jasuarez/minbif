@@ -48,29 +48,26 @@ ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
 }
 
 ChatBuddy::~ChatBuddy()
-{}
+{
+	if(conv.isValid())
+		conv.leave();
+}
 
 void ChatBuddy::send(Message m)
 {
-#if 0
 	if(m.getCommand() == MSG_PRIVMSG)
 	{
 		string text = m.getArg(0);
-		const Channel* chan = dynamic_cast<const Channel*>(m.getReceiver());
-
-		if(m.getReceiver() == this || (chan && chan->isStatusChannel() && text.find(getNickname() + ": ") == 0))
+		if(m.getReceiver() == this)
 		{
-			if(chan && chan->isStatusChannel())
-				stringtok(text, " ");
 			if(!conv.isValid())
 			{
-				conv = im::Conversation(im_buddy.getAccount(), im_buddy);
+				conv = im::Conversation(im_cbuddy.getAccount(), im_cbuddy);
 				conv.present();
 			}
 			conv.sendMessage(text);
 		}
 	}
-#endif
 }
 
 string ChatBuddy::getRealName() const

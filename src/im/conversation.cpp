@@ -106,13 +106,19 @@ Conversation::Conversation(PurpleConversation* _conv)
 	: conv(_conv)
 {}
 
-Conversation::Conversation(Account account, Buddy buddy)
+Conversation::Conversation(const Account& account, const Buddy& buddy)
 	: conv(NULL)
 {
 	conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, account.getPurpleAccount(), buddy.getName().c_str());
 }
 
-Conversation::Conversation(Account account, string name)
+Conversation::Conversation(const Account& account, const ChatBuddy& cbuddy)
+	: conv(NULL)
+{
+	conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, account.getPurpleAccount(), cbuddy.getRealName().c_str());
+}
+
+Conversation::Conversation(const Account& account, const string& name)
 	: conv(NULL)
 {
 	conv = purple_conversation_new(PURPLE_CONV_TYPE_CHAT, account.getPurpleAccount(), name.c_str());

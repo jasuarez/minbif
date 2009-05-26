@@ -28,6 +28,7 @@ namespace im
 
 	class Account;
 	class Buddy;
+	class ChatBuddy;
 
 	class Conversation
 	{
@@ -54,8 +55,9 @@ namespace im
 		static void init();
 
 		Conversation();
-		Conversation(Account account, Buddy buddy);
-		Conversation(Account account, string name);
+		Conversation(const Account& account, const Buddy& buddy);
+		Conversation(const Account& account, const ChatBuddy& cbuddy);
+		Conversation(const Account& account, const string& name);
 		Conversation(PurpleConversation* conv);
 
 		bool operator==(const Conversation& conv) const;
