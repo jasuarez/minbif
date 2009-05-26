@@ -572,6 +572,18 @@ void IRC::m_whois(Message message)
 					 .addArg(n->getHostname())
 					 .addArg("*")
 					 .addArg(n->getRealname()));
+	vector<ChanUser*> chanusers = user->getChannels();
+	string chans;
+	FOREACH(vector<ChanUser*>, chanusers, chanuser)
+	{
+		if(chans.empty() == false) chans += " ";
+		chans += (*chanuser)->getChannel()->getName();
+	}
+	if(chans.empty() == false)
+		user->send(Message(RPL_WHOISCHANNELS).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(n->getNickname())
+						     .addArg(chans));
 	user->send(Message(RPL_WHOISSERVER).setSender(this)
 					   .setReceiver(user)
 					   .addArg(n->getNickname())
