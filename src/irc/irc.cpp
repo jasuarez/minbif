@@ -515,7 +515,7 @@ void IRC::m_version(Message message)
 void IRC::m_who(Message message)
 {
 	string arg;
-	Channel* chan;
+	Channel* chan = NULL;
 	if(message.countArgs() > 0)
 		arg = message.getArg(0);
 
