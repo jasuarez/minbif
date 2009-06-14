@@ -178,7 +178,7 @@ void Account::createStatusChannel() const
 	{
 		chan = new irc::StatusChannel(irc, channame);
 		irc->addChannel(chan);
-		irc->getUser()->join(chan);
+		irc->getUser()->join(chan, irc::ChanUser::OP);
 	}
 	chan->addAccount(*this);
 }

@@ -755,7 +755,7 @@ void IRC::m_connect(Message message)
 			account.connect();
 			Channel* chan = getChannel(account.getStatusChannel());
 			if(chan)
-				user->join(chan);
+				user->join(chan, ChanUser::OP);
 
 		}
 	}
