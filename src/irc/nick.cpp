@@ -111,7 +111,15 @@ ChanUser* Nick::join(Channel* chan, int status)
 {
 	ChanUser* chanuser;
 	if((chanuser = getChanUser(chan)))
+	{
+		int last_status = chanuser->getStatus();
+		if(last_status != status)
+		{
+			chan->delMode(NULL, last_status & ~status, chanuser);
+			chan->setMode(NULL, status & ~last_status, chanuser);
+		}
 		return chanuser;
+	}
 
 	chanuser = chan->addUser(this, status);
 	channels.push_back(chanuser);

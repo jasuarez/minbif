@@ -75,6 +75,7 @@ namespace irc
 		bool hasStatus(int flag) const { return status & flag; }
 		void setStatus(int flag) { status |= flag; }
 		void delStatus(int flag) { status &= ~flag; }
+		int getStatus() const { return status; }
 
 		Nick* getNick() const { return nick; }
 

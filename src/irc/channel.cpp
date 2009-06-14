@@ -245,18 +245,20 @@ void Channel::m_mode(Nick* user, Message m)
 
 void Channel::setMode(const Entity* sender, int modes, ChanUser* chanuser)
 {
+	if(!modes) return;
 	chanuser->setStatus(modes);
 	Message m = chanuser->getModeMessage(true, modes);
-	m.setSender(sender);
+	m.setSender(sender ? sender : irc);
 	m.setReceiver(this);
 	broadcast(m);
 }
 
 void Channel::delMode(const Entity* sender, int modes, ChanUser* chanuser)
 {
+	if(!modes) return;
 	chanuser->delStatus(modes);
 	Message m = chanuser->getModeMessage(false, modes);
-	m.setSender(sender);
+	m.setSender(sender ? sender : irc);
 	m.setReceiver(this);
 	broadcast(m);
 
