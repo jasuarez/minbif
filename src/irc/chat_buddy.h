@@ -36,7 +36,7 @@ namespace irc
 		/** Build buddy object
 		 *
 		 * @param server  up-server
-		 * @param buddy  IM buddy object.
+		 * @param cbuddy  IM buddy object.
 		 */
 		ChatBuddy(Server* server, im::ChatBuddy cbuddy);
 		~ChatBuddy();
