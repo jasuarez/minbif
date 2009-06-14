@@ -575,7 +575,7 @@ void IRC::m_whois(Message message)
 					 .addArg(n->getHostname())
 					 .addArg("*")
 					 .addArg(n->getRealname()));
-	vector<ChanUser*> chanusers = user->getChannels();
+	vector<ChanUser*> chanusers = n->getChannels();
 	string chans;
 	FOREACH(vector<ChanUser*>, chanusers, chanuser)
 	{
