@@ -81,6 +81,44 @@ void Account::setStatusChannel(const string& c)
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "channel", c.c_str());
 }
 
+void Account::enqueueChannelJoin(const string& c)
+{
+	assert(isValid());
+	string list = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
+	if(!list.empty())
+		list += ",";
+	list += c;
+	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "join_queue", list.c_str());
+}
+
+void Account::flushChannelJoins()
+{
+	assert(isValid());
+	string list = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
+	string cname;
+	while((cname = stringtok(list, ",")).empty() == false)
+		this->joinChat(cname);
+	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
+}
+
+void Account::abortChannelJoins()
+{
+	assert(isValid());
+
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	string list = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
+	string cname;
+
+	while((cname = stringtok(list, ",")).empty() == false)
+		irc->getUser()->send(irc::Message(ERR_NOSUCHCHANNEL).setSender(irc)
+		                                                    .setReceiver(irc->getUser())
+		                                                    .addArg("#" + cname + ":" + getID())
+		                                                    .addArg("No such channel"));
+
+	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
+
+}
+
 string Account::getServername() const
 {
 	assert(isValid());
@@ -359,6 +397,7 @@ void Account::account_added(PurpleAccount* account)
 void Account::account_removed(PurpleAccount* a)
 {
 	Account account(a);
+	account.abortChannelJoins();
 	account.leaveStatusChannel();
 }
 
@@ -382,6 +421,7 @@ void Account::connected(PurpleConnection* gc)
 
 	b_log[W_INFO|W_SNO] << "Connection to " << account.getServername() << " established!";
 	irc->addServer(new irc::RemoteServer(irc, account));
+	account.flushChannelJoins();
 }
 
 void Account::disconnected(PurpleConnection* gc)
@@ -390,6 +430,7 @@ void Account::disconnected(PurpleConnection* gc)
 
 	b_log[W_INFO|W_SNO] << "Closing link with " << account.getServername();
 	Purple::getIM()->getIRC()->removeServer(account.getServername());
+	account.abortChannelJoins();
 }
 
 void Account::disconnect_reason(PurpleConnection *gc,

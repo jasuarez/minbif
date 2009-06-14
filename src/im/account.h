@@ -47,14 +47,14 @@ namespace im
 		static void account_added(PurpleAccount*);
 		static void account_removed(PurpleAccount*);
 		static void connecting(PurpleConnection *gc,
-					const char *text,
-					size_t step,
-					size_t step_count);
+		                       const char *text,
+		                       size_t step,
+		                       size_t step_count);
 		static void connected(PurpleConnection* gc);
 		static void disconnected(PurpleConnection* gc);
 		static void disconnect_reason(PurpleConnection *gc,
-				PurpleConnectionError reason,
-				const char *text);
+		                              PurpleConnectionError reason,
+		                              const char *text);
 
 	public:
 
@@ -99,6 +99,11 @@ namespace im
 
 		/** Set status channel name */
 		void setStatusChannel(const string& c);
+
+		void enqueueChannelJoin(const string& c);
+		void flushChannelJoins();
+		void abortChannelJoins();
+
 		Protocol getProtocol() const { return proto; }
 		bool isConnected() const;
 		bool isConnecting() const;

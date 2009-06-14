@@ -156,8 +156,7 @@ string Conversation::getChanName() const
 {
 	assert(isValid());
 
-	string n = getName() + ":" + getAccount().getID();
-	n = "#" + n;
+	string n = "#" + getName() + ":" + getAccount().getID();
 
 	return n;
 }

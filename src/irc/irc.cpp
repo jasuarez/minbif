@@ -998,7 +998,7 @@ void IRC::m_join(Message message)
 
 				/* Channel already exists, I'm really probably in. */
 				if(chan)
-					return;
+					continue;
 
 				string accid = channame.substr(1);
 				string convname = stringtok(accid, ":");
@@ -1008,16 +1008,19 @@ void IRC::m_join(Message message)
 									     .setReceiver(user)
 									     .addArg(channame)
 									     .addArg("No such channel"));
-					return;
+					continue;
 				}
 				im::Account account = im->getAccount(accid);
 				if(!account.isValid() || account.isConnected() == false)
 				{
-					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-									     .setReceiver(user)
-									     .addArg(channame)
-									     .addArg("No such channel"));
-					return;
+					if(account.isConnecting())
+						account.enqueueChannelJoin(convname);
+					else
+						user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+										     .setReceiver(user)
+										     .addArg(channame)
+										     .addArg("No such channel"));
+					continue;
 				}
 
 				if(!account.joinChat(convname))
