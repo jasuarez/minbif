@@ -271,9 +271,11 @@ void Conversation::recvMessage(string from, string text) const
 				return;
 			}
 
-			irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
-								      .setReceiver(irc->getUser())
-								      .addArg(text));
+			string line;
+			while((line = stringtok(text, "\n\r")).empty() == false)
+				irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+									      .setReceiver(irc->getUser())
+									      .addArg(line));
 			break;
 		}
 		case PURPLE_CONV_TYPE_CHAT:
@@ -292,9 +294,11 @@ void Conversation::recvMessage(string from, string text) const
 				return;
 			}
 
-			chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(n)
-					                         .setReceiver(chan)
-								 .addArg(text));
+			string line;
+			while((line = stringtok(text, "\n\r")).empty() == false)
+				chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(n)
+									 .setReceiver(chan)
+									 .addArg(line));
 			break;
 		}
 		default:
