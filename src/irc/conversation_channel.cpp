@@ -116,17 +116,6 @@ void ConversationChannel::delUser(Nick* nick, Message message)
 		conv.leave();
 }
 
-void ConversationChannel::delBuddy(im::ChatBuddy cbuddy)
-{
-	map<im::ChatBuddy, ChanUser*>::iterator it = cbuddies.find(cbuddy);
-
-	if(it != cbuddies.end())
-		delUser(it->second->getNick(), Message(MSG_PART).setSender(it->second->getNick())
-				                                .setReceiver(this));
-	else
-		b_log[W_ERR] << "Leave of unknown buddy " << cbuddy.getName();
-}
-
 ChanUser* ConversationChannel::getChanUser(string nick) const
 {
 	map<im::ChatBuddy, ChanUser*>::const_iterator it;

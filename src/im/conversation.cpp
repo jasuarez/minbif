@@ -317,7 +317,7 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 	Conversation::write_conv,
 	Conversation::add_users,
 	NULL,//finch_chat_rename_user,
-	Conversation::remove_users,
+	NULL,//Conversation::remove_users, use signal instead
 	NULL,//finch_chat_update_user,
 	Conversation::conv_present,//finch_conv_present, /* present */
 	NULL,//finch_conv_has_focus, /* has_focus */
@@ -339,6 +339,9 @@ void Conversation::init()
 				NULL);
 	purple_signal_connect(purple_conversations_get_handle(), "chat-topic-changed",
 			        getHandler(), PURPLE_CALLBACK(topic_changed),
+				NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "chat-buddy-leaving",
+				getHandler(), PURPLE_CALLBACK(remove_user),
 				NULL);
 }
 
@@ -443,22 +446,18 @@ void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
 	}
 }
 
-void Conversation::remove_users(PurpleConversation *c, GList *cbuddies_names)
+void Conversation::remove_user(PurpleConversation* c, const char* cbname, const char *reason)
 {
 	Conversation conv(c);
-	GList* l = cbuddies_names;
-	for (; l != NULL; l = l->next)
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+	if(!chan)
 	{
-		const char* bname = static_cast<const char*>(l->data);
-		irc::IRC* irc = Purple::getIM()->getIRC();
-		irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
-		if(!chan)
-		{
-			b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
-			return;
-		}
-		chan->delUser(chan->getChanUser(bname)->getNick());
+		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
+		return;
 	}
+	irc::Nick* nick = chan->getChanUser(cbname)->getNick();
+	nick->part(chan, reason);
 }
 
 void Conversation::topic_changed(PurpleConversation* c, const char* who, const char* topic)

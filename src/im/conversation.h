@@ -48,7 +48,7 @@ namespace im
 				time_t mtime);
 		static void add_users(PurpleConversation *conv, GList *cbuddies,
 				      gboolean new_arrivals);
-		static void remove_users(PurpleConversation *conv, GList *cbuddies);
+		static void remove_user(PurpleConversation* conv, const char* cbname, const char *reason);
 		static void topic_changed(PurpleConversation* conv, const char* who, const char* topic);
 
 	public:
