@@ -267,7 +267,7 @@ void Conversation::recvMessage(string from, string text) const
 
 			if(!n)
 			{
-				b_log[W_ERR] << "Received message from unknown budy " << from;
+				b_log[W_ERR] << "Received message from unknown budy " << from << ": " << text;
 				return;
 			}
 
@@ -281,14 +281,14 @@ void Conversation::recvMessage(string from, string text) const
 			irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(getChanName()));
 			if(!chan)
 			{
-				b_log[W_ERR] << "Received message in unknown chat " << getChanName();
+				b_log[W_ERR] << "Received message in unknown chat " << getChanName() << ": " << text;
 				return;
 			}
 
 			irc::ChanUser* n = chan->getChanUser(from);
 			if(!n)
 			{
-				b_log[W_ERR] << "Received message on " << getChanName() << " from an unknown budy " << from;
+				b_log[W_ERR] << "Received message on " << getChanName() << " from an unknown budy " << from << ": " << text;
 				return;
 			}
 
