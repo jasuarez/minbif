@@ -317,7 +317,7 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 	Conversation::write_conv,
 	Conversation::add_users,
 	NULL,//finch_chat_rename_user,
-	NULL,//finch_chat_remove_users,
+	Conversation::remove_users,
 	NULL,//finch_chat_update_user,
 	Conversation::conv_present,//finch_conv_present, /* present */
 	NULL,//finch_conv_has_focus, /* has_focus */
@@ -440,6 +440,24 @@ void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
 			return;
 		}
 		chan->addBuddy(cbuddy, cbuddy.getChanStatus());
+	}
+}
+
+void Conversation::remove_users(PurpleConversation *c, GList *cbuddies_names)
+{
+	Conversation conv(c);
+	GList* l = cbuddies_names;
+	for (; l != NULL; l = l->next)
+	{
+		const char* bname = static_cast<const char*>(l->data);
+		irc::IRC* irc = Purple::getIM()->getIRC();
+		irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+		if(!chan)
+		{
+			b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
+			return;
+		}
+		chan->delUser(chan->getChanUser(bname)->getNick());
 	}
 }
 
