@@ -31,13 +31,13 @@ const char *Nick::nick_uc_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ[]~`-_\\"
 
 Nick::Nick(Server* _server, string nickname, string _identname, string _hostname, string _realname)
 	: Entity(nickname),
-	  identname(_identname),
-	  hostname(_hostname),
-	  realname(_realname),
 	  server(_server),
 	  flags(0)
 {
 	assert(server);
+	setIdentname(_identname);
+	setHostname(_hostname);
+	setRealname(_realname);
 }
 
 Nick::~Nick()
@@ -72,6 +72,27 @@ string Nick::nickize(const string& n)
 		nick = nick.substr(0, MAX_LENGTH);
 
 	return nick;
+}
+
+void Nick::setNickname(string n)
+{
+	setName(n);
+}
+
+void Nick::setIdentname(string n)
+{
+	for(string::iterator i = n.begin(); i != n.end(); ++i)
+		if(*i == ' ')
+			*i = '_';
+	identname = n;
+}
+
+void Nick::setHostname(string n)
+{
+	for(string::iterator i = n.begin(); i != n.end(); ++i)
+		if(*i == ' ')
+			*i = '.';
+	hostname = n;
 }
 
 string Nick::getLongName() const

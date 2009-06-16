@@ -150,13 +150,13 @@ namespace irc
 		virtual string getLongName() const;
 
 		string getNickname() const { return getName(); }
-		void setNickname(string n) { setName(n); }
+		void setNickname(string n);
 
 		string getIdentname() const { return identname; }
-		void setIdentname(string i) { identname = i; }
+		void setIdentname(string i);
 
 		string getHostname() const { return hostname; }
-		void setHostname(string h) { hostname = h; }
+		void setHostname(string h);
 
 		virtual string getRealname() const { return realname; }
 		void setRealname(string r) { realname = r; }
