@@ -140,4 +140,9 @@ string ConversationChannel::getTopic() const
 	return conv.getChanTopic();
 }
 
+void ConversationChannel::invite(const string& buddy, string message)
+{
+	conv.invite(buddy, message);
+}
+
 }; /* namespace irc */

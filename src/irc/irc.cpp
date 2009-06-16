@@ -35,6 +35,7 @@
 #include "user.h"
 #include "channel.h"
 #include "status_channel.h"
+#include "conversation_channel.h"
 #include "caca_image.h"
 
 namespace irc {
@@ -1195,6 +1196,14 @@ void IRC::m_invite(Message message)
 	else if(chan->isRemoteChannel())
 	{
 		/* \todo TODO implement /invite on a remote channel */
+		ConversationChannel* cchan = dynamic_cast<ConversationChannel*>(chan);
+		string buddy = message.getArg(0);
+
+		cchan->invite(buddy, "");
+		user->send(Message(RPL_INVITING).setSender(this)
+				                .setReceiver(user)
+						.addArg(buddy)
+						.addArg(chan->getName()));
 	}
 }
 

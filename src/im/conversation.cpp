@@ -197,6 +197,15 @@ void Conversation::leave()
 	purple_conversation_destroy(c);
 }
 
+void Conversation::invite(const string& buddy, const string& message)
+{
+	assert(isValid());
+
+	serv_chat_invite(purple_conversation_get_gc(conv),
+			        purple_conv_chat_get_id(PURPLE_CONV_CHAT(conv)),
+				message.c_str(), buddy.c_str());
+}
+
 void Conversation::createChannel() const
 {
 	assert(isValid());

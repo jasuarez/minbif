@@ -82,6 +82,8 @@ namespace im
 		void leave();
 		void sendMessage(string text) const;
 		void recvMessage(string from, string text) const;
+
+		void invite(const string& buddy, const string& message);
 	};
 
 	class ChatBuddy

@@ -56,6 +56,8 @@ namespace irc
 		virtual void delUser(Nick* nick, Message message = Message());
 
 		virtual string getTopic() const;
+
+		void invite(const string& buddy, string message="");
 	};
 }; /* ns irc */
 
