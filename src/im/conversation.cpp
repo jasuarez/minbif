@@ -386,7 +386,6 @@ void Conversation::destroy(PurpleConversation* c)
 
 void Conversation::conv_present(PurpleConversation* c)
 {
-	b_log[W_ERR] << "present!";
 }
 
 void Conversation::write_im(PurpleConversation *c, const char *who,
@@ -457,7 +456,7 @@ void Conversation::remove_user(PurpleConversation* c, const char* cbname, const 
 		return;
 	}
 	irc::Nick* nick = chan->getChanUser(cbname)->getNick();
-	nick->part(chan, reason);
+	nick->part(chan, reason ? reason : "");
 }
 
 void Conversation::topic_changed(PurpleConversation* c, const char* who, const char* topic)
