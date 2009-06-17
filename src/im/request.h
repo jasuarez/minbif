@@ -106,8 +106,12 @@ namespace im
 					const char *cancel_text, GCallback cancel_cb,
 					PurpleAccount *account, const char *who, PurpleConversation *conv,
 					void *user_data, va_list choices);
-
-
+		static void* request_fields(const char *title, const char *primary,
+				const char *secondary, PurpleRequestFields *allfields,
+				const char *ok, GCallback ok_cb,
+				const char *cancel, GCallback cancel_cb,
+				PurpleAccount *account, const char *who, PurpleConversation *conv,
+				void *userdata);
 
 	public:
 

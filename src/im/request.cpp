@@ -144,7 +144,7 @@ PurpleRequestUiOps Request::uiops =
 	Request::request_input,
         Request::request_choice,
         Request::request_action,
-        NULL,//finch_request_fields,
+        Request::request_fields,
         NULL,//finch_request_file,
         NULL,//finch_close_request,
         NULL,//finch_request_folder,
@@ -283,6 +283,24 @@ void* Request::request_choice(const char *title, const char *primary,
 		request->addField(new RequestFieldAction(val, strlower(stringtok(tmp, "_ ")), text, (PurpleRequestChoiceCb)ok_cb, user_data));
 	}
 	request->addField(new RequestFieldAction(0, "cancel", "Cancel", (PurpleRequestChoiceCb)cancel_cb, user_data));
+
+	requests.push_back(request);
+	if(requests.size() == 1)
+		request->display();
+
+	return requests.back();
+}
+
+void* Request::request_fields(const char *title, const char *primary,
+		const char *secondary, PurpleRequestFields *allfields,
+		const char *ok, GCallback ok_cb,
+		const char *cancel, GCallback cancel_cb,
+		PurpleAccount *account, const char *who, PurpleConversation *conv,
+		void *userdata)
+{
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, title, primary);
+	request->addField(new RequestFieldAction(0, "ok", ok, (PurpleRequestChoiceCb)ok_cb, userdata));
+	request->addField(new RequestFieldAction(1, "cancel", cancel, (PurpleRequestChoiceCb)ok_cb, userdata));
 
 	requests.push_back(request);
 	if(requests.size() == 1)
