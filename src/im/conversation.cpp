@@ -400,7 +400,7 @@ void Conversation::conv_present(PurpleConversation* c)
 void Conversation::write_im(PurpleConversation *c, const char *who,
 		const char *message, PurpleMessageFlags flags, time_t mtime)
 {
-	if(flags == PURPLE_MESSAGE_RECV)
+	if(flags & PURPLE_MESSAGE_RECV)
 	{
 		PurpleAccount *account = purple_conversation_get_account(c);
 		PurpleBuddy *buddy;
@@ -416,7 +416,7 @@ void Conversation::write_im(PurpleConversation *c, const char *who,
 void Conversation::write_conv(PurpleConversation *c, const char *who, const char* alias,
 		const char *message, PurpleMessageFlags flags, time_t mtime)
 {
-	if(flags == PURPLE_MESSAGE_RECV)
+	if(flags & PURPLE_MESSAGE_RECV)
 	{
 		Conversation conv = Conversation(c);
 
