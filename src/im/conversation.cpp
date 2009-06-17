@@ -251,17 +251,24 @@ PurpleConvIm* Conversation::getPurpleIm() const
 void Conversation::sendMessage(string text) const
 {
 	assert(isValid());
+	char *escape = g_markup_escape_text(text.c_str(), -1);
+	char *apos = purple_strreplace(escape, "&apos;", "'");
+	g_free(escape);
+	escape = apos;
+
 	switch(getType())
 	{
 		case PURPLE_CONV_TYPE_IM:
-			purple_conv_im_send(getPurpleIm(), text.c_str());
+			purple_conv_im_send_with_flags(getPurpleIm(), escape, PURPLE_MESSAGE_SEND);
 			break;
 		case PURPLE_CONV_TYPE_CHAT:
-			purple_conv_chat_send(getPurpleChat(), text.c_str());
+			purple_conv_chat_send(getPurpleChat(), escape);
 			break;
 		default:
 			break;
 	}
+	g_free(escape);
+	purple_idle_touch();
 }
 
 void Conversation::recvMessage(string from, string text) const
