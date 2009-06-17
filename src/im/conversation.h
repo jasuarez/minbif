@@ -54,6 +54,7 @@ namespace im
 	public:
 
 		static void init();
+		static void uninit();
 
 		Conversation();
 		Conversation(const Account& account, const Buddy& buddy);

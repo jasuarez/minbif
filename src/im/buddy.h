@@ -48,6 +48,7 @@ namespace im
 
 		/** Initialization of libpurple buddies' stuffs. */
 		static void init();
+		static void uninit();
 
 		/** Empty constructor */
 		Buddy();

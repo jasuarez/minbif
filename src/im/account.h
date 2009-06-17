@@ -60,6 +60,7 @@ namespace im
 
 		/** Initialization of libpurple accounts' stuffs. */
 		static void init();
+		static void uninit();
 
 		/** Empty constructor */
 		Account();

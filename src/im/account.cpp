@@ -390,6 +390,13 @@ void Account::init()
 		it->second.createStatusChannel();
 }
 
+void Account::uninit()
+{
+	purple_accounts_set_ui_ops(NULL);
+	purple_connections_set_ui_ops(NULL);
+	purple_signals_disconnect_by_handle(getHandler());
+}
+
 void Account::account_added(PurpleAccount* account)
 {
 }

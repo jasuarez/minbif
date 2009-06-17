@@ -71,9 +71,9 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	: Server("localhost.localdomain", MINBIF_VERSION),
 	  poll(_poll),
 	  fd(_fd),
-	  read_id(0),
+	  read_id(-1),
 	  read_cb(NULL),
-	  ping_id(0),
+	  ping_id(-1),
 	  ping_freq(_ping_freq),
 	  ping_cb(NULL),
 	  user(NULL),
@@ -116,6 +116,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 
 	/* create a callback on the sock. */
 	read_cb = new CallBack<IRC>(this, &IRC::readIO);
+	/* XXX it appears that it is not free'd */
 	read_id = glib_input_add(fd, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback_input, read_cb);
 
 	/* Create main objects and root joins command channel. */
@@ -136,9 +137,9 @@ IRC::~IRC()
 {
 	delete im;
 
-	if(read_id > 0)
+	if(read_id >= 0)
 		g_source_remove(read_id);
-	if(ping_id > 0)
+	if(ping_id >= 0)
 		g_source_remove(ping_id);
 	delete read_cb;
 	delete ping_cb;
@@ -147,10 +148,13 @@ IRC::~IRC()
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
+	printf("Cleaned IRC\n");
 }
 
 void IRC::addChannel(Channel* chan)
 {
+	if(channels.find(chan->getName()) != channels.end())
+		b_log[W_ERR] << "!!!!!WARNING!!!!! Channel " << chan->getName() << " already exists!";
 	channels[chan->getName()] = chan;
 }
 
@@ -183,6 +187,8 @@ void IRC::cleanUpChannels()
 
 void IRC::addNick(Nick* nick)
 {
+	if(users.find(nick->getNickname()) != users.end())
+		b_log[W_ERR] << "!!!!!WARNING!!!!! User " << nick->getNickname() << " already exists!";
 	users[nick->getNickname()] = nick;
 }
 
@@ -280,9 +286,9 @@ void IRC::quit(string reason)
 {
 	user->send(Message(MSG_ERROR).addArg("Closing Link: " + reason));
 
-	if(read_id > 0)
+	if(read_id >= 0)
 		g_source_remove(read_id);
-	read_id = 0;
+	read_id = -1;
 
 	user->close();
 	close(fd);

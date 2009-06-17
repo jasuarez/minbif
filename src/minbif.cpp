@@ -111,5 +111,5 @@ void Minbif::quit()
 int main(int argc, char** argv)
 {
 	Minbif minbif;
-	exit(minbif.main(argc, argv));
+	return minbif.main(argc, argv);
 }

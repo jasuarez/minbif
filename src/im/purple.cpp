@@ -103,8 +103,8 @@ PurpleCoreUiOps Purple::core_ops =
 {
 	Purple::minbif_prefs_init,
         Purple::debug_init,
-        Purple::inited,//gnt_ui_init,
-        NULL,//minbif_quit,
+        Purple::inited,
+        Purple::uninit,
         Purple::minbif_ui_get_info,
 
         /* padding */
@@ -142,6 +142,8 @@ void Purple::init(IM* im)
 
 void Purple::inited()
 {
+	if(ui_info)
+		g_hash_table_destroy(ui_info);
 	Account::init();
 	Buddy::init();
 	Conversation::init();
@@ -152,7 +154,10 @@ void Purple::uninit()
 {
 	assert(im != NULL);
 
-	purple_core_quit();
+	Account::uninit();
+	Buddy::uninit();
+	Conversation::uninit();
+	Request::uninit();
 }
 
 map<string, Protocol> Purple::getProtocolsList()

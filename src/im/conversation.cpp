@@ -361,6 +361,12 @@ void Conversation::init()
 				NULL);
 }
 
+void Conversation::uninit()
+{
+	purple_conversations_set_ui_ops(NULL);
+	purple_signals_disconnect_by_handle(getHandler());
+}
+
 void* Conversation::getHandler()
 {
 	static int handler;

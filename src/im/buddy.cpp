@@ -153,6 +153,11 @@ void Buddy::init()
 	purple_blist_set_ui_ops(&blist_ui_ops);
 }
 
+void Buddy::uninit()
+{
+	purple_blist_set_ui_ops(NULL);
+}
+
 void* Buddy::getHandler()
 {
 	static int handler;

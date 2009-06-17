@@ -117,6 +117,7 @@ namespace im
 
 		static vector<Request*> requests;
 		static void init();
+		static void uninit();
 		static Request* getFirstRequest();
 		static void closeFirstRequest();
 

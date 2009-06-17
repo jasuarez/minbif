@@ -91,7 +91,7 @@ IM::IM(irc::IRC* _irc, string _username)
 
 IM::~IM()
 {
-	Purple::uninit();
+	purple_core_quit();
 }
 
 void IM::setPassword(const string& password)

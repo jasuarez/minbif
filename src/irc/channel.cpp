@@ -103,6 +103,7 @@ Channel::~Channel()
 		(*it)->getNick()->removeChanUser(*it);
 		delete *it;
 	}
+	users.clear();
 }
 
 

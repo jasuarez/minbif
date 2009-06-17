@@ -186,6 +186,12 @@ void Request::init()
 	irc->addNick(nick);
 }
 
+void Request::uninit()
+{
+	purple_request_set_ui_ops(NULL);
+	purple_notify_set_ui_ops(NULL);
+}
+
 Request* Request::getFirstRequest()
 {
 	return requests.empty() ? NULL : requests.front();
