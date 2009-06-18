@@ -432,15 +432,26 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 	if(flags & PURPLE_MESSAGE_RECV)
 	{
 		Conversation conv = Conversation(c);
-
 		char* newline = purple_strdup_withhtml(message);
 		char* strip = purple_markup_strip_html(newline);
-
 		string from;
+
 		if(alias && *alias) from = alias;
 		else if(who && *who) from = who;
 
-		conv.recvMessage(from, strip);
+		if(flags & PURPLE_MESSAGE_DELAYED)
+		{
+			struct tm* lt = localtime(&mtime);
+			char* msg;
+			msg = g_strdup_printf("[%02d:%02d:%02d] %s", lt->tm_hour,
+					                             lt->tm_min,
+							             lt->tm_sec,
+							             strip);
+			conv.recvMessage(from, msg);
+			g_free(msg);
+		}
+		else
+			conv.recvMessage(from, strip);
 
 		g_free(strip);
 		g_free(newline);
