@@ -429,6 +429,9 @@ void Conversation::write_im(PurpleConversation *c, const char *who,
 void Conversation::write_conv(PurpleConversation *c, const char *who, const char* alias,
 		const char *message, PurpleMessageFlags flags, time_t mtime)
 {
+	if ((flags & PURPLE_MESSAGE_SYSTEM) && !(flags & PURPLE_MESSAGE_NOTIFY))
+		flags = (PurpleMessageFlags)(flags & ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV));
+
 	if(flags & PURPLE_MESSAGE_RECV)
 	{
 		Conversation conv = Conversation(c);
