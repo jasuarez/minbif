@@ -304,17 +304,17 @@ void Conversation::recvMessage(string from, string text) const
 			}
 
 			irc::ChanUser* n = chan->getChanUser(from);
-			if(!n)
-			{
-				b_log[W_ERR] << "Received message on " << getChanName() << " from an unknown budy " << from << ": " << text;
-				return;
-			}
 
 			string line;
 			while((line = stringtok(text, "\n\r")).empty() == false)
-				chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(n)
-									 .setReceiver(chan)
-									 .addArg(line));
+				if(n)
+					chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(n)
+										 .setReceiver(chan)
+										 .addArg(line));
+				else
+					chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(from)
+										 .setReceiver(chan)
+										 .addArg(line));
 			break;
 		}
 		default:
