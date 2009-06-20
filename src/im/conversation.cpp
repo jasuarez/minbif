@@ -304,6 +304,11 @@ void Conversation::recvMessage(string from, string text) const
 			}
 
 			irc::ChanUser* n = chan->getChanUser(from);
+			if(!n)
+			{
+				while((irc->getNick(from)))
+					from += "_";
+			}
 
 			string line;
 			while((line = stringtok(text, "\n\r")).empty() == false)
