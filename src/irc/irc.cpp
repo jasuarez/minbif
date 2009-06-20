@@ -1025,7 +1025,7 @@ void IRC::m_join(Message message)
 				im::Account account = im->getAccount(accid);
 				if(!account.isValid() || account.isConnected() == false)
 				{
-					if(account.isConnecting())
+					if(account.isValid() && account.isConnecting())
 						account.enqueueChannelJoin(convname);
 					else
 						user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
