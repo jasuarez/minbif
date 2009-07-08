@@ -112,7 +112,7 @@ namespace im
 
 		/** Auto reconnect to this account with a delay. */
 		int delayReconnect() const;
-		void removeReconnection() const;
+		void removeReconnection(bool verbose = false) const;
 
 		/** \todo TODO implement it */
 		vector<Buddy> getBuddies() const;

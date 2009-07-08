@@ -159,7 +159,7 @@ void Account::connect() const
 void Account::disconnect() const
 {
 	assert(isValid());
-	removeReconnection();
+	removeReconnection(true);
 	purple_account_set_enabled(account, MINBIF_VERSION_NAME, false);
 }
 
@@ -175,11 +175,15 @@ int Account::delayReconnect() const
 	return delay;
 }
 
-void Account::removeReconnection() const
+void Account::removeReconnection(bool verbose) const
 {
 	int id = purple_account_get_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
 	if(id >= 0)
+	{
 		g_source_remove(id);
+		if(verbose)
+			b_log[W_INFO|W_SNO] << "Abort auto-reconnection to " << getServername();
+	}
 
 	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", 15);
 	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
