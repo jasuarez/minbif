@@ -159,7 +159,30 @@ void Account::connect() const
 void Account::disconnect() const
 {
 	assert(isValid());
+	removeReconnection();
 	purple_account_set_enabled(account, MINBIF_VERSION_NAME, false);
+}
+
+int Account::delayReconnect() const
+{
+	int delay = purple_account_get_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", 15);
+	delay *= 2;
+
+	int id = g_timeout_add_seconds(delay, Account::reconnect, account);
+
+	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", delay);
+	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", id);
+	return delay;
+}
+
+void Account::removeReconnection() const
+{
+	int id = purple_account_get_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
+	if(id >= 0)
+		g_source_remove(id);
+
+	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", 15);
+	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
 }
 
 void Account::createStatusChannel() const
@@ -397,6 +420,14 @@ void Account::uninit()
 	purple_signals_disconnect_by_handle(getHandler());
 }
 
+gboolean Account::reconnect(void* data)
+{
+	Account acc((PurpleAccount*)data);
+	acc.connect();
+	b_log[W_INFO|W_SNO] << "after event";
+	return FALSE;
+}
+
 void Account::account_added(PurpleAccount* account)
 {
 }
@@ -405,6 +436,7 @@ void Account::account_removed(PurpleAccount* a)
 {
 	Account account(a);
 	account.abortChannelJoins();
+	account.removeReconnection();
 	account.leaveStatusChannel();
 }
 
@@ -424,6 +456,7 @@ void Account::connecting(PurpleConnection *gc,
 void Account::connected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
+	account.removeReconnection();
 	irc::IRC* irc = Purple::getIM()->getIRC();
 
 	b_log[W_INFO|W_SNO] << "Connection to " << account.getServername() << " established!";
@@ -444,7 +477,10 @@ void Account::disconnect_reason(PurpleConnection *gc,
 				PurpleConnectionError reason,
 				const char *text)
 {
-	b_log[W_ERR|W_SNO] << "Error(" << Account(gc->account).getServername() << "): " << text;
+	Account acc(gc->account);
+	int delay = acc.delayReconnect();
+	b_log[W_ERR|W_SNO] << "Error(" << acc.getServername() << "): " << text;
+	b_log[W_ERR|W_SNO] << "Reconnection in " << delay << " seconds";
 }
 
 }; /* namespace im */

@@ -55,6 +55,7 @@ namespace im
 		static void disconnect_reason(PurpleConnection *gc,
 		                              PurpleConnectionError reason,
 		                              const char *text);
+		static gboolean reconnect(void*);
 
 	public:
 
@@ -108,6 +109,10 @@ namespace im
 		Protocol getProtocol() const { return proto; }
 		bool isConnected() const;
 		bool isConnecting() const;
+
+		/** Auto reconnect to this account with a delay. */
+		int delayReconnect() const;
+		void removeReconnection() const;
 
 		/** \todo TODO implement it */
 		vector<Buddy> getBuddies() const;
