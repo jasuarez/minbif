@@ -19,6 +19,7 @@
 #include <cassert>
 
 #include "account.h"
+#include "conversation.h"
 #include "buddy.h"
 #include "purple.h"
 #include "../log.h"
@@ -293,6 +294,7 @@ bool Account::joinChat(const string& name) const
 	PurpleConnection *gc;
 	PurplePluginProtocolInfo *info;
 
+	b_log[W_ERR] << "Joining " << name;
 
 	gc = purple_account_get_connection(account);
 	info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl(gc));
@@ -384,6 +386,10 @@ void Account::init()
 	purple_signal_connect(purple_accounts_get_handle(), "account-removed",
 				getHandler(), PURPLE_CALLBACK(account_removed),
 				NULL);
+	purple_signal_connect(purple_connections_get_handle(), "signed-on", getHandler(),
+				G_CALLBACK(account_signed_off_cb),
+				GINT_TO_POINTER(PURPLE_CONV_ACCOUNT_ONLINE));
+
 
 	map<string, Account> accounts = Purple::getAccountsList();
 	for(map<string, Account>::iterator it = accounts.begin(); it != accounts.end(); ++it)
@@ -429,22 +435,74 @@ void Account::connected(PurpleConnection* gc)
 	b_log[W_INFO|W_SNO] << "Connection to " << account.getServername() << " established!";
 	irc->addServer(new irc::RemoteServer(irc, account));
 	account.flushChannelJoins();
+
+}
+
+void Account::account_signed_off_cb(PurpleConnection *gc, gpointer event)
+{
+	Account account = Account(gc->account);
+	GList* list = purple_get_chats();
+
+	for(; list; list = list->next)
+	{
+		PurpleChat *chat;
+		GHashTable *comps = NULL;
+		PurpleConversation *conv = (PurpleConversation*)list->data;
+		Conversation c(conv);
+
+		if(c.getAccount() != account ||
+		   c.getType() != PURPLE_CONV_TYPE_CHAT ||
+		   !purple_conversation_get_data(conv, "want-to-rejoin"))
+			continue;
+		chat = purple_blist_find_chat(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
+
+		if (chat == NULL) {
+			PurplePluginProtocolInfo *info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl(gc));
+			if (info->chat_info_defaults != NULL)
+				comps = info->chat_info_defaults(gc, purple_conversation_get_name(conv));
+		} else {
+			comps = purple_chat_get_components(chat);
+		}
+		serv_join_chat(gc, comps);
+		if (chat == NULL && comps != NULL)
+			g_hash_table_destroy(comps);
+
+	}
+
 }
 
 void Account::disconnected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
+	GList* list = purple_get_chats();
+
+	account.abortChannelJoins();
+	for(; list; list = list->next)
+	{
+		Conversation c((PurpleConversation*)list->data);
+		if(c.getAccount() != account)
+			continue;
+		/*if(purple_conv_chat_has_left(c.getPurpleChat()))
+		{
+			string name = c.getName();
+			c.leave();
+			account.enqueueChannelJoin(name);
+		}
+		else*/
+			purple_conversation_set_data(c.getPurpleConversation(), "want-to-rejoin", GINT_TO_POINTER(TRUE));
+	}
+
 
 	b_log[W_INFO|W_SNO] << "Closing link with " << account.getServername();
 	Purple::getIM()->getIRC()->removeServer(account.getServername());
-	account.abortChannelJoins();
 }
 
 void Account::disconnect_reason(PurpleConnection *gc,
 				PurpleConnectionError reason,
 				const char *text)
 {
-	b_log[W_ERR|W_SNO] << "Error(" << Account(gc->account).getServername() << "): " << text;
+	Account account(gc->account);
+	b_log[W_ERR|W_SNO] << "Error(" << account.getServername() << "): " << text;
 }
 
 }; /* namespace im */

@@ -44,6 +44,7 @@ namespace im
 		static PurpleConnectionUiOps conn_ops;
 		static PurpleAccountUiOps acc_ops;
 		static void* getHandler();
+		static void account_signed_off_cb(PurpleConnection *gc, gpointer event);
 		static void account_added(PurpleAccount*);
 		static void account_removed(PurpleAccount*);
 		static void connecting(PurpleConnection *gc,

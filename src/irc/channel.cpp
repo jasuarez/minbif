@@ -100,6 +100,8 @@ Channel::~Channel()
 {
 	for(vector<ChanUser*>::iterator it = users.begin(); it != users.end(); ++it)
 	{
+		(*it)->getNick()->send(Message(MSG_PART).setSender(*it)
+							.setReceiver(this));
 		(*it)->getNick()->removeChanUser(*it);
 		delete *it;
 	}

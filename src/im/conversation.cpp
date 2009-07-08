@@ -304,6 +304,11 @@ void Conversation::recvMessage(string from, string text) const
 			}
 
 			irc::ChanUser* n = chan->getChanUser(from);
+
+			/* This is an unknown buddy, but the message is displayed, even if there
+			 * isn't any IRC user linked to this buddy.
+			 * So I avoid a conflict between a real IRC user with the same nick.
+			 */
 			if(!n)
 			{
 				while((irc->getNick(from)))
