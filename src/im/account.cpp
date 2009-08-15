@@ -428,7 +428,6 @@ gboolean Account::reconnect(void* data)
 {
 	Account acc((PurpleAccount*)data);
 	acc.connect();
-	b_log[W_INFO|W_SNO] << "after event";
 	return FALSE;
 }
 

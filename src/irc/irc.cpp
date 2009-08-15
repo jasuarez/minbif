@@ -531,7 +531,7 @@ void IRC::m_who(Message message)
 		{
 			Nick* n = it->second;
 			string channame = "*";
-			if(arg.empty() || arg == "*" || arg == "0" || arg == n->getNickname())
+			if(arg.empty() || arg == "*" || arg == "0" || arg == n->getNickname() || n->getServer()->getServerName().find(arg) != string::npos)
 			{
 				vector<ChanUser*> chans = n->getChannels();
 				if(!chans.empty())
@@ -705,7 +705,7 @@ void IRC::m_privmsg(Message message)
 					    .setReceiver(user)
 					    .addArg(n->getNickname())
 					    .addArg(n->getAwayMessage()));
-}
+		}
 		target=stringtok(targets, delim);
 	}
 }
