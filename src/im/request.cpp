@@ -241,7 +241,7 @@ void* Request::request_input(const char *title, const char *primary,
 			PurpleAccount *account, const char *who, PurpleConversation *conv,
 			void *user_data)
 {
-	RequestInput* request = new RequestInput(PURPLE_REQUEST_INPUT, title, primary, default_value, (PurpleRequestInputCb)ok_cb, user_data);
+	RequestInput* request = new RequestInput(PURPLE_REQUEST_INPUT, title ? title : "", primary ? primary : "", default_value ? default_value : "", (PurpleRequestInputCb)ok_cb, user_data);
 	requests.push_back(request);
 	if(requests.size() == 1)
 		request->display();
@@ -255,7 +255,7 @@ void* Request::request_action(const char *title, const char *primary,
 			void *user_data, size_t actioncount,
 			va_list actions)
 {
-	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_ACTION, title, primary);
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_ACTION, title ? title : "", primary ? primary : "");
 	for(size_t i = 0; i < actioncount; ++i)
 	{
 		const char *text = va_arg(actions, const char *);
@@ -278,7 +278,7 @@ void* Request::request_choice(const char *title, const char *primary,
 			PurpleAccount *account, const char *who, PurpleConversation *conv,
 			void *user_data, va_list choices)
 {
-	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_CHOICE, title, primary);
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_CHOICE, title ? title : "", primary ? primary : "");
 	const char* text;
 
 	while ((text = va_arg(choices, const char *)))
@@ -304,7 +304,7 @@ void* Request::request_fields(const char *title, const char *primary,
 		PurpleAccount *account, const char *who, PurpleConversation *conv,
 		void *userdata)
 {
-	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, title, primary);
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, title ? title : "", primary ? primary : "");
 	request->addField(new RequestFieldAction(0, "ok", ok, (PurpleRequestChoiceCb)ok_cb, userdata));
 	request->addField(new RequestFieldAction(1, "cancel", cancel, (PurpleRequestChoiceCb)ok_cb, userdata));
 
