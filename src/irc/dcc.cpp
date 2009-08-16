@@ -110,6 +110,10 @@ void DCCSend::dcc_read(gpointer data, int source, PurpleInputCondition cond)
 	if (len < 0 && errno == EAGAIN)
 		return;
 	else if (len <= 0) {
+		/* DCC user has closed connection.
+		 * fd is already closed, do not let deinit()
+		 * reclose it.
+		 */
 		dcc->fd = -1;
 		dcc->deinit();
 		return;
@@ -138,6 +142,7 @@ void DCCSend::dcc_read(gpointer data, int source, PurpleInputCondition cond)
 		}
 
 		if (acked >= dcc->total_size) {
+			/* DCC send terminated \o/ */
 			dcc->deinit();
 			return;
 		}
