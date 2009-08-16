@@ -387,7 +387,6 @@ void* Request::request_file(const char *title, const char *filename,
 			return NULL;
 		}
 
-		nick->request_error("Kikoo: " + path);
 		((PurpleRequestFileCb)ok_cb)(user_data, path.c_str());
 	}
 	else

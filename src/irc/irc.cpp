@@ -149,7 +149,6 @@ IRC::~IRC()
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
-	printf("Cleaned IRC\n");
 }
 
 void IRC::addChannel(Channel* chan)
