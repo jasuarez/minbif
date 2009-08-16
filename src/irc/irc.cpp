@@ -37,6 +37,7 @@
 #include "status_channel.h"
 #include "conversation_channel.h"
 #include "caca_image.h"
+#include "dcc.h"
 
 namespace irc {
 
@@ -149,6 +150,41 @@ IRC::~IRC()
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
+	cleanUpDCC();
+}
+
+DCC* IRC::createDCCSend(const im::FileTransfert& ft)
+{
+	DCC* dcc = new DCCSend(ft, user);
+	dccs.push_back(dcc);
+	return dcc;
+}
+
+void IRC::updateDCC(const im::FileTransfert& ft, bool destroy)
+{
+	for(vector<DCC*>::iterator it = dccs.begin(); it != dccs.end();)
+	{
+		/* Purge */
+		if((*it)->isFinished())
+		{
+			delete *it;
+			it = dccs.erase(it);
+		}
+		else
+		{
+			if((*it)->getFileTransfert() == ft)
+				(*it)->updated(destroy);
+			++it;
+		}
+	}
+}
+
+void IRC::cleanUpDCC()
+{
+	for(vector<DCC*>::iterator it = dccs.begin(); it != dccs.end(); ++it)
+		delete *it;
+
+	dccs.clear();
 }
 
 void IRC::addChannel(Channel* chan)

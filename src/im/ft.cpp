@@ -16,10 +16,59 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <cassert>
+
+#include "im/purple.h"
+#include "im/im.h"
 #include "im/ft.h"
+#include "irc/irc.h"
+#include "irc/dcc.h"
 #include "../log.h"
 
 namespace im {
+
+FileTransfert::FileTransfert()
+	: xfer(NULL)
+{}
+
+FileTransfert::FileTransfert(PurpleXfer* _xfer)
+	: xfer(_xfer)
+{}
+
+bool FileTransfert::operator==(const FileTransfert& ft)
+{
+	return isValid() && ft.isValid() && this->xfer == ft.xfer;
+}
+
+string FileTransfert::getFileName() const
+{
+	assert(isValid());
+	return purple_xfer_get_filename(xfer);
+}
+
+string FileTransfert::getLocalFileName() const
+{
+	assert(isValid());
+	return purple_xfer_get_local_filename(xfer);
+}
+
+size_t FileTransfert::getSize() const
+{
+	assert(isValid());
+	return purple_xfer_get_size(xfer);
+}
+
+size_t FileTransfert::getSentBytes() const
+{
+	assert(isValid());
+	return purple_xfer_get_bytes_sent(xfer);
+}
+
+bool FileTransfert::isCompleted() const
+{
+	assert(isValid());
+	return purple_xfer_is_completed(xfer);
+}
 
 /* STATIC */
 
@@ -29,6 +78,7 @@ void FileTransfert::new_xfer(PurpleXfer* xfer)
 
 void FileTransfert::destroy(PurpleXfer* xfer)
 {
+	Purple::getIM()->getIRC()->updateDCC(FileTransfert(xfer), true);
 	if(purple_xfer_is_completed(xfer))
 		b_log[W_INFO|W_SNO] << "File saved as: " << purple_xfer_get_local_filename(xfer);
 }
@@ -36,11 +86,23 @@ void FileTransfert::destroy(PurpleXfer* xfer)
 void FileTransfert::add_xfer(PurpleXfer* xfer)
 {
 	b_log[W_SNO] << "Starting receiving file " << purple_xfer_get_filename(xfer);
+
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	FileTransfert ft(xfer);
+	try
+	{
+		irc->createDCCSend(ft);
+	}
+	catch(irc::DCCListenError &e)
+	{
+		b_log[W_SNO|W_ERR] << "Unable to listen for DCC, you'll might retrieve yourself the file.";
+	}
 }
 
 void FileTransfert::update_progress(PurpleXfer* xfer, double percent)
 {
 	/* Note: 0 <= percent <= 1 */
+	Purple::getIM()->getIRC()->updateDCC(FileTransfert(xfer));
 }
 
 void FileTransfert::cancel_local(PurpleXfer* xfer)

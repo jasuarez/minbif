@@ -21,6 +21,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/im/ft.cpp
 		src/im/purple.cpp
 		src/irc/irc.cpp
+		src/irc/dcc.cpp
 		src/irc/message.cpp
 		src/irc/server.cpp
 		src/irc/nick.cpp

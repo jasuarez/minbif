@@ -20,11 +20,16 @@
 #define IM_FT_H
 
 #include <libpurple/purple.h>
+#include <string>
 
 namespace im {
 
+	using std::string;
+
 	class FileTransfert
 	{
+		PurpleXfer* xfer;
+
 		static PurpleXferUiOps ui_ops;
 
 		static void new_xfer(PurpleXfer* xfer);
@@ -37,6 +42,20 @@ namespace im {
 
 		static void init();
 		static void uninit();
+
+		FileTransfert();
+		FileTransfert(PurpleXfer* xfer);
+		~FileTransfert() {}
+
+		bool operator==(const FileTransfert& ft);
+
+		bool isValid() const { return xfer != NULL; }
+
+		string getFileName() const;
+		string getLocalFileName() const;
+		size_t getSize() const;
+		size_t getSentBytes() const;
+		bool isCompleted() const;
 	};
 
 };

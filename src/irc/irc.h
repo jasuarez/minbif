@@ -33,6 +33,7 @@ namespace im
 {
 	class IM;
 	class Buddy;
+	class FileTransfert;
 };
 
 /** IRC related classes */
@@ -47,6 +48,7 @@ namespace irc
 	class User;
 	class Nick;
 	class Channel;
+	class DCC;
 
 	/** This class represents the user's server.
 	 *
@@ -67,6 +69,7 @@ namespace irc
 		map<string, Nick*> users;
 		map<string, Channel*> channels;
 		map<string, Server*> servers;
+		vector<DCC*> dccs;
 
 		struct command_t
 		{
@@ -81,6 +84,7 @@ namespace irc
 		void cleanUpNicks();
 		void cleanUpChannels();
 		void cleanUpServers();
+		void cleanUpDCC();
 
 		/** Callback when it receives a new incoming message from socket. */
 		bool readIO(void*);
@@ -153,6 +157,9 @@ namespace irc
 		void addServer(Server* server);
 		Server* getServer(string server) const;
 		void removeServer(string server);
+
+		DCC* createDCCSend(const im::FileTransfert& ft);
+		void updateDCC(const im::FileTransfert& ft, bool destroy = false);
 
 		/** Callback used by glibc to check user ping */
 		bool ping(void*);

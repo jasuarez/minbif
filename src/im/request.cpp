@@ -390,7 +390,10 @@ void* Request::request_file(const char *title, const char *filename,
 		((PurpleRequestFileCb)ok_cb)(user_data, path.c_str());
 	}
 	else
-		nick->request_error("Warning: something tries to ask you to open a filename (" + string(title) + "). But it is not yet implemented.");
+	{
+		/* TODO Implement when libpurple requests to open a file. */
+		nick->request_error("Warning: something tries to ask you to open a filename (" + string(title ? title : "") + "). But it is not yet implemented.");
+	}
 
 	return NULL;
 }
