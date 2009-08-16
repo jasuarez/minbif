@@ -96,5 +96,6 @@
 #define MSG_KILL        "KILL"
 #define MSG_SVSNICK     "SVSNICK"
 #define MSG_TOPIC       "TOPIC"
+#define MSG_NAMES       "NAMES"
 
 #endif /* IRC_REPLIES_H */

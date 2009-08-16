@@ -58,6 +58,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_MAP,     &IRC::m_map,     0, 0, Nick::REGISTERED },
 	{ MSG_JOIN,    &IRC::m_join,    1, 0, Nick::REGISTERED },
 	{ MSG_PART,    &IRC::m_part,    1, 0, Nick::REGISTERED },
+	{ MSG_NAMES,   &IRC::m_names,   1, 0, Nick::REGISTERED },
 	{ MSG_LIST,    &IRC::m_list,    0, 0, Nick::REGISTERED },
 	{ MSG_MODE,    &IRC::m_mode,    1, 0, Nick::REGISTERED },
 	{ MSG_ISON,    &IRC::m_ison,    1, 0, Nick::REGISTERED },
@@ -1165,6 +1166,22 @@ void IRC::m_ison(Message message)
 	user->send(Message(RPL_ISON).setSender(this)
 				    .setReceiver(user)
 				    .addArg(list));
+}
+
+/** NAMES chan */
+void IRC::m_names(Message message)
+{
+	Channel* chan = getChannel(message.getArg(0));
+	if(!chan)
+	{
+		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(message.getArg(1))
+						     .addArg("No such channel"));
+		return;
+	}
+
+	chan->sendNames(user);
 }
 
 /** INVITE nick chan */
