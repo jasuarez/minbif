@@ -251,6 +251,25 @@ PurpleConvIm* Conversation::getPurpleIm() const
 void Conversation::sendMessage(string text) const
 {
 	assert(isValid());
+
+	if(text.find("\001ACTION ") == 0)
+	{
+		/* Check if this protocol has registered the /me command. */
+		text = "/me " + text.substr(8, text.size() - 8 - 1);
+		char *escape = g_markup_escape_text(text.c_str() + 1, -1);
+		char* error = NULL;
+		int status = purple_cmd_do_command(conv, text.c_str() + 1, escape, &error);
+
+		g_free(error);
+		g_free(escape);
+
+		if(status == PURPLE_CMD_STATUS_OK)
+			return;
+
+		/* If the /me command is not implemented for this protocol, just
+		 * continue to send message prefixed with /me. */
+	}
+
 	char *escape = g_markup_escape_text(text.c_str(), -1);
 	char *apos = purple_strreplace(escape, "&apos;", "'");
 	g_free(escape);
@@ -271,7 +290,7 @@ void Conversation::sendMessage(string text) const
 	purple_idle_touch();
 }
 
-void Conversation::recvMessage(string from, string text) const
+void Conversation::recvMessage(string from, string text, bool action) const
 {
 	assert(isValid());
 	irc::IRC* irc = Purple::getIM()->getIRC();
@@ -289,9 +308,13 @@ void Conversation::recvMessage(string from, string text) const
 
 			string line;
 			while((line = stringtok(text, "\n\r")).empty() == false)
+			{
+				if(action)
+					line = "\001ACTION " + line + "\001";
 				irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 									      .setReceiver(irc->getUser())
 									      .addArg(line));
+			}
 			break;
 		}
 		case PURPLE_CONV_TYPE_CHAT:
@@ -312,6 +335,9 @@ void Conversation::recvMessage(string from, string text) const
 
 			string line;
 			while((line = stringtok(text, "\n\r")).empty() == false)
+			{
+				if(action)
+					line = "\001ACTION " + line + "\001";
 				if(n)
 					chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(n)
 										 .setReceiver(chan)
@@ -320,6 +346,7 @@ void Conversation::recvMessage(string from, string text) const
 					chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(from)
 										 .setReceiver(chan)
 										 .addArg(line));
+			}
 			break;
 		}
 		default:
@@ -440,6 +467,11 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 	if(flags & PURPLE_MESSAGE_RECV)
 	{
 		Conversation conv = Conversation(c);
+
+		bool action = false;
+		if(who && purple_message_meify((char*)message, -1))
+				action = true;
+
 		char* newline = purple_strdup_withhtml(message);
 		char* strip = purple_markup_strip_html(newline);
 		string from;
@@ -455,11 +487,11 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 					                             lt->tm_min,
 							             lt->tm_sec,
 							             strip);
-			conv.recvMessage(from, msg);
+			conv.recvMessage(from, msg, action);
 			g_free(msg);
 		}
 		else
-			conv.recvMessage(from, strip);
+			conv.recvMessage(from, strip, action);
 
 		g_free(strip);
 		g_free(newline);

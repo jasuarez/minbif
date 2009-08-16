@@ -82,7 +82,7 @@ namespace im
 		void present() const;
 		void leave();
 		void sendMessage(string text) const;
-		void recvMessage(string from, string text) const;
+		void recvMessage(string from, string text, bool action = false) const;
 
 		void invite(const string& buddy, const string& message);
 	};
