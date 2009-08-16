@@ -24,6 +24,7 @@
 #include "buddy.h"
 #include "conversation.h"
 #include "request.h"
+#include "ft.h"
 #include "../version.h"
 #include "../log.h"
 #include "../util.h"
@@ -144,6 +145,7 @@ void Purple::inited()
 	Buddy::init();
 	Conversation::init();
 	Request::init();
+	FileTransfert::init();
 }
 
 void Purple::uninit()
@@ -154,6 +156,7 @@ void Purple::uninit()
 	Buddy::uninit();
 	Conversation::uninit();
 	Request::uninit();
+	FileTransfert::uninit();
 }
 
 map<string, Protocol> Purple::getProtocolsList()

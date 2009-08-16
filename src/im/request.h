@@ -112,6 +112,11 @@ namespace im
 				const char *cancel, GCallback cancel_cb,
 				PurpleAccount *account, const char *who, PurpleConversation *conv,
 				void *userdata);
+		static void* request_file(const char *title, const char *filename,
+				          gboolean savedialog,
+					  GCallback ok_cb, GCallback cancel_cb,
+					  PurpleAccount *account, const char *who, PurpleConversation *conv,
+					  void *user_data);
 
 	public:
 

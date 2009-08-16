@@ -16,12 +16,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <glib/gstdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <string.h>
+
 #include "request.h"
 #include "im.h"
 #include "purple.h"
 #include "irc/irc.h"
 #include "irc/user.h"
 #include "../util.h"
+#include "../log.h"
 
 namespace im {
 
@@ -32,6 +39,12 @@ public:
 	RequestNick(irc::Server* server, string nickname, string identname, string hostname, string realname="")
 		: irc::Nick(server, nickname, identname, hostname, realname)
 	{}
+
+	void request_error(string msg)
+	{
+		irc::IRC* irc = Purple::getIM()->getIRC();
+		privmsg(irc->getUser(), msg);
+	}
 
 	void send(irc::Message m)
 	{
@@ -145,7 +158,7 @@ PurpleRequestUiOps Request::uiops =
         Request::request_choice,
         Request::request_action,
         Request::request_fields,
-        NULL,//finch_request_file,
+        Request::request_file,
         NULL,//finch_close_request,
         NULL,//finch_request_folder,
         NULL,
@@ -216,7 +229,7 @@ void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
 {
 	irc::IRC* irc = Purple::getIM()->getIRC();
 
-	nick->privmsg(irc->getUser(), string(":: ") + title + " ::");
+	nick->privmsg(irc->getUser(), string(":: ") + (title ? title : "") + " ::");
 
 	const char* texts[] = {primary, secondary, NULL};
 	for(const char** ptr = texts; *ptr != NULL; ++ptr)
@@ -313,6 +326,74 @@ void* Request::request_fields(const char *title, const char *primary,
 		request->display();
 
 	return requests.back();
+}
+
+void* Request::request_file(const char *title, const char *filename,
+			  gboolean savedialog,
+			  GCallback ok_cb, GCallback cancel_cb,
+			  PurpleAccount *account, const char *who, PurpleConversation *conv,
+			  void *user_data)
+{
+	if(savedialog)
+	{
+		/* This is probably (I hope) a request to know the path where
+		 * to save a file that someone sends to me.
+		 *
+		 * Here we try to put it in /var/lib/minbif/romain/downloads/,
+		 * and create directory if it doesn't exist.
+		 *
+		 * Important: the file returned MUST be writtable! If libpurple
+		 *            tries to overload a unwrittable file, it'll write
+		 *            an error, but also recall this function, and it
+		 *            can produce an unfinite loop.
+		 */
+		string path = purple_user_dir();
+		path += "/downloads/"; // XXX do not hardcode this.
+
+		/* Create the downloads/ directory if not exist. */
+		DIR* d;
+		if(!(d = opendir(path.c_str())))
+		{
+			if(mkdir(path.c_str(), 0700) < 0)
+			{
+				b_log[W_ERR] << "Unable to create the download directory '" << path << "': " << strerror(errno);
+				((PurpleRequestFileCb)cancel_cb)(user_data, NULL);
+				return NULL;
+			}
+		}
+		else
+			closedir(d);
+
+		path += filename;
+
+		struct stat st;
+		if (g_stat(path.c_str(), &st) != 0)
+		{
+			/* File doesn't exist. */
+			const char* dir = g_path_get_dirname(path.c_str());
+
+			if(g_access(dir, W_OK) != 0)
+			{
+				b_log[W_ERR] << "Unable to write in the download directory '" << dir << "': " << strerror(errno);
+				((PurpleRequestFileCb)cancel_cb)(user_data, NULL);
+				return NULL;
+			}
+		}
+		else if(S_ISDIR(st.st_mode))
+		{
+			/* Directory already exists. */
+			b_log[W_ERR] << "There is already a directory named '" << path << "'";
+			((PurpleRequestFileCb)cancel_cb)(user_data, NULL);
+			return NULL;
+		}
+
+		nick->request_error("Kikoo: " + path);
+		((PurpleRequestFileCb)ok_cb)(user_data, path.c_str());
+	}
+	else
+		nick->request_error("Warning: something tries to ask you to open a filename (" + string(title) + "). But it is not yet implemented.");
+
+	return NULL;
 }
 
 }; /* namespace im */
