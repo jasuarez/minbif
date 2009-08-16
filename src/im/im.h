@@ -69,6 +69,9 @@ namespace im
 		IM(irc::IRC* irc, string username);
 		~IM();
 
+		/** Restore previous status */
+		void restore();
+
 		/** Get path to user settings */
 		string getUserPath() const { return user_path; }
 

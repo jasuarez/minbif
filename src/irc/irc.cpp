@@ -335,6 +335,8 @@ void IRC::sendWelcome()
 			user->send(Message(RPL_MOTD).setSender(this).setReceiver(user).addArg("Advice: you should start by adding an account using the /MAP command."));
 
 		user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
+
+		im->restore();
 	}
 	catch(im::IMError& e)
 	{

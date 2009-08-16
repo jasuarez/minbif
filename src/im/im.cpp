@@ -94,6 +94,13 @@ IM::~IM()
 	purple_core_quit();
 }
 
+void IM::restore()
+{
+	if (!purple_prefs_get_bool("/purple/savedstatus/startup_current_status"))
+		purple_savedstatus_activate(purple_savedstatus_get_startup());
+	purple_accounts_restore_current_statuses();
+}
+
 void IM::setPassword(const string& password)
 {
 	purple_prefs_set_string("/minbif/password", password.c_str());
