@@ -15,7 +15,7 @@ use Irssi::TextUI;
 
 use vars qw($VERSION %IRSSI);
 
-$VERSION = '1.3';
+$VERSION = '2.0';
 %IRSSI = (
     authors     => 'Tijmen "timing" Ruizendaal, Sebastien Delafond',
     contact     => 'tijmen.ruizendaal@gmail.com, seb@debian.org',
@@ -23,7 +23,7 @@ $VERSION = '1.3';
     description => '	1. Adds an item to the status bar wich shows [joined: <nicks>] when someone is joining on IM.
     			2. Shows join messages in the query.',
     license => 'GPLv2',
-    url     => 'http://symlink.me/projects/list_files/minbif',
+    url         => 'http://symlink.me/repositories/show/minbif/scripts/irssi',
     changed => '2009-08-17',
 );
 
