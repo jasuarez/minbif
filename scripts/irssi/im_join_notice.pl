@@ -58,12 +58,12 @@ sub event_join {
     Irssi::statusbar_items_redraw('join_notice');
     my $window = Irssi::window_find_item($nick);
     if($window){
-      $window->printformat(MSGLEVEL_JOINS, 'join', $nick, $address, $channel); 
+      $window->printformat(MSGLEVEL_JOINS, 'join', $nick, $address, $channel);
     }
   }
 }
 sub join_notice {
-  my ($item, $get_size_only) = @_; 
+  my ($item, $get_size_only) = @_;
   my $line;
   foreach my $key (keys(%online)) {
     $line = $line." ".$key;
@@ -73,7 +73,7 @@ sub join_notice {
     $line = "";
   } else {
     $item->default_handler($get_size_only, "", undef, 1);
-  } 
+  }
 }
 
 sub empty{
@@ -90,5 +90,5 @@ Irssi::statusbar_item_register('join_notice', undef, 'join_notice');
 Irssi::statusbars_recreate_items();
 
 Irssi::theme_register([
-  'join', '-->> {channick_hilight $0} {chanhost $1} has joined {channel $2}',
+  'join', '{channick_hilight $0} {chanhost $1} has joined {channel $2}',
 ]);
