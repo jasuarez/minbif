@@ -50,6 +50,7 @@ namespace im
 				      gboolean new_arrivals);
 		static void remove_user(PurpleConversation* conv, const char* cbname, const char *reason);
 		static void topic_changed(PurpleConversation* conv, const char* who, const char* topic);
+		static void buddy_typing(PurpleAccount* account, const char* who, gpointer null);
 
 	public:
 

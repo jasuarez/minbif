@@ -391,6 +391,12 @@ void Conversation::init()
 	purple_signal_connect(purple_conversations_get_handle(), "chat-buddy-leaving",
 				getHandler(), PURPLE_CALLBACK(remove_user),
 				NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "buddy-typing",
+			        getHandler(), PURPLE_CALLBACK(buddy_typing),
+				NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "buddy-typing-stopped",
+			        getHandler(), PURPLE_CALLBACK(buddy_typing),
+				NULL);
 }
 
 void Conversation::uninit()
@@ -546,6 +552,30 @@ void Conversation::topic_changed(PurpleConversation* c, const char* who, const c
 	if(who)
 		chan->getChanUser(who);
 	chan->setTopic(chanuser, topic ? topic : "");
+}
+
+void Conversation::buddy_typing(PurpleAccount* account, const char* who, gpointer null)
+{
+	Conversation conv(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, account));
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	PurpleConvIm *im = NULL;
+
+	if(!conv.isValid() || who == NULL)
+		return;
+
+	im = conv.getPurpleIm();
+	irc::Nick* n = irc->getNick(who);
+	if(!n)
+		return;
+
+	if(purple_conv_im_get_typing_state(im) == PURPLE_TYPING)
+		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+							 .setReceiver(irc->getUser())
+							 .addArg("\1TYPING 2\1"));
+	else
+		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+							 .setReceiver(irc->getUser())
+							 .addArg("\1TYPING 0\1"));
 }
 
 }; /* namespace im */
