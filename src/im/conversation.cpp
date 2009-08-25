@@ -270,6 +270,27 @@ void Conversation::sendMessage(string text) const
 		 * continue to send message prefixed with /me. */
 	}
 
+	if(text.find("\001TYPING ") == 0)
+	{
+		string typing = text.substr(8, text.size() - 8 - 1);
+		int timeout;
+		if (typing == "1")
+		{
+				timeout = serv_send_typing(purple_conversation_get_gc(conv),
+							   purple_conversation_get_name(conv),
+							   PURPLE_TYPING);
+				purple_conv_im_set_type_again(getPurpleIm(), timeout);
+		}
+		else if (typing == "0")
+		{
+				purple_conv_im_stop_send_typed_timeout(getPurpleIm());
+				timeout = serv_send_typing(purple_conversation_get_gc(conv),
+							   purple_conversation_get_name(conv),
+							   PURPLE_NOT_TYPING);
+		}
+		return;
+	}
+
 	char *escape = g_markup_escape_text(text.c_str(), -1);
 	char *apos = purple_strreplace(escape, "&apos;", "'");
 	g_free(escape);
@@ -564,18 +585,21 @@ void Conversation::buddy_typing(PurpleAccount* account, const char* who, gpointe
 		return;
 
 	im = conv.getPurpleIm();
-	irc::Nick* n = irc->getNick(who);
+
+	PurpleBuddy *buddy = purple_find_buddy(account, who);
+	irc::Nick* n = irc->getNick(buddy);
+
 	if(!n)
 		return;
 
 	if(purple_conv_im_get_typing_state(im) == PURPLE_TYPING)
 		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 							 .setReceiver(irc->getUser())
-							 .addArg("\1TYPING 2\1"));
+							 .addArg("\1TYPING 1\1"));
 	else
 		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 							 .setReceiver(irc->getUser())
-							 .addArg("\1TYPING 0\1"));
+				                         .addArg("\1TYPING 0\1"));
 }
 
 }; /* namespace im */
