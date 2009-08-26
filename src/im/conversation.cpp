@@ -571,7 +571,7 @@ void Conversation::topic_changed(PurpleConversation* c, const char* who, const c
 	}
 	irc::ChanUser* chanuser = 0;
 	if(who)
-		chan->getChanUser(who);
+		chanuser = chan->getChanUser(who);
 	chan->setTopic(chanuser, topic ? topic : "");
 }
 
