@@ -385,7 +385,7 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 	Conversation::write_im,
 	Conversation::write_conv,
 	Conversation::add_users,
-	NULL,//finch_chat_rename_user,
+	Conversation::chat_rename_user,
 	NULL,//Conversation::remove_users, use signal instead
 	NULL,//finch_chat_update_user,
 	Conversation::conv_present,//finch_conv_present, /* present */
@@ -518,7 +518,7 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 			g_free(msg);
 		}
 		else
-			conv.recvMessage(from, strip, action);
+			conv.recvMessage(from, strip ? strip : "", action);
 
 		g_free(strip);
 		g_free(newline);
@@ -557,6 +557,33 @@ void Conversation::remove_user(PurpleConversation* c, const char* cbname, const 
 	}
 	irc::Nick* nick = chan->getChanUser(cbname)->getNick();
 	nick->part(chan, reason ? reason : "");
+}
+
+void Conversation::chat_rename_user(PurpleConversation *c, const char *old,
+				    const char *new_n, const char *new_a)
+{
+	Conversation conv(conv);
+	ChatBuddy cbuddy(conv, purple_conv_chat_cb_find(conv.getPurpleChat(), new_n));
+	if(!cbuddy.isValid())
+	{
+		b_log[W_ERR] << "Rename from " << old << " to " << new_n << " (" << new_a << ") which is an unknown chat buddy";
+		return;
+	}
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+	if(!chan)
+	{
+		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
+		return;
+	}
+	irc::Nick* nick = chan->getChanUser(old)->getNick();
+	string new_nick = new_a;
+	while(irc->getNick(new_nick))
+		new_nick += "_";
+
+	irc->getUser()->send(irc::Message(MSG_NICK).setSender(nick)
+			                           .addArg(new_nick));
+	nick->setNickname(new_nick);
 }
 
 void Conversation::topic_changed(PurpleConversation* c, const char* who, const char* topic)

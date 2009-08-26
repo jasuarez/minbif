@@ -51,6 +51,8 @@ namespace im
 		static void remove_user(PurpleConversation* conv, const char* cbname, const char *reason);
 		static void topic_changed(PurpleConversation* conv, const char* who, const char* topic);
 		static void buddy_typing(PurpleAccount* account, const char* who, gpointer null);
+		static void chat_rename_user(PurpleConversation *conv, const char *old,
+				             const char *new_n, const char *new_a);
 
 	public:
 
