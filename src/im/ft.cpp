@@ -85,13 +85,21 @@ void FileTransfert::destroy(PurpleXfer* xfer)
 
 void FileTransfert::add_xfer(PurpleXfer* xfer)
 {
-	b_log[W_SNO] << "Starting receiving file " << purple_xfer_get_filename(xfer);
+	PurpleBuddy* buddy = purple_find_buddy(xfer->account, xfer->who);
+	if(!buddy)
+	{
+		b_log[W_ERR] << "Receiving file from unknown buddy";
+		return;
+	}
 
+	Buddy b(buddy);
+
+	b_log[W_SNO] << "Starting receiving file " << purple_xfer_get_filename(xfer) << " from " << b.getAlias();
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	FileTransfert ft(xfer);
 	try
 	{
-		irc->createDCCSend(ft);
+		irc->createDCCSend(ft, b);
 	}
 	catch(irc::DCCListenError &e)
 	{

@@ -153,9 +153,9 @@ IRC::~IRC()
 	cleanUpDCC();
 }
 
-DCC* IRC::createDCCSend(const im::FileTransfert& ft)
+DCC* IRC::createDCCSend(const im::FileTransfert& ft, const im::Buddy& buddy)
 {
-	DCC* dcc = new DCCSend(ft, user);
+	DCC* dcc = new DCCSend(ft, buddy, user);
 	dccs.push_back(dcc);
 	return dcc;
 }

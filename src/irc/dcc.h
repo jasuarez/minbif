@@ -70,7 +70,8 @@ namespace irc {
 		string filename;
 		string local_filename;
 
-		Nick* nick;
+		Nick* sender;
+		Nick* receiver;
 		PurpleNetworkListenData* listen_data;
 		int watcher;
 		int fd;
@@ -90,7 +91,7 @@ namespace irc {
 
 	public:
 
-		DCCSend(const im::FileTransfert& ft, Nick* nick);
+		DCCSend(const im::FileTransfert& ft, Nick* sender, Nick* receiver);
 		~DCCSend();
 
 		im::FileTransfert getFileTransfert() const { return ft; }
