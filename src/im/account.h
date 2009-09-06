@@ -46,6 +46,22 @@ namespace im
 		static void* getHandler();
 		static void account_added(PurpleAccount*);
 		static void account_removed(PurpleAccount*);
+		static void notify_added(PurpleAccount *account, const char *remote_user,
+						const char *id, const char *alias,
+						const char *msg);
+		static void request_add(PurpleAccount *account, const char *remote_user,
+					  const char *id, const char *alias,
+					  const char *msg);
+		static void *request_authorize(PurpleAccount *account,
+					const char *remote_user,
+					const char *id,
+					const char *alias,
+					const char *message,
+					gboolean on_list,
+					PurpleAccountRequestAuthorizationCb auth_cb,
+					PurpleAccountRequestAuthorizationCb deny_cb,
+					void *user_data);
+		static void request_close(void *uihandle);
 		static void connecting(PurpleConnection *gc,
 		                       const char *text,
 		                       size_t step,
