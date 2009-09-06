@@ -150,7 +150,7 @@ namespace irc
 		void removeChannel(string channame);
 
 		void addNick(Nick* nick);
-		Nick* getNick(string nick) const;
+		Nick* getNick(string nick, bool case_sensitive = false) const;
 		Nick* getNick(const im::Buddy& buddy) const;
 		void removeNick(string nick);
 

@@ -228,11 +228,12 @@ void IRC::addNick(Nick* nick)
 	users[nick->getNickname()] = nick;
 }
 
-Nick* IRC::getNick(string nickname) const
+Nick* IRC::getNick(string nickname, bool case_sensitive) const
 {
 	map<string, Nick*>::const_iterator it;
-	nickname = strlower(nickname);
-	for(it = users.begin(); it != users.end() && strlower(it->first) != nickname; ++it)
+	if(!case_sensitive)
+		nickname = strlower(nickname);
+	for(it = users.begin(); it != users.end() && (case_sensitive ? it->first : strlower(it->first)) != nickname; ++it)
 		;
 
 	if(it == users.end())
@@ -1394,7 +1395,7 @@ void IRC::m_svsnick(Message message)
 		return;
 	}
 
-	if(getNick(message.getArg(1)))
+	if(getNick(message.getArg(1), true))
 	{
 		user->send(Message(ERR_NICKNAMEINUSE).setSender(this)
 				                     .setReceiver(user)
