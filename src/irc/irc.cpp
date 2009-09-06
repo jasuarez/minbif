@@ -944,6 +944,8 @@ void IRC::m_map(Message message)
 				}
 
 				added_account = im->addAccount(proto, username, password, options);
+				if(channel.empty())
+					channel = "&minbif";
 				added_account.setStatusChannel(channel);
 				added_account.createStatusChannel();
 
