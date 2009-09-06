@@ -1,0 +1,63 @@
+.TH MINBIF 8 "06 September 2009"
+.SH NAME
+minbif \- The IRC instant messaging gateway
+.SH SYNOPSIS
+.hy 0
+.IP \fBminbif\fP
+.I CONFIG_FILE
+.SH DESCRIPTION
+.LP
+Minbif is an IRC gateway to IM networks which provides the following features:
+
+.nf
+* Minbif uses a library which abstracts all IM calls, and has
+  several plugins to support a lot of IM protocols (IRC included!).
+* Only IRC commands are used to command Minbif.
+* Certificates check.
+* Buddies are IRC users.
+* Each account has a status channel. You see in all connected buddies,
+  and their status on it.
+* Add and remove buddies from list with /INVITE and /KICK commands.
+* Blocked users are bans on the account's status channel.
+* You can see buddies' icons (with libcaca) or download them.
+* Conversation chats are supported.
+* Auto-rejoin conversation channels at connection.
+* Receive files via DCC.
+.fi
+
+.SH OPTIONS
+.TP
+.B config_file
+Configuration file location.
+
+.SH CONFIGURATION
+Edit the \fIminbif.conf\fP file and change value when needed.
+
+Currently, only the inetd mode is available. So it is necessary to add minbif
+in inetd with this command:
+.nf
+# update-inetd --add '56667 stream tcp nowait minbif /usr/sbin/tcpd /usr/bin/minbif /etc/minbif/minbif.conf'
+.fi
+
+.SH HOW TO USE
+Connect your IRC client (for examble \fIirssi\fP) on minbif with this command:
+.nf
+/server localhost 56667 \fIpassword\fP
+.fi
+
+The nickname set on your IRC client is your username on minbif. First time you
+connect to minbif with this nickname, the account is created and the
+\fIpassword\fP parameter is set.
+
+Next, use the \fB/map help\fP command to know how to add a network.
+
+See also: http://symlink.me/wiki/minbif/Quick_start
+
+.SH COPYRIGHT
+Copyright(C) 2009 Romain Bignon
+.LP
+For full COPYRIGHT see COPYING file with minbif package.
+.LP
+.RE
+.SH FILES
+ "minbif.conf"
