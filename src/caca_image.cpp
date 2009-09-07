@@ -106,6 +106,7 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 	if(cucul_set_dither_algorithm(i->dither, "fstein"))
 	{
 		i->unload();
+		free(i);
 		cucul_free_canvas(cv);
 		throw CacaError();
 	}
@@ -113,6 +114,7 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 	cucul_dither_bitmap(cv, 0, 0, width, height, i->dither, i->pixels);
 
 	i->unload();
+	free(i);
 
 	size_t len;
 	char* tmp;
