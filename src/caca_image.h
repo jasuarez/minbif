@@ -32,24 +32,30 @@ class CacaNotLoaded : public std::exception {};
 /** Convert an image (JPG/PNG/..) to a beautiful ASCII-art picture. */
 class CacaImage
 {
-	string path;
+	struct image;
+
 	string buf;
 	unsigned width, height, font_width, font_height;
+	image* img;
 
 public:
 
-	/** Default constructor */
+	/** Empty constructor */
 	CacaImage();
 
-	/** Constructor with parameters
+	/** Constructor from file.
 	 *
 	 * @param path  path to file
-	 * @param width  render's text width
-	 * @param height  render's text height
-	 * @param font_width  font width
-	 * @param font_height  font height
 	 */
-	CacaImage(string path, unsigned width = 0, unsigned height = 0, unsigned font_width = 6, unsigned font_height = 10);
+	CacaImage(string path);
+
+	/** Constructor from buffer
+	 */
+	CacaImage(void* buffer, size_t size, unsigned width, unsigned height, unsigned bpp);
+
+	CacaImage(const CacaImage& caca);
+	CacaImage& operator=(const CacaImage& caca);
+
 	~CacaImage();
 
 	/** Get IRC buffer to ASCII art picture.

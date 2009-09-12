@@ -81,6 +81,7 @@ int Minbif::main(int argc, char** argv)
 				                this);
 		b_log.setServerPoll(server_poll);
 
+		g_thread_init(NULL);
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
 
