@@ -6,6 +6,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/minbif.cpp
 		src/util.cpp
 		src/log.cpp
+		src/mutex.cpp
 		src/callback.cpp
 		src/config.cpp
 		src/caca_image.cpp
