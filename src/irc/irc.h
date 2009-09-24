@@ -114,6 +114,7 @@ namespace irc
 		void m_kick(Message m);     /**< Handler for the KICK message */
 		void m_kill(Message m);     /**< Handler for the KILL message */
 		void m_svsnick(Message m);  /**< Handler for the SVSNICK message */
+		void m_away(Message m);     /**< Handler for the AWAY message */
 
 	public:
 

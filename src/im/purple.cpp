@@ -134,6 +134,7 @@ void Purple::init(IM* im)
 	}
 
 	purple_set_blist(purple_blist_new());
+	purple_savedstatus_set_idleaway(false);
 	purple_blist_load();
 }
 

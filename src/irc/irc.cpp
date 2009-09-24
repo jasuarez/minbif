@@ -67,6 +67,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_KICK,    &IRC::m_kick,    2, 0, Nick::REGISTERED },
 	{ MSG_KILL,    &IRC::m_kill,    1, 0, Nick::REGISTERED },
 	{ MSG_SVSNICK, &IRC::m_svsnick, 2, 0, Nick::REGISTERED },
+	{ MSG_AWAY,    &IRC::m_away,    0, 0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
@@ -1412,6 +1413,27 @@ void IRC::m_svsnick(Message message)
 	buddy->setNickname(message.getArg(1));
 	addNick(buddy);
 	buddy->getBuddy().setAlias(message.getArg(1));
+}
+
+/** AWAY [message] */
+void IRC::m_away(Message message)
+{
+	string away;
+	if(message.countArgs())
+		away = message.getArg(0);
+
+	if(im->setStatus(away))
+	{
+		user->setAwayMessage(away);
+		if(away.empty())
+			user->send(Message(RPL_UNAWAY).setSender(this)
+					              .setReceiver(user)
+						      .addArg("You are no longer marked as being away"));
+		else
+			user->send(Message(RPL_NOWAWAY).setSender(this)
+					               .setReceiver(user)
+						       .addArg("You have been marked as being away"));
+	}
 }
 
 }; /* namespace irc */

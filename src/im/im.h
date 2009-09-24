@@ -115,6 +115,9 @@ namespace im
 		 * @param account  Account instance
 		 */
 		void delAccount(Account account);
+
+		/** Set status on IM accounts */
+		bool setStatus(string status);
 	};
 
 };

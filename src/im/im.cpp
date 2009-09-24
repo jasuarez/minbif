@@ -23,6 +23,8 @@
 
 #include "im.h"
 #include "purple.h"
+#include "../irc/irc.h"
+#include "../irc/user.h"
 #include "../log.h"
 #include "../util.h"
 
@@ -159,6 +161,40 @@ Account IM::addAccount(Protocol proto, string username, string password, vector<
 void IM::delAccount(Account user)
 {
 	Purple::delAccount(user.getPurpleAccount());
+}
+
+bool IM::setStatus(string away)
+{
+	away = strlower(away);
+	PurpleStatusPrimitive prim = PURPLE_STATUS_AVAILABLE;
+	if(away.empty() == false)
+	{
+		unsigned i;
+		string status_list;
+		for(i = 0; i < (unsigned)PURPLE_STATUS_NUM_PRIMITIVES &&
+		           strlower(purple_primitive_get_name_from_type((PurpleStatusPrimitive)i)) != away &&
+			   purple_primitive_get_id_from_type((PurpleStatusPrimitive)i) != away;
+		    ++i)
+			status_list += string(" ") + purple_primitive_get_id_from_type((PurpleStatusPrimitive)i);
+
+		if(i >= PURPLE_STATUS_NUM_PRIMITIVES)
+		{
+			irc->notice(irc->getUser(), "This message does not exist. Try with:");
+			irc->notice(irc->getUser(), status_list);
+			return false;
+		}
+		prim = (PurpleStatusPrimitive)i;
+	}
+
+	PurpleSavedStatus* status = purple_savedstatus_find_transient_by_type_and_message(prim, purple_primitive_get_name_from_type(prim));
+	if(!status)
+	{
+		status = purple_savedstatus_new(NULL, prim);
+		purple_savedstatus_set_message(status, purple_primitive_get_name_from_type(prim));
+	}
+	purple_savedstatus_activate(status);
+
+	return true;
 }
 
 }; /* namespace im */

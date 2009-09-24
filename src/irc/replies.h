@@ -30,6 +30,8 @@
 #define RPL_ENDOFSTATS  "219"
 #define RPL_AWAY        "301"
 #define RPL_ISON        "303"
+#define RPL_UNAWAY      "305"
+#define RPL_NOWAWAY     "306"
 #define RPL_WHOISUSER   "311"
 #define RPL_WHOISSERVER "312"
 #define RPL_ENDOFWHO    "315"
@@ -97,5 +99,6 @@
 #define MSG_SVSNICK     "SVSNICK"
 #define MSG_TOPIC       "TOPIC"
 #define MSG_NAMES       "NAMES"
+#define MSG_AWAY        "AWAY"
 
 #endif /* IRC_REPLIES_H */
