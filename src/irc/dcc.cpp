@@ -189,7 +189,7 @@ void DCCSend::listen_cb(int sock, void* data)
 	dcc->watcher = purple_input_add(sock, PURPLE_INPUT_READ,
 					connected, dcc);
 
-	dcc->receiver->send(Message(MSG_PRIVMSG).setSender(dcc->sender)
+	dcc->receiver->send(Message(MSG_PRIVMSG).setSender(dcc->sender ? dcc->sender->getLongName() : "some.one")
 			                 .setReceiver(dcc->receiver)
 					 .addArg("\001DCC SEND \"" + dcc->filename + "\" " +
 						 t2s(ntohl(addr.s_addr)) + " " +

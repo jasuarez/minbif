@@ -158,7 +158,7 @@ namespace irc
 		Server* getServer(string server) const;
 		void removeServer(string server);
 
-		DCC* createDCCSend(const im::FileTransfert& ft, const im::Buddy& buddy);
+		DCC* createDCCSend(const im::FileTransfert& ft, Nick* from);
 		void updateDCC(const im::FileTransfert& ft, bool destroy = false);
 
 		/** Callback used by glibc to check user ping */

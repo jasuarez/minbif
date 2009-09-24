@@ -153,9 +153,9 @@ IRC::~IRC()
 	cleanUpDCC();
 }
 
-DCC* IRC::createDCCSend(const im::FileTransfert& ft, const im::Buddy& buddy)
+DCC* IRC::createDCCSend(const im::FileTransfert& ft, Nick* n)
 {
-	DCC* dcc = new DCCSend(ft, buddy, user);
+	DCC* dcc = new DCCSend(ft, n, user);
 	dccs.push_back(dcc);
 	return dcc;
 }
@@ -704,11 +704,10 @@ void IRC::m_whowas(Message message)
 void IRC::m_privmsg(Message message)
 {
 	Message relayed(message.getCommand());
-	string targets = message.getArg(0);
-	const char * delim=",";
-	string target = stringtok(targets, delim);
+	string targets = message.getArg(0), target;
 
-	while (target!=""){
+	while ((target = stringtok(targets, ",")).empty() == false)
+	{
 		relayed.setSender(user);
 		relayed.addArg(message.getArg(1));
 
@@ -745,7 +744,6 @@ void IRC::m_privmsg(Message message)
 					    .addArg(n->getNickname())
 					    .addArg(n->getAwayMessage()));
 		}
-		target=stringtok(targets, delim);
 	}
 }
 
