@@ -25,6 +25,7 @@
 #include "conversation.h"
 #include "request.h"
 #include "ft.h"
+#include "media.h"
 #include "../version.h"
 #include "../log.h"
 #include "../util.h"
@@ -48,14 +49,13 @@ void Purple::debug(PurpleDebugLevel level, const char *category, const char *arg
 {
 	switch(level)
 	{
-		case PURPLE_DEBUG_WARNING:
-			b_log[W_DEBUG] << "[" << category << "] " << args;
-			break;
 		case PURPLE_DEBUG_ERROR:
 		case PURPLE_DEBUG_FATAL:
 			b_log[W_WARNING] << "[" << category << "] " << args;
 			break;
+		case PURPLE_DEBUG_WARNING:
 		default:
+			b_log[W_DEBUG] << "[" << category << "] " << args;
 			break;
 	}
 }
@@ -147,6 +147,7 @@ void Purple::inited()
 	Conversation::init();
 	Request::init();
 	FileTransfert::init();
+	Media::init();
 }
 
 void Purple::uninit()
@@ -158,6 +159,7 @@ void Purple::uninit()
 	Conversation::uninit();
 	Request::uninit();
 	FileTransfert::uninit();
+	Media::uninit();
 }
 
 map<string, Protocol> Purple::getProtocolsList()

@@ -136,6 +136,7 @@ int Minbif::main(int argc, char** argv)
 		sigaction( SIGQUIT, &sig, &old );
 		sigaction( SIGXCPU, &sig, &old );
 
+		g_thread_init(NULL);
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
 

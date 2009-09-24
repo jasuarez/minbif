@@ -22,34 +22,88 @@
 #endif
 
 #include "caca_image.h"
+#include <string.h>
 
 #ifdef USE_CACA
-	struct image
+	struct CacaImage::image
 	{
 		char *pixels;
 		unsigned int w, h;
 		cucul_dither_t *dither;
 		void *priv;
+		unsigned ref;
 
-		static struct image * load(char const * name);
-		void unload();
+		image();
+		image(const image& img);
+		~image();
+		void create_dither(unsigned bpp);
+		static struct CacaImage::image * load_file(char const * name);
 	};
 #endif /* USE_CACA */
 
 CacaImage::CacaImage()
+	: width(0),
+	  height(0),
+	  font_width(16),
+	  font_height(10),
+	  img(0)
 {}
 
-CacaImage::CacaImage(string _path, unsigned _width, unsigned _height, unsigned _font_width, unsigned _font_height)
-	: path(_path),
-	  width(_width),
-	  height(_height),
-	  font_width(_font_width),
-	  font_height(_font_height)
+CacaImage::CacaImage(string path)
+	: width(0),
+	  height(0),
+	  font_width(6),
+	  font_height(10)
 {
+	img = image::load_file(path.c_str());
+}
+
+CacaImage::CacaImage(void* buf, size_t size, unsigned buf_width, unsigned buf_height, unsigned bpp)
+	: width(0),
+	  height(0),
+	  font_width(6),
+	  font_height(10)
+{
+	img = new image();
+	img->w = buf_width;
+	img->h = buf_height;
+	img->pixels = strndup((char*)buf, size);
+
+	img->create_dither(bpp);
+}
+
+CacaImage::CacaImage(const CacaImage& caca)
+	: buf(caca.buf),
+	  width(caca.width),
+	  height(caca.height),
+	  font_width(caca.font_width),
+	  font_height(caca.font_height),
+	  img(caca.img)
+{
+	img->ref++;
+}
+
+CacaImage& CacaImage::operator=(const CacaImage& caca)
+{
+	buf = caca.buf;
+	width = caca.width;
+	height = caca.height;
+	font_width = caca.font_width;
+	font_height = caca.font_height;
+	img = caca.img;
+	img->ref++;
+	return *this;
 }
 
 CacaImage::~CacaImage()
-{}
+{
+	if(img)
+	{
+		img->ref--;
+		if(img->ref < 1)
+			delete img;
+	}
+}
 
 string CacaImage::getIRCBuffer()
 {
@@ -63,56 +117,43 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 #ifndef USE_CACA
 	throw CacaNotLoaded();
 #else
-	if(buf.empty() == false &&
-	   width != _width && height != _height &&
-	   font_width != _font_width && font_height != _font_height)
-		return buf;
-
-	if(path.empty())
+	if(!img)
 		throw CacaError();
+
+	if(buf.empty() == false &&
+	   width == _width && height == _height &&
+	   font_width == _font_width && font_height == _font_height)
+		return buf;
 
 	width = _width;
 	height = _height;
 	font_width = _font_width;
 	font_height = _font_height;
 
-	cucul_canvas_t *cv;
-	struct image *i;
-
-	cv = cucul_create_canvas(0, 0);
+	cucul_canvas_t *cv = cucul_create_canvas(0, 0);
 	if(!cv)
 		throw CacaError();
-
-	i = image::load(path.c_str());
-	if(!i)
-	{
-		cucul_free_canvas(cv);
-		throw CacaError();
-	}
 
 	if(!width && !height)
 	{
 		height = 10;
-		width = height * i->w * font_height / i->h / font_width;
+		width = height * img->w * font_height / img->h / font_width;
 	}
 	else if(width && !height)
-		height = width * i->h * font_width / i->w / font_height;
+		height = width * img->h * font_width / img->w / font_height;
 	else if(!width && height)
-		width = height * i->w * font_height / i->h / font_width;
+		width = height * img->w * font_height / img->h / font_width;
 
 	cucul_set_canvas_size(cv, width, height);
 	cucul_set_color_ansi(cv, CUCUL_DEFAULT, CUCUL_TRANSPARENT);
 	cucul_clear_canvas(cv);
-	if(cucul_set_dither_algorithm(i->dither, "fstein"))
+	if(cucul_set_dither_algorithm(img->dither, "fstein"))
 	{
-		i->unload();
 		cucul_free_canvas(cv);
 		throw CacaError();
 	}
 
-	cucul_dither_bitmap(cv, 0, 0, width, height, i->dither, i->pixels);
-
-	i->unload();
+	cucul_dither_bitmap(cv, 0, 0, width, height, img->dither, img->pixels);
 
 	size_t len;
 	char* tmp;
@@ -120,6 +161,7 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 	if(!tmp)
 		throw CacaError();
 
+	tmp = (char*)realloc(tmp, len+1);
 	tmp[len] = 0;
 	buf = tmp;
 
@@ -132,52 +174,71 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 }
 
 #ifdef USE_CACA
-struct image* image::load(char const * name)
+CacaImage::image::image()
+	: pixels(0),
+	  w(0),
+	  h(0),
+	  dither(0),
+	  priv(0),
+	  ref(1)
 {
-    struct image * im = (struct image*)malloc(sizeof(struct image));
-    unsigned int depth, bpp, rmask, gmask, bmask, amask;
-
-    Imlib_Image image;
-
-    /* Load the new image */
-    image = imlib_load_image(name);
-
-    if(!image)
-    {
-        free(im);
-        return NULL;
-    }
-
-    imlib_context_set_image(image);
-    im->pixels = (char *)imlib_image_get_data_for_reading_only();
-    im->w = imlib_image_get_width();
-    im->h = imlib_image_get_height();
-    rmask = 0x00ff0000;
-    gmask = 0x0000ff00;
-    bmask = 0x000000ff;
-    amask = 0xff000000;
-    bpp = 32;
-    depth = 4;
-
-    /* Create the libcaca dither */
-    im->dither = cucul_create_dither(bpp, im->w, im->h, depth * im->w,
-                                     rmask, gmask, bmask, amask);
-    if(!im->dither)
-    {
-        imlib_free_image();
-        free(im);
-        return NULL;
-    }
-
-    im->priv = (void *)image;
-
-    return im;
 }
 
-void image::unload()
+CacaImage::image::~image()
 {
-    /* Imlib_Image image = (Imlib_Image)im->priv; */
-    imlib_free_image();
-    cucul_free_dither(dither);
+	if(priv)
+		imlib_free_image();
+	if(dither)
+		cucul_free_dither(dither);
+	free(pixels);
 }
+
+void CacaImage::image::create_dither(unsigned int bpp)
+{
+	unsigned int depth, rmask, gmask, bmask, amask;
+	rmask = 0x00ff0000;
+	gmask = 0x0000ff00;
+	bmask = 0x000000ff;
+	amask = 0xff000000;
+	depth = bpp / 8;
+
+	/* Create the libcaca dither */
+	dither = cucul_create_dither(bpp, w, h, depth * w,
+				     rmask, gmask, bmask, amask);
+
+}
+
+struct CacaImage::image* CacaImage::image::load_file(char const * name)
+{
+	struct image * im = new image();
+
+	Imlib_Image image;
+
+	/* Load the new image */
+	image = imlib_load_image(name);
+
+	if(!image)
+	{
+		delete im;
+		return NULL;
+	}
+
+	imlib_context_set_image(image);
+	im->w = imlib_image_get_width();
+	im->h = imlib_image_get_height();
+	im->pixels = (char*)malloc(im->w * im->h * 4);
+	memcpy(im->pixels, imlib_image_get_data_for_reading_only(), im->w * im->h * 4);
+
+	im->create_dither(32);
+	if(!im->dither)
+	{
+		delete im;
+		return NULL;
+	}
+
+	im->priv = (void *)image;
+
+	return im;
+}
+
 #endif /* USE_CACA */
