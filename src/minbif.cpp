@@ -46,6 +46,7 @@ Minbif::Minbif()
 	section = section->AddSection("daemon", "Daemon information", true);
 	section->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
 	section->AddItem(new ConfigItem_int("port", "Port to listen on"), true);
+	section->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
 
 	section = conf.AddSection("logging", "Log information", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));

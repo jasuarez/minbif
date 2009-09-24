@@ -51,6 +51,18 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	const char* bind_addr = section->GetItem("bind")->String().c_str();
 	uint16_t port = (uint16_t)section->GetItem("port")->Integer();
 
+	if(section->GetItem("background")->Boolean())
+	{
+		int r = fork();
+		if(r < 0)
+		{
+			b_log[W_ERR] << "Unable to start in background: " << strerror(errno);
+			exit(EXIT_FAILURE);
+		}
+		else if(r > 0)
+			exit(EXIT_SUCCESS);
+	}
+
 	static struct sockaddr_in fsocket;
 	fsocket.sin_family = AF_INET;
 	fsocket.sin_addr.s_addr = inet_addr(bind_addr);
@@ -77,20 +89,6 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	read_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::new_client_cb);
 	read_id = glib_input_add(sock, (PurpleInputCondition)PURPLE_INPUT_READ,
 				       g_callback_input, read_cb);
-
-#if 0
-	try
-	{
-		irc = new irc::IRC(this, 0,
-		              conf.GetSection("irc")->GetItem("hostname")->String(),
-			      conf.GetSection("irc")->GetItem("ping")->Integer());
-	}
-	catch(irc::AuthError &e)
-	{
-		b_log[W_ERR] << "Unable to start the IRC daemon";
-		throw ServerPollError();
-	}
-#endif
 }
 
 DaemonForkServerPoll::~DaemonForkServerPoll()
@@ -98,6 +96,8 @@ DaemonForkServerPoll::~DaemonForkServerPoll()
 	if(read_id >= 0)
 		g_source_remove(read_id);
 	delete read_cb;
+	if(sock >= 0)
+		close(sock);
 
 	delete irc;
 }
@@ -110,17 +110,22 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 
 	pid_t client_pid = fork();
 
-	if(client_pid > 0)
+	if(client_pid < 0)
+	{
+		b_log[W_ERR] << "Unable to fork while receiving a new connection: " << strerror(errno);
+		return true;
+	}
+	else if(client_pid > 0)
 	{
 		/* Parent */
-		b_log[W_ERR] << "Creating new process with pid " << client_pid;
+		b_log[W_INFO] << "Creating new process with pid " << client_pid;
 		close(new_socket);
-		return true;
 	}
 	else
 	{
 		/* Child */
 		close(sock);
+		sock = -1;
 		g_source_remove(read_id);
 		delete read_cb;
 		read_cb = NULL;
@@ -159,7 +164,7 @@ void DaemonForkServerPoll::log(size_t level, string msg) const
 
 void DaemonForkServerPoll::kill(irc::IRC* irc)
 {
-	assert(irc == this->irc);
+	assert(!irc || irc == this->irc);
 
 	stop_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::stopServer_cb);
 	g_timeout_add(0, g_callback, stop_cb);
