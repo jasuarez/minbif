@@ -20,6 +20,7 @@
 #include <iostream>
 #include <cstring>
 #include <sys/resource.h>
+#include <sys/wait.h>
 #include <libpurple/purple.h>
 
 #include "minbif.h"
@@ -55,6 +56,27 @@ Minbif::Minbif()
 Minbif::~Minbif()
 {
 	delete server_poll;
+}
+
+static void sighandler(int r)
+{
+	switch(r)
+	{
+		case SIGCHLD:
+		{
+			pid_t pid;
+			int st;
+			while((pid = waitpid(0, &st, WNOHANG)) > 0)
+				;
+			break;
+		}
+		case SIGPIPE:
+			break;
+		case SIGTERM:
+			/* TODO implement a handler here. */
+		default:
+			raise(r);
+	}
 }
 
 int Minbif::main(int argc, char** argv)
@@ -94,6 +116,21 @@ int Minbif::main(int argc, char** argv)
 		server_poll = ServerPoll::build((ServerPoll::poll_type_t)conf.GetSection("irc")->GetItem("type")->Integer(),
 				                this);
 		b_log.setServerPoll(server_poll);
+
+		struct sigaction sig, old;
+		memset( &sig, 0, sizeof( sig ) );
+		sig.sa_handler = sighandler;
+		sigaction( SIGCHLD, &sig, &old );
+		sigaction( SIGPIPE, &sig, &old );
+		sig.sa_flags = SA_RESETHAND;
+		sigaction( SIGINT,  &sig, &old );
+		sigaction( SIGILL,  &sig, &old );
+		sigaction( SIGBUS,  &sig, &old );
+		sigaction( SIGFPE,  &sig, &old );
+		sigaction( SIGSEGV, &sig, &old );
+		sigaction( SIGTERM, &sig, &old );
+		sigaction( SIGQUIT, &sig, &old );
+		sigaction( SIGXCPU, &sig, &old );
 
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
