@@ -262,6 +262,9 @@ void IRC::removeNick(string nickname)
 	map<string, Nick*>::iterator it = users.find(nickname);
 	if(it != users.end())
 	{
+		for(vector<DCC*>::iterator dcc = dccs.begin(); dcc != dccs.end(); ++dcc)
+			if((*dcc)->getPeer() == it->second)
+				(*dcc)->setPeer(NULL);
 		delete it->second;
 		users.erase(it);
 	}

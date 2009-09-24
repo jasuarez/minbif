@@ -39,6 +39,8 @@ namespace irc {
 		virtual im::FileTransfert getFileTransfert() const = 0;
 		virtual void updated(bool destroy) = 0;
 		virtual bool isFinished() const = 0;
+		virtual Nick* getPeer() const = 0;
+		virtual void setPeer(Nick* n) = 0;
 	};
 
 	class DCCSend : public DCC
@@ -90,13 +92,15 @@ namespace irc {
 		void deinit();
 
 	public:
-
 		DCCSend(const im::FileTransfert& ft, Nick* sender, Nick* receiver);
 		~DCCSend();
 
 		im::FileTransfert getFileTransfert() const { return ft; }
 		void updated(bool destroy);
 		bool isFinished() const { return finished; }
+
+		Nick* getPeer() const { return sender; }
+		void setPeer(Nick* n) { sender = n; }
 	};
 
 };
