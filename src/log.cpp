@@ -72,7 +72,7 @@ Log::flux::~flux()
 		if(b_log.getServerPoll())
 			b_log.getServerPoll()->log(flag, category + str);
 		else
-			std::cout << ":localhost.localdomain NOTICE AUTH :" << category << " " << str << "\r\n";
+			std::cout << category << " " << str << "\r\n";
 
 	}
 }

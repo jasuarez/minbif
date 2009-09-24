@@ -17,10 +17,13 @@
  */
 
 #include <stdlib.h>
+#include <iostream>
+#include <cstring>
 #include <sys/resource.h>
 #include <libpurple/purple.h>
 
 #include "minbif.h"
+#include "version.h"
 #include "config.h"
 #include "log.h"
 #include "util.h"
@@ -39,9 +42,14 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 
+	section = section->AddSection("daemon", "Daemon information", true);
+	section->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
+	section->AddItem(new ConfigItem_int("port", "Port to listen on"), true);
+
 	section = conf.AddSection("logging", "Log information", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
+
 }
 
 Minbif::~Minbif()
@@ -53,8 +61,14 @@ int Minbif::main(int argc, char** argv)
 {
 	if(argc < 2)
 	{
-		b_log << "Syntax: " << argv[0] << " config_file";
+		std::cerr << "Syntax: " << argv[0] << " config_file" << std::endl;
 		return EXIT_FAILURE;
+	}
+
+	if(!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))
+	{
+		std::cout << MINBIF_VERSION << " (Build " __DATE__ " " __TIME__ ") © 2009 Romain Bignon" << std::endl;
+		return EXIT_SUCCESS;
 	}
 
 	try

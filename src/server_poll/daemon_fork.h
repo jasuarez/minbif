@@ -16,20 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef VERSION_H
-#define VERSION_H
+#ifndef SERVER_POLL_DAEMON_FORK_H
+#define SERVER_POLL_DAEMON_FORK_H
 
-#define MINBIF_VERSION_NAME "minbif"
+#include <vector>
 
-#define MINBIF_VERSION_MAJOR   "1"
-#define MINBIF_VERSION_MINOR   "0"
-#define MINBIF_VERSION_PATCH   ""
-#define MINBIF_VERSION_EXTRA   "-git"
+#include "poll.h"
 
-#define MINBIF_VERSION       MINBIF_VERSION_NAME \
-			     MINBIF_VERSION_MAJOR "." \
-			     MINBIF_VERSION_MINOR \
-			     MINBIF_VERSION_PATCH \
-			     MINBIF_VERSION_EXTRA
+namespace irc {
+	class IRC;
+};
+class _CallBack;
 
-#endif /* VERSION_H */
+class DaemonForkServerPoll : public ServerPoll
+{
+	irc::IRC* irc;
+	int sock;
+	int read_id;
+	_CallBack *read_cb;
+	_CallBack* stop_cb;
+
+public:
+
+	DaemonForkServerPoll(Minbif* application);
+	~DaemonForkServerPoll();
+
+	bool new_client_cb(void*);
+
+	void kill(irc::IRC* irc);
+	bool stopServer_cb(void*);
+
+	void log(size_t level, string log) const;
+};
+
+#endif /* SERVER_POLL_DAEMON_FORK_H */

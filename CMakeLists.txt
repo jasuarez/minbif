@@ -11,6 +11,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/caca_image.cpp
 		src/server_poll/poll.cpp
 		src/server_poll/inetd.cpp
+		src/server_poll/daemon_fork.cpp
 		src/im/im.cpp
 		src/im/protocol.cpp
 		src/im/account.cpp

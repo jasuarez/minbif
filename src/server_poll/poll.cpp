@@ -18,6 +18,7 @@
 
 #include "poll.h"
 #include "inetd.h"
+#include "daemon_fork.h"
 #include "../log.h"
 
 ServerPoll* ServerPoll::build(ServerPoll::poll_type_t type, Minbif* application)
@@ -26,13 +27,14 @@ ServerPoll* ServerPoll::build(ServerPoll::poll_type_t type, Minbif* application)
 	{
 		case ServerPoll::INETD:
 			return new InetdServerPoll(application);
-		case ServerPoll::DAEMON:
 		case ServerPoll::DAEMON_FORK:
+			return new DaemonForkServerPoll(application);
+		case ServerPoll::DAEMON:
+		default:
 			b_log[W_ERR] << "Type " << type << " is not implemented yet.";
-			return 0;
 	}
 
-	return 0;
+	throw ServerPollError();
 }
 
 ServerPoll::ServerPoll(Minbif* _app)
