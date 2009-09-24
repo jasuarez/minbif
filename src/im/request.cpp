@@ -29,6 +29,7 @@
 #include "irc/user.h"
 #include "../util.h"
 #include "../log.h"
+#include "../config.h"
 
 namespace im {
 
@@ -334,6 +335,13 @@ void* Request::request_file(const char *title, const char *filename,
 			  PurpleAccount *account, const char *who, PurpleConversation *conv,
 			  void *user_data)
 {
+	if(conf.GetSection("features")->GetItem("file_transfers")->Boolean() == false)
+	{
+		b_log[W_ERR] << "File transfers are disabled on this server.";
+		((PurpleRequestFileCb)cancel_cb)(user_data, "");
+		return NULL;
+	}
+
 	if(savedialog)
 	{
 		/* This is probably (I hope) a request to know the path where

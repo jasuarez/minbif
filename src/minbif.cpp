@@ -48,6 +48,9 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_int("port", "Port to listen on"), true);
 	section->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
 
+	section = conf.AddSection("features", "Enabled features", false);
+	section->AddItem(new ConfigItem_bool("file_transfers", "Enable file transfers", "true"));
+
 	section = conf.AddSection("logging", "Log information", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
