@@ -29,12 +29,13 @@
 
 namespace irc {
 
-DCCSend::DCCSend(const im::FileTransfert& _ft, Nick* _nick)
+DCCSend::DCCSend(const im::FileTransfert& _ft, Nick* _sender, Nick* _receiver)
 	: ft(_ft),
 	  total_size(_ft.getSize()),
 	  filename(_ft.getFileName()),
 	  local_filename(_ft.getLocalFileName()),
-	  nick(_nick),
+	  sender(_sender),
+	  receiver(_receiver),
 	  listen_data(NULL),
 	  watcher(0),
 	  fd(-1),
@@ -188,8 +189,8 @@ void DCCSend::listen_cb(int sock, void* data)
 	dcc->watcher = purple_input_add(sock, PURPLE_INPUT_READ,
 					connected, dcc);
 
-	dcc->nick->send(Message(MSG_PRIVMSG).setSender("romain_")
-			                 .setReceiver(dcc->nick)
+	dcc->receiver->send(Message(MSG_PRIVMSG).setSender(dcc->sender ? dcc->sender->getLongName() : "some.one")
+			                 .setReceiver(dcc->receiver)
 					 .addArg("\001DCC SEND \"" + dcc->filename + "\" " +
 						 t2s(ntohl(addr.s_addr)) + " " +
 						 t2s(dcc->port) + " " +

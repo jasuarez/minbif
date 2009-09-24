@@ -497,7 +497,7 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 
 		bool action = false;
 		if(who && purple_message_meify((char*)message, -1))
-				action = true;
+			action = true;
 
 		char* newline = purple_strdup_withhtml(message);
 		char* strip = purple_markup_strip_html(newline);

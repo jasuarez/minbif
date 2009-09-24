@@ -21,6 +21,7 @@
 #include "im/purple.h"
 #include "im/im.h"
 #include "im/ft.h"
+#include "im/buddy.h"
 #include "irc/irc.h"
 #include "irc/dcc.h"
 #include "../log.h"
@@ -85,13 +86,21 @@ void FileTransfert::destroy(PurpleXfer* xfer)
 
 void FileTransfert::add_xfer(PurpleXfer* xfer)
 {
-	b_log[W_SNO] << "Starting receiving file " << purple_xfer_get_filename(xfer);
-
+	irc::Nick* n = NULL;
 	irc::IRC* irc = Purple::getIM()->getIRC();
+	PurpleBuddy* buddy = purple_find_buddy(xfer->account, xfer->who);
+	if(buddy)
+		n = irc->getNick(Buddy(buddy));
+	else
+	{
+		/* TODO find the chat buddy or someone else. */
+	}
+
+	b_log[W_SNO] << "Starting receiving file " << purple_xfer_get_filename(xfer) << " from " << xfer->who;
 	FileTransfert ft(xfer);
 	try
 	{
-		irc->createDCCSend(ft);
+		irc->createDCCSend(ft, n);
 	}
 	catch(irc::DCCListenError &e)
 	{
