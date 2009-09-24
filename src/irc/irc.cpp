@@ -760,6 +760,11 @@ void IRC::m_stats(Message message)
 
 	switch(arg[0])
 	{
+		case 'a':
+			for(unsigned i = 0; i < (unsigned)PURPLE_STATUS_NUM_PRIMITIVES; ++i)
+				notice(user, string(purple_primitive_get_id_from_type((PurpleStatusPrimitive)i)) +
+					     ": " + purple_primitive_get_name_from_type((PurpleStatusPrimitive)i));
+			break;
 		case 'm':
 			for(size_t i = 0; i < sizeof commands / sizeof *commands; ++i)
 				user->send(Message(RPL_STATSCOMMANDS).setSender(this)
@@ -781,6 +786,7 @@ void IRC::m_stats(Message message)
 		}
 		default:
 			arg = "*";
+			notice(user, "a (aways) - List all away messages availables");
 			notice(user, "m (commands) - List all IRC commands");
 			notice(user, "p (protocols) - List all protocols");
 			break;
