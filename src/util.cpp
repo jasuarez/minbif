@@ -116,3 +116,21 @@ string strlower(string s)
 		*it = (char)tolower(*it);
 	return s;
 }
+
+bool is_ip(const char *ip)
+{
+	char *ptr = NULL;
+	int i = 0, d = 0;
+
+	for(; i < 4; ++i)			  /* 4 dots expected (IPv4) */
+	{					  /* Note about strtol: stores in endptr either NULL or '\0' if conversion is complete */
+		if(!isdigit((unsigned char) *ip)  /* most current case (not ip, letter host) */
+						  /* ok, valid number? */
+			|| (d = (int)strtol(ip, &ptr, 10)) < 0 || d > 255
+			|| (ptr && *ptr != 0 && (*ptr != '.' || 3 == i) && ptr != ip)) return false;
+		if(ptr) ip = ptr + 1, ptr = NULL;  /* jump the dot */
+	}
+	return true;
+}
+
+

@@ -31,6 +31,98 @@
 #include "im/im.h"
 #include "server_poll/poll.h"
 
+/** This is a derived class from ConfigItem whose represent an IP address item */
+class ConfigItem_ipaddr : public ConfigItem
+{
+public:
+	ConfigItem_ipaddr(std::string _label, std::string _description, std::string def_value = "",
+		TCallBack cb = 0, MyConfig* _config = 0, ConfigSection* _parent = 0)
+		: ConfigItem(_label, _description, def_value, cb, _config, _parent)
+		{}
+
+	virtual ConfigItem* Clone() const
+	{
+		return new ConfigItem_ipaddr(Label(), Description(), DefValue(), CallBack(), GetConfig(), Parent());
+	}
+
+	/** We return a string form of this integer */
+	virtual std::string String() const { return value; }
+
+	virtual bool SetValue(std::string s)
+	{
+		if(!is_ip(s.c_str()))
+			return false;
+		value = s;
+		return true;
+	}
+
+	std::string ValueType() const
+	{
+		return "ip address";
+	}
+
+private:
+	string value;
+};
+
+/** This is a derived class from ConfigItem whose represent an integer range item */
+class ConfigItem_intrange : public ConfigItem_int
+{
+public:
+	ConfigItem_intrange(std::string _label, std::string _description, int _min = INT_MIN, int _max = INT_MAX, std::string def_value = "",
+		TCallBack cb = 0, MyConfig* _config = 0, ConfigSection* _parent = 0)
+		: ConfigItem_int(_label, _description, _min, _max, def_value, cb, _config, _parent)
+		{}
+
+	virtual ConfigItem* Clone() const
+	{
+		return new ConfigItem_intrange(Label(), Description(), min, max, DefValue(), CallBack(), GetConfig(), Parent());
+	}
+
+	/** We return a string form of this integer */
+	virtual std::string String() const { std::ostringstream oss; oss << value_min << "-" << value_max; return oss.str(); }
+	virtual int MinInteger() const { return value_min; }
+	virtual int MaxInteger() const { return value_max; }
+
+	virtual bool SetValue(std::string s)
+	{
+		string min_s, max_s;
+		bool on_min = true;
+
+		for(std::string::const_iterator it = s.begin(); it != s.end(); ++it)
+		{
+			if(isdigit(*it))
+			{
+				if(on_min) min_s += *it;
+				else max_s += *it;
+			}
+			else if(on_min && (*it == ':' || *it == '-'))
+				on_min = false;
+			else
+				return false;
+
+		}
+		std::istringstream(min_s) >> value_min;
+		std::istringstream(max_s) >> value_max;
+		return (value_min >= min && value_max >= value_min && value_max <= max);
+	}
+
+	std::string ValueType() const
+	{
+		std::ostringstream off, off2;
+		std::string in, ax;
+		off << min;
+		in = off.str();
+		off2 << max;
+		ax = off2.str();
+		return "integer range (between " + in + " and " + ax + ")";
+	}
+
+private:
+	int value_min, value_max;
+};
+
+
 Minbif::Minbif()
 	: loop(0), server_poll(0)
 {
@@ -44,12 +136,15 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 
 	section = section->AddSection("daemon", "Daemon information", true);
-	section->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
-	section->AddItem(new ConfigItem_int("port", "Port to listen on"), true);
+	section->AddItem(new ConfigItem_ipaddr("bind", "IP address to listen on"));
+	section->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
 	section->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
 
-	section = conf.AddSection("features", "Enabled features", false);
-	section->AddItem(new ConfigItem_bool("file_transfers", "Enable file transfers", "true"));
+	section = conf.AddSection("file_transfers", "File transfers parameters", false);
+	section->AddItem(new ConfigItem_bool("enabled", "Enable file transfers", "true"));
+	section->AddItem(new ConfigItem_bool("dcc", "Send files to IRC user with DCC", "true"));
+	section->AddItem(new ConfigItem_ipaddr("bind", "IP address to listen on for DCC", "0.0.0.0"));
+	section->AddItem(new ConfigItem_intrange("port_range", "Port range to listen on for DCC", 1024, 65535, "1024-65535"));
 
 	section = conf.AddSection("logging", "Log information", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));

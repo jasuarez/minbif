@@ -360,6 +360,15 @@ public:
 	{
 		return false;
 	}
+	virtual int MinInteger() const
+	{
+		return 0;
+	}
+	virtual int MaxInteger() const
+	{
+		return 0;
+	}
+
 	/**< This function might return false if value isn't good */
 	virtual bool SetValue(std::string) = 0;
 
@@ -445,7 +454,7 @@ public:
 		}
 	}
 
-private:
+protected:
 	int value, min, max;
 };
 
