@@ -16,12 +16,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <cerrno>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 #include <cstring>
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <libpurple/purple.h>
+#include <getopt.h>
 
 #include "minbif.h"
 #include "version.h"
@@ -154,6 +157,10 @@ Minbif::Minbif()
 Minbif::~Minbif()
 {
 	delete server_poll;
+
+	if(pidfile.empty() == false)
+		unlink(pidfile.c_str());
+
 }
 
 static void sighandler(int r)
@@ -177,18 +184,71 @@ static void sighandler(int r)
 	}
 }
 
+void Minbif::usage(int argc, char** argv)
+{
+	std::cerr << "Usage: " << argv[0] << " [OPTIONS]... <CONFIG_PATH>" << std::endl << std::endl;
+	std::cerr << "Options:" << std::endl;
+	std::cerr << "  -h, --help             Display this notice" << std::endl;
+	std::cerr << "  -v, --version          Version of minbif" << std::endl;
+	std::cerr << "  -p, --pidfile=PIDFILE  Path to pid file" << std::endl;
+}
+
+void Minbif::version(void)
+{
+	std::cout << MINBIF_VERSION << " (Build " __DATE__ " " __TIME__ ") © 2009 Romain Bignon" << std::endl;
+}
+
 int Minbif::main(int argc, char** argv)
 {
-	if(argc < 2)
+	static struct option long_options[] =
 	{
-		std::cerr << "Syntax: " << argv[0] << " config_file" << std::endl;
-		return EXIT_FAILURE;
-	}
+		{ "pidfile",       1, NULL, 'p' },
+		{ "help",          0, NULL, 'h' },
+		{ "version",       0, NULL, 'v' },
+		{ NULL,            0, NULL, 0   }
+	};
+	int option_index = 0, c;
+	while((c = getopt_long(argc, argv, "p:hv", long_options, &option_index)) != -1)
+		switch(c)
+		{
+		case 'h':
+			usage(argc, argv);
+			return EXIT_SUCCESS;
+			break;
+		case 'v':
+			version();
+			return EXIT_SUCCESS;
+			break;
+		case 'p':
+		{
+			std::ifstream fi(optarg);
+			if(fi)
+			{
+				std::cerr << "It seems that minbif is already launched. Perhaps try to erase file " << optarg << std::endl;
+				fi.close();
+				return EXIT_FAILURE;
+			}
+			std::ofstream fo(optarg);
+			if(!fo)
+			{
+				std::cerr << "Unable to create file '" << optarg << "': " << strerror(errno) << std::endl;
+				return EXIT_FAILURE;
+			}
+			fo << getpid() << std::endl;
+			fo.close();
+			pidfile = optarg;
+			break;
+		}
+		default:
+			return EXIT_FAILURE;
+			break;
+		}
 
-	if(!strcmp(argv[1], "-v") || !strcmp(argv[1], "--version"))
+	if(optind >= argc)
 	{
-		std::cout << MINBIF_VERSION << " (Build " __DATE__ " " __TIME__ ") © 2009 Romain Bignon" << std::endl;
-		return EXIT_SUCCESS;
+		std::cerr << argv[0] << ": wrong argument count" << std::endl;
+		usage(argc, argv);
+		return EXIT_FAILURE;
 	}
 
 	try
@@ -201,7 +261,7 @@ int Minbif::main(int argc, char** argv)
 			setrlimit(RLIMIT_CORE, &rlim);
 		}
 
-		if(!conf.Load(argv[1]))
+		if(!conf.Load(argv[optind]))
 		{
 			b_log[W_ERR] << "Unable to load configuration, exiting..";
 			return EXIT_FAILURE;

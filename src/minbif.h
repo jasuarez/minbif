@@ -19,6 +19,10 @@
 #ifndef MINBIF_H
 #define MINBIF_H
 
+#include <string>
+
+using std::string;
+
 class ServerPoll;
 struct _GMainLoop;
 
@@ -26,6 +30,10 @@ class Minbif
 {
 	struct _GMainLoop *loop;
 	ServerPoll* server_poll;
+	string pidfile;
+
+	void usage(int argc, char** argv);
+	void version(void);
 
 public:
 
