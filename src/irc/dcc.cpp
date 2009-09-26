@@ -101,7 +101,7 @@ void DCCSend::updated(bool destroy)
 	if(destroy)
 		ft = im::FileTransfert(); /* No-valid object */
 
-	if((fd < 0 || listen_data) && start_time + TIMEOUT < time(NULL))
+	if((fd < 0 || listen_data) && (start_time + TIMEOUT < time(NULL)))
 		deinit();
 	else
 		dcc_send();

@@ -66,7 +66,7 @@ namespace irc {
 		 * The file descriptor keeps open.
 		 */
 
-		static const unsigned TIMEOUT = 5*60;
+		static const time_t TIMEOUT = 5*60;
 
 		im::FileTransfert ft;
 		size_t total_size;
