@@ -25,6 +25,7 @@
 #include "irc/irc.h"
 #include "irc/dcc.h"
 #include "../log.h"
+#include "../config.h"
 
 namespace im {
 
@@ -97,6 +98,11 @@ void FileTransfert::add_xfer(PurpleXfer* xfer)
 	}
 
 	b_log[W_SNO] << "Starting receiving file " << purple_xfer_get_filename(xfer) << " from " << xfer->who;
+
+	/* Do not send file to IRC user with DCC if this feature is disabled. */
+	if(conf.GetSection("file_transfers")->GetItem("dcc")->Boolean() == false)
+		return;
+
 	FileTransfert ft(xfer);
 	try
 	{

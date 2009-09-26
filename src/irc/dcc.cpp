@@ -26,6 +26,7 @@
 #include "message.h"
 #include "../util.h"
 #include "../log.h"
+#include "../config.h"
 
 namespace irc {
 
@@ -46,7 +47,9 @@ DCCSend::DCCSend(const im::FileTransfert& _ft, Nick* _sender, Nick* _receiver)
 	  rxlen(0),
 	  rxqueue(NULL)
 {
-	listen_data = purple_network_listen_range(0, 0, SOCK_STREAM, &DCCSend::listen_cb, this);
+	ConfigItem* item = conf.GetSection("file_transfers")->GetItem("port_range");
+	listen_data = purple_network_listen_range((uint16_t)item->MinInteger(), (uint16_t)item->MaxInteger(),
+	                                          SOCK_STREAM, &DCCSend::listen_cb, this);
 	if(!listen_data)
 		throw DCCListenError();
 }
