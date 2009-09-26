@@ -33,6 +33,7 @@ namespace irc {
 DCCSend::DCCSend(const im::FileTransfert& _ft, Nick* _sender, Nick* _receiver)
 	: ft(_ft),
 	  total_size(_ft.getSize()),
+	  start_time(time(NULL)),
 	  filename(_ft.getFileName()),
 	  local_filename(_ft.getLocalFileName()),
 	  sender(_sender),
@@ -100,7 +101,10 @@ void DCCSend::updated(bool destroy)
 	if(destroy)
 		ft = im::FileTransfert(); /* No-valid object */
 
-	dcc_send();
+	if(fd < 0 && start_time + TIMEOUT < time(NULL))
+		deinit();
+	else
+		dcc_send();
 }
 
 void DCCSend::dcc_read(gpointer data, int source, PurpleInputCondition cond)
