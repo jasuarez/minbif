@@ -935,7 +935,6 @@ void IRC::m_map(Message message)
 							return;
 						}
 						it->setValue(value);
-						b_log[W_ERR] << it->getName() << "=" << value;
 					}
 					else if(username.empty())
 						username = s;

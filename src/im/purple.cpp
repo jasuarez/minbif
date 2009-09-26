@@ -87,16 +87,19 @@ void Purple::minbif_prefs_init()
 GHashTable *Purple::ui_info = NULL;
 GHashTable *Purple::minbif_ui_get_info(void)
 {
-        if (ui_info == NULL) {
-                ui_info = g_hash_table_new(g_str_hash, g_str_equal);
+	if (ui_info == NULL)
+	{
+		ui_info = g_hash_table_new(g_str_hash, g_str_equal);
 
-                g_hash_table_insert(ui_info, (void*)"name",         (void*)MINBIF_VERSION_NAME);
-                g_hash_table_insert(ui_info, (void*)"version",      (void*)MINBIF_VERSION);
-                g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/minbif");
-                g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/minbif");
-        }
+		g_hash_table_insert(ui_info, (void*)"name",         (void*)MINBIF_VERSION_NAME);
+		g_hash_table_insert(ui_info, (void*)"version",      (void*)MINBIF_VERSION);
+		g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/minbif");
+		g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/minbif");
+		g_hash_table_insert(ui_info, (void*)"client_type",  (void*)"pc");
 
-        return ui_info;
+	}
+
+	return ui_info;
 }
 
 
@@ -140,8 +143,6 @@ void Purple::init(IM* im)
 
 void Purple::inited()
 {
-	if(ui_info)
-		g_hash_table_destroy(ui_info);
 	Account::init();
 	Buddy::init();
 	Conversation::init();
@@ -154,6 +155,8 @@ void Purple::uninit()
 {
 	assert(im != NULL);
 
+	if(ui_info)
+		g_hash_table_destroy(ui_info);
 	Account::uninit();
 	Buddy::uninit();
 	Conversation::uninit();
