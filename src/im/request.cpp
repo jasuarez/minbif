@@ -160,7 +160,7 @@ PurpleRequestUiOps Request::uiops =
         Request::request_action,
         Request::request_fields,
         Request::request_file,
-        NULL,//finch_close_request,
+        Request::request_close,
         NULL,//finch_request_folder,
         NULL,
         NULL,
@@ -245,6 +245,28 @@ void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
 
 	nick->privmsg(irc->getUser(), primary);
 	return NULL;
+}
+
+void Request::request_close(PurpleRequestType type, void *ui_handle)
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	for(vector<Request*>::iterator it = requests.begin(); it != requests.end(); ++it)
+	{
+		if(*it != ui_handle)
+			continue;
+
+		bool first = (it == requests.begin());
+		requests.erase(it);
+		delete *it;
+
+		if(first)
+		{
+			nick->privmsg(irc->getUser(), "Request aborted.");
+			if(!requests.empty())
+				requests.front()->display();
+		}
+		return;
+	}
 }
 
 void* Request::request_input(const char *title, const char *primary,

@@ -117,6 +117,7 @@ namespace im
 					  GCallback ok_cb, GCallback cancel_cb,
 					  PurpleAccount *account, const char *who, PurpleConversation *conv,
 					  void *user_data);
+		static void request_close(PurpleRequestType type, void *ui_handle);
 
 	public:
 
