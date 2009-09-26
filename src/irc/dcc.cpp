@@ -101,7 +101,7 @@ void DCCSend::updated(bool destroy)
 	if(destroy)
 		ft = im::FileTransfert(); /* No-valid object */
 
-	if(fd < 0 && start_time + TIMEOUT < time(NULL))
+	if((fd < 0 || listen_data) && start_time + TIMEOUT < time(NULL))
 		deinit();
 	else
 		dcc_send();
@@ -195,6 +195,13 @@ void DCCSend::listen_cb(int sock, void* data)
 
 	dcc->watcher = purple_input_add(sock, PURPLE_INPUT_READ,
 					connected, dcc);
+
+	/* As there isn't any way to escape correctly strings in the DCC SEND
+	 * sequence, it replaces every '"' with a '\''.
+	 */
+	string filename = dcc->filename;
+	for(string::iterator c = filename.begin(); c != filename.end(); ++c)
+		if(*c == '"') *c = '\'';
 
 	dcc->receiver->send(Message(MSG_PRIVMSG).setSender(dcc->sender ? dcc->sender->getLongName() : "some.one")
 			                 .setReceiver(dcc->receiver)

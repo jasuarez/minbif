@@ -338,7 +338,7 @@ void* Request::request_file(const char *title, const char *filename,
 	if(conf.GetSection("file_transfers")->GetItem("enabled")->Boolean() == false)
 	{
 		b_log[W_ERR] << "File transfers are disabled on this server.";
-		((PurpleRequestFileCb)cancel_cb)(user_data, "");
+		((PurpleRequestFileCb)cancel_cb)(user_data, NULL);
 		return NULL;
 	}
 
@@ -401,6 +401,7 @@ void* Request::request_file(const char *title, const char *filename,
 	{
 		/* TODO Implement when libpurple requests to open a file. */
 		nick->request_error("Warning: something tries to ask you to open a filename (" + string(title ? title : "") + "). But it is not yet implemented.");
+		((PurpleRequestFileCb)cancel_cb)(user_data, NULL);
 	}
 
 	return NULL;

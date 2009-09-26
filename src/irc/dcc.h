@@ -50,8 +50,6 @@ namespace irc {
 		 * An instance of this class is created when a file transfert starts
 		 * on im->minbif. It creates a DCC server on a random port.
 		 *
-		 * TODO set a specific range, or allow admin to set it.
-		 *
 		 * When IRC user is connected on server, try to open the file that
 		 * libpurple is currently writting. If success, read 512 bytes and
 		 * send it to IRC user with DCC connection.
