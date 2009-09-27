@@ -907,7 +907,11 @@ void IRC::m_map(Message message)
 				for(size_t i = 2; i < message.countArgs(); ++i)
 				{
 					string s = message.getArg(i);
-					if(s[0] == '-')
+					if(username.empty())
+						username = s;
+					else if(password.empty())
+						password = s;
+					else if(s[0] == '-')
 					{
 						size_t name_pos = 1;
 						string value = "true";
@@ -936,10 +940,6 @@ void IRC::m_map(Message message)
 						}
 						it->setValue(value);
 					}
-					else if(username.empty())
-						username = s;
-					else if(password.empty())
-						password = s;
 					else if(channel.empty())
 					{
 						channel = s;
