@@ -72,7 +72,7 @@ public:
 			return;
 		}
 
-		Request::closeFirstRequest();
+		request->close();
 	}
 };
 
@@ -211,20 +211,6 @@ Request* Request::getFirstRequest()
 	return requests.empty() ? NULL : requests.front();
 }
 
-void Request::closeFirstRequest()
-{
-	Request* request = getFirstRequest();
-	if(!request)
-		return;
-
-	request->close();
-	delete request;
-	requests.erase(requests.begin());
-
-	if(!requests.empty())
-		requests.front()->display();
-}
-
 void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
 				const char *primary, const char *secondary)
 {
@@ -256,12 +242,12 @@ void Request::request_close(PurpleRequestType type, void *ui_handle)
 			continue;
 
 		bool first = (it == requests.begin());
-		requests.erase(it);
 		delete *it;
+		requests.erase(it);
 
 		if(first)
 		{
-			nick->privmsg(irc->getUser(), "Request aborted.");
+			nick->privmsg(irc->getUser(), "Request closed.");
 			if(!requests.empty())
 				requests.front()->display();
 		}
