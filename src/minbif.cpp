@@ -125,9 +125,10 @@ private:
 	int value_min, value_max;
 };
 
+struct _GMainLoop *Minbif::loop = NULL;
 
 Minbif::Minbif()
-	: loop(0), server_poll(0)
+	: server_poll(0)
 {
 	ConfigSection* section;
 	section = conf.AddSection("path", "Path information", false);
@@ -157,13 +158,26 @@ Minbif::Minbif()
 Minbif::~Minbif()
 {
 	delete server_poll;
+	remove_pidfile();
+}
 
-	if(pidfile.empty() == false)
-		unlink(pidfile.c_str());
+void Minbif::remove_pidfile(void)
+{
+	if(pidfile.empty())
+		return;
+	std::ifstream fp(pidfile.c_str());
+	if(!fp)
+		return;
+	int i;
+	fp >> i;
+	if(i != getpid())
+		return;
+
+	unlink(pidfile.c_str());
 
 }
 
-static void sighandler(int r)
+void Minbif::sighandler(int r)
 {
 	switch(r)
 	{
@@ -178,7 +192,9 @@ static void sighandler(int r)
 		case SIGPIPE:
 			break;
 		case SIGTERM:
-			/* TODO implement a handler here. */
+			/* XXX Use g_timeout() instead. */
+			g_main_quit(Minbif::loop);
+			break;
 		default:
 			raise(r);
 	}
@@ -228,14 +244,6 @@ int Minbif::main(int argc, char** argv)
 				fi.close();
 				return EXIT_FAILURE;
 			}
-			std::ofstream fo(optarg);
-			if(!fo)
-			{
-				std::cerr << "Unable to create file '" << optarg << "': " << strerror(errno) << std::endl;
-				return EXIT_FAILURE;
-			}
-			fo << getpid() << std::endl;
-			fo.close();
 			pidfile = optarg;
 			break;
 		}
@@ -275,9 +283,22 @@ int Minbif::main(int argc, char** argv)
 				                this);
 		b_log.setServerPoll(server_poll);
 
+		if(!pidfile.empty())
+		{
+			std::ofstream fo(pidfile.c_str());
+			if(!fo)
+			{
+				std::cerr << "Unable to create file '" << pidfile << "': " << strerror(errno) << std::endl;
+				return EXIT_FAILURE;
+			}
+			fo << getpid() << std::endl;
+			fo.close();
+		}
+
+
 		struct sigaction sig, old;
 		memset( &sig, 0, sizeof( sig ) );
-		sig.sa_handler = sighandler;
+		sig.sa_handler = &Minbif::sighandler;
 		sigaction( SIGCHLD, &sig, &old );
 		sigaction( SIGPIPE, &sig, &old );
 		sig.sa_flags = SA_RESETHAND;

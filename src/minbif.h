@@ -28,12 +28,14 @@ struct _GMainLoop;
 
 class Minbif
 {
-	struct _GMainLoop *loop;
+	static struct _GMainLoop *loop;
 	ServerPoll* server_poll;
 	string pidfile;
 
+	static void sighandler(int r);
 	void usage(int argc, char** argv);
 	void version(void);
+	void remove_pidfile(void);
 
 public:
 
