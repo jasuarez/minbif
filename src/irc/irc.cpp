@@ -233,6 +233,13 @@ void IRC::addNick(Nick* nick)
 	users[nick->getNickname()] = nick;
 }
 
+void IRC::renameNick(Nick* nick, string newnick)
+{
+	users.erase(nick->getNickname());
+	nick->setNickname(newnick);
+	addNick(nick);
+}
+
 Nick* IRC::getNick(string nickname, bool case_sensitive) const
 {
 	map<string, Nick*>::const_iterator it;
@@ -514,9 +521,7 @@ void IRC::m_nick(Message message)
 							.addArg("This nick contains invalid characters"));
 	else
 	{
-		users.erase(user->getNickname());
-		user->setNickname(message.getArg(0));
-		users[message.getArg(0)] = user;
+		renameNick(user, message.getArg(0));
 
 		sendWelcome();
 	}
@@ -1487,9 +1492,7 @@ void IRC::m_svsnick(Message message)
 	user->send(Message(MSG_NICK).setSender(buddy)
 				    .addArg(message.getArg(1)));
 
-	users.erase(buddy->getNickname());
-	buddy->setNickname(message.getArg(1));
-	addNick(buddy);
+	renameNick(buddy, message.getArg(1));
 	buddy->getBuddy().setAlias(message.getArg(1));
 }
 

@@ -155,6 +155,7 @@ namespace irc
 		Nick* getNick(string nick, bool case_sensitive = false) const;
 		Nick* getNick(const im::Buddy& buddy) const;
 		void removeNick(string nick);
+		void renameNick(Nick* n, string newnick);
 
 		void addServer(Server* server);
 		Server* getServer(string server) const;

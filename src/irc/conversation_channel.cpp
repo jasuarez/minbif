@@ -107,7 +107,8 @@ void ConversationChannel::renameBuddy(ChanUser* chanuser, im::ChatBuddy cbuddy)
 		new_nick += "_";
 	irc->getUser()->send(irc::Message(MSG_NICK).setSender(nick)
 			                           .addArg(new_nick));
-	nick->setNickname(new_nick);
+	irc->renameNick(nick, new_nick);
+
 	cbuddies.erase(nick->getChatBuddy());
 	nick->setChatBuddy(cbuddy);
 	cbuddies[cbuddy] = chanuser;
