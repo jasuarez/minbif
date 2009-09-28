@@ -7,11 +7,11 @@ Minbif 1.0-beta (2009-09-28)
 	* /WHO can match on a server name or an account name.
 	* /NAMES command.
 	* /MAP ADD without any channel name will use the default &minbif
+	  channel.
 	* /AWAY command.
 	* '/STATS a' to display every available away status.
 	* /WHOIS displays the fully away message.
 	* /WII displays a larger icon and several information about buddy.
-	  channel.
 	* /ADMIN command to display and change some minbif account parameters.
 	* Correctly handle the /ME command.
 	* Can leave status channels.
