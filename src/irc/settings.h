@@ -29,17 +29,20 @@ namespace im
 namespace irc
 {
 	using std::string;
+	class IRC;
 
 	class SettingBase
 	{
+		IRC* irc;
 		im::IM* im;
 
 	protected:
 		im::IM* getIM() const { return im; }
+		IRC* getIRC() const { return irc; }
 
 	public:
 
-		SettingBase(im::IM* im);
+		SettingBase(IRC* irc, im::IM* im);
 
 		virtual string getValue() const = 0;
 		virtual bool setValue(string v) = 0;
@@ -48,7 +51,7 @@ namespace irc
 	class SettingPassword : public SettingBase
 	{
 	public:
-		SettingPassword(im::IM* im) : SettingBase(im) {}
+		SettingPassword(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
 
 		virtual string getValue() const;
 		virtual bool setValue(string v);

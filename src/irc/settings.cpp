@@ -18,12 +18,15 @@
 
 #include "settings.h"
 #include "im/im.h"
+#include "irc.h"
+#include "user.h"
 
 namespace irc
 {
 
-SettingBase::SettingBase(im::IM* _im)
-	: im(_im)
+SettingBase::SettingBase(IRC* _irc, im::IM* _im)
+	: irc(_irc),
+	  im(_im)
 {}
 
 string SettingPassword::getValue() const
@@ -34,7 +37,10 @@ string SettingPassword::getValue() const
 bool SettingPassword::setValue(string v)
 {
 	if(v.find(' ') != string::npos || v.size() < 8)
+	{
+		getIRC()->notice(getIRC()->getUser(), "Password must be at least 8 characters, and does not contain whitespaces.");
 		return false;
+	}
 
 	getIM()->setPassword(v);
 	return true;
