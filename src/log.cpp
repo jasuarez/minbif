@@ -36,7 +36,7 @@ static struct
 	{ W_SNO,        LOG_NOTICE,  ""           },
 	{ W_DEBUG,      LOG_DEBUG,   "DEBUG"      },
 	{ W_PARSE,      LOG_DEBUG,   "PARSE"      },
-	{ W_ROUTING,    LOG_DEBUG,   "ROUTING"    },
+	{ W_PURPLE,     LOG_DEBUG,   "PURPLE"     },
 	{ W_DESYNCH,    LOG_WARNING, "DESYNCH"    },
 	{ W_WARNING,    LOG_WARNING, "WARNING"    },
 	{ W_ERR,        LOG_ERR,     "ERR"        },
