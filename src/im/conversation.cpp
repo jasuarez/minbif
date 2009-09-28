@@ -475,9 +475,7 @@ void Conversation::write_im(PurpleConversation *c, const char *who,
 	if(flags & PURPLE_MESSAGE_RECV)
 	{
 		PurpleAccount *account = purple_conversation_get_account(c);
-		PurpleBuddy *buddy;
-		who = purple_conversation_get_name(c);
-		buddy = purple_find_buddy(account, who);
+		PurpleBuddy *buddy = purple_find_buddy(account, purple_conversation_get_name(c));
 		if (buddy)
 			who = purple_buddy_get_contact_alias(buddy);
 	}

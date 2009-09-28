@@ -681,10 +681,11 @@ void IRC::m_whois(Message message)
 					       .addArg("libcaca and imlib2 are required to display icon"));
 	}
 
-	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
-					  .setReceiver(user)
-					  .addArg(n->getNickname())
-					  .addArg("End of /WHOIS list"));
+	if(!n->retrieveInfo())
+		user->send(Message(RPL_ENDOFWHOIS).setSender(this)
+						  .setReceiver(user)
+						  .addArg(n->getNickname())
+						  .addArg("End of /WHOIS list"));
 
 }
 

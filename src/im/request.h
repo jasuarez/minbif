@@ -84,6 +84,7 @@ namespace im
 		static PurpleNotifyUiOps notify_ops;
 		static void* notify_message(PurpleNotifyMsgType type, const char *title,
 				                const char *primary, const char *secondary);
+		static void* notify_userinfo(PurpleConnection *gc, const char *who, PurpleNotifyUserInfo *user_info);
 
 		static PurpleRequestUiOps uiops;
 		static RequestNick* nick;

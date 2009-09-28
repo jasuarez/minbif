@@ -62,6 +62,8 @@ namespace irc
 		/** Get buddy's real name. */
 		virtual string getRealName() const;
 
+		virtual bool retrieveInfo() const;
+
 	};
 
 }; /* namespace irc */

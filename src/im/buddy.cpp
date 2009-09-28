@@ -71,8 +71,15 @@ string Buddy::getAlias() const
 
 void Buddy::setAlias(string alias) const
 {
+	assert(isValid());
 	purple_blist_alias_buddy(buddy, alias.c_str());
 	serv_alias_buddy(buddy);
+}
+
+void Buddy::retrieveInfo() const
+{
+	assert(isValid() && buddy->account != NULL);
+	serv_get_info(purple_account_get_connection(buddy->account), purple_buddy_get_name(buddy));
 }
 
 string Buddy::getRealName() const

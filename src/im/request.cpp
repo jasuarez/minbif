@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "request.h"
+#include "buddy.h"
 #include "im.h"
 #include "purple.h"
 #include "irc/irc.h"
@@ -176,7 +177,7 @@ PurpleNotifyUiOps Request::notify_ops =
         NULL,//finch_notify_formatted,
         NULL,//finch_notify_searchresults,
         NULL,//finch_notify_sr_new_rows,
-        NULL,//finch_notify_userinfo,
+        Request::notify_userinfo,
         NULL,//finch_notify_uri,
         NULL,//finch_close_notify,       /* The rest of the notify-uiops return a GntWidget.
              //                             These widgets should be destroyed from here. */
@@ -230,6 +231,42 @@ void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
 	}
 
 	nick->privmsg(irc->getUser(), primary);
+	return NULL;
+}
+
+void* Request::notify_userinfo(PurpleConnection *gc, const char *who, PurpleNotifyUserInfo *user_info)
+{
+	GList* l = purple_notify_user_info_get_entries(user_info);
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::Nick* user = irc->getUser();
+	PurpleBuddy* buddy = purple_find_buddy(gc->account, who);
+	Buddy b(buddy);
+
+	for (; l != NULL; l = l->next)
+	{
+		PurpleNotifyUserInfoEntry *user_info_entry = (PurpleNotifyUserInfoEntry*)l->data;
+		//PurpleNotifyUserInfoEntryType type = purple_notify_user_info_entry_get_type(user_info_entry);
+		const char *label = purple_notify_user_info_entry_get_label(user_info_entry);
+		const char *value = purple_notify_user_info_entry_get_value(user_info_entry);
+
+		if(!label) continue;
+
+		string text;
+		if(value)
+			text = string(label) + ": " + value;
+		else
+			text = string(" ") + label;
+
+		user->send(irc::Message(RPL_WHOISACTUALLY).setSender(irc)
+					       .setReceiver(user)
+					       .addArg(b.getAlias())
+					       .addArg(text));
+	}
+	user->send(irc::Message(RPL_ENDOFWHOIS).setSender(irc)
+						  .setReceiver(user)
+						  .addArg(b.getAlias())
+						  .addArg("End of /WHOIS list"));
+
 	return NULL;
 }
 

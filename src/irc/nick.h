@@ -161,6 +161,8 @@ namespace irc
 		virtual string getRealname() const { return realname; }
 		void setRealname(string r) { realname = r; }
 
+		virtual bool retrieveInfo() const { return false; }
+
 		void setFlag(unsigned flag) { flags |= flag; }
 		void delFlag(unsigned flag) { flags &= ~flag; }
 		bool hasFlag(unsigned flag) const { return flags & flag; }

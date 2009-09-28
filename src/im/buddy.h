@@ -77,6 +77,12 @@ namespace im
 		/** Get IM real name */
 		string getRealName() const;
 
+		/** Ask server to send server info.
+		 *
+		 * It'll be showed with notify_userinfo callback.
+		 */
+		void retrieveInfo() const;
+
 		bool isOnline() const;
 		bool isAvailable() const;
 		string getStatus() const;

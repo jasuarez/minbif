@@ -98,4 +98,10 @@ CacaImage Buddy::getIcon() const
 	return im_buddy.getIcon();
 }
 
+bool Buddy::retrieveInfo() const
+{
+	im_buddy.retrieveInfo();
+	return true;
+}
+
 }; /* namespace irc */
