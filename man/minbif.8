@@ -1,31 +1,41 @@
-.TH MINBIF 8 "06 September 2009"
+.TH MINBIF 8 "28 September 2009"
 .SH NAME
 minbif \- The IRC instant messaging gateway
 .SH SYNOPSIS
 .hy 0
-.IP \fBminbif\fP
+\fBminbif [\-hv] [\-\-pidfile \fIpidfile\fB]\fP
 .I CONFIG_FILE
 .SH DESCRIPTION
 .LP
 Minbif is an IRC gateway to IM networks which provides the following features:
 
 .nf
-* Minbif uses a library which abstracts all IM calls, and has
-  several plugins to support a lot of IM protocols (IRC included!).
-* Only IRC commands are used to command Minbif.
+* Minbif uses a library which abstracts all IM calls, and has several plugins to support a lot of IM protocols (IRC included!).
+* Two modes: inetd and fork daemon.
+* Only IRC commands are used to control Minbif.
 * Certificates check.
 * Buddies are IRC users.
-* Each account has a status channel. You see in all connected buddies,
-  and their status on it.
+* Each account has a status channel. You see in all connected buddies, and their status on it.
 * Add and remove buddies from list with /INVITE and /KICK commands.
 * Blocked users are bans on the account's status channel.
 * You can see buddies' icons (with libcaca) or download them.
+* Display extended information about buddies with /WII command.
+* Support away messages.
+* Can receive files, which are sent to IRC user with DCC SEND.
 * Conversation chats are supported.
-* Auto-rejoin conversation channels at connection.
-* Receive files via DCC.
+* Auto\-rejoin conversation channels at connection.
 .fi
 
 .SH OPTIONS
+.TP
+\fB\-\-pidfile\fR \fIpidfile\fR
+path to pidfile where the minbif's PID is written.
+.TP
+\fB\-\-version\fR
+display version of minbif.
+.TP
+\fB\-\-help\fR
+show help.
 .TP
 .B config_file
 Configuration file location.
@@ -33,10 +43,14 @@ Configuration file location.
 .SH CONFIGURATION
 Edit the \fIminbif.conf\fP file and change value when needed.
 
-Currently, only the inetd mode is available. So it is necessary to add minbif
-in inetd with this command:
+With the inetd mode, use this command to add minbif:
 .nf
-# update-inetd --add '56667 stream tcp nowait minbif /usr/sbin/tcpd /usr/bin/minbif /etc/minbif/minbif.conf'
+# update\-inetd \-\-add '56667 stream tcp nowait minbif /usr/sbin/tcpd /usr/bin/minbif /etc/minbif/minbif.conf'
+.fi
+
+With the daemon fork mode, run minbif with:
+.nf
+# minbif /etc/minbif/minbif.conf
 .fi
 
 .SH HOW TO USE
