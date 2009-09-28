@@ -24,6 +24,7 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <libpurple/purple.h>
+#include <glib/gthread.h>
 #include <getopt.h>
 
 #include "minbif.h"
