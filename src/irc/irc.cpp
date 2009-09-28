@@ -21,6 +21,7 @@
 #include <netdb.h>
 #include <cstring>
 #include <algorithm>
+#include <cassert>
 
 #include "../log.h"
 #include "../util.h"
@@ -30,6 +31,7 @@
 #include "im/im.h"
 #include "server_poll/poll.h"
 #include "irc.h"
+#include "settings.h"
 #include "buddy.h"
 #include "message.h"
 #include "user.h"
@@ -57,6 +59,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_CONNECT, &IRC::m_connect, 1, 0, Nick::REGISTERED },
 	{ MSG_SQUIT,   &IRC::m_squit,   1, 0, Nick::REGISTERED },
 	{ MSG_MAP,     &IRC::m_map,     0, 0, Nick::REGISTERED },
+	{ MSG_ADMIN,   &IRC::m_admin,   0, 0, Nick::REGISTERED },
 	{ MSG_JOIN,    &IRC::m_join,    1, 0, Nick::REGISTERED },
 	{ MSG_PART,    &IRC::m_part,    1, 0, Nick::REGISTERED },
 	{ MSG_NAMES,   &IRC::m_names,   1, 0, Nick::REGISTERED },
@@ -1026,6 +1029,59 @@ void IRC::m_map(Message message)
 				      .setReceiver(user)
 				      .addArg("End of /MAP"));
 
+}
+
+/** ADMIN [key value] */
+void IRC::m_admin(Message message)
+{
+	assert(im != NULL);
+
+	static struct
+	{
+		const char* key;
+		SettingBase* setting;
+	} settings[] = {
+		{ "password",     new SettingPassword(im) },
+	};
+
+	if(message.countArgs() == 0)
+	{
+		for(unsigned i = 0; i < (sizeof settings / sizeof *settings); ++i)
+			user->send(Message(RPL_ADMINME).setSender(this)
+					               .setReceiver(user)
+						       .addArg(string("- ") + settings[i].key + " = " + settings[i].setting->getValue()));
+		return;
+	}
+
+	unsigned i;
+	for(i = 0; i < (sizeof settings / sizeof *settings) && message.getArg(0) != settings[i].key; ++i)
+		;
+
+	if(i >= (sizeof settings / sizeof *settings))
+		return;
+
+	if(message.countArgs() == 1)
+	{
+		user->send(Message(RPL_ADMINME).setSender(this)
+					       .setReceiver(user)
+					       .addArg(string("- ") + settings[i].key + " = " + settings[i].setting->getValue()));
+		return;
+	}
+
+	vector<string> args = message.getArgs();
+	string value;
+	for(vector<string>::iterator it = args.begin() + 1; it != args.end(); ++it)
+	{
+		if(!value.empty())
+			value += " ";
+		value += *it;
+	}
+
+	settings[i].setting->setValue(value);
+
+	user->send(Message(RPL_ADMINME).setSender(this)
+				       .setReceiver(user)
+				       .addArg(string("- ") + settings[i].key + " = " + settings[i].setting->getValue()));
 }
 
 /** JOIN channame */

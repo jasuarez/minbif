@@ -104,6 +104,7 @@ namespace irc
 		void m_connect(Message m);  /**< Handler for the CONNECT message */
 		void m_squit(Message m);    /**< Handler for the SQUIT message */
 		void m_map(Message m);      /**< Handler for the MAP message */
+		void m_admin(Message m);    /**< Handler for the ADMIN message */
 		void m_join(Message m);     /**< Handler for the JOIN message */
 		void m_part(Message m);     /**< Handler for the PART message */
 		void m_list(Message m);     /**< Handler for the LIST message */
