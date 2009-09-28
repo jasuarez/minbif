@@ -33,7 +33,7 @@ string SettingPassword::getValue() const
 
 bool SettingPassword::setValue(string v)
 {
-	if(v.find(' ') != string::npos)
+	if(v.find(' ') != string::npos || v.size() < 8)
 		return false;
 
 	getIM()->setPassword(v);

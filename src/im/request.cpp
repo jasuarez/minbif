@@ -247,13 +247,18 @@ void* Request::notify_userinfo(PurpleConnection *gc, const char *who, PurpleNoti
 		PurpleNotifyUserInfoEntry *user_info_entry = (PurpleNotifyUserInfoEntry*)l->data;
 		//PurpleNotifyUserInfoEntryType type = purple_notify_user_info_entry_get_type(user_info_entry);
 		const char *label = purple_notify_user_info_entry_get_label(user_info_entry);
-		const char *value = purple_notify_user_info_entry_get_value(user_info_entry);
+		const char *_value = purple_notify_user_info_entry_get_value(user_info_entry);
 
 		if(!label) continue;
 
+
 		string text;
-		if(value)
+		if(_value)
+		{
+			char* value = purple_markup_strip_html(_value);
 			text = string(label) + ": " + value;
+			g_free(value);
+		}
 		else
 			text = string(":: ") + label + " ::";
 
