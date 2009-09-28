@@ -24,7 +24,6 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <libpurple/purple.h>
-#include <glib/gthread.h>
 #include <getopt.h>
 
 #include "minbif.h"
@@ -137,6 +136,7 @@ Minbif::Minbif()
 
 	section = conf.AddSection("irc", "Server information", false);
 	section->AddItem(new ConfigItem_string("hostname", "Server hostname", " "));
+	section->AddItem(new ConfigItem_string("password", "Global server password", " "));
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 

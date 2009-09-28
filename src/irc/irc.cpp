@@ -28,6 +28,7 @@
 #include "../callback.h"
 #include "../version.h"
 #include "../sock.h"
+#include "../config.h"
 #include "im/im.h"
 #include "server_poll/poll.h"
 #include "irc.h"
@@ -360,6 +361,14 @@ void IRC::sendWelcome()
 		if(im->getPassword().empty())
 		{
 			/* New user. */
+
+			string global_passwd = conf.GetSection("irc")->GetItem("password")->String();
+			if(global_passwd != " " && user->getPassword() != global_passwd)
+			{
+				quit("This server is protected by a global private password.  Ask administrator.");
+				return;
+			}
+
 			im->setPassword(user->getPassword());
 		}
 		else if(im->getPassword() != user->getPassword())
