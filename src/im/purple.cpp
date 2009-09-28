@@ -49,8 +49,10 @@ void Purple::debug(PurpleDebugLevel level, const char *category, const char *arg
 {
 	switch(level)
 	{
-		case PURPLE_DEBUG_ERROR:
 		case PURPLE_DEBUG_FATAL:
+			b_log[W_ERR] << "[" << category << "] " << args;
+			break;
+		case PURPLE_DEBUG_ERROR:
 			b_log[W_PURPLE] << "[" << category << "] " << args;
 			break;
 		case PURPLE_DEBUG_WARNING:
