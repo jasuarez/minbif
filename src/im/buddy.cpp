@@ -73,6 +73,22 @@ void Buddy::setAlias(string alias) const
 {
 	assert(isValid());
 	purple_blist_alias_buddy(buddy, alias.c_str());
+
+	/* XXX
+	 * If this method is called while adding a new buddy in local
+	 * blist, and if the email address doesn't exist, there is a race
+	 * condition because the buddy isn't added on the MSN server,
+	 * and the fucking libpurple's MSN plugin doesn't check it and crashes.
+	 *
+	 * It isn't possible to avoid sending alias to server, because at
+	 * connection, local aliases are overrided by server aliases.
+	 *
+	 * So, for *now* (and until the pidgin crash will be fixed),
+	 * I assume that minbif'll crash in this case, and I don't care
+	 * about, you've had to correctly typing, fool!
+	 *
+	 * Ref: http://developer.pidgin.im/ticket/10393
+	 */
 	serv_alias_buddy(buddy);
 }
 
