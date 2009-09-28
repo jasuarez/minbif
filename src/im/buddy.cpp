@@ -86,10 +86,15 @@ string Buddy::getRealName() const
 {
 	assert(isValid());
 	const char* rn = purple_buddy_get_server_alias(buddy);
-	if(rn)
-		return rn;
+	if(rn && *rn)
+	{
+		char* tmp = g_markup_escape_text(rn, -1);
+		string tmp2;
+		g_free(tmp);
+		return tmp2;
+	}
 	else
-		return "";
+		return getName();
 }
 
 bool Buddy::isOnline() const

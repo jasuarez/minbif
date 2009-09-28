@@ -617,6 +617,9 @@ void IRC::m_whois(Message message)
 						  .addArg("Nick does not exist"));
 		return;
 	}
+	bool extended_whois = false;
+	if(message.countArgs() > 1)
+		extended_whois = true;
 
 	user->send(Message(RPL_WHOISUSER).setSender(this)
 					 .setReceiver(user)
@@ -652,7 +655,7 @@ void IRC::m_whois(Message message)
 	CacaImage icon = n->getIcon();
 	try
 	{
-		string buf = icon.getIRCBuffer(0, 10);
+		string buf = icon.getIRCBuffer(0, extended_whois ? 15 : 10);
 		string line;
 		user->send(Message(RPL_WHOISACTUALLY).setSender(this)
 					       .setReceiver(user)
@@ -681,7 +684,11 @@ void IRC::m_whois(Message message)
 					       .addArg("libcaca and imlib2 are required to display icon"));
 	}
 
-	if(!n->retrieveInfo())
+	/* Retrieve server info about this buddy only if this is an extended
+	 * whois. In this case, do not send a ENDOFWHOIS because this
+	 * is an asynchronous call.
+	 */
+	if(!extended_whois || !n->retrieveInfo())
 		user->send(Message(RPL_ENDOFWHOIS).setSender(this)
 						  .setReceiver(user)
 						  .addArg(n->getNickname())

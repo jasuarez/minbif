@@ -255,7 +255,7 @@ void* Request::notify_userinfo(PurpleConnection *gc, const char *who, PurpleNoti
 		if(value)
 			text = string(label) + ": " + value;
 		else
-			text = string(" ") + label;
+			text = string(":: ") + label + " ::";
 
 		user->send(irc::Message(RPL_WHOISACTUALLY).setSender(irc)
 					       .setReceiver(user)
