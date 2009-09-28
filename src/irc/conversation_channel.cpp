@@ -98,6 +98,21 @@ void ConversationChannel::addBuddy(im::ChatBuddy cbuddy, int status)
 	cbuddies[cbuddy] = cul;
 }
 
+void ConversationChannel::renameBuddy(ChanUser* chanuser, im::ChatBuddy cbuddy)
+{
+	irc::ChatBuddy* nick = dynamic_cast<irc::ChatBuddy*>(chanuser->getNick());
+
+	string new_nick = cbuddy.getName();
+	while(irc->getNick(new_nick))
+		new_nick += "_";
+	irc->getUser()->send(irc::Message(MSG_NICK).setSender(nick)
+			                           .addArg(new_nick));
+	nick->setNickname(new_nick);
+	cbuddies.erase(nick->getChatBuddy());
+	nick->setChatBuddy(cbuddy);
+	cbuddies[cbuddy] = chanuser;
+}
+
 void ConversationChannel::delUser(Nick* nick, Message message)
 {
 	map<im::ChatBuddy, ChanUser*>::iterator it;

@@ -54,6 +54,7 @@ namespace irc
 		virtual bool isOnline() const { return true; }
 
 		im::ChatBuddy getChatBuddy() const { return im_cbuddy; }
+		void setChatBuddy(im::ChatBuddy cb) { im_cbuddy = cb; }
 
 		/** Get buddy's real name. */
 		virtual string getRealName() const;
