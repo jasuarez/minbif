@@ -179,18 +179,22 @@ bool IM::setStatus(string away)
 
 		if(i >= PURPLE_STATUS_NUM_PRIMITIVES)
 		{
-			irc->notice(irc->getUser(), "This message does not exist. Try with:");
+			irc->notice(irc->getUser(), "Warning: This message does not exist. Try with:");
 			irc->notice(irc->getUser(), status_list);
-			return false;
+			prim = PURPLE_STATUS_EXTENDED_AWAY;
 		}
-		prim = (PurpleStatusPrimitive)i;
+		else
+		{
+			prim = (PurpleStatusPrimitive)i;
+			away = purple_primitive_get_name_from_type(prim);
+		}
 	}
 
 	PurpleSavedStatus* status = purple_savedstatus_find_transient_by_type_and_message(prim, purple_primitive_get_name_from_type(prim));
 	if(!status)
 	{
 		status = purple_savedstatus_new(NULL, prim);
-		purple_savedstatus_set_message(status, purple_primitive_get_name_from_type(prim));
+		purple_savedstatus_set_message(status, away.c_str());
 	}
 	purple_savedstatus_activate(status);
 
