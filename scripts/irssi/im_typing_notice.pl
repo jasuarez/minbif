@@ -34,11 +34,11 @@
 # 2005-12-15 (version 1.42):
 # * Fixed small bug with typing notices disappearing under certain circumstances
 #   in channels
-# * Fixed bug that caused outgoing notifications not to work 
+# * Fixed bug that caused outgoing notifications not to work
 # * root cares not about our typing status.
 #
 # 2005-12-04 (version 1.41):
-# * Implemented stale states in statusbar (shows "(stale)" for OSCAR connections) 
+# * Implemented stale states in statusbar (shows "(stale)" for OSCAR connections)
 # * Introduced bitlbee_typing_allwin (default OFF). Set this to ON to make
 #   typing notifications visible in all windows.
 #
@@ -57,7 +57,7 @@
 #
 # 2005-08-16:
 # AIM supported, for sending notices, using CTCP TYPING 0. (Use the AIM patch from Hanji http://get.bitlbee.org/patches/)
-# 
+#
 # 2004-10-31:
 # Sends typing notice to the bitlbee server when typing a message in irssi. bitlbee > 0.92
 #
@@ -108,7 +108,7 @@ sub set_local_channels {
 
 sub event_ctcp_msg {
     my ($server, $msg, $from, $address) = @_;
-    print("CTCP: $server, $msg, $from, $address");
+    #print("CTCP: $server, $msg, $from, $address");
     #print "CTCP: $msg $from $address";
     return unless ImUtils::is_server_im($server, \@control_channels);
     if (my($type) = $msg =~ "TYPING ([0-9])") {
@@ -150,11 +150,11 @@ sub redraw {
     my $window = Irssi::active_win();
     my $channel = $window->get_active_name();
     if ($from eq $channel || ImUtils::is_channel_im($channel, \@control_channels)
-        || $channel =~ /&chat_0/ 
+        || $channel =~ /&chat_0/
         || Irssi::settings_get_bool("bitlbee_typing_allwin")) {
         Irssi::statusbar_items_redraw('typing_notice');
     }
-}    
+}
 
 sub event_msg {
     my ($server,$data,$from,$address,$target) = @_;
@@ -174,7 +174,7 @@ sub typing_notice {
     my ($item, $get_size_only) = @_;
     my $window = Irssi::active_win();
     my $channel = $window->get_active_name();
-    
+
     if (exists($typing{$channel})) {
         my $append=$typing{$channel}==2 ? " (stale)" : "";
         $item->default_handler($get_size_only, "{sb typing$append}", 0, 1);
@@ -193,7 +193,7 @@ sub typing_notice {
             $item->default_handler($get_size_only, "{sb typing:$line}", 0, 1);
             $line = "";
         }
-    } 
+    }
 }
 
 sub empty {
@@ -211,7 +211,7 @@ sub window_change {
             Irssi::signal_add_last('gui key pressed', 'key_pressed');
             #print "Keylog started";
         }
-    } 
+    }
     else {
         if ($keylog_active) {
             $keylog_active = 0;
@@ -224,15 +224,15 @@ sub window_change {
 sub key_pressed {
     return unless (Irssi::settings_get_bool("bitlbee_send_typing") || 0);
     my $key = shift;
-    if ($key != 9 && $key != 10 && $lastkey != 27 && $key != 27 
-       && $lastkey != 91 && $key != 126 && $key != 127) 
+    if ($key != 9 && $key != 10 && $lastkey != 27 && $key != 27
+       && $lastkey != 91 && $key != 126 && $key != 127)
     {
         my $server = Irssi::active_server();
         my $window = Irssi::active_win();
         my $nick = $window->get_active_name();
         if (ImUtils::is_server_im($server, \@control_channels) &&
             $nick ne "(status)" &&
-            $nick ne "root") 
+            $nick ne "root")
         {
             if (grep {$_ eq $nick} &ImUtils::get_all_im_nicks(\@control_channels)) {
                 my $input = Irssi::parse_special("\$L");
@@ -240,7 +240,7 @@ sub key_pressed {
                 if ($input !~ /^$command_char.*/ && $first_word =~ s/$to_char$//){
                     send_typing($first_word);
                 }
-            } 
+            }
             else {
                 my $input = Irssi::parse_special("\$L");
                 if ($input !~ /^$command_char.*/ && length($input) > 0){
@@ -266,16 +266,16 @@ sub send_typing {
     my $nick = shift;
 
     if (!exists($out_typing{$nick}) || time - $out_typing{$nick} > $KEEP_TYPING_TIMEOUT) {
-      print "send_typing ". $nick;
+      #print "send_typing ". $nick;
 
 	return unless grep { $_->{nick} eq $nick } @{&ImUtils::get_all_im_nicks(\@control_channels)};
 
-    	print "Send typing";
+    	#print "Send typing";
         my $server = Irssi::active_server();
         $server->command("^CTCP $nick TYPING 1");
-               
+
         $out_typing{$nick} = time;
-        
+
         ### Reset 'stop-typing' timer
         if ($timer_tag{$nick}) {
             Irssi::timeout_remove($timer_tag{$nick});
