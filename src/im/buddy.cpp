@@ -107,10 +107,37 @@ bool Buddy::isAvailable() const
 string Buddy::getStatus() const
 {
 	PurpleStatus* status = purple_presence_get_active_status(buddy->presence);
-	if(status)
-		return purple_status_get_name(status);
-	else
-		return "bite";
+	if(!status)
+		return "";
+
+	string s = purple_status_get_name(status);
+
+	PurplePlugin* prpl = purple_find_prpl(purple_account_get_protocol_id(buddy->account));
+	PurplePluginProtocolInfo* prpl_info = NULL;
+
+	if(prpl)
+		prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
+
+	if(prpl_info && prpl_info->status_text && buddy->account->gc)
+	{
+		char* tmp = prpl_info->status_text(buddy);
+		const char* end;
+
+		if(tmp)
+		{
+			if(!g_utf8_validate(tmp, -1, &end))
+			{
+				char* utf8 = g_strndup(tmp, g_utf8_pointer_to_offset(tmp, end));
+				g_free(tmp);
+				tmp = utf8;
+			}
+			char* tmp2 = purple_markup_strip_html(tmp);
+			s += string(": ") + tmp2;
+			g_free(tmp2);
+			g_free(tmp);
+		}
+	}
+	return s;
 }
 
 Account Buddy::getAccount() const
