@@ -113,6 +113,7 @@ namespace im
 
 		Conversation getConversation() const { return conv; }
 		Account getAccount() const;
+		PurpleConvChatBuddy* getPurpleChatBuddy() const { return cbuddy; }
 
 	};
 
