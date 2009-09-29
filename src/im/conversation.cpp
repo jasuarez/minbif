@@ -156,7 +156,12 @@ string Conversation::getChanName() const
 {
 	assert(isValid());
 
-	string n = "#" + getName() + ":" + getAccount().getID();
+	string name = getName();
+	for(string::iterator it = name.begin(); it != name.end(); ++it)
+		if(*it == ' ')
+			*it = '_';
+
+	string n = "#" + name + ":" + getAccount().getID();
 
 	return n;
 }
