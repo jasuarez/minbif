@@ -1481,6 +1481,14 @@ void IRC::m_svsnick(Message message)
 		return;
 	}
 
+	if(!Nick::isValidNickname(message.getArg(1)))
+	{
+		user->send(Message(ERR_ERRONEUSNICKNAME).setSender(this)
+							.setReceiver(user)
+							.addArg("This nick contains invalid characters"));
+		return;
+	}
+
 	if(getNick(message.getArg(1), true))
 	{
 		user->send(Message(ERR_NICKNAMEINUSE).setSender(this)
