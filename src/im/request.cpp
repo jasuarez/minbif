@@ -251,7 +251,6 @@ void* Request::notify_userinfo(PurpleConnection *gc, const char *who, PurpleNoti
 
 		if(!label) continue;
 
-
 		string text;
 		if(_value)
 		{

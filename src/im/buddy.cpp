@@ -105,7 +105,13 @@ string Buddy::getRealName() const
 	if(rn && *rn)
 		return rn;
 	else
-		return getName();
+	{
+		const char* servernick = purple_blist_node_get_string((PurpleBlistNode*)buddy, "servernick");
+		if(servernick && *servernick)
+			return servernick;
+		else
+			return getName();
+	}
 }
 
 bool Buddy::isOnline() const
@@ -233,13 +239,16 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 
 			Purple::getIM()->getIRC()->addNick(n);
 
-			/* WARN! This function probably recalls this one, so it is
-			 *       really NECESSARY to call them at end of this block.
-			 *       If n is not in IRC's user list, two irc::Buddy
-			 *       instances will be inserted, with one lost.
-			 */
-			buddy.setAlias(n->getNickname());
 		}
+		/* If server overrides the IRC nickname as alias, force it.
+		 * WARN! This function probably recalls this one, so it is
+		 *       really NECESSARY to call them at end of this block.
+		 *       If n is not in IRC's user list, two irc::Buddy
+		 *       instances will be inserted, with one lost.
+		 */
+		if(buddy.getAlias() != n->getNickname())
+			buddy.setAlias(n->getNickname());
+
 		string channame = buddy.getAccount().getStatusChannel();
 		irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
 
