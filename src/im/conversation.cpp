@@ -558,7 +558,13 @@ void Conversation::remove_user(PurpleConversation* c, const char* cbname, const 
 		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
 		return;
 	}
-	irc::Nick* nick = chan->getChanUser(cbname)->getNick();
+	irc::ChanUser* cu = chan->getChanUser(cbname);
+	if(!cu)
+	{
+		b_log[W_ERR] << cbname << " tries to leave channel, but I don't know who is it!";
+		return;
+	}
+	irc::Nick* nick = cu->getNick();
 	nick->part(chan, reason ? reason : "");
 }
 
