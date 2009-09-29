@@ -79,6 +79,10 @@ namespace im
 		void setPassword(const string& password);
 		string getPassword() const;
 
+		/** Set typing notice */
+		void setTypingNotice(bool enabled);
+		bool hasTypingNotice() const;
+
 		irc::IRC* getIRC() const { return irc; }
 
 		/** Get list of protocols in a map. */

@@ -1055,7 +1055,8 @@ void IRC::m_admin(Message message)
 		const char* key;
 		SettingBase* setting;
 	} settings[] = {
-		{ "password",     new SettingPassword(this, im) },
+		{ "password",      new SettingPassword(this, im) },
+		{ "typing_notice", new SettingTypingNotice(this, im) },
 	};
 
 	if(message.countArgs() == 0)

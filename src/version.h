@@ -24,7 +24,7 @@
 #define MINBIF_VERSION_MAJOR   "1"
 #define MINBIF_VERSION_MINOR   "0"
 #define MINBIF_VERSION_PATCH   ""
-#define MINBIF_VERSION_EXTRA   "-beta"
+#define MINBIF_VERSION_EXTRA   "beta"
 
 #define MINBIF_VERSION       MINBIF_VERSION_NAME \
 			     MINBIF_VERSION_MAJOR "." \

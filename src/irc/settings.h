@@ -56,6 +56,15 @@ namespace irc
 		virtual string getValue() const;
 		virtual bool setValue(string v);
 	};
+
+	class SettingTypingNotice : public SettingBase
+	{
+	public:
+		SettingTypingNotice(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
+
+		virtual string getValue() const;
+		virtual bool setValue(string v);
+	};
 }; /* ns irc */
 
 #endif /* IRC_SETTINGS_H */

@@ -113,6 +113,16 @@ string IM::getPassword() const
 	return purple_prefs_get_string("/minbif/password");
 }
 
+void IM::setTypingNotice(bool enabled)
+{
+	purple_prefs_set_int("/minbif/typing_notice", enabled ? 1 : 0);
+}
+
+bool IM::hasTypingNotice() const
+{
+	return purple_prefs_get_int("/minbif/typing_notice");
+}
+
 map<string, Protocol> IM::getProtocolsList() const
 {
 	return Purple::getProtocolsList();

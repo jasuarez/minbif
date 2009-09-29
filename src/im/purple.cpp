@@ -84,6 +84,7 @@ void Purple::minbif_prefs_init()
 	purple_prefs_add_none("/minbif");
 
 	purple_prefs_add_string("/minbif/password", "");
+	purple_prefs_add_int("/minbif/typing_notice", 0);
 }
 
 GHashTable *Purple::ui_info = NULL;

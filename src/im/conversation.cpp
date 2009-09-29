@@ -604,6 +604,9 @@ void Conversation::topic_changed(PurpleConversation* c, const char* who, const c
 
 void Conversation::buddy_typing(PurpleAccount* account, const char* who, gpointer null)
 {
+	if(!Purple::getIM()->hasTypingNotice())
+		return;
+
 	Conversation conv(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, account));
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	PurpleConvIm *im = NULL;

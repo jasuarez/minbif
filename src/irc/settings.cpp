@@ -46,4 +46,23 @@ bool SettingPassword::setValue(string v)
 	return true;
 }
 
+string SettingTypingNotice::getValue() const
+{
+	return getIM()->hasTypingNotice() ? "true" : "false";
+}
+
+bool SettingTypingNotice::setValue(string v)
+{
+	if(v == "1" || v == "true")
+		getIM()->setTypingNotice(true);
+	else if(v == "0" || v == "false")
+		getIM()->setTypingNotice(false);
+	else
+	{
+		getIRC()->notice(getIRC()->getUser(), "Value must be 'true' or 'false'");
+		return false;
+	}
+	return true;
+}
+
 }; /* ns irc */

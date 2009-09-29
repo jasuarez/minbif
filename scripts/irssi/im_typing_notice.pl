@@ -1,6 +1,5 @@
 # INSTALLATION
-# [&bitlbee] set typing_notice true
-# <@root> typing_notice = `true'
+# /admin typing_notice true
 # AND
 # /statusbar window add typing_notice
 #
