@@ -29,8 +29,8 @@
 
 namespace irc {
 
-BuddyIcon::BuddyIcon(im::IM* _im, Server* server, string nickname, string username, string realname)
-	: Nick(server, nickname, username, realname),
+BuddyIcon::BuddyIcon(im::IM* _im, Server* server)
+	: Nick(server, "buddyicon", "buddyicon", server->getName(), "DCC Send me a .png to set your icon"),
 	  im(_im)
 {
 }

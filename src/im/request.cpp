@@ -194,7 +194,7 @@ void Request::init()
 	purple_notify_set_ui_ops(&notify_ops);
 
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	nick = new RequestNick(irc, "request", "request", irc->getServerName());
+	nick = new RequestNick(irc, "request", "request", irc->getServerName(), "I ask you questions");
 	irc->addNick(nick);
 }
 

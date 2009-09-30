@@ -41,7 +41,7 @@ namespace irc
 		 * @param server  up-server
 		 * @param buddy  IM buddy object.
 		 */
-		BuddyIcon(im::IM* im, Server* server, string nickname, string username, string realname);
+		BuddyIcon(im::IM* im, Server* server);
 		~BuddyIcon();
 
 		/** Implementation of the message routing to this buddy */

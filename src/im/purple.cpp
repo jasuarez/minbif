@@ -156,7 +156,7 @@ void Purple::inited()
 	Media::init();
 
 	irc::IRC* irc = getIM()->getIRC();
-	irc::BuddyIcon* bi = new irc::BuddyIcon(getIM(), irc, "buddyicon", "buddyicon", irc->getServerName());
+	irc::BuddyIcon* bi = new irc::BuddyIcon(getIM(), irc);
 	irc->addNick(bi);
 }
 
