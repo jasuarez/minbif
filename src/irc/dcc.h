@@ -129,6 +129,8 @@ namespace irc {
 		DCCGet(Nick* from, string filename, uint32_t addr, uint16_t port, ssize_t size, _CallBack* callback);
 		~DCCGet();
 
+		static bool parseDCCSEND(string line, string* filename, uint32_t* addr, uint16_t* port, ssize_t* size);
+
 		virtual im::FileTransfert getFileTransfert() const { return im::FileTransfert(); }
 		virtual void updated(bool destroy);
 		virtual bool isFinished() const { return finished; }

@@ -336,4 +336,31 @@ void DCCGet::setPeer(Nick* n)
 		deinit();
 }
 
+bool DCCGet::parseDCCSEND(string line, string* filename, uint32_t* addr, uint16_t* port, ssize_t* size)
+{
+	if(line[0] != '\1' || line[line.size() - 1] != '\1')
+		return false;
+
+	string word;
+	Message args;
+
+	/* Remove \1 chars. */
+	line = line.substr(1, line.size()-2);
+
+	while((word = stringtok(line, " ")).empty() == false)
+		args.addArg(word);
+	args.rebuildWithQuotes();
+
+	if(args.countArgs() == 6 && args.getArg(0) == "DCC" && args.getArg(1) == "SEND")
+	{
+		*filename = args.getArg(2);
+		*addr = s2t<uint32_t>(args.getArg(3));
+		*port = s2t<uint16_t>(args.getArg(4));
+		*size = s2t<ssize_t>(args.getArg(5));
+		return true;
+	}
+
+	return false;
+}
+
 } /* namespace irc */

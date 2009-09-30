@@ -230,7 +230,7 @@ void Conversation::createChannel() const
 	for (; l != NULL; l = l->next)
 	{
 		ChatBuddy cbuddy = ChatBuddy(conv, (PurpleConvChatBuddy *)l->data);
-		b_log[W_ERR] << cbuddy.getName();
+		b_log[W_DEBUG] << cbuddy.getName();
 	}
 }
 
@@ -328,7 +328,7 @@ void Conversation::recvMessage(string from, string text, bool action) const
 
 			if(!n)
 			{
-				b_log[W_ERR] << "Received message from unknown budy " << from << ": " << text;
+				b_log[W_WARNING] << "Received message from unknown budy " << from << ": " << text;
 				return;
 			}
 
@@ -348,7 +348,7 @@ void Conversation::recvMessage(string from, string text, bool action) const
 			irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(getChanName()));
 			if(!chan)
 			{
-				b_log[W_ERR] << "Received message in unknown chat " << getChanName() << ": " << text;
+				b_log[W_WARNING] << "Received message in unknown chat " << getChanName() << ": " << text;
 				return;
 			}
 

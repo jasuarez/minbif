@@ -40,40 +40,31 @@ BuddyIcon::~BuddyIcon()
 
 void BuddyIcon::send(Message m)
 {
-	if(m.getCommand() == MSG_PRIVMSG && m.countArgs() > 0 && m.getArg(0)[0] == '\1')
+	if(m.getCommand() == MSG_PRIVMSG && m.countArgs() > 0)
 	{
-		IRC* irc = dynamic_cast<IRC*>(getServer());
+		string filename;
+		uint32_t addr;
+		uint16_t port;
+		ssize_t size;
 
-		string line = m.getArg(0);
-		string word;
-		Message args;
-
-		/* Remove \1 chars. */
-		line = line.substr(1, line.size()-2);
-
-		while((word = stringtok(line, " ")).empty() == false)
-			args.addArg(word);
-		args.rebuildWithQuotes();
-
-		if(args.countArgs() == 6 && args.getArg(0) == "DCC" && args.getArg(1) == "SEND")
+		if(DCCGet::parseDCCSEND(m.getArg(0), &filename, &addr, &port, &size))
 		{
-			string filename = im->getBuddyIconPath() + "/" + args.getArg(2);
-			uint32_t addr = s2t<uint32_t>(args.getArg(3));
-			uint16_t port = s2t<uint16_t>(args.getArg(4));
-			ssize_t size = s2t<ssize_t>(args.getArg(5));
-
-			if(!check_write_file(im->getBuddyIconPath(), args.getArg(2)))
+			string path = im->getBuddyIconPath();
+			if(!check_write_file(path, filename))
 			{
-				b_log[W_ERR] << "Unable to write into the buddy icon directory '" << filename << "': " << strerror(errno);
+				b_log[W_ERR] << "Unable to write into the buddy icon directory '" << path << "': " << strerror(errno);
 				return;
 			}
 			try
 			{
+				IRC* irc = dynamic_cast<IRC*>(getServer());
+				filename = path + "/" + filename;
 				irc->createDCCGet(this, filename, addr, port, size, new CallBack<BuddyIcon>(this, &BuddyIcon::receivedIcon, strdup(filename.c_str())));
 			}
 			catch(const DCCGetError&)
 			{
 			}
+
 		}
 	}
 }
@@ -81,7 +72,7 @@ void BuddyIcon::send(Message m)
 bool BuddyIcon::receivedIcon(void* data)
 {
 	char* filename = static_cast<char*>(data);
-	b_log[W_ERR] << "New icon set!";
+	b_log[W_INFO] << "New icon set!";
 	if(filename)
 		im->setBuddyIcon(filename);
 	free(filename);
