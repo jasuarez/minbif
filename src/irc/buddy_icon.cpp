@@ -40,7 +40,7 @@ BuddyIcon::~BuddyIcon()
 
 void BuddyIcon::send(Message m)
 {
-	if(m.getCommand() == MSG_PRIVMSG && m.countArgs() > 0)
+	if(m.getCommand() == MSG_PRIVMSG && m.getReceiver() == this && m.countArgs() > 0)
 	{
 		string filename;
 		uint32_t addr;

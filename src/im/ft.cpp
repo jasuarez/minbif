@@ -72,6 +72,30 @@ bool FileTransfert::isCompleted() const
 	return purple_xfer_is_completed(xfer);
 }
 
+bool FileTransfert::isReceiving() const
+{
+	assert(isValid());
+	return purple_xfer_get_type(xfer) == PURPLE_XFER_RECEIVE;
+}
+
+bool FileTransfert::isSending() const
+{
+	assert(isValid());
+	return purple_xfer_get_type(xfer) == PURPLE_XFER_SEND;
+}
+
+string FileTransfert::getRemoteUser() const
+{
+	assert(isValid());
+	return purple_xfer_get_remote_user(xfer);
+}
+
+Buddy FileTransfert::getBuddy() const
+{
+	assert(isValid());
+	return Buddy(purple_find_buddy(xfer->account, xfer->who));
+}
+
 /* STATIC */
 
 void FileTransfert::new_xfer(PurpleXfer* xfer)
@@ -80,37 +104,50 @@ void FileTransfert::new_xfer(PurpleXfer* xfer)
 
 void FileTransfert::destroy(PurpleXfer* xfer)
 {
-	Purple::getIM()->getIRC()->updateDCC(FileTransfert(xfer), true);
-	if(purple_xfer_is_completed(xfer))
-		b_log[W_INFO|W_SNO] << "File saved as: " << purple_xfer_get_local_filename(xfer);
+	FileTransfert ft(xfer);
+	Purple::getIM()->getIRC()->updateDCC(ft, true);
+	if(ft.isCompleted())
+	{
+		if(ft.isReceiving())
+			b_log[W_INFO|W_SNO] << "File saved as: " << ft.getLocalFileName();
+		else
+			b_log[W_INFO|W_SNO] << "File " << ft.getFileName() << " sent to " << ft.getRemoteUser();
+	}
 }
 
 void FileTransfert::add_xfer(PurpleXfer* xfer)
 {
 	irc::Nick* n = NULL;
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	PurpleBuddy* buddy = purple_find_buddy(xfer->account, xfer->who);
-	if(buddy)
+	FileTransfert ft(xfer);
+	Buddy buddy = ft.getBuddy();
+	if(buddy.isValid())
 		n = irc->getNick(Buddy(buddy));
 	else
 	{
 		/* TODO find the chat buddy or someone else. */
 	}
 
-	b_log[W_SNO] << "Starting receiving file " << purple_xfer_get_filename(xfer) << " from " << xfer->who;
-
-	/* Do not send file to IRC user with DCC if this feature is disabled. */
-	if(conf.GetSection("file_transfers")->GetItem("dcc")->Boolean() == false)
-		return;
-
-	FileTransfert ft(xfer);
-	try
+	if(ft.isReceiving())
 	{
-		irc->createDCCSend(ft, n);
+		b_log[W_INFO|W_SNO] << "Starting receiving file " << ft.getFileName() << " from " << ft.getRemoteUser();
+
+		/* Do not send file to IRC user with DCC if this feature is disabled. */
+		if(conf.GetSection("file_transfers")->GetItem("dcc")->Boolean() == false)
+			return;
+
+		try
+		{
+			irc->createDCCSend(ft, n);
+		}
+		catch(irc::DCCListenError &e)
+		{
+			b_log[W_SNO|W_ERR] << "Unable to listen for DCC, you'll might retrieve yourself the file.";
+		}
 	}
-	catch(irc::DCCListenError &e)
+	else
 	{
-		b_log[W_SNO|W_ERR] << "Unable to listen for DCC, you'll might retrieve yourself the file.";
+		b_log[W_INFO|W_SNO] << "Starting sending file " << ft.getFileName() << " to " << ft.getRemoteUser();
 	}
 }
 
@@ -122,14 +159,21 @@ void FileTransfert::update_progress(PurpleXfer* xfer, double percent)
 
 void FileTransfert::cancel_local(PurpleXfer* xfer)
 {
-	b_log[W_SNO|W_ERR] << "Aborted receiving file " << purple_xfer_get_filename(xfer) << " from " << purple_xfer_get_remote_user(xfer);
+	FileTransfert ft(xfer);
+	if(ft.isSending())
+		b_log[W_SNO|W_ERR] << "Aborted sending file " << ft.getFileName() << " to " << ft.getRemoteUser();
+	else
+		b_log[W_SNO|W_ERR] << "Aborted receiving file " << ft.getFileName() << " from " << ft.getRemoteUser();
 }
 
 void FileTransfert::cancel_remote(PurpleXfer* xfer)
 {
-	b_log[W_SNO|W_ERR] << purple_xfer_get_remote_user(xfer) << " aborted sending file " << purple_xfer_get_filename(xfer);
+	FileTransfert ft(xfer);
+	if(ft.isSending())
+		b_log[W_SNO|W_ERR] << ft.getRemoteUser() << " aborted receiving file " << ft.getFileName();
+	else
+		b_log[W_SNO|W_ERR] << ft.getRemoteUser() << " aborted sending file " << ft.getFileName();
 }
-
 
 PurpleXferUiOps FileTransfert::ui_ops =
 {

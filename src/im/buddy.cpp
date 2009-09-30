@@ -94,8 +94,17 @@ void Buddy::setAlias(string alias) const
 
 void Buddy::retrieveInfo() const
 {
-	assert(isValid() && buddy->account != NULL);
+	assert(isValid());
+	assert(buddy->account != NULL);
 	serv_get_info(purple_account_get_connection(buddy->account), purple_buddy_get_name(buddy));
+}
+
+void Buddy::sendFile(string filename)
+{
+	assert(isValid());
+	serv_send_file(purple_account_get_connection(purple_buddy_get_account(buddy)),
+		       purple_buddy_get_name(buddy),
+		       filename.c_str());
 }
 
 string Buddy::getRealName() const

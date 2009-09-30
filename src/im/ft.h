@@ -26,6 +26,7 @@ namespace im {
 
 	using std::string;
 
+	class Buddy;
 	class FileTransfert
 	{
 		PurpleXfer* xfer;
@@ -51,11 +52,15 @@ namespace im {
 
 		bool isValid() const { return xfer != NULL; }
 
+		string getRemoteUser() const;
+		Buddy getBuddy() const;
 		string getFileName() const;
 		string getLocalFileName() const;
 		size_t getSize() const;
 		size_t getSentBytes() const;
 		bool isCompleted() const;
+		bool isReceiving() const;
+		bool isSending() const;
 	};
 
 };

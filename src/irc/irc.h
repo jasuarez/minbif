@@ -131,6 +131,8 @@ namespace irc
 
 		User* getUser() const { return user; }
 
+		im::IM* getIM() const { return im; }
+
 		/** Ends the auth sequence.
 		 *
 		 * It checks if user has sent all requested parameters to

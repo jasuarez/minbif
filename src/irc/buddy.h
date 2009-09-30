@@ -32,6 +32,9 @@ namespace irc
 		im::Buddy im_buddy;
 		im::Conversation conv;
 
+		bool process_dcc_get(const string& text);
+		bool received_file(void* data);
+
 	public:
 
 		/** Build buddy object

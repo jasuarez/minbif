@@ -17,11 +17,17 @@
  */
 
 #include <cstring>
+#include <cerrno>
 
 #include "irc/buddy.h"
 #include "irc/server.h"
 #include "irc/channel.h"
+#include "irc/dcc.h"
+#include "irc/irc.h"
+#include "im/im.h"
 #include "im/account.h"
+#include "../callback.h"
+#include "../log.h"
 #include "../util.h"
 
 namespace irc {
@@ -61,6 +67,11 @@ void Buddy::send(Message m)
 		{
 			if(chan && chan->isStatusChannel())
 				stringtok(text, " ");
+
+			/* Check if this is a DCC SEND message. */
+			if(process_dcc_get(text))
+				return;
+
 			if(!conv.isValid())
 			{
 				conv = im::Conversation(im_buddy.getAccount(), im_buddy);
@@ -69,6 +80,49 @@ void Buddy::send(Message m)
 			conv.sendMessage(text);
 		}
 	}
+}
+
+bool Buddy::process_dcc_get(const string& text)
+{
+	string filename;
+	uint32_t addr;
+	uint16_t port;
+	ssize_t size;
+
+	if(DCCGet::parseDCCSEND(text, &filename, &addr, &port, &size))
+	{
+		RemoteServer* rm = dynamic_cast<RemoteServer*>(getServer());
+		if(!rm)
+			return true;
+
+		string path = rm->getIRC()->getIM()->getUserPath() + "/upload/";
+		if(!check_write_file(path, filename))
+		{
+			b_log[W_ERR] << "Unable to write into the upload directory '" << path << "': " << strerror(errno);
+			return true;
+		}
+		try
+		{
+			filename = path + "/" + filename;
+			rm->getIRC()->createDCCGet(this, filename, addr, port, size, new CallBack<Buddy>(this, &Buddy::received_file, strdup(filename.c_str())));
+
+		}
+		catch(const DCCGetError&)
+		{
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool Buddy::received_file(void* data)
+{
+	char* filename = static_cast<char*>(data);
+	im_buddy.sendFile(filename);
+	free(filename);
+	return true;
 }
 
 string Buddy::getRealName() const

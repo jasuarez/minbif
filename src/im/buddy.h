@@ -83,6 +83,9 @@ namespace im
 		 */
 		void retrieveInfo() const;
 
+		/** Send a file to this buddy. */
+		void sendFile(string filename);
+
 		bool isOnline() const;
 		bool isAvailable() const;
 		string getStatus() const;
