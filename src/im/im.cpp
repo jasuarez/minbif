@@ -123,6 +123,16 @@ bool IM::hasTypingNotice() const
 	return purple_prefs_get_int("/minbif/typing_notice");
 }
 
+void IM::setAwayIdle(bool enabled)
+{
+	purple_prefs_set_bool("/purple/away/away_when_idle", enabled);
+}
+
+bool IM::hasAwayIdle() const
+{
+	return purple_prefs_get_bool("/purple/away/away_when_idle");
+}
+
 map<string, Protocol> IM::getProtocolsList() const
 {
 	return Purple::getProtocolsList();

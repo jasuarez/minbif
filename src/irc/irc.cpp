@@ -1146,6 +1146,7 @@ void IRC::m_admin(Message message)
 	} settings[] = {
 		{ "password",      true,  new SettingPassword(this, im) },
 		{ "typing_notice", true,  new SettingTypingNotice(this, im) },
+		{ "away_idle",     true,  new SettingAwayIdle(this, im) },
 		{ "minbif",        false, new SettingMinbif(this, im) },
 	};
 

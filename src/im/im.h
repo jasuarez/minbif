@@ -85,6 +85,9 @@ namespace im
 		void setTypingNotice(bool enabled);
 		bool hasTypingNotice() const;
 
+		void setAwayIdle(bool enabled);
+		bool hasAwayIdle() const;
+
 		void setBuddyIcon(string path);
 		string getBuddyIconPath() const;
 

@@ -142,7 +142,6 @@ void Purple::init(IM* im)
 	}
 
 	purple_set_blist(purple_blist_new());
-	purple_savedstatus_set_idleaway(false);
 	purple_blist_load();
 }
 
@@ -158,6 +157,10 @@ void Purple::inited()
 	irc::IRC* irc = getIM()->getIRC();
 	irc::BuddyIcon* bi = new irc::BuddyIcon(getIM(), irc);
 	irc->addNick(bi);
+
+	purple_prefs_set_bool("/purple/logging/log_ims", false);
+	purple_prefs_set_bool("/purple/logging/log_chats", false);
+	purple_prefs_set_bool("/purple/logging/log_system", false);
 }
 
 void Purple::uninit()

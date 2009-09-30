@@ -66,6 +66,15 @@ namespace irc
 		virtual bool setValue(string v);
 	};
 
+	class SettingAwayIdle : public SettingBase
+	{
+	public:
+		SettingAwayIdle(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
+
+		virtual string getValue() const;
+		virtual bool setValue(string v);
+	};
+
 	class SettingMinbif : public SettingBase
 	{
 	public:

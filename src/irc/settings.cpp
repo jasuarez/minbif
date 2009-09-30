@@ -65,6 +65,25 @@ bool SettingTypingNotice::setValue(string v)
 	return true;
 }
 
+string SettingAwayIdle::getValue() const
+{
+	return getIM()->hasAwayIdle() ? "true" : "false";
+}
+
+bool SettingAwayIdle::setValue(string v)
+{
+	if(v == "1" || v == "true")
+		getIM()->setAwayIdle(true);
+	else if(v == "0" || v == "false")
+		getIM()->setAwayIdle(false);
+	else
+	{
+		getIRC()->notice(getIRC()->getUser(), "Value must be 'true' or 'false'");
+		return false;
+	}
+	return true;
+}
+
 string SettingMinbif::getValue() const
 {
 	return "Minbif Is Not Bitlbee Fool";
