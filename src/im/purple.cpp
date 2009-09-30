@@ -231,38 +231,13 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 {
 	string id = getNewAccountName(proto);
 	PurpleAccount *account = purple_account_new(username.c_str(), proto.getPurpleID().c_str());
-
 	purple_accounts_add(account);
 	purple_account_set_remember_password(account, TRUE);
-	purple_account_set_password(account, password.c_str());
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "id", id.c_str());
 
-	FOREACH(vector<Protocol::Option>, options, it)
-	{
-		Protocol::Option& option = *it;
-
-		switch(option.getType())
-		{
-			case PURPLE_PREF_STRING:
-				purple_account_set_string(account,
-						          option.getName().c_str(),
-							  option.getValue().c_str());
-				break;
-			case PURPLE_PREF_INT:
-				purple_account_set_int(account,
-						       option.getName().c_str(),
-						       option.getValueInt());
-				break;
-			case PURPLE_PREF_BOOLEAN:
-				purple_account_set_bool(account,
-						        option.getName().c_str(),
-							option.getValueBool());
-				break;
-			default:
-				/* not supported. */
-				break;
-		}
-	}
+	Account a(account);
+	a.setPassword(password);
+	a.setOptions(options);
 
 	const PurpleSavedStatus *saved_status;
 	saved_status = purple_savedstatus_get_current();
@@ -271,7 +246,7 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 		purple_account_set_enabled(account, MINBIF_VERSION_NAME, TRUE);
 	}
 
-	return Account(account, proto);
+	return a;
 }
 
 void Purple::delAccount(PurpleAccount* account)

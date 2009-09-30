@@ -984,12 +984,72 @@ void IRC::m_map(Message message)
 
 				break;
 			}
+			case 'e':
+			{
+				if(message.countArgs() < 2)
+				{
+					notice(user, "Usage: /MAP edit ACCOUNT [KEY [VALUE]]");
+					break;
+				}
+				im::Account account = im->getAccount(message.getArg(1));
+				if(!account.isValid())
+				{
+					notice(user, "Error: Account " + message.getArg(1) + " is unknown");
+					return;
+				}
+				vector<im::Protocol::Option> options = account.getOptions();
+				if(message.countArgs() < 3)
+				{
+					notice(user, "-- Parameters of account " + account.getServername() + " --");
+					FOREACH(vector<im::Protocol::Option>, options, it)
+					{
+						im::Protocol::Option& option = *it;
+						notice(user, option.getName() + " = " + option.getValue());
+					}
+					return;
+				}
+				vector<im::Protocol::Option>::iterator option;
+				for(option = options.begin();
+				    option != options.end() && option->getName() != message.getArg(2);
+				    ++option)
+					;
+
+				if(option == options.end())
+					return;
+
+				if(message.countArgs() < 4)
+					notice(user, option->getName() + " = " + option->getValue());
+				else
+				{
+					string value;
+					for(unsigned i = 3; i < message.countArgs(); ++i)
+					{
+						if(!value.empty()) value += " ";
+						value += message.getArg(i);
+					}
+
+					if(option->getType() == PURPLE_PREF_BOOLEAN && value != "true" && value != "false")
+					{
+						notice(user, "Error: Option '" + option->getName() + "' is a boolean ('true' or 'false')");
+						return;
+					}
+					/* TODO check if value is an integer if option is an integer */
+					option->setValue(value);
+					if(option->getType() == PURPLE_PREF_INT)
+						notice(user, option->getName() + " = " + t2s(option->getValueInt()));
+					else
+						notice(user, option->getName() + " = " + option->getValue());
+					account.setOptions(options);
+				}
+				return;
+				break;
+			}
 			case 'd':
 			case 'r':
 			{
 				if(message.countArgs() != 2)
 				{
-					notice(user, "Usage: /MAP rem NAME");
+					notice(user, "Usage: /MAP rem ACCOUNT");
 					return;
 				}
 				im::Account account = im->getAccount(message.getArg(1));
@@ -1003,10 +1063,11 @@ void IRC::m_map(Message message)
 				break;
 			}
 			case 'h':
-				notice(user,"a, add: add ACCOUNT to your accounts");
+				notice(user,"a, add: add an account");
+				notice(user,"e, edit: edit an account");
 				notice(user,"r, rem: remove ACCOUNT from your accounts");
 			default:
-				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD [CHANNEL] [options] ] | [rem NAME] | [help]");
+				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD [CHANNEL] [options] ] | [edit ACCOUNT [KEY [VALUE]]] | [rem ACCOUNT] | [help]");
 				break;
 		}
 	}
@@ -1053,18 +1114,21 @@ void IRC::m_admin(Message message)
 	static struct
 	{
 		const char* key;
+		bool display;
 		SettingBase* setting;
 	} settings[] = {
-		{ "password",      new SettingPassword(this, im) },
-		{ "typing_notice", new SettingTypingNotice(this, im) },
+		{ "password",      true,  new SettingPassword(this, im) },
+		{ "typing_notice", true,  new SettingTypingNotice(this, im) },
+		{ "minbif",        false, new SettingMinbif(this, im) },
 	};
 
 	if(message.countArgs() == 0)
 	{
 		for(unsigned i = 0; i < (sizeof settings / sizeof *settings); ++i)
-			user->send(Message(RPL_ADMINME).setSender(this)
-					               .setReceiver(user)
-						       .addArg(string("- ") + settings[i].key + " = " + settings[i].setting->getValue()));
+			if(settings[i].display)
+				user->send(Message(RPL_ADMINME).setSender(this)
+							       .setReceiver(user)
+							       .addArg(string("- ") + settings[i].key + " = " + settings[i].setting->getValue()));
 		return;
 	}
 

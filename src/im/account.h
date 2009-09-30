@@ -106,6 +106,13 @@ namespace im
 		/** Get username of this account */
 		string getUsername() const;
 
+		/** Get password of this account */
+		string getPassword() const;
+		void setPassword(string password);
+
+		vector<Protocol::Option> getOptions() const;
+		void setOptions(vector<Protocol::Option>& options);
+
 		/** Get name of IRC server linked to this account.
 		 *
 		 * @return  a string in form \a "<username>:<protocol><number>"

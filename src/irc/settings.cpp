@@ -65,4 +65,15 @@ bool SettingTypingNotice::setValue(string v)
 	return true;
 }
 
+string SettingMinbif::getValue() const
+{
+	return "Minbif Is Not Bitlbee Fool";
+}
+
+bool SettingMinbif::setValue(string)
+{
+	getIRC()->notice(getIRC()->getUser(), "Wilmer, I see you!");
+	return false;
+}
+
 }; /* ns irc */

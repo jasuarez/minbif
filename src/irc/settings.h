@@ -65,6 +65,15 @@ namespace irc
 		virtual string getValue() const;
 		virtual bool setValue(string v);
 	};
+
+	class SettingMinbif : public SettingBase
+	{
+	public:
+		SettingMinbif(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
+		virtual string getValue() const;
+		virtual bool setValue(string v);
+	};
+
 }; /* ns irc */
 
 #endif /* IRC_SETTINGS_H */

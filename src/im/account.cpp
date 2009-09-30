@@ -59,6 +59,77 @@ string Account::getUsername() const
 	return account->username;
 }
 
+string Account::getPassword() const
+{
+	assert(isValid());
+	return purple_account_get_password(account);
+}
+
+void Account::setPassword(string password)
+{
+	assert(isValid());
+	purple_account_set_password(account, password.c_str());
+}
+
+vector<Protocol::Option> Account::getOptions() const
+{
+	assert(isValid());
+
+	vector<Protocol::Option> options = getProtocol().getOptions();
+	FOREACH(vector<Protocol::Option>, options, it)
+	{
+		Protocol::Option& option = *it;
+		switch(option.getType())
+		{
+			case PURPLE_PREF_STRING:
+				option.setValue(purple_account_get_string(account, option.getName().c_str(), option.getValue().c_str()));
+				break;
+			case PURPLE_PREF_INT:
+				option.setValue(t2s(purple_account_get_int(account, option.getName().c_str(), option.getValueInt())));
+				break;
+			case PURPLE_PREF_BOOLEAN:
+				option.setValue(purple_account_get_bool(account, option.getName().c_str(), option.getValueBool()) ? "true" : "false");
+				break;
+			default:
+				/* not supported. */
+				break;
+		}
+	}
+	return options;
+}
+
+void Account::setOptions(vector<Protocol::Option>& options)
+{
+	assert(isValid());
+	FOREACH(vector<Protocol::Option>, options, it)
+	{
+		Protocol::Option& option = *it;
+
+		switch(option.getType())
+		{
+			case PURPLE_PREF_STRING:
+				purple_account_set_string(account,
+						          option.getName().c_str(),
+							  option.getValue().c_str());
+				break;
+			case PURPLE_PREF_INT:
+				purple_account_set_int(account,
+						       option.getName().c_str(),
+						       option.getValueInt());
+				break;
+			case PURPLE_PREF_BOOLEAN:
+				purple_account_set_bool(account,
+						        option.getName().c_str(),
+							option.getValueBool());
+				break;
+			default:
+				/* not supported. */
+				break;
+		}
+	}
+
+}
+
 string Account::getID() const
 {
 	assert(isValid());
