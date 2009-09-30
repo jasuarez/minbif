@@ -83,6 +83,9 @@ namespace im
 		void setTypingNotice(bool enabled);
 		bool hasTypingNotice() const;
 
+		void setBuddyIcon(string path);
+		string getBuddyIconPath() const;
+
 		irc::IRC* getIRC() const { return irc; }
 
 		/** Get list of protocols in a map. */

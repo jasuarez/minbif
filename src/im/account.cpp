@@ -130,6 +130,26 @@ void Account::setOptions(vector<Protocol::Option>& options)
 
 }
 
+void Account::setBuddyIcon(const string& filename)
+{
+	assert(isValid());
+	PurplePlugin *plug = purple_find_prpl(purple_account_get_protocol_id(account));
+	if (plug) {
+		PurplePluginProtocolInfo *prplinfo = PURPLE_PLUGIN_PROTOCOL_INFO(plug);
+		if (prplinfo != NULL &&
+		    purple_account_get_bool(account, "use-global-buddyicon", TRUE) &&
+		    prplinfo->icon_spec.format) {
+			gchar *contents;
+			gsize len;
+			if (g_file_get_contents(filename.c_str(), &contents, &len, NULL))
+				purple_buddy_icons_set_account_icon(account, (guchar *)contents, len);
+
+			purple_account_set_buddy_icon_path(account, filename.c_str());
+		}
+	}
+
+}
+
 string Account::getID() const
 {
 	assert(isValid());

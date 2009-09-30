@@ -225,7 +225,7 @@ DCCGet::DCCGet(Nick* _from, string _filename, uint32_t addr, uint16_t port,
 	  callback(_cb),
 	  finished(false),
 	  sock(-1),
-	  watcher(-1),
+	  watcher(0),
 	  fp(NULL),
 	  bytes_received(0),
 	  total_size(size)
@@ -249,6 +249,7 @@ DCCGet::DCCGet(Nick* _from, string _filename, uint32_t addr, uint16_t port,
 	if(connect(sock, (struct sockaddr*) &fsocket, sizeof fsocket) < 0)
 	{
 		b_log[W_ERR] << "Unable to receive file: " << strerror(errno);
+		delete callback;
 		throw DCCGetError();
 	}
 

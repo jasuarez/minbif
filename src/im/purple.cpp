@@ -26,6 +26,8 @@
 #include "request.h"
 #include "ft.h"
 #include "media.h"
+#include "irc/irc.h"
+#include "irc/buddy_icon.h"
 #include "../version.h"
 #include "../log.h"
 #include "../util.h"
@@ -152,6 +154,10 @@ void Purple::inited()
 	Request::init();
 	FileTransfert::init();
 	Media::init();
+
+	irc::IRC* irc = getIM()->getIRC();
+	irc::BuddyIcon* bi = new irc::BuddyIcon(getIM(), irc, "buddyicon", "buddyicon", irc->getServerName());
+	irc->addNick(bi);
 }
 
 void Purple::uninit()

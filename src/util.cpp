@@ -16,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <glib/gstdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
 #include <string>
 #include <cstdarg>
 
@@ -133,4 +136,31 @@ bool is_ip(const char *ip)
 	return true;
 }
 
+bool check_write_file(string path, string filename)
+{
+	/* Create the directory if not exist. */
+	DIR* d;
+	if(!(d = opendir(path.c_str())))
+	{
+		if(mkdir(path.c_str(), 0700) < 0)
+			return false;
+	}
+	else
+		closedir(d);
 
+	path += "/" + filename;
+
+	struct stat st;
+	if (g_stat(path.c_str(), &st) != 0)
+	{
+		/* File doesn't exist. */
+		const char* dir = g_path_get_dirname(path.c_str());
+
+		if(g_access(dir, W_OK) != 0)
+			return false;
+	}
+	else if(S_ISDIR(st.st_mode))
+		return false;
+
+	return true;
+}

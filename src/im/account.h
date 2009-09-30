@@ -113,6 +113,8 @@ namespace im
 		vector<Protocol::Option> getOptions() const;
 		void setOptions(vector<Protocol::Option>& options);
 
+		void setBuddyIcon(const string& filename);
+
 		/** Get name of IRC server linked to this account.
 		 *
 		 * @return  a string in form \a "<username>:<protocol><number>"

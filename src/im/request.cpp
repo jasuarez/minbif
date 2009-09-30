@@ -16,9 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <glib/gstdio.h>
-#include <dirent.h>
-#include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
 
@@ -407,42 +404,13 @@ void* Request::request_file(const char *title, const char *filename,
 		string path = purple_user_dir();
 		path += "/downloads/"; // XXX do not hardcode this.
 
-		/* Create the downloads/ directory if not exist. */
-		DIR* d;
-		if(!(d = opendir(path.c_str())))
+		if(!check_write_file(path, filename))
 		{
-			if(mkdir(path.c_str(), 0700) < 0)
-			{
-				b_log[W_ERR] << "Unable to create the download directory '" << path << "': " << strerror(errno);
-				((PurpleRequestFileCb)cancel_cb)(user_data, NULL);
-				return NULL;
-			}
-		}
-		else
-			closedir(d);
-
-		path += filename;
-
-		struct stat st;
-		if (g_stat(path.c_str(), &st) != 0)
-		{
-			/* File doesn't exist. */
-			const char* dir = g_path_get_dirname(path.c_str());
-
-			if(g_access(dir, W_OK) != 0)
-			{
-				b_log[W_ERR] << "Unable to write in the download directory '" << dir << "': " << strerror(errno);
-				((PurpleRequestFileCb)cancel_cb)(user_data, NULL);
-				return NULL;
-			}
-		}
-		else if(S_ISDIR(st.st_mode))
-		{
-			/* Directory already exists. */
-			b_log[W_ERR] << "There is already a directory named '" << path << "'";
+			b_log[W_ERR] << "Unable to write into the download directory '" << path << "': " << strerror(errno);
 			((PurpleRequestFileCb)cancel_cb)(user_data, NULL);
 			return NULL;
 		}
+		path += filename;
 
 		((PurpleRequestFileCb)ok_cb)(user_data, path.c_str());
 	}

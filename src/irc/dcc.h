@@ -125,6 +125,7 @@ namespace irc {
 		static void dcc_read(gpointer data, int source, PurpleInputCondition cond);
 	public:
 
+		/** Get a file from a user, and call a method when it is finished. */
 		DCCGet(Nick* from, string filename, uint32_t addr, uint16_t port, ssize_t size, _CallBack* callback);
 		~DCCGet();
 

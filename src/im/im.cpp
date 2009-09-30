@@ -173,6 +173,18 @@ void IM::delAccount(Account user)
 	Purple::delAccount(user.getPurpleAccount());
 }
 
+void IM::setBuddyIcon(string path)
+{
+	map<string, Account> alist = getAccountsList();
+	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)
+		it->second.setBuddyIcon(path);
+}
+
+string IM::getBuddyIconPath() const
+{
+	return string(purple_user_dir()) + "/buddy_icon/";
+}
+
 bool IM::setStatus(string away)
 {
 	away = strlower(away);
