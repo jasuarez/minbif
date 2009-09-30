@@ -162,6 +162,8 @@ namespace irc
 		void removeServer(string server);
 
 		DCC* createDCCSend(const im::FileTransfert& ft, Nick* from);
+		DCC* createDCCGet(Nick* from, string filename, uint32_t addr,
+				  uint16_t port, ssize_t size, _CallBack* callback);
 		void updateDCC(const im::FileTransfert& ft, bool destroy = false);
 
 		/** Callback used by glibc to check user ping */

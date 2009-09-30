@@ -24,6 +24,7 @@
 #include "dcc.h"
 #include "nick.h"
 #include "message.h"
+#include "../callback.h"
 #include "../util.h"
 #include "../log.h"
 #include "../config.h"
@@ -209,6 +210,104 @@ void DCCSend::listen_cb(int sock, void* data)
 						 t2s(ntohl(addr.s_addr)) + " " +
 						 t2s(dcc->port) + " " +
 						 t2s(dcc->total_size) + "\001"));
+}
+
+DCCGet::DCCGet(Nick* _from, string _filename, uint32_t addr, uint16_t port,
+	       ssize_t size, _CallBack* _cb)
+	: from(_from),
+	  filename(_filename),
+	  callback(_cb),
+	  finished(false),
+	  sock(-1),
+	  watcher(-1),
+	  fp(NULL),
+	  bytes_received(0),
+	  total_size(size)
+{
+	fp = fopen(filename.c_str(), "w");
+	if(!fp)
+	{
+		b_log[W_ERR] << "Unable to create local file: " << filename;
+		throw DCCGetError();
+	}
+
+	struct sockaddr_in fsocket;
+
+	memset(&fsocket, 0, sizeof fsocket);
+	fsocket.sin_family = AF_INET;
+	fsocket.sin_addr.s_addr = htonl(addr);
+	fsocket.sin_port = htons(port);
+
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	if(connect(sock, (struct sockaddr*) &fsocket, sizeof fsocket) < 0)
+	{
+		b_log[W_ERR] << "Unable to receive file: " << strerror(errno);
+		throw DCCGetError();
+	}
+
+	watcher = purple_input_add(sock, PURPLE_INPUT_READ, DCCGet::dcc_read, this);
+}
+
+DCCGet::~DCCGet()
+{
+	deinit();
+}
+
+void DCCGet::deinit()
+{
+	if(sock >= 0)
+		close(sock);
+	if(watcher > 0)
+		purple_input_remove(watcher);
+	if(fp)
+		fclose(fp);
+	finished = true;
+}
+
+void DCCGet::dcc_read(gpointer data, int source, PurpleInputCondition cond)
+{
+	DCCGet* dcc = static_cast<DCCGet*>(data);
+	static char buffer[1024];
+	ssize_t len;
+
+	len = read(source, buffer, sizeof(buffer));
+
+	if (len < 0 && errno == EAGAIN)
+		return;
+	else if (len <= 0) {
+		/* DCC user has closed connection.
+		 * fd is already closed, do not let deinit()
+		 * reclose it.
+		 */
+		dcc->sock = -1;
+		dcc->deinit();
+		return;
+	}
+
+	if(fwrite(buffer, sizeof(char), len, dcc->fp) < (size_t)len)
+	{
+		b_log[W_ERR] << "Unable to write received data: " << strerror(errno);
+		dcc->deinit();
+		return;
+	}
+
+	dcc->bytes_received += len;
+	if(dcc->bytes_received >= dcc->total_size)
+	{
+		unsigned long l = htonl(dcc->bytes_received);
+		size_t result = write(dcc->sock, &l, sizeof(l));
+		if(result != sizeof(l))
+			b_log[W_WARNING] << "Unable to send DCC ack";
+		dcc->deinit();
+		dcc->callback->run();
+	}
+
+}
+
+void DCCGet::updated(bool destroy)
+{
+	/* I don't care about. */
 }
 
 } /* namespace irc */

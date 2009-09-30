@@ -24,6 +24,8 @@
 
 #include "im/ft.h"
 
+class _CallBack;
+
 namespace irc {
 
 	using std::string;
@@ -31,6 +33,7 @@ namespace irc {
 
 	/* Exceptions */
 	class DCCListenError : public std::exception {};
+	class DCCGetError : public std::exception {};
 
 	class DCC
 	{
@@ -104,6 +107,34 @@ namespace irc {
 		Nick* getPeer() const { return sender; }
 		void setPeer(Nick* n) { sender = n; }
 	};
+
+	class DCCGet : public DCC
+	{
+		Nick* from;
+		string filename;
+		_CallBack* callback;
+
+		bool finished;
+		int sock;
+		int watcher;
+		FILE* fp;
+		ssize_t bytes_received;
+		ssize_t total_size;
+
+		void deinit();
+		static void dcc_read(gpointer data, int source, PurpleInputCondition cond);
+	public:
+
+		DCCGet(Nick* from, string filename, uint32_t addr, uint16_t port, ssize_t size, _CallBack* callback);
+		~DCCGet();
+
+		virtual im::FileTransfert getFileTransfert() const { return im::FileTransfert(); }
+		virtual void updated(bool destroy);
+		virtual bool isFinished() const { return finished; }
+		virtual Nick* getPeer() const { return from; }
+		virtual void setPeer(Nick* n) { from = n; }
+	};
+
 
 };
 

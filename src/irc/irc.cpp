@@ -165,6 +165,14 @@ DCC* IRC::createDCCSend(const im::FileTransfert& ft, Nick* n)
 	return dcc;
 }
 
+DCC* IRC::createDCCGet(Nick* from, string filename, uint32_t addr,
+		       uint16_t port, ssize_t size, _CallBack* callback)
+{
+	DCC* dcc = new DCCGet(from, filename, addr, port, size, callback);
+	dccs.push_back(dcc);
+	return dcc;
+}
+
 void IRC::updateDCC(const im::FileTransfert& ft, bool destroy)
 {
 	for(vector<DCC*>::iterator it = dccs.begin(); it != dccs.end();)
