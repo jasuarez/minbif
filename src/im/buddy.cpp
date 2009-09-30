@@ -178,6 +178,16 @@ CacaImage Buddy::getIcon() const
 	return CacaImage(purple_buddy_icon_get_full_path(bicon));
 }
 
+string Buddy::getIconPath() const
+{
+	assert(isValid());
+	PurpleBuddyIcon* bicon = purple_buddy_icons_find(buddy->account, buddy->name);//purple_buddy_get_icon(buddy);
+	if(!bicon)
+		return "";
+
+	return purple_buddy_icon_get_full_path(bicon);
+}
+
 PurpleGroup* Buddy::getPurpleGroup() const
 {
 	assert(isValid());

@@ -173,6 +173,7 @@ namespace irc
 		virtual bool isOnline() const { return true; }
 
 		virtual CacaImage getIcon() const;
+		virtual string getIconPath() const { return ""; }
 	};
 
 }; /* namespace irc */

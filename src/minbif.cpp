@@ -139,6 +139,7 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_string("password", "Global server password", " "));
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
+	section->AddItem(new ConfigItem_string("buddy_icons_url", "URL to display in /WHOIS to get a buddy icon", " "));
 
 	section = section->AddSection("daemon", "Daemon information", true);
 	section->AddItem(new ConfigItem_ipaddr("bind", "IP address to listen on"));

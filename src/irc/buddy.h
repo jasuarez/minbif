@@ -57,7 +57,9 @@ namespace irc
 		im::Buddy getBuddy() const { return im_buddy; }
 
 		/** Get icon in an coloured ASCII-art form. */
-		CacaImage getIcon() const;
+		virtual CacaImage getIcon() const;
+
+		virtual string getIconPath() const;
 
 		/** Get buddy's real name. */
 		virtual string getRealName() const;

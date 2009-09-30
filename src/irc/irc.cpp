@@ -717,6 +717,16 @@ void IRC::m_whois(Message message)
 					       .addArg(n->getNickname())
 					       .addArg("libcaca and imlib2 are required to display icon"));
 	}
+	string url = conf.GetSection("irc")->GetItem("buddy_icons_url")->String();
+	string icon_path = n->getIconPath();
+	if(url != " " && !icon_path.empty())
+	{
+		icon_path = icon_path.substr(im->getUserPath().size());
+		user->send(Message(RPL_WHOISACTUALLY).setSender(this)
+						       .setReceiver(user)
+						       .addArg(n->getNickname())
+						       .addArg("Icon URL: " + url + im->getUsername() + icon_path));
+	}
 
 	/* Retrieve server info about this buddy only if this is an extended
 	 * whois. In this case, do not send a ENDOFWHOIS because this

@@ -98,6 +98,11 @@ CacaImage Buddy::getIcon() const
 	return im_buddy.getIcon();
 }
 
+string Buddy::getIconPath() const
+{
+	return im_buddy.getIconPath();
+}
+
 bool Buddy::retrieveInfo() const
 {
 	im_buddy.retrieveInfo();

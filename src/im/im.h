@@ -75,6 +75,8 @@ namespace im
 		/** Get path to user settings */
 		string getUserPath() const { return user_path; }
 
+		string getUsername() const { return username; }
+
 		/** Set user password */
 		void setPassword(const string& password);
 		string getPassword() const;
