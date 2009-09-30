@@ -132,7 +132,7 @@ namespace irc {
 		virtual void updated(bool destroy);
 		virtual bool isFinished() const { return finished; }
 		virtual Nick* getPeer() const { return from; }
-		virtual void setPeer(Nick* n) { from = n; }
+		virtual void setPeer(Nick* n);
 	};
 
 

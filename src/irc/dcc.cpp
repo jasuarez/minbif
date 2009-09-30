@@ -63,7 +63,6 @@ DCCSend::~DCCSend()
 
 void DCCSend::deinit()
 {
-	finished = true;
 	if(fd >= 0)
 		close(fd);
 	if(fp != NULL)
@@ -73,6 +72,13 @@ void DCCSend::deinit()
 	if(listen_data != NULL)
 		purple_network_listen_cancel(listen_data);
 	g_free(rxqueue);
+
+	finished = true;
+	fd = -1;
+	fp = NULL;
+	watcher = 0;
+	listen_data = NULL;
+	rxqueue = NULL;
 }
 
 void DCCSend::dcc_send()
@@ -260,9 +266,16 @@ void DCCGet::deinit()
 		close(sock);
 	if(watcher > 0)
 		purple_input_remove(watcher);
-	if(fp)
+	if(fp != NULL)
 		fclose(fp);
+	if(callback)
+		delete callback;
+
 	finished = true;
+	sock = -1;
+	watcher = 0;
+	fp = NULL;
+	callback = NULL;
 }
 
 void DCCGet::dcc_read(gpointer data, int source, PurpleInputCondition cond)
@@ -299,8 +312,10 @@ void DCCGet::dcc_read(gpointer data, int source, PurpleInputCondition cond)
 		size_t result = write(dcc->sock, &l, sizeof(l));
 		if(result != sizeof(l))
 			b_log[W_WARNING] << "Unable to send DCC ack";
+
+		if(dcc->callback)
+			dcc->callback->run();
 		dcc->deinit();
-		dcc->callback->run();
 	}
 
 }
@@ -308,6 +323,16 @@ void DCCGet::dcc_read(gpointer data, int source, PurpleInputCondition cond)
 void DCCGet::updated(bool destroy)
 {
 	/* I don't care about. */
+}
+
+void DCCGet::setPeer(Nick* n)
+{
+	/* IRC user left, can remove transfert. */
+	from = n;
+	if(from) /* I think this never happens... */
+		callback->setObj(from);
+	else
+		deinit();
 }
 
 } /* namespace irc */

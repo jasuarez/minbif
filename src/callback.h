@@ -25,6 +25,7 @@ class _CallBack
 public:
 	virtual ~_CallBack() {}
 	virtual bool run() = 0;
+	virtual void setObj(void*) = 0;
 };
 
 template<typename T>
@@ -40,6 +41,11 @@ public:
         {
                 return (obj->*func) (data);
         }
+
+	virtual void setObj(void* o)
+	{
+		obj = static_cast<T*>(o);
+	}
 
 private:
         T* obj;
