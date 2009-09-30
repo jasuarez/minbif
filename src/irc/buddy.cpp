@@ -29,6 +29,7 @@
 #include "../callback.h"
 #include "../log.h"
 #include "../util.h"
+#include "../config.h"
 
 namespace irc {
 
@@ -84,6 +85,12 @@ void Buddy::send(Message m)
 
 bool Buddy::process_dcc_get(const string& text)
 {
+	if(conf.GetSection("file_transfers")->GetItem("enabled")->Boolean() == false)
+	{
+		b_log[W_ERR] << "File transfers are disabled on this server.";
+		return true;
+	}
+
 	string filename;
 	uint32_t addr;
 	uint16_t port;
