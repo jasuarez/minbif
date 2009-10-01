@@ -39,6 +39,8 @@ namespace irc {
 	{
 	public:
 
+		virtual ~DCC() {}
+
 		virtual im::FileTransfert getFileTransfert() const = 0;
 		virtual void updated(bool destroy) = 0;
 		virtual bool isFinished() const = 0;

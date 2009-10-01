@@ -40,6 +40,7 @@ namespace im
 	{
 	public:
 
+		virtual ~RequestField() {}
 		virtual int getID() const = 0;
 		virtual void setLabel(const string& label) = 0;
 		virtual string getLabel() const = 0;
@@ -66,6 +67,8 @@ namespace im
 			  callback(_callback),
 			  data(_data)
 		{}
+
+		virtual ~RequestFieldAction() {}
 
 		int getID() const { return id; }
 		void setLabel(const string& l) { label = l; }

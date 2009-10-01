@@ -43,6 +43,7 @@ namespace irc
 	public:
 
 		SettingBase(IRC* irc, im::IM* im);
+		virtual ~SettingBase() {}
 
 		virtual string getValue() const = 0;
 		virtual bool setValue(string v) = 0;
