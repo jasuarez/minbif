@@ -6,7 +6,12 @@ from subprocess import Popen, PIPE, STDOUT
 from time import sleep, time
 import re
 
-import config
+try:
+    import config
+except ImportError:
+    print >>sys.stderr, 'Error: please rename config.py.example to config.py and edit it!'
+    sys.exit(1)
+
 from account import Account
 
 NOBUFFER_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), 'libnobuffer.so'))
