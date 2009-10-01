@@ -1,2 +1,4 @@
 build.minbif
 doc/html
+*.so
+*.pyc
