@@ -19,4 +19,7 @@ clean:
 doc:
 	cd doc/ && /usr/bin/doxygen
 
-.PHONY: all clean install doc
+tests:
+	make -C tests
+
+.PHONY: all clean install doc tests
