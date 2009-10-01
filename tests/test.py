@@ -27,16 +27,16 @@ class Test:
         return self.INSTANCES[inst]
 
     def run(self, stop_on_failure=True):
-        print 'Starting test: %s' % self.NAME
+        print '\nStarting test: %s' % self.NAME
 
         ret = self._run(stop_on_failure)
         for name, instance in self.INSTANCES.iteritems():
             instance.stop()
 
         if ret:
-            print 'Ending test %s: success' % self.NAME
+            print 'End of test %s: success' % self.NAME
         else:
-            print 'Ending test %s: failed' % self.NAME
+            print 'End of test %s: failed' % self.NAME
             self.display_logs()
         return ret
 
@@ -45,16 +45,16 @@ class Test:
             return False
 
         for name, instance in self.INSTANCES.iteritems():
-            sys.stdout.write('\tLaunch minbif %s: ' % name)
+            sys.stdout.write('\tLaunch %s: ' % name)
 
             inst_path = '%s/%s' % (self.PATH, name)
             if not self.rm_and_mkdir(inst_path):
                 return False
 
             if instance.start(inst_path):
-                print 'success'
+                print '\t\t[Success]'
             else:
-                print 'failed'
+                print '\t\t[Failed]'
                 return False
 
         for test in self.TESTS:

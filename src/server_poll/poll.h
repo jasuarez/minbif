@@ -53,6 +53,7 @@ public:
 	static ServerPoll* build(poll_type_t type, Minbif* application);
 
 	ServerPoll(Minbif* application);
+	virtual ~ServerPoll() {}
 
 	virtual void kill(irc::IRC* irc) = 0;
 

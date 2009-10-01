@@ -53,23 +53,29 @@ CacaImage::CacaImage(string path)
 	: width(0),
 	  height(0),
 	  font_width(6),
-	  font_height(10)
+	  font_height(10),
+	  img(NULL)
 {
+#ifdef USE_CACA
 	img = image::load_file(path.c_str());
+#endif
 }
 
 CacaImage::CacaImage(void* buf, size_t size, unsigned buf_width, unsigned buf_height, unsigned bpp)
 	: width(0),
 	  height(0),
 	  font_width(6),
-	  font_height(10)
+	  font_height(10),
+	  img(NULL)
 {
+#ifdef USE_CACA
 	img = new image();
 	img->w = buf_width;
 	img->h = buf_height;
 	img->pixels = strndup((char*)buf, size);
 
 	img->create_dither(bpp);
+#endif
 }
 
 CacaImage::CacaImage(const CacaImage& caca)
@@ -80,7 +86,9 @@ CacaImage::CacaImage(const CacaImage& caca)
 	  font_height(caca.font_height),
 	  img(caca.img)
 {
+#ifdef USE_CACA
 	img->ref++;
+#endif
 }
 
 CacaImage& CacaImage::operator=(const CacaImage& caca)
@@ -91,18 +99,22 @@ CacaImage& CacaImage::operator=(const CacaImage& caca)
 	font_width = caca.font_width;
 	font_height = caca.font_height;
 	img = caca.img;
+#ifdef USE_CACA
 	img->ref++;
+#endif
 	return *this;
 }
 
 CacaImage::~CacaImage()
 {
+#ifdef USE_CACA
 	if(img)
 	{
 		img->ref--;
 		if(img->ref < 1)
 			delete img;
 	}
+#endif
 }
 
 string CacaImage::getIRCBuffer()
