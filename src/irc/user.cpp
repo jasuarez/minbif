@@ -22,7 +22,10 @@ namespace irc {
 User::User(int _fd, Server* server, string nickname, string identname, string hostname, string realname)
 	: Nick(server, nickname, identname, hostname, realname),
 	  fd(_fd)
-{}
+{
+	if(fileno(stdin) == fd)
+		fd = fileno(stdout);
+}
 
 User::~User()
 {

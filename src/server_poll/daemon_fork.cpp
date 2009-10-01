@@ -61,6 +61,10 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 		}
 		else if(r > 0)
 			exit(EXIT_SUCCESS);
+		chdir("/");
+		if(isatty(0)) close(0);
+		if(isatty(1)) close(1);
+		if(isatty(2)) close(2);
 	}
 
 	static struct sockaddr_in fsocket;

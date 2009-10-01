@@ -58,8 +58,9 @@ void Purple::debug(PurpleDebugLevel level, const char *category, const char *arg
 			b_log[W_PURPLE] << "[" << category << "] " << args;
 			break;
 		case PURPLE_DEBUG_WARNING:
-		default:
 			b_log[W_DEBUG] << "[" << category << "] " << args;
+			break;
+		default:
 			break;
 	}
 }
