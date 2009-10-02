@@ -1,3 +1,23 @@
+# -*- coding: utf-8 -*-
+
+"""
+Minbif - IRC instant messaging gateway
+Copyright(C) 2009 Romain Bignon
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+"""
+
 from __future__ import with_statement
 import sys
 import os
@@ -12,7 +32,7 @@ except ImportError:
     print >>sys.stderr, 'Error: please rename config.py.example to config.py and edit it!'
     sys.exit(1)
 
-from account import Account
+from structs import Account, Buddy
 
 NOBUFFER_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), 'libnobuffer.so'))
 MINBIF_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'build.minbif', 'minbif'))
@@ -38,6 +58,8 @@ class Test:
         else:
             print 'End of test %s: failed' % self.NAME
             self.display_logs()
+
+        print ''
         return ret
 
     def _run(self, stop_on_failure=True):
@@ -45,16 +67,16 @@ class Test:
             return False
 
         for name, instance in self.INSTANCES.iteritems():
-            sys.stdout.write('\tLaunch %s: ' % name)
+            sys.stdout.write('\tLaunch %-25s' % (name + ':'))
 
             inst_path = '%s/%s' % (self.PATH, name)
             if not self.rm_and_mkdir(inst_path):
                 return False
 
             if instance.start(inst_path):
-                print '\t\t[Success]'
+                print '[Success]'
             else:
-                print '\t\t[Failed]'
+                print '[Failed]'
                 return False
 
         for test in self.TESTS:
@@ -64,9 +86,9 @@ class Test:
         return True
 
     def run_test(self, test):
-        sys.stdout.write('\tTest %s: ' % test)
+        sys.stdout.write('\tTest %-26s ' % (test + ':'))
         if not hasattr(self, 'test_%s' % test):
-            print '\t\t[Not found]'
+            print '[Not found]'
         else:
             func = getattr(self, 'test_%s' % test)
             msg = ''
@@ -76,10 +98,10 @@ class Test:
                 ret = False
                 msg = '%s: %s' % (type(e).__name__, str(e))
             if ret:
-                print '\t\t[Success]'
+                print '[Success]'
                 return True
             else:
-                print '\t\t[Failed] %s' % msg
+                print '[Failed] %s' % msg
 
         return False
 
@@ -164,9 +186,12 @@ class Instance:
 
     def stop(self):
         try:
+            while self.readline(): pass
             self.write("QUIT")
         except IOError:
             pass
+        else:
+            self.process.wait()
         self.process = None
 
     def write(self, msg):
@@ -188,7 +213,8 @@ class Instance:
         return line
 
     def readmsg(self, cmd=None, timeout=0):
-        while 1:
+        start = time()
+        while start + timeout >= (1 if timeout == 0 else time()):
             line = self.readline(timeout)
             if not line:
                 return None
@@ -355,3 +381,41 @@ class Instance:
                 m = re.match("([^ ]+) = (.*)", msg.args[0])
                 if m:
                     acc.options[m.group(1)] = m.group(2)
+
+    def get_buddies(self, accname=''):
+        while self.readline(): pass
+
+        self.write("WHO %s" % accname)
+        buddies = {}
+        while 1:
+            msg = self.readmsg(('352', '315'), 3)
+            if not msg or msg.cmd == '315':
+                return buddies
+
+            servername = msg.args[3]
+            if servername == self.config['irc']['hostname']:
+                continue
+
+            nickname = msg.args[4]
+            username = msg.args[1]
+            hostname = msg.args[2]
+            realname = msg.args[6][2:]
+            buddy = Buddy(servername, nickname, username, hostname, realname)
+            buddies[nickname] = buddy
+
+    def request_answer(self, question, answer, timeout=1):
+        while 1:
+            msg = self.readmsg('PRIVMSG', timeout)
+            if not msg:
+                return False
+            if msg.sender.startswith('request!') and msg.args[0].startswith(question):
+                self.write('PRIVMSG request :%s' % answer)
+                return True
+
+    def clean_buddies(self, accname=''):
+        self.request_answer('New request: Authorize buddy?', 'authorize', 0)
+        buddies = self.get_buddies(accname)
+        for nick, buddy in buddies.iteritems():
+            self.write("KILL %s" % nick)
+        self.request_answer('New request: Authorize buddy?', 'authorize', 0)
+        return True
