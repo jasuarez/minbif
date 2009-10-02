@@ -26,7 +26,7 @@ from test import Test, Instance
 class TestBuddyList(Test):
     NAME = 'buddy_list'
     INSTANCES = {'minbif1': Instance(), 'minbif2': Instance()}
-    TESTS = ['init', 'addbuddy', 'delbuddy']
+    TESTS = ['init', 'addbuddy', 'renamebuddy', 'delbuddy']
 
     def test_init(self):
         if not self['minbif1'].create_account('jabber', channel='&minbif'): return False
@@ -39,10 +39,12 @@ class TestBuddyList(Test):
         return True
 
     def test_addbuddy(self):
+        self['minbif1'].request_answer('New request:', 'authorize', 1)
         acc1name, acc1 = self['minbif1'].get_accounts().popitem()
         self['minbif2'].write('INVITE %s:jabber0 &minbif' % acc1.username)
-        self['minbif1'].request_answer('New request:', 'authorize', 2)
+        self['minbif1'].request_answer('New request:', 'authorize', 5)
 
+        self['minbif2'].log('Wait for join')
         while 1:
             msg = self['minbif2'].readmsg('JOIN', 2)
             if not msg:
@@ -52,13 +54,30 @@ class TestBuddyList(Test):
             if m:
                 return m.group(2) == acc1.username.split('@')[0]
 
-    def test_delbuddy(self):
+    def test_renamebuddy(self):
         buddies = self['minbif2'].get_buddies()
         if len(buddies) != 1:
             return False
 
         nick, buddy = buddies.popitem()
+        self['minbif2'].write('SVSNICK %s cacaprout' % nick)
+        while 1:
+            msg = self['minbif2'].readmsg('NICK', 2)
+            if not msg:
+                return False
+
+            if msg.sender.startswith('%s!' % nick) and msg.receiver == 'cacaprout':
+                return True
+
+    def test_delbuddy(self):
+        buddies = self['minbif2'].get_buddies()
+        if len(buddies) != 1:
+            self['minbif2'].log('Assert failed "len(buddies) == 1"')
+            return False
+
+        nick, buddy = buddies.popitem()
         self['minbif2'].write('KILL %s' % nick)
+        self['minbif2'].log("Wait for quit")
         while 1:
             msg = self['minbif2'].readmsg('QUIT', 2)
             if not msg:

@@ -404,6 +404,7 @@ class Instance:
             buddies[nickname] = buddy
 
     def request_answer(self, question, answer, timeout=1):
+        self.log('Wait request "%s"' % question)
         while 1:
             msg = self.readmsg('PRIVMSG', timeout)
             if not msg:
