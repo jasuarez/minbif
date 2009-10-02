@@ -118,7 +118,6 @@ void Media::checkBuffer()
 	vector<CacaImage>::iterator it;
 	for(it = queue.begin(); it != queue.end(); it = queue.erase(it))
 	{
-		b_log[W_ERR] << "check buffer";
 		try
 		{
 			string buf = it->getIRCBuffer(0, 30), line;
@@ -360,6 +359,10 @@ void Media::got_data(GstElement* object,
 {
 	try
 	{
+		static int i;
+		if(++i != 15)
+			return;
+		i = 0;
 		gint w, h;
 		guint bpp = 0;
 		GstStructure* structure = gst_caps_get_structure (buffer->caps, 0);
@@ -367,7 +370,7 @@ void Media::got_data(GstElement* object,
 		gst_structure_get_int (structure, "height", &h);
 		gst_structure_get_int (structure, "bpp", (int *) &bpp);
 		if(!bpp)
-			bpp = 32;
+			bpp = 8;
 
 		CacaImage img(GST_BUFFER_DATA(buffer), GST_BUFFER_SIZE(buffer), w, h, bpp);
 		Media::media_list.enqueueBuffer(Media((PurpleMedia*)user_data), img);
