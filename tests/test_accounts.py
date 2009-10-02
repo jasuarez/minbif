@@ -35,7 +35,7 @@ class TestAccounts(Test):
         self['minbif1'].readmsg('NOTICE', 1)
 
         acc = self['minbif1'].get_full_account('jabber0')
-        return acc.options['require_tls'] == "false"
+        return acc.options['require_tls'] == (require_tls == "true" and "false" or "true")
 
     def test_disconnect(self):
         self['minbif1'].write('SQUIT jabber0')
