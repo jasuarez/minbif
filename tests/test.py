@@ -282,7 +282,11 @@ class Instance:
                                                account.password,
                                                options,
                                                channel))
-        return True
+        return self.readmsg("017", 1) != None
+
+    def remove_account(self, name):
+        self.write("MAP remove %s" % name)
+        return self.readmsg("017", 1) != None
 
     def get_accounts(self):
         # flush
@@ -292,7 +296,7 @@ class Instance:
         self.write("MAP")
         accounts = {}
         while 1:
-            msg = self.readmsg(("015", "017"), 5)
+            msg = self.readmsg(("015", "017"), 2)
             if not msg:
                 return False
 
@@ -307,6 +311,26 @@ class Instance:
             m = re.match(".-(.+):([[a-zA-Z]+)([0-9]+)(\s*)(.*)", line)
             if m:
                 acc = Account(proto=m.group(2), username=m.group(1))
+                acc.state = m.group(5)
                 accounts['%s%s' % (m.group(2), m.group(3))] = acc
 
         return accounts
+
+    def get_full_account(self, accname):
+        while self.readline():
+            pass
+
+        self.write("MAP edit %s" % accname)
+        acc = None
+        while 1:
+            msg = self.readmsg("NOTICE", 1)
+            if not msg:
+                return acc
+
+            m = re.match("-- Parameters of account (.+):([a-zA-Z]+)([0-9]+) --", msg.args[0])
+            if m:
+                acc = Account(proto=m.group(2), username=m.group(1))
+            else:
+                m = re.match("([^ ]+) = (.*)", msg.args[0])
+                if m:
+                    acc.options[m.group(1)] = m.group(2)

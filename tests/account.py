@@ -4,3 +4,4 @@ class Account:
         self.username = username
         self.password = password
         self.options = options
+        self.state = ''
