@@ -288,6 +288,27 @@ class Instance:
         self.write("MAP remove %s" % name)
         return self.readmsg("017", 1) != None
 
+    def wait_connected(self, name):
+        accounts = self.get_accounts()
+        if not name in accounts.iterkeys():
+            return False
+
+        acc = accounts[name]
+        if acc.state == '(connected)':
+            return True
+        if acc.state != '(connecting)':
+            return False
+
+        while 1:
+            msg = self.readmsg(('NOTICE','PRIVMSG'),5)
+            if not msg:
+                return False
+            m = re.match('\*\*\* Notice -- Connection to ([^ ]+):%s established!' % name, msg.args[0])
+            if m:
+                return True
+            if msg.sender.startswith('request!') and msg.args[0] == 'New request: SSL Certificate Verification':
+                self.write("PRIVMSG request :accept")
+
     def get_accounts(self):
         # flush
         while self.readline():

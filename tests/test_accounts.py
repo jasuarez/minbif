@@ -21,22 +21,7 @@ class TestAccounts(Test):
         return False
 
     def test_connected(self):
-        accounts = self['minbif1'].get_accounts()
-        acc = accounts.popitem()[1]
-        if acc.state == '(connected)':
-            return True
-        if acc.state != '(connecting)':
-            return False
-
-        while 1:
-            msg = self['minbif1'].readmsg(('NOTICE','PRIVMSG'),5)
-            if not msg:
-                return False
-            m = re.match('\*\*\* Notice -- Connection to ([^ ]+):jabber0 established!', msg.args[0])
-            if m:
-                return True
-            if msg.sender.startswith('request!') and msg.args[0] == 'New request: SSL Certificate Verification':
-                self['minbif1'].write("PRIVMSG request :accept")
+        return self['minbif1'].wait_connected('jabber0')
 
     def test_editaccount(self):
         # flush
@@ -44,13 +29,13 @@ class TestAccounts(Test):
             pass
 
         acc = self['minbif1'].get_full_account('jabber0')
-        custom_smileys = acc.options['custom_smileys']
+        require_tls = acc.options['require_tls']
 
-        self['minbif1'].write("MAP edit jabber0 custom_smileys %s" % (custom_smileys == "true" and "false" or "true"))
+        self['minbif1'].write("MAP edit jabber0 require_tls %s" % (require_tls == "true" and "false" or "true"))
         self['minbif1'].readmsg('NOTICE', 1)
 
         acc = self['minbif1'].get_full_account('jabber0')
-        return acc.options['custom_smileys'] == "false"
+        return acc.options['require_tls'] == "false"
 
     def test_disconnect(self):
         self['minbif1'].write('SQUIT jabber0')
