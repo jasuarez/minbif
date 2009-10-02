@@ -21,6 +21,7 @@
 #include <exception>
 #include <string>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "im/ft.h"
 

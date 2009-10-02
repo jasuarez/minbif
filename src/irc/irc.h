@@ -19,6 +19,7 @@
 #ifndef IRC_IRC_H
 #define IRC_IRC_H
 
+#include <stdint.h>
 #include <string>
 #include <map>
 #include <exception>
