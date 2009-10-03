@@ -93,6 +93,7 @@ CacaImage::CacaImage(const CacaImage& caca)
 
 CacaImage& CacaImage::operator=(const CacaImage& caca)
 {
+	deinit();
 	buf = caca.buf;
 	width = caca.width;
 	height = caca.height;
@@ -107,12 +108,18 @@ CacaImage& CacaImage::operator=(const CacaImage& caca)
 
 CacaImage::~CacaImage()
 {
+	deinit();
+}
+
+void CacaImage::deinit()
+{
 #ifdef USE_CACA
 	if(img)
 	{
 		img->ref--;
 		if(img->ref < 1)
 			delete img;
+		img = NULL;
 	}
 #endif
 }

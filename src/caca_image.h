@@ -38,6 +38,8 @@ class CacaImage
 	unsigned width, height, font_width, font_height;
 	image* img;
 
+	void deinit();
+
 public:
 
 	/** Empty constructor */

@@ -258,7 +258,7 @@ minbif_media_reject_cb(PurpleMedia *media, int index)
 gboolean Media::minbif_media_ready_cb(PurpleMedia *media)
 {
 	Media m = media_list.getMedia(media);
-	const char *alias = m.getBuddy().getAlias().c_str();
+	string alias = m.getBuddy().getAlias();
 
 	//PurpleMediaSessionType type = purple_media_get_session_type(media, sid);
 	PurpleMediaSessionType type = PURPLE_MEDIA_VIDEO;
@@ -268,19 +268,19 @@ gboolean Media::minbif_media_ready_cb(PurpleMedia *media)
 
 	if (type & PURPLE_MEDIA_AUDIO && type & PURPLE_MEDIA_VIDEO) {
 		message = g_strdup_printf("%s wishes to start an audio/video session with you.",
-				alias);
+				alias.c_str());
 	} else if (type & PURPLE_MEDIA_AUDIO) {
 		message = g_strdup_printf("%s wishes to start an audio session with you.",
-				alias);
+				alias.c_str());
 	} else if (type & PURPLE_MEDIA_VIDEO) {
 		message = g_strdup_printf("%s wishes to start a video session with you.",
-				alias);
+				alias.c_str());
 	}
 
 #define _(x) x
 	purple_request_accept_cancel(media, "Incoming Call",
 			message, NULL, PURPLE_DEFAULT_ACTION_NONE,
-			account, alias, NULL,
+			account, alias.c_str(), NULL,
 			media,
 			minbif_media_accept_cb,
 			minbif_media_reject_cb);
