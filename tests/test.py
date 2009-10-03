@@ -415,8 +415,11 @@ class Instance:
 
     def clean_buddies(self, accname=''):
         self.request_answer('New request: Authorize buddy?', 'authorize', 0)
-        buddies = self.get_buddies(accname)
-        for nick, buddy in buddies.iteritems():
-            self.write("KILL %s" % nick)
+        while 1:
+            buddies = self.get_buddies(accname)
+            if not buddies:
+                break
+            for nick, buddy in buddies.iteritems():
+                self.write("KILL %s" % nick)
         self.request_answer('New request: Authorize buddy?', 'authorize', 0)
         return True

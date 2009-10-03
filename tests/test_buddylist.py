@@ -56,7 +56,7 @@ class TestBuddyList(Test):
 
     def test_renamebuddy(self):
         buddies = self['minbif2'].get_buddies()
-        if len(buddies) != 1:
+        if len(buddies) < 1:
             return False
 
         nick, buddy = buddies.popitem()
@@ -71,7 +71,7 @@ class TestBuddyList(Test):
 
     def test_delbuddy(self):
         buddies = self['minbif2'].get_buddies()
-        if len(buddies) != 1:
+        if len(buddies) < 1:
             self['minbif2'].log('Assert failed "len(buddies) == 1"')
             return False
 
