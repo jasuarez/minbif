@@ -52,7 +52,7 @@ void MediaList::addMedia(const Media& media)
 	if(check_id < 0)
 	{
 		check_cb = new CallBack<MediaList>(this, &MediaList::check);
-		check_id = g_timeout_add_seconds(1, g_callback, check_cb);
+		check_id = g_timeout_add(50, g_callback, check_cb);
 	}
 	medias.push_back(media);
 }
@@ -89,7 +89,7 @@ void MediaList::enqueueBuffer(const Media& media, const CacaImage& buf)
 
 	if(it == medias.end())
 	{
-		b_log[W_ERR] << "MERDE";
+		b_log[W_WARNING] << "Trying to enqueue data to an unknown stream.";
 		return;
 	}
 
@@ -174,7 +174,7 @@ void Media::checkBuffer()
 				irc::Nick* sender = irc->getNick(buddy);
 				dcc = new irc::DCCChat(sender, irc->getUser());
 			}
-			string buf = it->getIRCBuffer(0, 30), line;
+			string buf = it->getIRCBuffer(0, 20), line;
 			dcc->dcc_send(buf);
 		}
 		catch(CacaError &e)
@@ -298,11 +298,10 @@ minbif_media_error_cb(PurpleMedia *media, const char *error, void *gtkmedia)
 void Media::minbif_media_state_changed_cb(PurpleMedia *media, PurpleMediaState state,
 		gchar *sid, gchar *name, void* gtkmedia)
 {
-	b_log[W_ERR] << "state: " << state << " sid: " << sid << " name: " << name;
 	if (sid == NULL && name == NULL) {
 		if (state == PURPLE_MEDIA_STATE_END) {
 			media_list.removeMedia(Media(media));
-			b_log[W_ERR] << "The call has been terminated.";
+			b_log[W_INFO] << "The call has been terminated.";
 		}
 	} else if (state == PURPLE_MEDIA_STATE_NEW &&
 			sid != NULL && name != NULL) {
@@ -324,9 +323,9 @@ minbif_media_stream_info_cb(PurpleMedia *media, PurpleMediaInfoType type,
 		void *gtkmedia)
 {
 	if (type == PURPLE_MEDIA_INFO_REJECT) {
-		b_log[W_ERR] << "You have rejected the call.";
+		b_log[W_INFO] << "You have rejected the call.";
 	} else if (type == PURPLE_MEDIA_INFO_ACCEPT) {
-		b_log[W_ERR] << "Call in progress";
+		b_log[W_INFO] << "Call in progress";
 	}
 }
 
@@ -338,11 +337,13 @@ gboolean Media::media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 	const gchar *alias = buddy ?
 			purple_buddy_get_contact_alias(buddy) : screenname;
 	//gtk_window_set_title(GTK_WINDOW(gtkmedia), alias);
-	b_log[W_ERR] << "Started video with " << alias;
+	b_log[W_INFO] << "Started video with " << alias;
 	media_list.addMedia(Media(media, Buddy(buddy)));
 
 	if (purple_media_is_initiator(media, NULL, NULL) == TRUE)
-		b_log[W_ERR] << "initiator";
+	{
+
+	}
 
 	g_signal_connect(G_OBJECT(media), "error",
 		G_CALLBACK(minbif_media_error_cb), media);
@@ -360,7 +361,6 @@ gboolean Media::media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 GstElement *Media::create_default_video_src(PurpleMedia *media,
 			const gchar *session_id, const gchar *participant)
 {
-	b_log[W_ERR] << "Create src";
 	GstElement *sendbin, *src, *videoscale, *capsfilter;
 	GstPad *pad;
 	GstPad *ghost;
@@ -408,8 +408,8 @@ void Media::got_data(GstElement* object,
 	try
 	{
 		static int i;
-		if(++i != 15)
-			return;
+		//if(++i != 5)
+		//	return;
 		i = 0;
 		gint w, h;
 		guint bpp = 0;
@@ -433,7 +433,6 @@ GstElement *Media::create_default_video_sink(PurpleMedia *media,
 {
 	GstElement *cacabin, *ffmpegcolorspace, *fakesink;
 
-	b_log[W_ERR] << "Create sink";
 	cacabin = gst_bin_new("minbifdefaultvideosink");
 
 	ffmpegcolorspace = gst_element_factory_make("ffmpegcolorspace", NULL);

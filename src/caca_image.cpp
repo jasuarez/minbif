@@ -169,7 +169,7 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 
 	size_t len;
 	char* tmp;
-	tmp = (char*)cucul_export_memory(cv, "irc", &len);
+	tmp = (char*)cucul_export_memory(cv, "ansi", &len);
 	if(!tmp)
 		throw CacaError();
 
