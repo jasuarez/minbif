@@ -31,29 +31,114 @@
 
 namespace irc {
 
-DCCSend::DCCSend(const im::FileTransfert& _ft, Nick* _sender, Nick* _receiver)
-	: ft(_ft),
-	  total_size(_ft.getSize()),
+DCCServer::DCCServer(string _type, string _filename, size_t _total_size, Nick* _sender, Nick* _receiver)
+	: type(_type),
+	  filename(_filename),
+	  total_size(_total_size),
 	  start_time(time(NULL)),
-	  filename(_ft.getFileName()),
-	  local_filename(_ft.getLocalFileName()),
 	  sender(_sender),
 	  receiver(_receiver),
 	  listen_data(NULL),
 	  watcher(0),
 	  fd(-1),
 	  port(0),
-	  finished(false),
+	  finished(false)
+{
+	ConfigItem* item = conf.GetSection("file_transfers")->GetItem("port_range");
+	listen_data = purple_network_listen_range((uint16_t)item->MinInteger(), (uint16_t)item->MaxInteger(),
+	                                          SOCK_STREAM, &DCCServer::listen_cb, this);
+	if(!listen_data)
+		throw DCCListenError();
+}
+
+DCCServer::~DCCServer()
+{
+	deinit();
+}
+
+void DCCServer::deinit()
+{
+	if(fd >= 0)
+		close(fd);
+	if(watcher > 0)
+		purple_input_remove(watcher);
+	if(listen_data != NULL)
+		purple_network_listen_cancel(listen_data);
+
+	finished = true;
+	fd = -1;
+	watcher = 0;
+	listen_data = NULL;
+}
+
+void DCCServer::dcc_read_cb(gpointer data, int source, PurpleInputCondition cond)
+{
+	DCCServer* dcc = static_cast<DCCServer*>(data);
+	dcc->dcc_read(source);
+}
+
+void DCCServer::connected(gpointer data, int source, PurpleInputCondition cond)
+{
+	DCCServer* dcc = static_cast<DCCServer*>(data);
+	int conn = accept(dcc->fd, NULL, 0), flags;
+	if(!conn)
+	{
+		b_log[W_ERR] << "DCC connection failed";
+		dcc->deinit();
+		return;
+	}
+
+	purple_input_remove(dcc->watcher);
+	dcc->watcher = 0;
+	close(dcc->fd);
+	dcc->fd = conn;
+	dcc->listen_data = NULL;
+
+	flags = fcntl(conn, F_GETFL);
+	fcntl(conn, F_SETFL, flags | O_NONBLOCK);
+	fcntl(conn, F_SETFD, FD_CLOEXEC);
+	dcc->watcher = purple_input_add(conn, PURPLE_INPUT_READ, DCCServer::dcc_read_cb, dcc);
+
+	dcc->updated(false);
+}
+
+void DCCServer::listen_cb(int sock, void* data)
+{
+	DCCServer* dcc = static_cast<DCCServer*>(data);
+	struct in_addr addr;
+
+	dcc->fd = sock;
+	dcc->port = purple_network_get_port_from_fd(sock);
+	inet_aton(purple_network_get_my_ip(-1), &addr);
+
+	dcc->watcher = purple_input_add(sock, PURPLE_INPUT_READ,
+					connected, dcc);
+
+	/* As there isn't any way to escape correctly strings in the DCC SEND
+	 * sequence, it replaces every '"' with a '\''.
+	 */
+	string filename = dcc->filename;
+	for(string::iterator c = filename.begin(); c != filename.end(); ++c)
+		if(*c == '"') *c = '\'';
+
+	dcc->receiver->send(Message(MSG_PRIVMSG).setSender(dcc->sender ? dcc->sender->getLongName() : "some.one")
+			                 .setReceiver(dcc->receiver)
+					 .addArg("\001DCC " + dcc->type + " \"" + dcc->filename + "\" " +
+						 t2s(ntohl(addr.s_addr)) + " " +
+						 t2s(dcc->port) +
+						 (dcc->total_size ? (" " + t2s(dcc->total_size)) : "") +
+						 "\001"));
+}
+
+DCCSend::DCCSend(const im::FileTransfert& _ft, Nick* _sender, Nick* _receiver)
+	: DCCServer("SEND", _ft.getFileName(), _ft.getSize(), _sender, _receiver),
+	  ft(_ft),
+	  local_filename(_ft.getLocalFileName()),
 	  bytes_sent(0),
 	  fp(NULL),
 	  rxlen(0),
 	  rxqueue(NULL)
 {
-	ConfigItem* item = conf.GetSection("file_transfers")->GetItem("port_range");
-	listen_data = purple_network_listen_range((uint16_t)item->MinInteger(), (uint16_t)item->MaxInteger(),
-	                                          SOCK_STREAM, &DCCSend::listen_cb, this);
-	if(!listen_data)
-		throw DCCListenError();
 }
 
 DCCSend::~DCCSend()
@@ -63,22 +148,24 @@ DCCSend::~DCCSend()
 
 void DCCSend::deinit()
 {
-	if(fd >= 0)
-		close(fd);
+	DCCServer::deinit();
+
 	if(fp != NULL)
 		fclose(fp);
-	if(watcher > 0)
-		purple_input_remove(watcher);
-	if(listen_data != NULL)
-		purple_network_listen_cancel(listen_data);
 	g_free(rxqueue);
-
-	finished = true;
-	fd = -1;
 	fp = NULL;
-	watcher = 0;
-	listen_data = NULL;
 	rxqueue = NULL;
+}
+
+void DCCSend::updated(bool destroy)
+{
+	if(destroy)
+		ft = im::FileTransfert(); /* No-valid object */
+
+	if((fd < 0 || listen_data) && (start_time + TIMEOUT < time(NULL)))
+		deinit();
+	else
+		dcc_send();
 }
 
 void DCCSend::dcc_send()
@@ -103,20 +190,8 @@ void DCCSend::dcc_send()
 	bytes_sent += len;
 }
 
-void DCCSend::updated(bool destroy)
+void DCCSend::dcc_read(int source)
 {
-	if(destroy)
-		ft = im::FileTransfert(); /* No-valid object */
-
-	if((fd < 0 || listen_data) && (start_time + TIMEOUT < time(NULL)))
-		deinit();
-	else
-		dcc_send();
-}
-
-void DCCSend::dcc_read(gpointer data, int source, PurpleInputCondition cond)
-{
-	DCCSend* dcc = static_cast<DCCSend*>(data);
 	static char buffer[64];
 	ssize_t len;
 
@@ -129,93 +204,74 @@ void DCCSend::dcc_read(gpointer data, int source, PurpleInputCondition cond)
 		 * fd is already closed, do not let deinit()
 		 * reclose it.
 		 */
-		dcc->fd = -1;
-		dcc->deinit();
+		this->fd = -1;
+		this->deinit();
 		return;
 	}
 
-	dcc->rxqueue = (guchar*)g_realloc(dcc->rxqueue, len + dcc->rxlen);
-	memcpy(dcc->rxqueue + dcc->rxlen, buffer, len);
-	dcc->rxlen += (guint)len;
+	this->rxqueue = (guchar*)g_realloc(this->rxqueue, len + this->rxlen);
+	memcpy(this->rxqueue + this->rxlen, buffer, len);
+	this->rxlen += (guint)len;
 
 	while (1) {
 		size_t acked;
 
-		if (dcc->rxlen < 4)
+		if (this->rxlen < 4)
 			break;
 
-		acked = ntohl(*((gint32 *)dcc->rxqueue));
+		acked = ntohl(*((gint32 *)this->rxqueue));
 
-		dcc->rxlen -= 4;
-		if (dcc->rxlen) {
-			unsigned char *tmp = (unsigned char*)g_memdup(dcc->rxqueue + 4, (guint)dcc->rxlen);
-			g_free(dcc->rxqueue);
-			dcc->rxqueue = tmp;
+		this->rxlen -= 4;
+		if (this->rxlen) {
+			unsigned char *tmp = (unsigned char*)g_memdup(this->rxqueue + 4, (guint)this->rxlen);
+			g_free(this->rxqueue);
+			this->rxqueue = tmp;
 		} else {
-			g_free(dcc->rxqueue);
-			dcc->rxqueue = NULL;
+			g_free(this->rxqueue);
+			this->rxqueue = NULL;
 		}
 
-		if (acked >= dcc->total_size) {
+		if (acked >= this->total_size) {
 			/* DCC send terminated \o/ */
-			dcc->deinit();
+			this->deinit();
 			return;
 		}
 	}
 
-	dcc->dcc_send();
+	this->dcc_send();
 }
 
-void DCCSend::connected(gpointer data, int source, PurpleInputCondition cond)
+DCCChat::DCCChat(Nick* sender, Nick* receiver)
+	: DCCServer("CHAT", "CHAT", 0, sender, receiver)
+{}
+
+DCCChat::~DCCChat()
 {
-	DCCSend* dcc = static_cast<DCCSend*>(data);
-	int conn = accept(dcc->fd, NULL, 0), flags;
-	if(!conn)
-	{
-		b_log[W_ERR] << "DCC connection failed";
-		dcc->deinit();
+
+}
+
+void DCCChat::deinit()
+{
+	DCCServer::deinit();
+}
+
+void DCCChat::dcc_read(int source)
+{
+	/* Don't care */
+}
+
+void DCCChat::updated(bool destroy)
+{
+	if((fd < 0 || listen_data) && (start_time + TIMEOUT < time(NULL)))
+		deinit();
+}
+
+void DCCChat::dcc_send(string buf)
+{
+	if(finished || listen_data || fd < 0)
 		return;
-	}
 
-	purple_input_remove(dcc->watcher);
-	dcc->watcher = 0;
-	close(dcc->fd);
-	dcc->fd = conn;
-	dcc->listen_data = NULL;
-
-	flags = fcntl(conn, F_GETFL);
-	fcntl(conn, F_SETFL, flags | O_NONBLOCK);
-	fcntl(conn, F_SETFD, FD_CLOEXEC);
-	dcc->watcher = purple_input_add(conn, PURPLE_INPUT_READ, DCCSend::dcc_read, dcc);
-
-	dcc->dcc_send();
-}
-
-void DCCSend::listen_cb(int sock, void* data)
-{
-	DCCSend* dcc = static_cast<DCCSend*>(data);
-	struct in_addr addr;
-
-	dcc->fd = sock;
-	dcc->port = purple_network_get_port_from_fd(sock);
-	inet_aton(purple_network_get_my_ip(-1), &addr);
-
-	dcc->watcher = purple_input_add(sock, PURPLE_INPUT_READ,
-					connected, dcc);
-
-	/* As there isn't any way to escape correctly strings in the DCC SEND
-	 * sequence, it replaces every '"' with a '\''.
-	 */
-	string filename = dcc->filename;
-	for(string::iterator c = filename.begin(); c != filename.end(); ++c)
-		if(*c == '"') *c = '\'';
-
-	dcc->receiver->send(Message(MSG_PRIVMSG).setSender(dcc->sender ? dcc->sender->getLongName() : "some.one")
-			                 .setReceiver(dcc->receiver)
-					 .addArg("\001DCC SEND \"" + dcc->filename + "\" " +
-						 t2s(ntohl(addr.s_addr)) + " " +
-						 t2s(dcc->port) + " " +
-						 t2s(dcc->total_size) + "\001"));
+	send(fd, buf.c_str(), buf.size(), 0);
 }
 
 DCCGet::DCCGet(Nick* _from, string _filename, uint32_t addr, uint16_t port,

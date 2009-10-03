@@ -49,7 +49,42 @@ namespace irc {
 		virtual void setPeer(Nick* n) = 0;
 	};
 
-	class DCCSend : public DCC
+	class DCCServer : public DCC
+	{
+	protected:
+		static const time_t TIMEOUT = 5*60;
+
+		string type;
+		string filename;
+		size_t total_size;
+
+		time_t start_time;
+		Nick* sender;
+		Nick* receiver;
+		PurpleNetworkListenData* listen_data;
+		int watcher;
+		int fd;
+		unsigned port;
+		bool finished;
+
+		static void listen_cb(int sock, void* data);
+		static void connected(gpointer data, int source, PurpleInputCondition cond);
+		static void dcc_read_cb(gpointer data, int source, PurpleInputCondition cond);
+
+		virtual void deinit();
+		virtual void dcc_read(int source) = 0;
+	public:
+
+		DCCServer(string type, string filename, size_t total_size, Nick* sender, Nick* receiver);
+		~DCCServer();
+
+		bool isFinished() const { return finished; }
+
+		Nick* getPeer() const { return sender; }
+		void setPeer(Nick* n) { sender = n; }
+	};
+
+	class DCCSend : public DCCServer
 	{
 		/** The DCC class used to send a file to a IRC user.
 		 *
@@ -71,33 +106,18 @@ namespace irc {
 		 *
 		 * The file descriptor keeps open.
 		 */
-
-		static const time_t TIMEOUT = 5*60;
-
 		im::FileTransfert ft;
-		size_t total_size;
-		time_t start_time;
-		string filename;
-		string local_filename;
 
-		Nick* sender;
-		Nick* receiver;
-		PurpleNetworkListenData* listen_data;
-		int watcher;
-		int fd;
-		unsigned port;
-		bool finished;
+		string local_filename;
 
 		size_t bytes_sent;
 		FILE* fp;
 		guint rxlen;
 		guchar* rxqueue;
 
-		static void listen_cb(int sock, void* data);
-		static void connected(gpointer data, int source, PurpleInputCondition cond);
-		static void dcc_read(gpointer data, int source, PurpleInputCondition cond);
+		virtual void deinit();
+		virtual void dcc_read(int source);
 		void dcc_send();
-		void deinit();
 
 	public:
 		DCCSend(const im::FileTransfert& ft, Nick* sender, Nick* receiver);
@@ -105,10 +125,20 @@ namespace irc {
 
 		im::FileTransfert getFileTransfert() const { return ft; }
 		void updated(bool destroy);
-		bool isFinished() const { return finished; }
+	};
 
-		Nick* getPeer() const { return sender; }
-		void setPeer(Nick* n) { sender = n; }
+	class DCCChat : public DCCServer
+	{
+		virtual void deinit();
+		virtual void dcc_read(int source);
+	public:
+
+		DCCChat(Nick* sender, Nick* receiver);
+		~DCCChat();
+
+		im::FileTransfert getFileTransfert() const { return im::FileTransfert(); }
+		void updated(bool destroy);
+		void dcc_send(string buf);
 	};
 
 	class DCCGet : public DCC
