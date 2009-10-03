@@ -27,10 +27,15 @@
 
 #ifdef HAVE_VIDEO
 #include <libpurple/media-gst.h>
+#include "buddy.h"
 #include "caca_image.h"
 #endif
 
 class _CallBack;
+
+namespace irc {
+	class DCCChat;
+};
 
 namespace im {
 
@@ -51,6 +56,7 @@ namespace im {
 
 		void addMedia(const Media& media);
 		void removeMedia(const Media& media);
+		Media getMedia(PurpleMedia* m);
 		void enqueueBuffer(const Media& media, const CacaImage& buf);
 
 		bool check(void*);
@@ -61,7 +67,9 @@ namespace im {
 	{
 #ifdef HAVE_VIDEO
 		PurpleMedia* media;
+		Buddy buddy;
 		vector<CacaImage> queue;
+		irc::DCCChat* dcc;
 
 		static MediaList media_list;
 
@@ -71,6 +79,7 @@ namespace im {
 					const gchar *session_id, const gchar *participant);
 		static gboolean media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 				PurpleAccount *account, gchar *screenname, gpointer nul);
+		static gboolean minbif_media_ready_cb(PurpleMedia *media);
 
 		static void minbif_media_state_changed_cb(PurpleMedia *media, PurpleMediaState state,
 				gchar *sid, gchar *name, void* gtkmedia);
@@ -88,7 +97,11 @@ namespace im {
 #ifdef HAVE_VIDEO
 		Media();
 		Media(PurpleMedia*);
+		Media(PurpleMedia*, const Buddy& b);
+		Media(const Media&);
+		~Media();
 
+		Media& operator=(const Media&);
 		bool operator==(const Media&) const;
 		bool operator!=(const Media&) const;
 
@@ -96,6 +109,8 @@ namespace im {
 
 		void enqueueBuffer(const CacaImage& buf);
 		void checkBuffer();
+		Buddy getBuddy() const { return buddy; }
+		PurpleMedia* getPurpleMedia() const { return media; }
 #endif /* HAVE_VIDEO */
 	};
 

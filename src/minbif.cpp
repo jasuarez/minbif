@@ -297,7 +297,6 @@ int Minbif::main(int argc, char** argv)
 			fo.close();
 		}
 
-
 		struct sigaction sig, old;
 		memset( &sig, 0, sizeof( sig ) );
 		sig.sa_handler = &Minbif::sighandler;

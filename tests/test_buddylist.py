@@ -46,7 +46,7 @@ class TestBuddyList(Test):
 
         self['minbif2'].log('Wait for join')
         while 1:
-            msg = self['minbif2'].readmsg('JOIN', 2)
+            msg = self['minbif2'].readmsg('JOIN', 4)
             if not msg:
                 return False
 

@@ -18,6 +18,11 @@
 
 #include <cstring>
 #include "media.h"
+#include "im.h"
+#include "purple.h"
+#include "irc/irc.h"
+#include "irc/dcc.h"
+#include "irc/user.h"
 #include "../log.h"
 #include "../caca_image.h"
 #include "../util.h"
@@ -50,6 +55,18 @@ void MediaList::addMedia(const Media& media)
 		check_id = g_timeout_add_seconds(1, g_callback, check_cb);
 	}
 	medias.push_back(media);
+}
+
+Media MediaList::getMedia(PurpleMedia* m)
+{
+	BlockLockMutex lock(this);
+	vector<Media>::iterator it;
+	for(it = medias.begin(); it != medias.end() && it->getPurpleMedia() != m; ++it)
+		;
+	if(it == medias.end())
+		return Media();
+	else
+		return *it;
 }
 
 void MediaList::removeMedia(const Media& media)
@@ -90,13 +107,44 @@ bool MediaList::check(void*)
 }
 
 Media::Media()
-	: media(0)
+	: media(0),
+	  dcc(NULL)
 {
 }
 
 Media::Media(PurpleMedia* m)
-	: media(m)
+	: media(m),
+	  dcc(NULL)
 {}
+
+Media::Media(PurpleMedia* m, const Buddy& b)
+	: media(m),
+	  buddy(b),
+	  dcc(NULL)
+{
+}
+
+Media::Media(const Media& m)
+	: media(m.media),
+	  buddy(m.buddy),
+	  dcc(NULL)
+{
+
+}
+
+Media& Media::operator=(const Media& m)
+{
+	media = m.media;
+	buddy = m.buddy;
+	delete dcc;
+	dcc = NULL;
+	return *this;
+}
+
+Media::~Media()
+{
+	delete dcc;
+}
 
 bool Media::operator==(const Media& m) const
 {
@@ -120,13 +168,18 @@ void Media::checkBuffer()
 	{
 		try
 		{
+			if(!dcc)
+			{
+				irc::IRC* irc = Purple::getIM()->getIRC();
+				irc::Nick* sender = irc->getNick(buddy);
+				dcc = new irc::DCCChat(sender, irc->getUser());
+			}
 			string buf = it->getIRCBuffer(0, 30), line;
-			while((line = stringtok(buf, "\r\n")).empty() == false)
-				b_log[W_ERR] << line;
+			dcc->dcc_send(buf);
 		}
 		catch(CacaError &e)
 		{
-			b_log[W_ERR] << "Ho shit! ";
+			b_log[W_ERR] << "Caca error while sending to user";
 		}
 	}
 }
@@ -202,21 +255,16 @@ minbif_media_reject_cb(PurpleMedia *media, int index)
 }
 
 
-static gboolean
-minbif_media_ready_cb(PurpleMedia *media)
+gboolean Media::minbif_media_ready_cb(PurpleMedia *media)
 {
-	PurpleAccount *account;
-	PurpleBuddy *buddy;
-	const gchar *alias;
-	const gchar *screenname = "bitlbee_";
+	Media m = media_list.getMedia(media);
+	const char *alias = m.getBuddy().getAlias().c_str();
+
 	//PurpleMediaSessionType type = purple_media_get_session_type(media, sid);
 	PurpleMediaSessionType type = PURPLE_MEDIA_VIDEO;
 	gchar *message = NULL;
 
-	account = purple_media_get_account(media);
-	buddy = purple_find_buddy(account, screenname);
-	alias = buddy ? purple_buddy_get_contact_alias(buddy) :
-			screenname;
+	PurpleAccount* account = purple_media_get_account(media);
 
 	if (type & PURPLE_MEDIA_AUDIO && type & PURPLE_MEDIA_VIDEO) {
 		message = g_strdup_printf("%s wishes to start an audio/video session with you.",
@@ -232,7 +280,7 @@ minbif_media_ready_cb(PurpleMedia *media)
 #define _(x) x
 	purple_request_accept_cancel(media, "Incoming Call",
 			message, NULL, PURPLE_DEFAULT_ACTION_NONE,
-			account, screenname, NULL,
+			account, alias, NULL,
 			media,
 			minbif_media_accept_cb,
 			minbif_media_reject_cb);
@@ -260,7 +308,7 @@ void Media::minbif_media_state_changed_cb(PurpleMedia *media, PurpleMediaState s
 			sid != NULL && name != NULL) {
 		if (purple_media_is_initiator(media, sid, NULL) == FALSE) {
 			g_timeout_add(500,
-				(GSourceFunc)minbif_media_ready_cb,
+				(GSourceFunc)Media::minbif_media_ready_cb,
 				gtkmedia);
 			purple_media_set_output_window(media, sid,
 					name, 0);
@@ -291,7 +339,7 @@ gboolean Media::media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 			purple_buddy_get_contact_alias(buddy) : screenname;
 	//gtk_window_set_title(GTK_WINDOW(gtkmedia), alias);
 	b_log[W_ERR] << "Started video with " << alias;
-	media_list.addMedia(media);
+	media_list.addMedia(Media(media, Buddy(buddy)));
 
 	if (purple_media_is_initiator(media, NULL, NULL) == TRUE)
 		b_log[W_ERR] << "initiator";
