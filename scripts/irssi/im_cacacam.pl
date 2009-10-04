@@ -11,7 +11,7 @@ $VERSION = '0.1';
 	description => 'draw cacacam',
 	license     => 'GPLv2',
 	url         => 'http://minbif.im',
-	changed     => '03/10/2009'
+	changed     => '2009-10-03',
 );
 
 my $caca_width = 40;

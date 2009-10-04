@@ -26,10 +26,26 @@
 #define MINBIF_VERSION_PATCH   ""
 #define MINBIF_VERSION_EXTRA   "beta"
 
+#ifdef USE_CACA
+#define MINBIF_SUPPORTS_CACA "-caca"
+#else
+#define MINBIF_SUPPORTS_CACA ""
+#endif
+
+#ifdef HAVE_VIDEO
+#define MINBIF_SUPPORTS_VIDEO "-video"
+#else
+#define MINBIF_SUPPORTS_VIDEO ""
+#endif
+
+#define MINBIF_SUPPORTS      MINBIF_SUPPORTS_CACA \
+	                     MINBIF_SUPPORTS_VIDEO
+
 #define MINBIF_VERSION       MINBIF_VERSION_NAME \
 			     MINBIF_VERSION_MAJOR "." \
 			     MINBIF_VERSION_MINOR \
 			     MINBIF_VERSION_PATCH \
-			     MINBIF_VERSION_EXTRA
+			     MINBIF_VERSION_EXTRA \
+			     MINBIF_SUPPORTS
 
 #endif /* VERSION_H */
