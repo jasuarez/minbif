@@ -592,7 +592,8 @@ void IRC::m_version(Message message)
 	user->send(Message(RPL_VERSION).setSender(this)
 				       .setReceiver(user)
 				       .addArg(MINBIF_VERSION)
-				       .addArg(getServerName()));
+				       .addArg(getServerName())
+				       .addArg(MINBIF_BUILD));
 }
 
 /** WHO */

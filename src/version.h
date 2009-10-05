@@ -41,6 +41,8 @@
 #define MINBIF_SUPPORTS      MINBIF_SUPPORTS_CACA \
 	                     MINBIF_SUPPORTS_VIDEO
 
+#define MINBIF_BUILD         "(Build " __DATE__ " " __TIME__ ")"
+
 #define MINBIF_VERSION       MINBIF_VERSION_NAME \
 			     MINBIF_VERSION_MAJOR "." \
 			     MINBIF_VERSION_MINOR \

@@ -213,7 +213,7 @@ void Minbif::usage(int argc, char** argv)
 
 void Minbif::version(void)
 {
-	std::cout << MINBIF_VERSION << " (Build " __DATE__ " " __TIME__ ") © 2009 Romain Bignon" << std::endl;
+	std::cout << MINBIF_VERSION << " " << MINBIF_BUILD << " © 2009 Romain Bignon" << std::endl;
 }
 
 int Minbif::main(int argc, char** argv)

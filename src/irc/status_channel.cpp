@@ -122,7 +122,7 @@ void StatusChannel::processAddBan(Nick* from, string nick, string ident, string 
 				from->send(Message(ERR_NOSUCHNICK).setSender(irc)
 								  .setReceiver(from)
 								  .addArg(host)
-								  .addArg("Please prefix mask with ':accountID'"));
+								  .addArg("Please sufix mask with ':accountID'"));
 				return;
 			}
 		}
