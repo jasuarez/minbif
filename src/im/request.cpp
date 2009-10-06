@@ -171,7 +171,7 @@ PurpleNotifyUiOps Request::notify_ops =
 	Request::notify_message,
         NULL,//finch_notify_email,
         NULL,//finch_notify_emails,
-        NULL,//finch_notify_formatted,
+        Request::notify_formatted,
         NULL,//finch_notify_searchresults,
         NULL,//finch_notify_sr_new_rows,
         Request::notify_userinfo,
@@ -214,20 +214,58 @@ void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
 {
 	irc::IRC* irc = Purple::getIM()->getIRC();
 
-	nick->privmsg(irc->getUser(), string(":: ") + (title ? title : "") + " ::");
-
-	const char* texts[] = {primary, secondary, NULL};
-	for(const char** ptr = texts; *ptr != NULL; ++ptr)
+	bool titled = false;
+	const char** texts[] = {&title, &primary, &secondary, NULL};
+	for(const char*** ptr = texts; *ptr != NULL; ++ptr)
 	{
-		if(!**ptr) continue;
+		if(!**ptr && !***ptr) continue;
 
-		string txt = *ptr, line;
-		nick->privmsg(irc->getUser(), " ");
+		string txt = **ptr, line;
+		if(!titled)
+		{
+			titled = true;
+			if(txt.find("\n") == string::npos)
+			{
+				nick->privmsg(irc->getUser(), ":: " + line + " ::");
+				continue;
+			}
+		}
 		while((line = stringtok(txt, "\r\n")).empty() == false)
 			nick->privmsg(irc->getUser(), line);
 	}
 
-	nick->privmsg(irc->getUser(), primary);
+	return NULL;
+}
+
+void* Request::notify_formatted(const char *title, const char *primary, const char *secondary,
+			      const char *text)
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+
+	char* text_stripped = purple_markup_strip_html(text);
+
+	bool titled = false;
+	const char** texts[] = {&title, &primary, &secondary, (const char**) &text_stripped, NULL};
+	for(const char*** ptr = texts; *ptr != NULL; ++ptr)
+	{
+		if(!**ptr && !***ptr) continue;
+
+		string txt = **ptr, line;
+		if(!titled)
+		{
+			titled = true;
+			if(txt.find("\n") == string::npos)
+			{
+				nick->privmsg(irc->getUser(), ":: " + line + " ::");
+				continue;
+			}
+		}
+		while((line = stringtok(txt, "\r\n")).empty() == false)
+			nick->privmsg(irc->getUser(), line);
+	}
+
+	g_free(text_stripped);
+
 	return NULL;
 }
 
