@@ -71,6 +71,7 @@ namespace irc
 		map<string, Channel*> channels;
 		map<string, Server*> servers;
 		vector<DCC*> dccs;
+		vector<string> motd;
 
 		struct command_t
 		{
@@ -153,6 +154,8 @@ namespace irc
 		void addChannel(Channel* chan);
 		Channel* getChannel(string channame) const;
 		void removeChannel(string channame);
+
+		void setMotd(const string& path);
 
 		void addNick(Nick* nick);
 		Nick* getNick(string nick, bool case_sensitive = false) const;

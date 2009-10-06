@@ -22,6 +22,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cassert>
+#include <fstream>
 
 #include "../log.h"
 #include "../util.h"
@@ -136,6 +137,8 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 		ping_cb = new CallBack<IRC>(this, &IRC::ping);
 		ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
 	}
+
+	setMotd(conf.GetSection("path")->GetItem("motd")->String());
 
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("Minbif-IRCd initialized, please go on"));
 }
@@ -350,6 +353,23 @@ void IRC::cleanUpServers()
 	servers.clear();
 }
 
+void IRC::setMotd(const string& path)
+{
+	std::ifstream fp(path.c_str());
+	if(!fp)
+	{
+		b_log[W_WARNING] << "Unable to read MOTD";
+		return;
+	}
+
+	char buf[512];
+	motd.clear();
+	while(fp)
+	{
+		fp.getline(buf, 511);
+		motd.push_back(buf);
+	}
+}
 
 void IRC::quit(string reason)
 {
@@ -403,12 +423,12 @@ void IRC::sendWelcome()
 
 		user->setFlag(Nick::REGISTERED);
 
-		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif gateway, " + user->getNickname() + "!"));
+		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif IRC gateway, " + user->getNickname() + "!"));
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running Minbif"));
 
 		user->send(Message(RPL_MOTDSTART).setSender(this).setReceiver(user).addArg("- " + getServerName() + " Message Of The Day -"));
-		if (im->getAccountsList().empty())
-			user->send(Message(RPL_MOTD).setSender(this).setReceiver(user).addArg("Advice: you should start by adding an account using the /MAP command."));
+		for(vector<string>::iterator s = motd.begin(); s != motd.end(); ++s)
+			user->send(Message(RPL_MOTD).setSender(this).setReceiver(user).addArg(*s));
 
 		user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
 

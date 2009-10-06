@@ -37,6 +37,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/irc/conversation_channel.cpp
 	      )
 SET(CONF_NAME minbif.conf)
+SET(MOTD_NAME minbif.motd)
 
 target_link_libraries(${BIN_NAME})
 
@@ -52,7 +53,7 @@ IF(ENABLE_CACA)
 	IF(IMLIB_FOUND AND CACA_FOUND)
 		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_CACA")
 	ELSE(IMLIB_FOUND AND CACA_FOUND)
-		MESSAGE(FATAL_ERROR "Unable to find the libcaca or imlib2 library. To disable caca output, run 'make ENABLE_CACA=0'")
+		MESSAGE(FATAL_ERROR "Unable to find the libcaca and/or imlib2 libraries. To disable caca output, run 'make ENABLE_CACA=0'")
 	ENDIF(IMLIB_FOUND AND CACA_FOUND)
 
 ENDIF(ENABLE_CACA)
@@ -105,5 +106,5 @@ INSTALL(FILES COPYING README
         DESTINATION doc/minbif)
 INSTALL(DIRECTORY doc/
         DESTINATION doc/minbif)
-INSTALL(FILES ${CONF_NAME}
+INSTALL(FILES ${CONF_NAME} ${MOTD_NAME}
         DESTINATION ${CONF_PREFIX})

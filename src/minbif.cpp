@@ -133,6 +133,7 @@ Minbif::Minbif()
 	ConfigSection* section;
 	section = conf.AddSection("path", "Path information", false);
 	section->AddItem(new ConfigItem_string("users", "Users directory"));
+	section->AddItem(new ConfigItem_string("motd", "Path to motd", " "));
 
 	section = conf.AddSection("irc", "Server information", false);
 	section->AddItem(new ConfigItem_string("hostname", "Server hostname", " "));
