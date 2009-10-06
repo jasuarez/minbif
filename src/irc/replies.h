@@ -102,5 +102,6 @@
 #define MSG_TOPIC       "TOPIC"
 #define MSG_NAMES       "NAMES"
 #define MSG_AWAY        "AWAY"
+#define MSG_MOTD        "MOTD"
 
 #endif /* IRC_REPLIES_H */

@@ -73,6 +73,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_KILL,    &IRC::m_kill,    1, 0, Nick::REGISTERED },
 	{ MSG_SVSNICK, &IRC::m_svsnick, 2, 0, Nick::REGISTERED },
 	{ MSG_AWAY,    &IRC::m_away,    0, 0, Nick::REGISTERED },
+	{ MSG_MOTD,    &IRC::m_motd,    0, 0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
@@ -369,6 +370,7 @@ void IRC::setMotd(const string& path)
 		fp.getline(buf, 511);
 		motd.push_back(buf);
 	}
+	fp.close();
 }
 
 void IRC::quit(string reason)
@@ -426,11 +428,7 @@ void IRC::sendWelcome()
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif IRC gateway, " + user->getNickname() + "!"));
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running Minbif"));
 
-		user->send(Message(RPL_MOTDSTART).setSender(this).setReceiver(user).addArg("- " + getServerName() + " Message Of The Day -"));
-		for(vector<string>::iterator s = motd.begin(); s != motd.end(); ++s)
-			user->send(Message(RPL_MOTD).setSender(this).setReceiver(user).addArg(*s));
-
-		user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
+		m_motd(Message());
 
 		im->restore();
 	}
@@ -1638,5 +1636,16 @@ void IRC::m_away(Message message)
 						       .addArg("You have been marked as being away"));
 	}
 }
+
+/* MOTD */
+void IRC::m_motd(Message message)
+{
+	user->send(Message(RPL_MOTDSTART).setSender(this).setReceiver(user).addArg("- " + getServerName() + " Message Of The Day -"));
+	for(vector<string>::iterator s = motd.begin(); s != motd.end(); ++s)
+		user->send(Message(RPL_MOTD).setSender(this).setReceiver(user).addArg("- " + *s));
+
+	user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
+}
+
 
 }; /* namespace irc */

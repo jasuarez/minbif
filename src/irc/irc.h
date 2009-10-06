@@ -118,6 +118,7 @@ namespace irc
 		void m_kill(Message m);     /**< Handler for the KILL message */
 		void m_svsnick(Message m);  /**< Handler for the SVSNICK message */
 		void m_away(Message m);     /**< Handler for the AWAY message */
+		void m_motd(Message m);     /**< Handler for the MOTD message */
 
 	public:
 
