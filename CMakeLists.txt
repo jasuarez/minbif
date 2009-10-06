@@ -52,7 +52,7 @@ IF(ENABLE_CACA)
 	IF(IMLIB_FOUND AND CACA_FOUND)
 		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_CACA")
 	ELSE(IMLIB_FOUND AND CACA_FOUND)
-		MESSAGE(FATAL_ERROR "Unable to find the libcaca library. To disable caca output, run 'make ENABLE_CACA=0'")
+		MESSAGE(FATAL_ERROR "Unable to find the libcaca or imlib2 library. To disable caca output, run 'make ENABLE_CACA=0'")
 	ENDIF(IMLIB_FOUND AND CACA_FOUND)
 
 ENDIF(ENABLE_CACA)
