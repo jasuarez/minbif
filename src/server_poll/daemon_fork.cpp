@@ -37,8 +37,7 @@
 DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	: ServerPoll(application),
 	  irc(NULL),
-	  read_cb(NULL),
-	  stop_cb(NULL)
+	  read_cb(NULL)
 {
 	std::vector<ConfigSection*> sections = conf.GetSection("irc")->GetSectionClones("daemon");
 	if(sections.empty())
@@ -166,19 +165,22 @@ void DaemonForkServerPoll::log(size_t level, string msg) const
 		std::cout << msg << std::endl;
 }
 
+void DaemonForkServerPoll::rehash()
+{
+	if(irc)
+		irc->rehash();
+}
+
 void DaemonForkServerPoll::kill(irc::IRC* irc)
 {
 	assert(!irc || irc == this->irc);
 
-	stop_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::stopServer_cb);
-	g_timeout_add(0, g_callback, stop_cb);
+	_CallBack* stop_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::stopServer_cb);
+	g_timeout_add(0, g_callback_delete, stop_cb);
 }
 
 bool DaemonForkServerPoll::stopServer_cb(void*)
 {
-	delete stop_cb;
-	stop_cb = NULL;
-
 	delete irc;
 	irc = NULL;
 

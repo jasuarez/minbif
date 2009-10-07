@@ -139,7 +139,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 		ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
 	}
 
-	setMotd(conf.GetSection("path")->GetItem("motd")->String());
+	rehash();
 
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("Minbif-IRCd initialized, please go on"));
 }
@@ -352,6 +352,11 @@ void IRC::cleanUpServers()
 	for(it = servers.begin(); it != servers.end(); ++it)
 		delete it->second;
 	servers.clear();
+}
+
+void IRC::rehash()
+{
+	setMotd(conf.GetSection("path")->GetItem("motd")->String());
 }
 
 void IRC::setMotd(const string& path)

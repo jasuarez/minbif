@@ -56,6 +56,7 @@ public:
 	virtual ~ServerPoll() {}
 
 	virtual void kill(irc::IRC* irc) = 0;
+	virtual void rehash() = 0;
 
 	virtual void log(size_t level, string string) const = 0;
 };

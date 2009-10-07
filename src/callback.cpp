@@ -41,3 +41,18 @@ gboolean g_callback(void* data)
 {
 	return _callback(data);
 }
+
+gboolean g_callback_delete(void* data)
+{
+	_CallBack* cb;
+	if(!data || !(cb = static_cast<_CallBack*>(data)))
+	{
+		b_log[W_ERR] << "g_callback() handled with non CallBack instance";
+		return false;
+	}
+
+	bool ret = cb->run();
+	if(!ret)
+		delete cb;
+	return ret;
+}

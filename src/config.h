@@ -169,6 +169,8 @@ public:
 	/** Get clones of a section marcked "multiple" */
 	std::vector<ConfigSection*> GetSectionClones(std::string label);
 
+	void Clean();
+
 	/** Add a head-section in the configuration.
 	 * Before loading configuration, you have to define all sections and items. This function must be
 	 * used to add a head-section.
@@ -234,6 +236,8 @@ public:
 	 */
 	ConfigSection* AddSection(std::string label, std::string description, bool multiple) throw(MyConfig::error_exc);
 
+	void Clean();
+
 	/** Get an item from his label */
 	ConfigItem* GetItem(std::string label);
 
@@ -267,7 +271,7 @@ public:
 
 	/** If true, this item is found in the configuration */
 	bool Found() const { return found; }
-	void SetFound() { found = true; }
+	void SetFound(bool f = true) { found = f; }
 
 	/** This function will be called when parser is at the end of the section.
 	 * @param eot_f a function in form « void Name (ConfigSection*); »
@@ -346,7 +350,7 @@ public:
 
 	/** If true, this item was found on the configuration by parser */
 	bool Found() const { return found; }
-	void SetFound() { found = true; }
+	void SetFound(bool f = true) { found = f; }
 
 	virtual int Integer() const	  /**< Get value as an integer */
 	{

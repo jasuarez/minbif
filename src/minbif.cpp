@@ -22,11 +22,11 @@
 #include <fstream>
 #include <cstring>
 #include <sys/resource.h>
-#include <sys/wait.h>
 #include <libpurple/purple.h>
 #include <getopt.h>
 
 #include "minbif.h"
+#include "sighandler.h"
 #include "version.h"
 #include "config.h"
 #include "log.h"
@@ -125,10 +125,9 @@ private:
 	int value_min, value_max;
 };
 
-struct _GMainLoop *Minbif::loop = NULL;
-
 Minbif::Minbif()
-	: server_poll(0)
+	: loop(NULL),
+	  server_poll(0)
 {
 	ConfigSection* section;
 	section = conf.AddSection("path", "Path information", false);
@@ -178,29 +177,6 @@ void Minbif::remove_pidfile(void)
 
 	unlink(pidfile.c_str());
 
-}
-
-void Minbif::sighandler(int r)
-{
-	switch(r)
-	{
-		case SIGCHLD:
-		{
-			pid_t pid;
-			int st;
-			while((pid = waitpid(0, &st, WNOHANG)) > 0)
-				;
-			break;
-		}
-		case SIGPIPE:
-			break;
-		case SIGTERM:
-			/* XXX Use g_timeout() instead. */
-			g_main_quit(Minbif::loop);
-			break;
-		default:
-			raise(r);
-	}
 }
 
 void Minbif::usage(int argc, char** argv)
@@ -297,21 +273,7 @@ int Minbif::main(int argc, char** argv)
 			fo << getpid() << std::endl;
 			fo.close();
 		}
-
-		struct sigaction sig, old;
-		memset( &sig, 0, sizeof( sig ) );
-		sig.sa_handler = &Minbif::sighandler;
-		sigaction( SIGCHLD, &sig, &old );
-		sigaction( SIGPIPE, &sig, &old );
-		sig.sa_flags = SA_RESETHAND;
-		sigaction( SIGINT,  &sig, &old );
-		sigaction( SIGILL,  &sig, &old );
-		sigaction( SIGBUS,  &sig, &old );
-		sigaction( SIGFPE,  &sig, &old );
-		sigaction( SIGSEGV, &sig, &old );
-		sigaction( SIGTERM, &sig, &old );
-		sigaction( SIGQUIT, &sig, &old );
-		sigaction( SIGXCPU, &sig, &old );
+		sighandler.setApplication(this);
 
 		g_thread_init(NULL);
 		loop = g_main_new(FALSE);
@@ -334,6 +296,18 @@ int Minbif::main(int argc, char** argv)
 	}
 
 	return EXIT_FAILURE;
+}
+
+void Minbif::rehash()
+{
+	if(!conf.Load())
+	{
+		b_log[W_ERR] << "Unable to load configuration, exiting..";
+		quit();
+	}
+	b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
+	if(server_poll)
+		server_poll->rehash();
 }
 
 void Minbif::quit()

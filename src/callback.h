@@ -54,6 +54,7 @@ private:
 };
 
 gboolean g_callback(void* data);
+gboolean g_callback_delete(void* data);
 void g_callback_input(void* data, gint n = 0, PurpleInputCondition input = (PurpleInputCondition)0);
 
 #endif /* CALLBACK_H */

@@ -26,6 +26,7 @@
 namespace irc {
 	class IRC;
 };
+
 class _CallBack;
 
 class DaemonForkServerPoll : public ServerPoll
@@ -34,7 +35,6 @@ class DaemonForkServerPoll : public ServerPoll
 	int sock;
 	int read_id;
 	_CallBack *read_cb;
-	_CallBack* stop_cb;
 
 public:
 
@@ -43,6 +43,7 @@ public:
 
 	bool new_client_cb(void*);
 
+	void rehash();
 	void kill(irc::IRC* irc);
 	bool stopServer_cb(void*);
 

@@ -16,36 +16,27 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef MINBIF_H
-#define MINBIF_H
+#ifndef SIGHANDLER_H
+#define SIGHANDLER_H
 
-#include <string>
+class Minbif;
 
-using std::string;
-
-class ServerPoll;
-struct _GMainLoop;
-
-class Minbif
+class SigHandler
 {
-	struct _GMainLoop *loop;
-	ServerPoll* server_poll;
-	string pidfile;
+	Minbif* app;
 
-	void usage(int argc, char** argv);
-	void version(void);
-	void remove_pidfile(void);
+	static void handler(int r);
+	bool rehash(void*);
+	bool quit(void*);
 
 public:
 
-	Minbif();
-	~Minbif();
+	SigHandler();
+	~SigHandler();
 
-	int main(int argc, char** argv);
-
-	void rehash();
-	void quit();
-
+	void setApplication(Minbif* app);
 };
 
-#endif /* MINBIF_H */
+extern SigHandler sighandler;
+
+#endif /* SIGHANDLER_H */

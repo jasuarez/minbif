@@ -29,8 +29,7 @@
 
 InetdServerPoll::InetdServerPoll(Minbif* application)
 	: ServerPoll(application),
-	  irc(NULL),
-	  stop_cb(NULL)
+	  irc(NULL)
 {
 	try
 	{
@@ -63,19 +62,22 @@ void InetdServerPoll::log(size_t level, string msg) const
 					 	     .addArg(msg));
 }
 
+void InetdServerPoll::rehash()
+{
+	if(irc)
+		irc->rehash();
+}
+
 void InetdServerPoll::kill(irc::IRC* irc)
 {
 	assert(irc == this->irc);
 
-	stop_cb = new CallBack<InetdServerPoll>(this, &InetdServerPoll::stopServer_cb);
-	g_timeout_add(0, g_callback, stop_cb);
+	_CallBack* stop_cb = new CallBack<InetdServerPoll>(this, &InetdServerPoll::stopServer_cb);
+	g_timeout_add(0, g_callback_delete, stop_cb);
 }
 
 bool InetdServerPoll::stopServer_cb(void*)
 {
-	delete stop_cb;
-	stop_cb = NULL;
-
 	delete irc;
 	irc = NULL;
 

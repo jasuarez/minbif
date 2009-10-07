@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 SET(BIN_NAME minbif)
 ADD_EXECUTABLE(${BIN_NAME}
 		src/minbif.cpp
+		src/sighandler.cpp
 		src/util.cpp
 		src/log.cpp
 		src/mutex.cpp
