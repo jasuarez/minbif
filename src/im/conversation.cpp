@@ -261,12 +261,14 @@ void Conversation::sendMessage(string text) const
 	{
 		/* Check if this protocol has registered the /me command. */
 		text = "/me " + text.substr(8, text.size() - 8 - 1);
-		char *escape = g_markup_escape_text(text.c_str() + 1, -1);
+		char *utf8 = purple_utf8_try_convert(text.c_str() + 1);
+		char *escape = g_markup_escape_text(utf8, -1);
 		char* error = NULL;
-		int status = purple_cmd_do_command(conv, text.c_str() + 1, escape, &error);
+		int status = purple_cmd_do_command(conv, utf8, escape, &error);
 
 		g_free(error);
 		g_free(escape);
+		g_free(utf8);
 
 		if(status == PURPLE_CMD_STATUS_OK)
 			return;
@@ -296,7 +298,8 @@ void Conversation::sendMessage(string text) const
 		return;
 	}
 
-	char *escape = g_markup_escape_text(text.c_str(), -1);
+	char *utf8 = purple_utf8_try_convert(text.c_str());
+	char *escape = g_markup_escape_text(utf8, -1);
 	char *apos = purple_strreplace(escape, "&apos;", "'");
 	g_free(escape);
 	escape = apos;
@@ -313,6 +316,7 @@ void Conversation::sendMessage(string text) const
 			break;
 	}
 	g_free(escape);
+	g_free(utf8);
 	purple_idle_touch();
 }
 
