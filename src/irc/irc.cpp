@@ -74,6 +74,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_SVSNICK, &IRC::m_svsnick, 2, 0, Nick::REGISTERED },
 	{ MSG_AWAY,    &IRC::m_away,    0, 0, Nick::REGISTERED },
 	{ MSG_MOTD,    &IRC::m_motd,    0, 0, Nick::REGISTERED },
+	{ MSG_WALLOPS, &IRC::m_wallops, 1, 0, Nick::REGISTERED },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
@@ -356,6 +357,7 @@ void IRC::cleanUpServers()
 
 void IRC::rehash()
 {
+	b_log[W_INFO|W_SNO] << "Configuration rehashed.";
 	setMotd(conf.GetSection("path")->GetItem("motd")->String());
 }
 
@@ -493,7 +495,6 @@ bool IRC::readIO(void*)
 	}
 	buf[r] = 0;
 	sbuf = buf;
-
 
 	while((line = stringtok(sbuf, "\r\n")).empty() == false)
 	{
@@ -1652,5 +1653,11 @@ void IRC::m_motd(Message message)
 	user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
 }
 
+/* WALLOPS :message */
+void IRC::m_wallops(Message message)
+{
+	poll->ipc_send(Message(MSG_WALLOPS).addArg(getUser()->getNickname())
+			                   .addArg(message.getArg(0)));
+}
 
 }; /* namespace irc */

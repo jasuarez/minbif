@@ -26,13 +26,16 @@
 
 #include "daemon_fork.h"
 #include "../config.h"
-#include "../irc/irc.h"
-#include "../irc/user.h"
+#include "irc/irc.h"
+#include "irc/user.h"
+#include "irc/message.h"
+#include "irc/replies.h"
 #include "../config.h"
 #include "../callback.h"
 #include "../log.h"
 #include "../minbif.h"
 #include "../util.h"
+#include "../sock.h"
 
 DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	: ServerPoll(application),
@@ -103,13 +106,36 @@ DaemonForkServerPoll::~DaemonForkServerPoll()
 		close(sock);
 
 	delete irc;
+
+	for(vector<child_t*>::iterator it = childs.begin(); it != childs.end(); ++it)
+	{
+		close((*it)->fd);
+		delete (*it)->read_cb;
+		g_source_remove((*it)->read_id);
+		delete *it;
+	}
 }
 
 bool DaemonForkServerPoll::new_client_cb(void*)
 {
 	struct sockaddr_in newcon;
-	unsigned int addrlen = sizeof newcon;
+	socklen_t addrlen = sizeof newcon;
 	int new_socket = accept(sock, (struct sockaddr *) &newcon, &addrlen);
+
+	if(new_socket < 0)
+	{
+		b_log[W_WARNING] << "Could not accept new connection: " << strerror(errno);
+		return true;
+	}
+
+	int fds[2];
+	if(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == -1)
+	{
+		b_log[W_WARNING] << "Unable to create IPC socket for client: " << strerror(errno);
+		fds[0] = fds[1] = -1;
+	}
+	sock_make_nonblocking(fds[0]);
+	sock_make_nonblocking(fds[1]);
 
 	pid_t client_pid = fork();
 
@@ -123,6 +149,16 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 		/* Parent */
 		b_log[W_INFO] << "Creating new process with pid " << client_pid;
 		close(new_socket);
+		if(fds[0] >= 0)
+		{
+			child_t* child = new child_t();
+			child->fd = fds[0];
+			child->read_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::ipc_read, child);
+			child->read_id = glib_input_add(child->fd, (PurpleInputCondition)PURPLE_INPUT_READ,
+						       g_callback_input, child->read_cb);
+			childs.push_back(child);
+			close(fds[1]);
+		}
 	}
 	else
 	{
@@ -130,9 +166,29 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 		close(sock);
 		sock = -1;
 		g_source_remove(read_id);
+		read_id = -1;
 		delete read_cb;
 		read_cb = NULL;
-		read_id = -1;
+
+		if(fds[1] >= 0)
+		{
+			sock = fds[1];
+			read_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::ipc_read);
+			read_id = glib_input_add(sock, (PurpleInputCondition)PURPLE_INPUT_READ,
+						       g_callback_input, read_cb);
+			close(fds[0]);
+
+			/* Cleanup all childs accumulated when I was parent. */
+			for(vector<child_t*>::iterator it = childs.begin(); it != childs.end();)
+			{
+				child_t* child = *it;
+				close(child->fd);
+				delete child->read_cb;
+				g_source_remove(child->read_id);
+				it = childs.erase(it);
+			}
+		}
+
 		try
 		{
 			irc = new irc::IRC(this, new_socket,
@@ -145,6 +201,120 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 			getApplication()->quit();
 		}
 	}
+	return true;
+}
+
+DaemonForkServerPoll::ipc_cmds_t DaemonForkServerPoll::ipc_cmds[] = {
+	{ MSG_WALLOPS,    &DaemonForkServerPoll::m_wallops },
+	{ MSG_REHASH,     &DaemonForkServerPoll::m_rehash },
+};
+
+void DaemonForkServerPoll::m_wallops(child_t* child, irc::Message m)
+{
+	if(child)
+		ipc_master_broadcast(m);
+	else if(irc)
+		irc->getUser()->send(irc::Message(MSG_WALLOPS).setSender(m.getArg(0))
+				                         .addArg(m.getArg(1)));
+}
+
+void DaemonForkServerPoll::m_rehash(child_t* child, irc::Message m)
+{
+	rehash();
+}
+
+bool DaemonForkServerPoll::ipc_read(void* data)
+{
+	child_t* child = NULL;
+	if(data)
+		child = static_cast<child_t*>(data);
+
+	static char buf[512];
+	ssize_t r;
+	int fd;
+	if(child)
+		fd = child->fd;
+	else
+		fd = sock;
+	if((r = recv(fd, buf, sizeof buf - 1, MSG_PEEK)) <= 0)
+	{
+		if(r < 0 && sockerr_again())
+			return true;
+		b_log[W_ERR] << "Error while receiving IPC data: " << strerror(errno);
+		if(child)
+		{
+			for(vector<child_t*>::iterator it = childs.begin(); it != childs.end();)
+				if(child->fd == (*it)->fd)
+					it = childs.erase(it);
+				else
+					++it;
+
+			g_source_remove(child->read_id);
+			delete child->read_cb;
+			delete child;
+		}
+		else
+		{
+			g_source_remove(read_id);
+			read_id = -1;
+			delete read_cb;
+			read_cb = NULL;
+			sock = -1;
+		}
+		return false;
+	}
+
+	buf[r] = 0;
+	char* eol;
+	if(!(eol = strstr(buf, "\r\n")))
+		return true;
+	else
+		r = eol - buf + 2;
+
+	if(recv(fd, buf, r, 0) != r)
+		return false;
+	buf[r - 2] = 0;
+
+	irc::Message m = irc::Message::parse(buf);
+
+	unsigned i = 0;
+	for(; i < (sizeof ipc_cmds / sizeof *ipc_cmds) && m.getCommand() != ipc_cmds[i].cmd; ++i)
+		;
+
+	if(i >= (sizeof ipc_cmds / sizeof *ipc_cmds))
+		return true;
+
+	(this->*ipc_cmds[i].func)(child, m);
+
+	return true;
+}
+
+void DaemonForkServerPoll::ipc_master_send(child_t* child, const irc::Message& m)
+{
+	string msg = m.format();
+	if(write(child->fd, msg.c_str(), msg.size()) <= 0)
+		b_log[W_ERR] << "Error while sending: " << strerror(errno);
+}
+
+void DaemonForkServerPoll::ipc_master_broadcast(const irc::Message& m)
+{
+	for(vector<child_t*>::iterator it = childs.begin(); it != childs.end(); ++it)
+		ipc_master_send(*it, m);
+}
+
+void DaemonForkServerPoll::ipc_child_send(const irc::Message& m)
+{
+	string msg = m.format();
+	if(write(sock, msg.c_str(), msg.size()) <= 0)
+		b_log[W_ERR] << "Error while sending: " << strerror(errno);
+}
+
+bool DaemonForkServerPoll::ipc_send(const irc::Message& m)
+{
+	if(irc)
+		ipc_child_send(m);
+	else
+		ipc_master_broadcast(m);
 	return true;
 }
 
@@ -169,6 +339,8 @@ void DaemonForkServerPoll::rehash()
 {
 	if(irc)
 		irc->rehash();
+	else
+		ipc_master_broadcast(irc::Message(MSG_REHASH));
 }
 
 void DaemonForkServerPoll::kill(irc::IRC* irc)

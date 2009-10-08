@@ -32,7 +32,7 @@ static bool _callback(void* data)
 }
 
 
-void g_callback_input(void* data, gint, PurpleInputCondition i)
+void g_callback_input(void* data, gint src, PurpleInputCondition i)
 {
 	_callback(data);
 }

@@ -29,6 +29,7 @@ class Minbif;
 namespace irc
 {
 	class IRC;
+	class Message;
 };
 
 class ServerPollError : public std::exception {};
@@ -57,6 +58,7 @@ public:
 
 	virtual void kill(irc::IRC* irc) = 0;
 	virtual void rehash() = 0;
+	virtual bool ipc_send(const irc::Message& m) { return false; }
 
 	virtual void log(size_t level, string string) const = 0;
 };

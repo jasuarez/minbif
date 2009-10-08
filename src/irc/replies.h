@@ -103,5 +103,7 @@
 #define MSG_NAMES       "NAMES"
 #define MSG_AWAY        "AWAY"
 #define MSG_MOTD        "MOTD"
+#define MSG_WALLOPS     "WALLOPS"
+#define MSG_REHASH      "REHASH"
 
 #endif /* IRC_REPLIES_H */

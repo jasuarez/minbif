@@ -25,16 +25,40 @@
 
 namespace irc {
 	class IRC;
+	class Message;
 };
 
 class _CallBack;
+using std::vector;
 
 class DaemonForkServerPoll : public ServerPoll
 {
+	struct child_t
+	{
+		int fd;
+		int read_id;
+		_CallBack* read_cb;
+	};
+
+	static struct ipc_cmds_t
+	{
+		const char* cmd;
+		void (DaemonForkServerPoll::*func) (child_t* child, irc::Message m);
+	} ipc_cmds[];
+
+	void m_wallops(child_t* child, irc::Message m);
+	void m_rehash(child_t* child, irc::Message m);
+
 	irc::IRC* irc;
 	int sock;
 	int read_id;
 	_CallBack *read_cb;
+	vector<child_t*> childs;
+
+	bool ipc_read(void*);
+	void ipc_master_send(child_t* child, const irc::Message& m);
+	void ipc_master_broadcast(const irc::Message& m);
+	void ipc_child_send(const irc::Message& m);
 
 public:
 
@@ -46,6 +70,7 @@ public:
 	void rehash();
 	void kill(irc::IRC* irc);
 	bool stopServer_cb(void*);
+	bool ipc_send(const irc::Message& msg);
 
 	void log(size_t level, string log) const;
 };
