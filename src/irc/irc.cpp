@@ -1400,6 +1400,7 @@ void IRC::m_mode(Message message)
 			return;
 		}
 		relayed.setReceiver(n);
+		n->m_mode(user, relayed);
 	}
 
 }

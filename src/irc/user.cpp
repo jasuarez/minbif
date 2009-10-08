@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,6 +18,7 @@
 
 #include <cstdio>
 #include "user.h"
+#include "server.h"
 
 namespace irc {
 
@@ -44,6 +46,26 @@ void User::send(Message msg)
 void User::setLastReadNow()
 {
 	last_read = time(NULL);
+}
+
+void User::m_mode(Nick* user, Message m)
+{
+	if(m.countArgs() == 0)
+	{
+		user->send(Message(RPL_UMODEIS).setSender(getServer())
+				               .setReceiver(user)
+					       .addArg(getModes()));
+		return;
+	}
+}
+
+string User::getModes() const
+{
+	string modes = "+";
+	if(hasFlag(OPER))
+		modes += "o";
+
+	return modes;
 }
 
 }; /* namespace irc */

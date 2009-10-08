@@ -28,6 +28,7 @@
 #define RPL_MAPEND      "017"
 #define RPL_STATSCOMMANDS "212"
 #define RPL_ENDOFSTATS  "219"
+#define RPL_UMODEIS     "221"
 #define RPL_ADMINME     "256"
 #define RPL_AWAY        "301"
 #define RPL_ISON        "303"
@@ -75,6 +76,7 @@
 #define ERR_PASSWDMISMATCH   "464"
 #define ERR_CHANFORWARDING   "470"
 #define ERR_NOPRIVILEGES     "481"
+#define ERR_UMODEUNKNOWNFLAG "501"
 
 #define MSG_PRIVMSG     "PRIVMSG"
 #define MSG_NOTICE      "NOTICE"

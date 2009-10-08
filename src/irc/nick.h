@@ -125,6 +125,13 @@ namespace irc
 		 */
 		void privmsg(Nick* to, string message);
 
+		/** Mode message
+		 *
+		 * @param sender  user who sent message
+		 * @param m  mode message
+		 */
+		virtual void m_mode(Nick* sender, Message m);
+
 		/** Get all channels user is on. */
 		vector<ChanUser*> getChannels() const;
 

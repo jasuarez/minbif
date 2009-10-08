@@ -20,6 +20,7 @@
 #include <algorithm>
 
 #include "nick.h"
+#include "server.h"
 #include "channel.h"
 #include "caca_image.h"
 #include "../util.h"
@@ -226,6 +227,13 @@ void Nick::privmsg(Nick* nick, string msg)
 	nick->send(Message(MSG_PRIVMSG).setSender(this)
 			               .setReceiver(nick)
 				       .addArg(msg));
+}
+
+void Nick::m_mode(Nick* user, Message m)
+{
+	user->send(Message(ERR_NOPRIVILEGES).setSender(getServer())
+					    .setReceiver(user)
+					    .addArg("Permission Denied: Insufficient privileges"));
 }
 
 }; /* namespace irc */
