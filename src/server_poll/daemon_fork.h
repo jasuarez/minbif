@@ -56,9 +56,9 @@ class DaemonForkServerPoll : public ServerPoll
 	vector<child_t*> childs;
 
 	bool ipc_read(void*);
-	void ipc_master_send(child_t* child, const irc::Message& m);
-	void ipc_master_broadcast(const irc::Message& m);
-	void ipc_child_send(const irc::Message& m);
+	bool ipc_master_send(child_t* child, const irc::Message& m);
+	bool ipc_master_broadcast(const irc::Message& m);
+	bool ipc_child_send(const irc::Message& m);
 
 public:
 

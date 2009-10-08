@@ -74,7 +74,9 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_SVSNICK, &IRC::m_svsnick, 2, 0, Nick::REGISTERED },
 	{ MSG_AWAY,    &IRC::m_away,    0, 0, Nick::REGISTERED },
 	{ MSG_MOTD,    &IRC::m_motd,    0, 0, Nick::REGISTERED },
-	{ MSG_WALLOPS, &IRC::m_wallops, 1, 0, Nick::REGISTERED },
+	{ MSG_OPER,    &IRC::m_oper,    2, 0, Nick::REGISTERED },
+	{ MSG_WALLOPS, &IRC::m_wallops, 1, 0, Nick::OPER },
+	{ MSG_REHASH,  &IRC::m_rehash,  0, 0, Nick::OPER },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
@@ -357,8 +359,8 @@ void IRC::cleanUpServers()
 
 void IRC::rehash()
 {
-	b_log[W_INFO|W_SNO] << "Configuration rehashed.";
 	setMotd(conf.GetSection("path")->GetItem("motd")->String());
+	b_log[W_INFO|W_SNO] << "Server configuration rehashed.";
 }
 
 void IRC::setMotd(const string& path)
@@ -519,9 +521,16 @@ bool IRC::readIO(void*)
 							   .addArg(m.getCommand())
 							   .addArg("Not enough parameters"));
 		else if(commands[i].flags && !user->hasFlag(commands[i].flags))
-			user->send(Message(ERR_NOTREGISTERED).setSender(this)
-							     .setReceiver(user)
-							     .addArg("Register first"));
+		{
+			if(commands[i].flags == Nick::REGISTERED)
+				user->send(Message(ERR_NOTREGISTERED).setSender(this)
+								     .setReceiver(user)
+								     .addArg("Register first"));
+			else
+				user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+						                    .setReceiver(user)
+								    .addArg("Permission Denied: Insufficient privileges"));
+		}
 		else
 		{
 			commands[i].count++;
@@ -710,6 +719,11 @@ void IRC::m_whois(Message message)
 					    .setReceiver(user)
 					    .addArg(n->getNickname())
 					    .addArg(n->getAwayMessage()));
+	if(n->hasFlag(Nick::OPER))
+		user->send(Message(RPL_WHOISOPERATOR).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(n->getNickname())
+						     .addArg("is an IRC Operator"));
 
 	CacaImage icon = n->getIcon();
 	try
@@ -1653,11 +1667,50 @@ void IRC::m_motd(Message message)
 	user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
 }
 
+/* OPER login password */
+void IRC::m_oper(Message message)
+{
+	vector<ConfigSection*> opers = conf.GetSection("irc")->GetSectionClones("oper");
+	for(vector<ConfigSection*>::iterator it = opers.begin(); it != opers.end(); ++it)
+	{
+		ConfigSection* oper = *it;
+
+		if(oper->GetItem("login")->String() == message.getArg(0) &&
+		   oper->GetItem("password")->String() == message.getArg(1))
+		{
+			user->setFlag(Nick::OPER);
+			user->send(Message(MSG_MODE).setSender(user)
+					            .setReceiver(user)
+						    .addArg("+o"));
+			user->send(Message(RPL_YOUREOPER).setSender(this)
+					                 .setReceiver(user)
+							 .addArg("You are now an IRC Operator"));
+			return;
+		}
+	}
+
+	user->send(Message(ERR_PASSWDMISMATCH).setSender(this)
+			                      .setReceiver(user)
+					      .addArg("Password incorrect"));
+}
+
 /* WALLOPS :message */
 void IRC::m_wallops(Message message)
 {
-	poll->ipc_send(Message(MSG_WALLOPS).addArg(getUser()->getNickname())
-			                   .addArg(message.getArg(0)));
+	if(!poll->ipc_send(Message(MSG_WALLOPS).addArg(getUser()->getNickname())
+			                       .addArg(message.getArg(0))))
+	{
+		b_log[W_ERR] << "You're alone!";
+	}
+}
+
+/* REHASH */
+void IRC::m_rehash(Message message)
+{
+	getUser()->send(Message(RPL_REHASHING).setSender(this)
+			                      .setReceiver(user)
+					      .addArg("Rehashing"));
+	poll->rehash();
 }
 
 }; /* namespace irc */

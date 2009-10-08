@@ -56,6 +56,7 @@ namespace irc
 		enum {
 			REGISTERED = 1 << 0,
 			PING       = 1 << 1,
+			OPER       = 1 << 2
 		};
 
 		/** Build the Nick object.

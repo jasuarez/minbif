@@ -35,6 +35,7 @@
 #define RPL_NOWAWAY     "306"
 #define RPL_WHOISUSER   "311"
 #define RPL_WHOISSERVER "312"
+#define RPL_WHOISOPERATOR "313"
 #define RPL_ENDOFWHO    "315"
 #define RPL_ENDOFWHOIS  "318"
 #define RPL_WHOISCHANNELS "319"
@@ -56,6 +57,8 @@
 #define RPL_MOTD        "372"
 #define RPL_MOTDSTART   "375"
 #define RPL_ENDOFMOTD   "376"
+#define RPL_YOUREOPER   "381"
+#define RPL_REHASHING   "382"
 
 #define ERR_NOSUCHNICK       "401"
 #define ERR_NOSUCHCHANNEL    "403"
@@ -69,6 +72,7 @@
 #define ERR_NOTREGISTERED    "451"
 #define ERR_NEEDMOREPARAMS   "461"
 #define ERR_ALREADYREGISTRED "462"
+#define ERR_PASSWDMISMATCH   "464"
 #define ERR_CHANFORWARDING   "470"
 #define ERR_NOPRIVILEGES     "481"
 
@@ -105,5 +109,6 @@
 #define MSG_MOTD        "MOTD"
 #define MSG_WALLOPS     "WALLOPS"
 #define MSG_REHASH      "REHASH"
+#define MSG_OPER        "OPER"
 
 #endif /* IRC_REPLIES_H */

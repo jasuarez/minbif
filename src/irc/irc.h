@@ -119,7 +119,9 @@ namespace irc
 		void m_svsnick(Message m);  /**< Handler for the SVSNICK message */
 		void m_away(Message m);     /**< Handler for the AWAY message */
 		void m_motd(Message m);     /**< Handler for the MOTD message */
+		void m_oper(Message m);     /**< Handler for the OPER message */
 		void m_wallops(Message m);  /**< Handler for the WALLOPS message */
+		void m_rehash(Message m);   /**< Handler for the REHASH message */
 
 	public:
 

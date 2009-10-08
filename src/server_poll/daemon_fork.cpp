@@ -289,33 +289,49 @@ bool DaemonForkServerPoll::ipc_read(void* data)
 	return true;
 }
 
-void DaemonForkServerPoll::ipc_master_send(child_t* child, const irc::Message& m)
+bool DaemonForkServerPoll::ipc_master_send(child_t* child, const irc::Message& m)
 {
+	if(!child)
+		return false;
+
 	string msg = m.format();
 	if(write(child->fd, msg.c_str(), msg.size()) <= 0)
+	{
 		b_log[W_ERR] << "Error while sending: " << strerror(errno);
+		return false;
+	}
+	return true;
 }
 
-void DaemonForkServerPoll::ipc_master_broadcast(const irc::Message& m)
+bool DaemonForkServerPoll::ipc_master_broadcast(const irc::Message& m)
 {
+	bool ret = false;
 	for(vector<child_t*>::iterator it = childs.begin(); it != childs.end(); ++it)
-		ipc_master_send(*it, m);
+		if(ipc_master_send(*it, m))
+			ret = true;
+	return ret;
 }
 
-void DaemonForkServerPoll::ipc_child_send(const irc::Message& m)
+bool DaemonForkServerPoll::ipc_child_send(const irc::Message& m)
 {
+	if(sock < 0)
+		return false;
+
 	string msg = m.format();
 	if(write(sock, msg.c_str(), msg.size()) <= 0)
+	{
 		b_log[W_ERR] << "Error while sending: " << strerror(errno);
+		return false;
+	}
+	return true;
 }
 
 bool DaemonForkServerPoll::ipc_send(const irc::Message& m)
 {
 	if(irc)
-		ipc_child_send(m);
+		return ipc_child_send(m);
 	else
-		ipc_master_broadcast(m);
-	return true;
+		return ipc_master_broadcast(m);
 }
 
 void DaemonForkServerPoll::log(size_t level, string msg) const

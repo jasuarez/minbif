@@ -141,10 +141,14 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 	section->AddItem(new ConfigItem_string("buddy_icons_url", "URL to display in /WHOIS to get a buddy icon", " "));
 
-	section = section->AddSection("daemon", "Daemon information", true);
-	section->AddItem(new ConfigItem_ipaddr("bind", "IP address to listen on"));
-	section->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
-	section->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
+	ConfigSection* sub = section->AddSection("daemon", "Daemon information", true);
+	sub->AddItem(new ConfigItem_ipaddr("bind", "IP address to listen on"));
+	sub->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
+	sub->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
+
+	sub = section->AddSection("oper", "Define an IRC operator", true);
+	sub->AddItem(new ConfigItem_string("login", "Nickname of IRC operator"), true);
+	sub->AddItem(new ConfigItem_string("password", "IRC operator password"));
 
 	section = conf.AddSection("file_transfers", "File transfers parameters", false);
 	section->AddItem(new ConfigItem_bool("enabled", "Enable file transfers", "true"));
