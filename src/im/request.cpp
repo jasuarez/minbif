@@ -277,6 +277,12 @@ void* Request::notify_userinfo(PurpleConnection *gc, const char *who, PurpleNoti
 	PurpleBuddy* buddy = purple_find_buddy(gc->account, who);
 	Buddy b(buddy);
 
+	if(!b.isValid())
+	{
+		b_log[W_ERR] << "Received WHOIS replies about unknown buddy " << who;
+		return NULL;
+	}
+
 	for (; l != NULL; l = l->next)
 	{
 		PurpleNotifyUserInfoEntry *user_info_entry = (PurpleNotifyUserInfoEntry*)l->data;
@@ -296,10 +302,12 @@ void* Request::notify_userinfo(PurpleConnection *gc, const char *who, PurpleNoti
 		else
 			text = string(":: ") + label + " ::";
 
-		user->send(irc::Message(RPL_WHOISACTUALLY).setSender(irc)
-					       .setReceiver(user)
-					       .addArg(b.getAlias())
-					       .addArg(text));
+		string line;
+		while((line = stringtok(text, "\r\n")).empty() == false)
+			user->send(irc::Message(RPL_WHOISACTUALLY).setSender(irc)
+						       .setReceiver(user)
+						       .addArg(b.getAlias())
+						       .addArg(line));
 	}
 	user->send(irc::Message(RPL_ENDOFWHOIS).setSender(irc)
 						  .setReceiver(user)

@@ -257,7 +257,6 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 				n->setNickname(n->getNickname() + "_");
 
 			Purple::getIM()->getIRC()->addNick(n);
-
 		}
 		/* If server overrides the IRC nickname as alias, force it.
 		 * WARN! This function probably recalls this one, so it is

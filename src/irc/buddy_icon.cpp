@@ -72,9 +72,9 @@ void BuddyIcon::send(Message m)
 bool BuddyIcon::receivedIcon(void* data)
 {
 	char* filename = static_cast<char*>(data);
-	b_log[W_INFO] << "New icon set!";
 	if(filename)
 		im->setBuddyIcon(filename);
+	b_log[W_SNO|W_INFO] << "New icon set!";
 	free(filename);
 	return true;
 }
