@@ -192,7 +192,7 @@ void Media::init()
 {
 #ifdef HAVE_VIDEO
 	GError *error = NULL;
-	if(!gst_init_check(NULL, NULL, &error))
+	if((gstreamer_init_failed = !gst_init_check(NULL, NULL, &error)))
 	{
 		b_log[W_ERR] << "Unable to initialize GStreamer: " << (error ? error->message : "");
 		if(error)
@@ -234,11 +234,15 @@ void Media::init()
 
 void Media::uninit()
 {
-
+#ifdef HAVE_VIDEO
+	if(!gstreamer_init_failed)
+		gst_deinit();
+#endif /* HAVE_VIDEO */
 }
 
 #ifdef HAVE_VIDEO
 MediaList Media::media_list;
+bool Media::gstreamer_init_failed = true;
 
 static void
 minbif_media_accept_cb(PurpleMedia *media, int index)

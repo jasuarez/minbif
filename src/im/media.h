@@ -72,6 +72,7 @@ namespace im {
 		irc::DCCChat* dcc;
 
 		static MediaList media_list;
+		static bool gstreamer_init_failed;
 
 		static GstElement *create_default_video_src(PurpleMedia *media,
 					const gchar *session_id, const gchar *participant);
