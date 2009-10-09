@@ -139,8 +139,8 @@ class Message:
 
     @staticmethod
     def parseline(line):
-        args = line.split(' ')
-        if not args:
+        args = line.split()
+        if not args or len(args) < 3:
             return None
 
         cmd = None
