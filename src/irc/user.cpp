@@ -57,6 +57,8 @@ void User::m_mode(Nick* user, Message m)
 					       .addArg(getModes()));
 		return;
 	}
+
+	/* TODO set personal modes. */
 }
 
 string User::getModes() const
