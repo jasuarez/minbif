@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 from __future__ import with_statement
 import sys
 import os
+import traceback
 from select import select
 from subprocess import Popen, PIPE, STDOUT
 from time import sleep, time
@@ -36,6 +37,22 @@ from structs import Account, Buddy
 
 NOBUFFER_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), 'libnobuffer.so'))
 MINBIF_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'build.minbif', 'minbif'))
+
+def getBacktrace(empty="Empty backtrace."):
+    """
+    Try to get backtrace as string.
+    Returns "Error while trying to get backtrace" on failure.
+    """
+    try:
+        info = sys.exc_info()
+        trace = traceback.format_exception(*info)
+        sys.exc_clear()
+        if trace[0] != "None\n":
+            return "".join(trace)
+    except:
+        # No i18n here (imagine if i18n function calls error...)
+        return "Error while trying to get backtrace"
+    return empty
 
 class Test:
     NAME = ''
@@ -97,6 +114,8 @@ class Test:
             except Exception, e:
                 ret = False
                 msg = '%s: %s' % (type(e).__name__, str(e))
+                for instance in self.INSTANCES.itervalues():
+                    instance.log(getBacktrace())
             if ret:
                 print '[Success]'
                 return True
@@ -185,6 +204,9 @@ class Instance:
         self.logs.append('%.3f %s' % (time(), s))
 
     def stop(self):
+        if not self.process:
+            return
+
         try:
             while self.readline(): pass
             self.write("QUIT")
@@ -240,6 +262,7 @@ class Instance:
             return self.login()
         except Exception, e:
             self.process = None
+            self.log(getBacktrace())
             sys.stdout.write("(%s) " % e)
             return False
 
