@@ -125,11 +125,15 @@ class Test:
         return False
 
     def rm_and_mkdir(self, path):
-        for root, dirs, files in os.walk(path, topdown=False):
-            for name in files:
-                os.remove(os.path.join(root, name))
-            for name in dirs:
-                os.rmdir(os.path.join(root, name))
+        try:
+            for root, dirs, files in os.walk(path, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+        except OSError, e:
+            print 'Error: unable to remove directory %s: %s' % (path, e)
+            return False
 
         try:
             os.rmdir(path)
