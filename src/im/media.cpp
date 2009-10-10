@@ -281,14 +281,19 @@ gboolean Media::minbif_media_ready_cb(PurpleMedia *media)
 				alias.c_str());
 	}
 
-#define _(x) x
+/* purple_request_accept_cancel is a macro and calls _() to translates
+ * buttons strings.
+ * There isn't (yet?) any translation system in Minbif, so the _ macro
+ * is defined to make minbif compiles.
+ */
+#define _
 	purple_request_accept_cancel(media, "Incoming Call",
 			message, NULL, PURPLE_DEFAULT_ACTION_NONE,
 			account, alias.c_str(), NULL,
 			media,
 			minbif_media_accept_cb,
 			minbif_media_reject_cb);
-	//minbif_media_emit_message(gtkmedia, message);
+#undef _
 	g_free(message);
 	return FALSE;
 }
@@ -315,8 +320,6 @@ void Media::minbif_media_state_changed_cb(PurpleMedia *media, PurpleMediaState s
 				gtkmedia);
 			purple_media_set_output_window(media, sid,
 					name, 0);
-
-			//minbif_media_ready_cb(media, gtkmedia, sid, name);
 		}
 	}
 }
@@ -333,21 +336,14 @@ minbif_media_stream_info_cb(PurpleMedia *media, PurpleMediaInfoType type,
 	}
 }
 
-
 gboolean Media::media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 		PurpleAccount *account, gchar *screenname, gpointer nul)
 {
 	PurpleBuddy *buddy = purple_find_buddy(account, screenname);
 	const gchar *alias = buddy ?
 			purple_buddy_get_contact_alias(buddy) : screenname;
-	//gtk_window_set_title(GTK_WINDOW(gtkmedia), alias);
 	b_log[W_INFO] << "Started video with " << alias;
 	media_list.addMedia(Media(media, Buddy(buddy)));
-
-	if (purple_media_is_initiator(media, NULL, NULL) == TRUE)
-	{
-
-	}
 
 	g_signal_connect(G_OBJECT(media), "error",
 		G_CALLBACK(minbif_media_error_cb), media);
@@ -355,8 +351,6 @@ gboolean Media::media_new_cb(PurpleMediaManager *manager, PurpleMedia *media,
 		G_CALLBACK(minbif_media_state_changed_cb), media);
 	g_signal_connect(G_OBJECT(media), "stream-info",
 		G_CALLBACK(minbif_media_stream_info_cb), media);
-
-		//gtk_widget_show(GTK_WIDGET(gtkmedia));
 
 	return TRUE;
 
@@ -397,11 +391,6 @@ GstElement *Media::create_default_video_src(PurpleMedia *media,
 	gst_element_add_pad(sendbin, ghost);
 
 	return sendbin;
-
-#if 0
-	b_log[W_ERR] << "Source video is not supported yet!";
-	return NULL;
-#endif
 }
 
 void Media::got_data(GstElement* object,
@@ -411,10 +400,6 @@ void Media::got_data(GstElement* object,
 {
 	try
 	{
-		static int i;
-		//if(++i != 5)
-		//	return;
-		i = 0;
 		gint w, h;
 		guint bpp = 0;
 		GstStructure* structure = gst_caps_get_structure (buffer->caps, 0);
@@ -435,57 +420,16 @@ void Media::got_data(GstElement* object,
 GstElement *Media::create_default_video_sink(PurpleMedia *media,
 			const gchar *session_id, const gchar *participant)
 {
-	GstElement *cacabin, *ffmpegcolorspace, *fakesink;
-
-	cacabin = gst_bin_new("minbifdefaultvideosink");
+	GstElement *ffmpegcolorspace, *fakesink;
 
 	ffmpegcolorspace = gst_element_factory_make("ffmpegcolorspace", NULL);
 	fakesink = gst_element_factory_make("fakesink", NULL);
 	g_object_set(G_OBJECT(fakesink), "signal-handoffs", TRUE, NULL);
 	g_signal_connect(fakesink, "handoff", G_CALLBACK(got_data), media);
 
-	//gst_bin_add_many(GST_BIN(cacabin), ffmpegcolorspace, fakesink, NULL);
 	gst_element_link_many(ffmpegcolorspace, fakesink, NULL);
 
 	return fakesink;
-	return cacabin;
-
-#if 0
-	GstElement *ssink = gst_element_factory_make("fakesink", NULL);
-	b_log[W_ERR] << "Create sink " << ssink;
-	//g_object_set (G_OBJECT (ssink), "location", "/home/rom1/blabla.avi", NULL);
-	g_object_set(G_OBJECT(ssink), "signal-handoffs", TRUE, NULL);
-	g_signal_connect(ssink, "handoff", G_CALLBACK(got_data), NULL);
-	return ssink;
-
-	GstElement *sendbin, *avimux, *sink;
-
-	sink = gst_element_factory_make("filesink", NULL);
-	if (sink == NULL)
-	{
-		b_log[W_ERR] << "Unable to find a suitable "
-				"element for the default video sink.";
-		return sink;
-	}
-	g_object_set (G_OBJECT (sink), "location", "/home/rom1/blabla.avi", NULL);
-	avimux = gst_element_factory_make("avimux", "mux");
-	GstElement* capsfilter = gst_element_factory_make("capsfilter", NULL);
-
-	sendbin = gst_bin_new("minbifdefaultvideosink");
-	gst_bin_add_many(GST_BIN(sendbin), capsfilter, avimux, sink, NULL);
-	gst_element_link_many(capsfilter, avimux, sink, NULL);
-
-//	GstCaps* caps = gst_caps_from_string("video/x-raw-yuv , width=[250,352] , "
-//			"height=[200,288] , framerate=[1/1,20/1]");
-//	g_object_set(G_OBJECT(capsfilter), "caps", caps, NULL);
-//
-//	GstPad* pad = gst_element_get_static_pad(capsfilter, "sink");
-//	GstPad* ghost = gst_ghost_pad_new("ghostsink", pad);
-//	gst_object_unref(pad);
-//	gst_element_add_pad(sendbin, ghost);
-
-	return sendbin;
-#endif
 }
 
 #endif /* HAVE_VIDEO */
