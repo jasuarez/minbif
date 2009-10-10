@@ -27,7 +27,9 @@
 #include "irc/user.h"
 #include "irc/message.h"
 #include "irc/conversation_channel.h"
+#include "irc/buddy.h"
 #include "irc/chat_buddy.h"
+#include "irc/unknown_buddy.h"
 #include "../log.h"
 
 namespace im {
@@ -332,8 +334,17 @@ void Conversation::recvMessage(string from, string text, bool action) const
 
 			if(!n)
 			{
-				b_log[W_WARNING] << "Received message from unknown budy " << from << ": " << text;
-				return;
+				/* If there isn't any conversation, try to find a buddy. */
+				n = irc->getNick(from);
+
+				if(!n || !dynamic_cast<irc::Buddy*>(n))
+				{
+					/* Ok, there isn't any buddy, so I create an unknown buddy to chat with him. */
+					n = new irc::UnknownBuddy(irc->getServer(getAccount().getServername()), *this);
+					while((irc->getNick(n->getNickname())))
+						n->setNickname(n->getNickname() + "_");
+					irc->addNick(n);
+				}
 			}
 
 			string line;
@@ -465,7 +476,13 @@ void Conversation::destroy(PurpleConversation* c)
 	switch(conv.getType())
 	{
 		case PURPLE_CONV_TYPE_IM:
+		{
+			irc::IRC* irc = Purple::getIM()->getIRC();
+			irc::UnknownBuddy* n = dynamic_cast<irc::UnknownBuddy*>(irc->getNick(conv));
+			if(n)
+				irc->removeNick(n->getNickname());
 			break;
+		}
 		case PURPLE_CONV_TYPE_CHAT:
 			conv.destroyChannel();
 			break;

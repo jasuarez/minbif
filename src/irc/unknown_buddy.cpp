@@ -18,69 +18,61 @@
 
 #include <cstring>
 
-#include "irc/chat_buddy.h"
-#include "irc/server.h"
+#include "irc/unknown_buddy.h"
 #include "im/account.h"
 #include "../util.h"
 
 namespace irc {
 
-ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
+UnknownBuddy::UnknownBuddy(Server* server, im::Conversation _conv)
 	: Nick(server, "","","",""),
-	  im_cbuddy(_cbuddy)
+	  conv(_conv)
 {
-	string hostname = im_cbuddy.getRealName();
+	string hostname = conv.getName();
 	string identname = stringtok(hostname, "@");
-	string nickname = im_cbuddy.getName();
+	string nickname = conv.getName();
 	if(nickname.find('@') != string::npos || nickname.find(' ') != string::npos)
 		nickname = nickize(identname);
 	else
 		nickname = nickize(nickname);
 	if(hostname.empty())
-		hostname = im_cbuddy.getAccount().getID();
+		hostname = conv.getAccount().getID();
 	else
-		hostname += ":" + im_cbuddy.getAccount().getID();
+		hostname += ":" + conv.getAccount().getID();
 
 	setNickname(nickname);
 	setIdentname(identname);
 	setHostname(hostname);
 }
 
-ChatBuddy::~ChatBuddy()
+UnknownBuddy::~UnknownBuddy()
 {
 	if(conv.isValid())
 		conv.leave();
 }
 
-void ChatBuddy::send(Message m)
+void UnknownBuddy::send(Message m)
 {
 	if(m.getCommand() == MSG_PRIVMSG)
 	{
 		string text = m.getArg(0);
-		if(m.getReceiver() == this)
-		{
-			if(!conv.isValid())
-			{
-				conv = im::Conversation(im_cbuddy.getAccount(), im_cbuddy);
-				conv.present();
-			}
+		if(m.getReceiver() == this && conv.isValid())
 			conv.sendMessage(text);
-		}
 	}
 }
 
-string ChatBuddy::getRealName() const
+string UnknownBuddy::getRealName() const
 {
-	return im_cbuddy.getName();
+	return conv.getName();
 }
 
-string ChatBuddy::getAwayMessage() const
+string UnknownBuddy::getAwayMessage() const
 {
 	/* TODO */
 	return "";
 }
 
-bool ChatBuddy::isAway() const
+bool UnknownBuddy::isAway() const
 {
 	/* TODO */
 	return false;

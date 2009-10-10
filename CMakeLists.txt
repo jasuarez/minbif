@@ -32,6 +32,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		src/irc/user.cpp
 		src/irc/buddy_icon.cpp
 		src/irc/buddy.cpp
+		src/irc/unknown_buddy.cpp
 		src/irc/chat_buddy.cpp
 		src/irc/channel.cpp
 		src/irc/status_channel.cpp
