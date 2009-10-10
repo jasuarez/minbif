@@ -175,8 +175,7 @@ sub typing_notice {
     my $channel = $window->get_active_name();
 
     if (exists($typing{$channel})) {
-        my $append=$typing{$channel}==2 ? " (stale)" : "";
-        $item->default_handler($get_size_only, "{sb typing$append}", 0, 1);
+        $item->default_handler($get_size_only, "{sb typing}", 0, 1);
     }
     else {
         $item->default_handler($get_size_only, "", 0, 1);
@@ -186,7 +185,6 @@ sub typing_notice {
         || Irssi::settings_get_bool("bitlbee_typing_allwin")) {
         foreach my $key (keys(%typing)) {
             $line .= " ".$key;
-            if ($typing{$key}==2) { $line .= " (stale)"; }
         }
         if ($line ne "") {
             $item->default_handler($get_size_only, "{sb typing:$line}", 0, 1);
