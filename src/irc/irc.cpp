@@ -142,7 +142,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 		ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
 	}
 
-	rehash();
+	rehash(false);
 
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("Minbif-IRCd initialized, please go on"));
 }
@@ -210,7 +210,7 @@ void IRC::cleanUpDCC()
 void IRC::addChannel(Channel* chan)
 {
 	if(channels.find(chan->getName()) != channels.end())
-		b_log[W_ERR] << "!!!!!WARNING!!!!! Channel " << chan->getName() << " already exists!";
+		b_log[W_DESYNCH] << "/!\\ Channel " << chan->getName() << " already exists!";
 	channels[chan->getName()] = chan;
 }
 
@@ -244,7 +244,7 @@ void IRC::cleanUpChannels()
 void IRC::addNick(Nick* nick)
 {
 	if(users.find(nick->getNickname()) != users.end())
-		b_log[W_ERR] << "!!!!!WARNING!!!!! User " << nick->getNickname() << " already exists!";
+		b_log[W_DESYNCH] << "/!\\ User " << nick->getNickname() << " already exists!";
 	users[nick->getNickname()] = nick;
 }
 
@@ -357,10 +357,11 @@ void IRC::cleanUpServers()
 	servers.clear();
 }
 
-void IRC::rehash()
+void IRC::rehash(bool verbose)
 {
 	setMotd(conf.GetSection("path")->GetItem("motd")->String());
-	b_log[W_INFO|W_SNO] << "Server configuration rehashed.";
+	if(verbose)
+		b_log[W_INFO|W_SNO] << "Server configuration rehashed.";
 }
 
 void IRC::setMotd(const string& path)
@@ -508,6 +509,7 @@ bool IRC::readIO(void*)
 		    ++i)
 			;
 
+		b_log[W_PARSE] << "IRC::R - " << line;
 		user->setLastReadNow();
 
 		if(i >= (sizeof commands / sizeof *commands))

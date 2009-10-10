@@ -159,7 +159,7 @@ namespace irc
 		Channel* getChannel(string channame) const;
 		void removeChannel(string channame);
 
-		void rehash();
+		void rehash(bool verbose = true);
 		void setMotd(const string& path);
 
 		void addNick(Nick* nick);
