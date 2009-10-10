@@ -1,3 +1,31 @@
+Minbif 1.0-beta2 (2009-10-10)
+	* CACAcam works.
+	* scripts/irssi/im_cacacam.pl: irssi script to display CACAcam in the
+	  buddy's query.
+	* Files send supported (/DCC SEND).
+	* Set accounts icon with /DCC SEND buddyicon.
+	* Daemon-fork mode supports IPv6.
+	* Display a MOTD at connection, or with the /MOTD command.
+	* Parameter irc/buddy_icons_url to display an URL to download icon in
+	  /WHOIS.
+	* /ADMIN away_idle (bool): enable/disable away when idling.
+	* /SVSNICK: reject invalid nicks.
+	* /MAP edit: edit an account.
+	* /OPER: authenticate as an IRC operator.
+	* /WALLOPS: oper command to send a wallops message to every launched
+	  minbif.
+	* /DIE: kill every minbif instances.
+	* /REHASH: reload configuration of every launched minbif.
+	* Handle SIGHUP signal to reload configuration file.
+	* IPC channel in daemon fork mode, to broadcast several commands.
+	* Wrote tests system.
+	* A buildbot is setup on http://buildbot.symlink.me
+	* Fix: join MSN channels when invited (it's still buggous, but doesn't
+	  crash anymore).
+	* Fix: memory leak with CACAImage.
+	* Fix: crash when an alias is overrided by server.
+	* Fix: iso-8859-15 charset crash.
+
 Minbif 1.0-beta (2009-09-28)
 	* Daemon fork mode.
 	* Ability to protect the minbif server with a password.
