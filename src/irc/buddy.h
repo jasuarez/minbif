@@ -58,6 +58,7 @@ namespace irc
 		virtual bool isOnline() const;
 
 		im::Buddy getBuddy() const { return im_buddy; }
+		im::Conversation getConversation() const { return conv; }
 
 		/** Get icon in an coloured ASCII-art form. */
 		virtual CacaImage getIcon() const;

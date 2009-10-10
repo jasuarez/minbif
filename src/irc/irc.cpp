@@ -35,6 +35,7 @@
 #include "irc.h"
 #include "settings.h"
 #include "buddy.h"
+#include "chat_buddy.h"
 #include "message.h"
 #include "user.h"
 #include "channel.h"
@@ -276,6 +277,23 @@ Nick* IRC::getNick(const im::Buddy& buddy) const
 	Buddy* nb;
 	for(it = users.begin();
 	    it != users.end() && (!(nb = dynamic_cast<Buddy*>(it->second)) || nb->getBuddy() != buddy);
+	    ++it)
+		;
+
+	if(it == users.end())
+		return NULL;
+	else
+		return it->second;
+}
+
+Nick* IRC::getNick(const im::Conversation& conv) const
+{
+	map<string, Nick*>::const_iterator it;
+	Buddy* nb;
+	ChatBuddy* cb;
+	for(it = users.begin();
+	    it != users.end() && (!(nb = dynamic_cast<Buddy*>(it->second)) || nb->getConversation() != conv)
+	                      && (!(cb = dynamic_cast<ChatBuddy*>(it->second)) || cb->getConversation() != conv);
 	    ++it)
 		;
 

@@ -34,6 +34,7 @@ namespace im
 {
 	class IM;
 	class Buddy;
+	class Conversation;
 	class FileTransfert;
 };
 
@@ -169,6 +170,7 @@ namespace irc
 		void addNick(Nick* nick);
 		Nick* getNick(string nick, bool case_sensitive = false) const;
 		Nick* getNick(const im::Buddy& buddy) const;
+		Nick* getNick(const im::Conversation& c) const;
 		void removeNick(string nick);
 		void renameNick(Nick* n, string newnick);
 

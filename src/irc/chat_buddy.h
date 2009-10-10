@@ -56,6 +56,8 @@ namespace irc
 		im::ChatBuddy getChatBuddy() const { return im_cbuddy; }
 		void setChatBuddy(im::ChatBuddy cb) { im_cbuddy = cb; }
 
+		im::Conversation getConversation() const { return conv; }
+
 		/** Get buddy's real name. */
 		virtual string getRealName() const;
 

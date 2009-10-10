@@ -328,7 +328,7 @@ void Conversation::recvMessage(string from, string text, bool action) const
 	{
 		case PURPLE_CONV_TYPE_IM:
 		{
-			irc::Nick* n = irc->getNick(from);
+			irc::Nick* n = irc->getNick(*this);
 
 			if(!n)
 			{
