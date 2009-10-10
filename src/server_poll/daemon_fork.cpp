@@ -221,8 +221,9 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 }
 
 DaemonForkServerPoll::ipc_cmds_t DaemonForkServerPoll::ipc_cmds[] = {
-	{ MSG_WALLOPS,    &DaemonForkServerPoll::m_wallops },
-	{ MSG_REHASH,     &DaemonForkServerPoll::m_rehash },
+	{ MSG_WALLOPS,    &DaemonForkServerPoll::m_wallops,  2 },
+	{ MSG_REHASH,     &DaemonForkServerPoll::m_rehash,   0 },
+	{ MSG_DIE,        &DaemonForkServerPoll::m_die,      2 },
 };
 
 void DaemonForkServerPoll::m_wallops(child_t* child, irc::Message m)
@@ -237,6 +238,18 @@ void DaemonForkServerPoll::m_wallops(child_t* child, irc::Message m)
 void DaemonForkServerPoll::m_rehash(child_t* child, irc::Message m)
 {
 	rehash();
+}
+
+void DaemonForkServerPoll::m_die(child_t* child, irc::Message m)
+{
+	if(child)
+		ipc_master_broadcast(m);
+
+	b_log[W_SNO|W_INFO] << "Shutdown requested by " << m.getArg(0) << ": " << m.getArg(1);
+	if(irc)
+		irc->quit("Shutdown requested by " + m.getArg(0));
+	else
+		getApplication()->quit();
 }
 
 bool DaemonForkServerPoll::ipc_read(void* data)
@@ -297,7 +310,16 @@ bool DaemonForkServerPoll::ipc_read(void* data)
 		;
 
 	if(i >= (sizeof ipc_cmds / sizeof *ipc_cmds))
+	{
+		b_log[W_WARNING] << "Received unknown command from IPC: " << buf;
 		return true;
+	}
+
+	if(m.countArgs() < ipc_cmds[i].min_args)
+	{
+		b_log[W_WARNING] << "Received malformated command from IPC: " << buf;
+		return true;
+	}
 
 	(this->*ipc_cmds[i].func)(child, m);
 
@@ -362,7 +384,7 @@ void DaemonForkServerPoll::log(size_t level, string msg) const
 		irc->getUser()->send(irc::Message(cmd).setSender(irc)
 							     .setReceiver(irc->getUser())
 							     .addArg(msg));
-	else
+	else if(!(level & W_SNO))
 		std::cout << msg << std::endl;
 }
 

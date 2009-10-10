@@ -122,6 +122,7 @@ namespace irc
 		void m_oper(Message m);     /**< Handler for the OPER message */
 		void m_wallops(Message m);  /**< Handler for the WALLOPS message */
 		void m_rehash(Message m);   /**< Handler for the REHASH message */
+		void m_die(Message m);      /**< Handler for the DIE message */
 
 	public:
 

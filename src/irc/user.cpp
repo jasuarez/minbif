@@ -19,7 +19,6 @@
 #include <cstdio>
 #include "user.h"
 #include "server.h"
-#include "../log.h"
 
 namespace irc {
 
@@ -40,7 +39,6 @@ void User::send(Message msg)
 	if(fd >= 0)
 	{
 		string s = msg.format();
-		b_log[W_PARSE] << "IRC::S - " << s;
 		write(fd, s.c_str(), s.size());
 	}
 }

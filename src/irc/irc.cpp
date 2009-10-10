@@ -77,6 +77,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_OPER,    &IRC::m_oper,    2, 0, Nick::REGISTERED },
 	{ MSG_WALLOPS, &IRC::m_wallops, 1, 0, Nick::OPER },
 	{ MSG_REHASH,  &IRC::m_rehash,  0, 0, Nick::OPER },
+	{ MSG_DIE,     &IRC::m_die,     1, 0, Nick::OPER },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
@@ -509,7 +510,6 @@ bool IRC::readIO(void*)
 		    ++i)
 			;
 
-		b_log[W_PARSE] << "IRC::R - " << line;
 		user->setLastReadNow();
 
 		if(i >= (sizeof commands / sizeof *commands))
@@ -1714,6 +1714,17 @@ void IRC::m_rehash(Message message)
 			                      .setReceiver(user)
 					      .addArg("Rehashing"));
 	poll->rehash();
+}
+
+/* DIE message */
+void IRC::m_die(Message message)
+{
+	if(!poll->ipc_send(Message(MSG_DIE).addArg(getUser()->getNickname())
+				           .addArg(message.getArg(0))))
+	{
+		b_log[W_INFO|W_SNO] << "This instance of MinBif is dying... Reason: " << message.getArg(0);
+		quit("Shutdown requested: " + message.getArg(0));
+	}
 }
 
 }; /* namespace irc */

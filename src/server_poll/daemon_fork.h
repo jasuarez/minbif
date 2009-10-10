@@ -44,10 +44,12 @@ class DaemonForkServerPoll : public ServerPoll
 	{
 		const char* cmd;
 		void (DaemonForkServerPoll::*func) (child_t* child, irc::Message m);
+		unsigned min_args;
 	} ipc_cmds[];
 
 	void m_wallops(child_t* child, irc::Message m);
 	void m_rehash(child_t* child, irc::Message m);
+	void m_die(child_t* child, irc::Message m);
 
 	irc::IRC* irc;
 	int sock;

@@ -111,6 +111,7 @@
 #define MSG_MOTD        "MOTD"
 #define MSG_WALLOPS     "WALLOPS"
 #define MSG_REHASH      "REHASH"
+#define MSG_DIE         "DIE"
 #define MSG_OPER        "OPER"
 
 #endif /* IRC_REPLIES_H */
