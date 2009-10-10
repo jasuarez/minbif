@@ -1674,6 +1674,14 @@ void IRC::m_motd(Message message)
 /* OPER login password */
 void IRC::m_oper(Message message)
 {
+	if(user->hasFlag(Nick::OPER))
+	{
+		user->send(Message(RPL_YOUREOPER).setSender(this)
+						 .setReceiver(user)
+						 .addArg("You are already an IRC Operator"));
+		return;
+	}
+
 	vector<ConfigSection*> opers = conf.GetSection("irc")->GetSectionClones("oper");
 	for(vector<ConfigSection*>::iterator it = opers.begin(); it != opers.end(); ++it)
 	{
@@ -1689,6 +1697,7 @@ void IRC::m_oper(Message message)
 			user->send(Message(RPL_YOUREOPER).setSender(this)
 					                 .setReceiver(user)
 							 .addArg("You are now an IRC Operator"));
+			poll->ipc_send(Message(MSG_OPER).addArg(user->getNickname()));
 			return;
 		}
 	}

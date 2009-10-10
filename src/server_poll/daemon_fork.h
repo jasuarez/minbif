@@ -50,6 +50,7 @@ class DaemonForkServerPoll : public ServerPoll
 	void m_wallops(child_t* child, irc::Message m);
 	void m_rehash(child_t* child, irc::Message m);
 	void m_die(child_t* child, irc::Message m);
+	void m_oper(child_t* child, irc::Message m);
 
 	irc::IRC* irc;
 	int sock;
@@ -59,7 +60,7 @@ class DaemonForkServerPoll : public ServerPoll
 
 	bool ipc_read(void*);
 	bool ipc_master_send(child_t* child, const irc::Message& m);
-	bool ipc_master_broadcast(const irc::Message& m);
+	bool ipc_master_broadcast(const irc::Message& m, child_t* butone = NULL);
 	bool ipc_child_send(const irc::Message& m);
 
 public:

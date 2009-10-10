@@ -224,7 +224,15 @@ DaemonForkServerPoll::ipc_cmds_t DaemonForkServerPoll::ipc_cmds[] = {
 	{ MSG_WALLOPS,    &DaemonForkServerPoll::m_wallops,  2 },
 	{ MSG_REHASH,     &DaemonForkServerPoll::m_rehash,   0 },
 	{ MSG_DIE,        &DaemonForkServerPoll::m_die,      2 },
+	{ MSG_OPER,       &DaemonForkServerPoll::m_oper,     1 },
 };
+
+void DaemonForkServerPoll::m_oper(child_t* child, irc::Message m)
+{
+	if(child)
+		ipc_master_broadcast(m, child);
+	b_log[W_SNO|W_INFO] << m.getArg(0) << " is now an IRC Operator!";
+}
 
 void DaemonForkServerPoll::m_wallops(child_t* child, irc::Message m)
 {
@@ -271,6 +279,7 @@ bool DaemonForkServerPoll::ipc_read(void* data)
 			return true;
 		if(child)
 		{
+			b_log[W_INFO] << "IPC: a child left: " << strerror(errno);
 			for(vector<child_t*>::iterator it = childs.begin(); it != childs.end();)
 				if(child->fd == (*it)->fd)
 					it = childs.erase(it);
@@ -283,6 +292,7 @@ bool DaemonForkServerPoll::ipc_read(void* data)
 		}
 		else
 		{
+			b_log[W_INFO|W_SNO] << "IPC: master left: " << strerror(errno);
 			g_source_remove(read_id);
 			read_id = -1;
 			delete read_cb;
@@ -340,11 +350,11 @@ bool DaemonForkServerPoll::ipc_master_send(child_t* child, const irc::Message& m
 	return true;
 }
 
-bool DaemonForkServerPoll::ipc_master_broadcast(const irc::Message& m)
+bool DaemonForkServerPoll::ipc_master_broadcast(const irc::Message& m, child_t* butone)
 {
 	bool ret = false;
 	for(vector<child_t*>::iterator it = childs.begin(); it != childs.end(); ++it)
-		if(ipc_master_send(*it, m))
+		if(butone != *it && ipc_master_send(*it, m))
 			ret = true;
 	return ret;
 }
