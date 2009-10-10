@@ -34,40 +34,6 @@
 #include "im/im.h"
 #include "server_poll/poll.h"
 
-/** This is a derived class from ConfigItem whose represent an IP address item */
-class ConfigItem_ipaddr : public ConfigItem
-{
-public:
-	ConfigItem_ipaddr(std::string _label, std::string _description, std::string def_value = "",
-		TCallBack cb = 0, MyConfig* _config = 0, ConfigSection* _parent = 0)
-		: ConfigItem(_label, _description, def_value, cb, _config, _parent)
-		{}
-
-	virtual ConfigItem* Clone() const
-	{
-		return new ConfigItem_ipaddr(Label(), Description(), DefValue(), CallBack(), GetConfig(), Parent());
-	}
-
-	/** We return a string form of this integer */
-	virtual std::string String() const { return value; }
-
-	virtual bool SetValue(std::string s)
-	{
-		if(!is_ip(s.c_str()))
-			return false;
-		value = s;
-		return true;
-	}
-
-	std::string ValueType() const
-	{
-		return "ip address";
-	}
-
-private:
-	string value;
-};
-
 /** This is a derived class from ConfigItem whose represent an integer range item */
 class ConfigItem_intrange : public ConfigItem_int
 {
@@ -142,7 +108,7 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_string("buddy_icons_url", "URL to display in /WHOIS to get a buddy icon", " "));
 
 	ConfigSection* sub = section->AddSection("daemon", "Daemon information", true);
-	sub->AddItem(new ConfigItem_ipaddr("bind", "IP address to listen on"));
+	sub->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
 	sub->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
 	sub->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
 

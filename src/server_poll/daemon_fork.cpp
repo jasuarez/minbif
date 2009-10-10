@@ -40,6 +40,7 @@
 DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	: ServerPoll(application),
 	  irc(NULL),
+	  sock(-1),
 	  read_cb(NULL)
 {
 	std::vector<ConfigSection*> sections = conf.GetSection("irc")->GetSectionClones("daemon");
@@ -50,9 +51,6 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	}
 
 	ConfigSection* section = sections[0];
-	const char* bind_addr = section->GetItem("bind")->String().c_str();
-	uint16_t port = (uint16_t)section->GetItem("port")->Integer();
-
 	if(section->GetItem("background")->Boolean())
 	{
 		int r = fork();
@@ -69,32 +67,50 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 		if(isatty(2)) close(2);
 	}
 
-	static struct sockaddr_in fsocket;
-	fsocket.sin_family = AF_INET;
-	fsocket.sin_addr.s_addr = inet_addr(bind_addr);
-	fsocket.sin_port = htons(port);
+	struct addrinfo *addrinfo_bind, *res, hints;
+	string bind_addr = section->GetItem("bind")->String();
+	uint16_t port = (uint16_t)section->GetItem("port")->Integer();
+	unsigned int reuse_addr = 1;
 
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if(sock < 0)
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	if(getaddrinfo(bind_addr.c_str(), t2s(port).c_str(), &hints, &addrinfo_bind))
 	{
-		b_log[W_ERR] << "Unable to create a socket: " << strerror(errno);
+		b_log[W_ERR] << "Could not parse address " << bind_addr << ":" << port;
 		throw ServerPollError();
 	}
 
-	unsigned int reuse_addr = 1;
+	for(res = addrinfo_bind; res && sock < 0;)
+		if((sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
+			res = res->ai_next;
+
+	if(sock < 0)
+	{
+		b_log[W_ERR] << "Unable to create a socket: " << strerror(errno);
+		goto out;
+	}
+
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof reuse_addr);
 
-	if(bind(sock, (struct sockaddr *) &fsocket, sizeof fsocket) < 0 ||
+	if(bind(sock, res->ai_addr, res->ai_addrlen) < 0 ||
 	   listen(sock, 5) < 0)
 	{
 		b_log[W_ERR] << "Unable to listen on " << bind_addr << ":" << port
-			     << ": " << strerror(errno);
-		throw ServerPollError();
+			     << ":" << sock << ": " << strerror(errno);
+		goto out;
 	}
 
 	read_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::new_client_cb);
 	read_id = glib_input_add(sock, (PurpleInputCondition)PURPLE_INPUT_READ,
 				       g_callback_input, read_cb);
+
+out:
+	freeaddrinfo(addrinfo_bind);
+	if(!read_cb)
+		throw ServerPollError();
 }
 
 DaemonForkServerPoll::~DaemonForkServerPoll()
@@ -240,7 +256,6 @@ bool DaemonForkServerPoll::ipc_read(void* data)
 	{
 		if(r < 0 && sockerr_again())
 			return true;
-		b_log[W_ERR] << "Error while receiving IPC data: " << strerror(errno);
 		if(child)
 		{
 			for(vector<child_t*>::iterator it = childs.begin(); it != childs.end();)
