@@ -88,8 +88,11 @@ namespace irc
 		void cleanUpServers();
 		void cleanUpDCC();
 
+
 		/** Callback when it receives a new incoming message from socket. */
 		bool readIO(void*);
+
+		bool check_channel_join(void*);
 
 		void m_nick(Message m);     /**< Handler for the NICK message */
 		void m_user(Message m);     /**< Handler for the USER message */

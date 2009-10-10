@@ -1304,6 +1304,7 @@ void IRC::m_join(Message message)
 									     .addArg("No such channel"));
 				}
 
+				g_timeout_add(500, g_callback_delete, new CallBack<IRC>(this, &IRC::check_channel_join, g_strdup(channame.c_str())));
 
 #if 0
 				chan = new ConversationChannel(this, conv);
@@ -1326,6 +1327,20 @@ void IRC::m_join(Message message)
 				break;
 		}
 	}
+}
+
+bool IRC::check_channel_join(void* data)
+{
+	char* name = static_cast<char*>(data);
+
+	if(!getChannel(name))
+		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+					             .setReceiver(user)
+					             .addArg(name)
+					             .addArg("No such channel"));
+
+	g_free(data);
+	return false;
 }
 
 /** PART chan [:message] */

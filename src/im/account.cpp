@@ -373,7 +373,7 @@ bool Account::joinChat(const string& name) const
 	assert(isValid());
 	if(!isConnected())
 	{
-		b_log[W_SNO] << "Not connected";
+		b_log[W_SNO|W_INFO] << "Not connected";
 		return false;
 	}
 
