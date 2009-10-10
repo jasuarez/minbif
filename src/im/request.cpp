@@ -218,7 +218,7 @@ void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
 	const char** texts[] = {&title, &primary, &secondary, NULL};
 	for(const char*** ptr = texts; *ptr != NULL; ++ptr)
 	{
-		if(!**ptr && !***ptr) continue;
+		if(!**ptr || !***ptr) continue;
 
 		string txt = **ptr, line;
 		if(!titled)
@@ -226,7 +226,7 @@ void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
 			titled = true;
 			if(txt.find("\n") == string::npos)
 			{
-				nick->privmsg(irc->getUser(), ":: " + line + " ::");
+				nick->privmsg(irc->getUser(), ":: " + txt + " ::");
 				continue;
 			}
 		}
@@ -248,7 +248,7 @@ void* Request::notify_formatted(const char *title, const char *primary, const ch
 	const char** texts[] = {&title, &primary, &secondary, (const char**) &text_stripped, NULL};
 	for(const char*** ptr = texts; *ptr != NULL; ++ptr)
 	{
-		if(!**ptr && !***ptr) continue;
+		if(!**ptr || !***ptr) continue;
 
 		string txt = **ptr, line;
 		if(!titled)
@@ -256,7 +256,7 @@ void* Request::notify_formatted(const char *title, const char *primary, const ch
 			titled = true;
 			if(txt.find("\n") == string::npos)
 			{
-				nick->privmsg(irc->getUser(), ":: " + line + " ::");
+				nick->privmsg(irc->getUser(), ":: " + txt + " ::");
 				continue;
 			}
 		}
