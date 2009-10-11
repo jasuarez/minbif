@@ -302,8 +302,6 @@ void Buddy::removed_node(PurpleBuddyList *list, PurpleBlistNode *node)
 		if(n)
 		{
 			n->quit("Removed");
-			if(n->getConversation().isValid() && n->getConversation().getNick() == n)
-				n->getConversation().setNick(NULL);
 			Purple::getIM()->getIRC()->removeNick(n->getNickname());
 		}
 	}

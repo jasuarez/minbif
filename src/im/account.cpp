@@ -412,8 +412,6 @@ bool Account::joinChat(const string& name) const
 	PurpleConnection *gc;
 	PurplePluginProtocolInfo *info;
 
-	b_log[W_ERR] << "Joining " << name;
-
 	gc = purple_account_get_connection(account);
 	info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl(gc));
 	if (info->chat_info_defaults != NULL)
@@ -799,13 +797,13 @@ void Account::disconnected(PurpleConnection* gc)
 		Conversation c((PurpleConversation*)list->data);
 		if(c.getAccount() != account)
 			continue;
-		/*if(purple_conv_chat_has_left(c.getPurpleChat()))
+		if(purple_conv_chat_has_left(c.getPurpleChat()))
 		{
 			string name = c.getName();
 			c.leave();
 			account.enqueueChannelJoin(name);
 		}
-		else*/
+		else
 			purple_conversation_set_data(c.getPurpleConversation(), "want-to-rejoin", GINT_TO_POINTER(TRUE));
 	}
 

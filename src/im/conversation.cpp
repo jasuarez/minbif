@@ -185,7 +185,7 @@ PurpleConversationType Conversation::getType() const
 	return purple_conversation_get_type(conv);
 }
 
-void Conversation::setNick(irc::Nick* n)
+void Conversation::setNick(irc::Nick* n, bool purge_unknown)
 {
 	assert(isValid());
 	assert(getType() == PURPLE_CONV_TYPE_IM);
@@ -195,7 +195,7 @@ void Conversation::setNick(irc::Nick* n)
 
 	if(last && last != n)
 	{
-		if(dynamic_cast<irc::UnknownBuddy*>(last))
+		if(purge_unknown && dynamic_cast<irc::UnknownBuddy*>(last))
 		{
 			irc::IRC* irc = Purple::getIM()->getIRC();
 			irc->removeNick(last->getNickname());
@@ -514,9 +514,14 @@ void Conversation::destroy(PurpleConversation* c)
 		case PURPLE_CONV_TYPE_IM:
 		{
 			irc::IRC* irc = Purple::getIM()->getIRC();
-			irc::UnknownBuddy* n = dynamic_cast<irc::UnknownBuddy*>(irc->getNick(conv));
+			irc::ConvNick* n = dynamic_cast<irc::ConvNick*>(irc->getNick(conv));
 			if(n)
-				irc->removeNick(n->getNickname());
+			{
+				conv.setNick(NULL);
+				if(dynamic_cast<irc::UnknownBuddy*>(n))
+					irc->removeNick(n->getNickname());
+				n->setConversation(Conversation());
+			}
 			break;
 		}
 		case PURPLE_CONV_TYPE_CHAT:

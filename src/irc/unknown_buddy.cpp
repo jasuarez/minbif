@@ -47,6 +47,8 @@ UnknownBuddy::UnknownBuddy(Server* server, im::Conversation _conv)
 
 UnknownBuddy::~UnknownBuddy()
 {
+	if(conv.isValid() && conv.getNick() == this)
+		conv.setNick(NULL, false);
 }
 
 void UnknownBuddy::send(Message m)

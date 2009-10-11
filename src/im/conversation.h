@@ -84,7 +84,7 @@ namespace im
 		Account getAccount() const;
 		PurpleConversationType getType() const;
 
-		void setNick(irc::Nick* n);
+		void setNick(irc::Nick* n, bool purge_unknown = true);
 		irc::Nick* getNick() const;
 
 		void createChannel() const;

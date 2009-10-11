@@ -48,6 +48,8 @@ ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
 
 ChatBuddy::~ChatBuddy()
 {
+	if(conv.isValid() && conv.getNick() == this)
+		conv.setNick(NULL);
 }
 
 void ChatBuddy::send(Message m)

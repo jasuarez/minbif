@@ -55,7 +55,10 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 }
 
 Buddy::~Buddy()
-{}
+{
+	if(conv.isValid() && conv.getNick() == this)
+		conv.setNick(NULL);
+}
 
 void Buddy::send(Message m)
 {
