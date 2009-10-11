@@ -39,8 +39,13 @@ Account::Account(PurpleAccount* _account, Protocol _proto)
 	: account(_account),
 	  proto(_proto)
 {
-	if(!proto.isValid())
-		proto = Purple::getProtocolByPurpleID(account->protocol_id);
+	if(account && !proto.isValid())
+	{
+		if(account && account->gc)
+			proto = Protocol(account->gc->prpl);
+		else
+			proto = Purple::getProtocolByPurpleID(account->protocol_id);
+	}
 }
 
 bool Account::operator==(const Account& account) const
@@ -52,7 +57,6 @@ bool Account::operator!=(const Account& account) const
 {
 	return !isValid() || !account.isValid() || account.account != this->account;
 }
-
 
 string Account::getUsername() const
 {

@@ -211,11 +211,12 @@ map<string, Account> Purple::getAccountsList()
 
 Protocol Purple::getProtocolByPurpleID(string id)
 {
-	map<string, Protocol> protocols = getProtocolsList();
+	GList* list = purple_plugins_get_protocols();
 
-	for(map<string, Protocol>::const_iterator it = protocols.begin(); it != protocols.end(); ++it)
-		if(it->second.getPurpleID() == id)
-			return it->second;
+	for(; list; list = list->next)
+		if(id == ((PurplePlugin*)list->data)->info->id)
+			return Protocol((PurplePlugin*)list->data);
+
 	return Protocol();
 }
 
