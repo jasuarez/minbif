@@ -1,0 +1,6 @@
+# Rename this file to config.py and replaces values
+
+from structs import Account
+
+ACCOUNTS = [Account('jabber', 'blah@jabber.fr, 'mypasswd'),
+            Account('msn', 'blah@hotmail.com', 'pppp')]

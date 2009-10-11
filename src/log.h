@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2008-2009 Laurent Defert, Romain Bignon
+ * Copyright(C) 2009 Laurent Defert, Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ enum
 {
 	W_DEBUG      = 1 << 0,			  /* Debug */
 	W_PARSE      = 1 << 1,			  /* Show parsing */
-	W_ROUTING    = 1 << 2,                    /* Routing information */
+	W_PURPLE     = 1 << 2,                    /* Routing information */
 	W_DESYNCH    = 1 << 3,			  /* Desynchronization */
 	W_WARNING    = 1 << 4,			  /* Warnings */
 	W_ERR        = 1 << 5,			  /* Errors */

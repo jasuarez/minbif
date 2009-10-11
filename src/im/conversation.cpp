@@ -27,7 +27,9 @@
 #include "irc/user.h"
 #include "irc/message.h"
 #include "irc/conversation_channel.h"
+#include "irc/buddy.h"
 #include "irc/chat_buddy.h"
+#include "irc/unknown_buddy.h"
 #include "../log.h"
 
 namespace im {
@@ -156,7 +158,12 @@ string Conversation::getChanName() const
 {
 	assert(isValid());
 
-	string n = "#" + getName() + ":" + getAccount().getID();
+	string name = getName();
+	for(string::iterator it = name.begin(); it != name.end(); ++it)
+		if(*it == ' ')
+			*it = '_';
+
+	string n = "#" + name + ":" + getAccount().getID();
 
 	return n;
 }
@@ -176,6 +183,31 @@ PurpleConversationType Conversation::getType() const
 {
 	assert(isValid());
 	return purple_conversation_get_type(conv);
+}
+
+void Conversation::setNick(irc::Nick* n)
+{
+	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_IM);
+
+	irc::Nick* last = getNick();
+	conv->ui_data = n;
+
+	if(last && last != n)
+	{
+		if(dynamic_cast<irc::UnknownBuddy*>(last))
+		{
+			irc::IRC* irc = Purple::getIM()->getIRC();
+			irc->removeNick(last->getNickname());
+		}
+	}
+}
+
+irc::Nick* Conversation::getNick() const
+{
+	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_IM);
+	return static_cast<irc::Nick*>(conv->ui_data);
 }
 
 void Conversation::present() const
@@ -225,7 +257,7 @@ void Conversation::createChannel() const
 	for (; l != NULL; l = l->next)
 	{
 		ChatBuddy cbuddy = ChatBuddy(conv, (PurpleConvChatBuddy *)l->data);
-		b_log[W_ERR] << cbuddy.getName();
+		b_log[W_DEBUG] << cbuddy.getName();
 	}
 }
 
@@ -248,10 +280,53 @@ PurpleConvIm* Conversation::getPurpleIm() const
 	return PURPLE_CONV_IM(conv);
 }
 
-void Conversation::sendMessage(string text) const
+void Conversation::sendMessage(string text)
 {
 	assert(isValid());
-	char *escape = g_markup_escape_text(text.c_str(), -1);
+
+	if(text.find("\001ACTION ") == 0)
+	{
+		/* Check if this protocol has registered the /me command. */
+		text = "/me " + text.substr(8, text.size() - 8 - 1);
+		char *utf8 = purple_utf8_try_convert(text.c_str() + 1);
+		char *escape = g_markup_escape_text(utf8, -1);
+		char* error = NULL;
+		int status = purple_cmd_do_command(conv, utf8, escape, &error);
+
+		g_free(error);
+		g_free(escape);
+		g_free(utf8);
+
+		if(status == PURPLE_CMD_STATUS_OK)
+			return;
+
+		/* If the /me command is not implemented for this protocol, just
+		 * continue to send message prefixed with /me. */
+	}
+
+	if(text.find("\001TYPING ") == 0)
+	{
+		string typing = text.substr(8, text.size() - 8 - 1);
+		int timeout;
+		if (typing == "1")
+		{
+				timeout = serv_send_typing(purple_conversation_get_gc(conv),
+							   purple_conversation_get_name(conv),
+							   PURPLE_TYPING);
+				purple_conv_im_set_type_again(getPurpleIm(), timeout);
+		}
+		else if (typing == "0")
+		{
+				purple_conv_im_stop_send_typed_timeout(getPurpleIm());
+				timeout = serv_send_typing(purple_conversation_get_gc(conv),
+							   purple_conversation_get_name(conv),
+							   PURPLE_NOT_TYPING);
+		}
+		return;
+	}
+
+	char *utf8 = purple_utf8_try_convert(text.c_str());
+	char *escape = g_markup_escape_text(utf8, -1);
 	char *apos = purple_strreplace(escape, "&apos;", "'");
 	g_free(escape);
 	escape = apos;
@@ -268,10 +343,11 @@ void Conversation::sendMessage(string text) const
 			break;
 	}
 	g_free(escape);
+	g_free(utf8);
 	purple_idle_touch();
 }
 
-void Conversation::recvMessage(string from, string text) const
+void Conversation::recvMessage(string from, string text, bool action)
 {
 	assert(isValid());
 	irc::IRC* irc = Purple::getIM()->getIRC();
@@ -279,19 +355,38 @@ void Conversation::recvMessage(string from, string text) const
 	{
 		case PURPLE_CONV_TYPE_IM:
 		{
-			irc::Nick* n = irc->getNick(from);
-
+			irc::Nick* n = getNick();
 			if(!n)
 			{
-				b_log[W_ERR] << "Received message from unknown budy " << from << ": " << text;
-				return;
+				/* There isn't any Nick associated to this conversation. Try to
+				 * find a Nick with this conversation object. */
+				n = irc->getNick(*this);
+				if(!n)
+				{
+					/* If there isn't any conversation, try to find a buddy. */
+					n = irc->getNick(from);
+
+					if(!n || !dynamic_cast<irc::Buddy*>(n))
+					{
+						/* Ok, there isn't any buddy, so I create an unknown buddy to chat with him. */
+						n = new irc::UnknownBuddy(irc->getServer(getAccount().getServername()), *this);
+						while((irc->getNick(n->getNickname())))
+							n->setNickname(n->getNickname() + "_");
+						irc->addNick(n);
+					}
+				}
+				setNick(n);
 			}
 
 			string line;
 			while((line = stringtok(text, "\n\r")).empty() == false)
+			{
+				if(action)
+					line = "\001ACTION " + line + "\001";
 				irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 									      .setReceiver(irc->getUser())
 									      .addArg(line));
+			}
 			break;
 		}
 		case PURPLE_CONV_TYPE_CHAT:
@@ -299,7 +394,7 @@ void Conversation::recvMessage(string from, string text) const
 			irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(getChanName()));
 			if(!chan)
 			{
-				b_log[W_ERR] << "Received message in unknown chat " << getChanName() << ": " << text;
+				b_log[W_WARNING] << "Received message in unknown chat " << getChanName() << ": " << text;
 				return;
 			}
 
@@ -317,6 +412,9 @@ void Conversation::recvMessage(string from, string text) const
 
 			string line;
 			while((line = stringtok(text, "\n\r")).empty() == false)
+			{
+				if(action)
+					line = "\001ACTION " + line + "\001";
 				if(n)
 					chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(n)
 										 .setReceiver(chan)
@@ -325,6 +423,7 @@ void Conversation::recvMessage(string from, string text) const
 					chan->broadcast(irc::Message(MSG_PRIVMSG).setSender(from)
 										 .setReceiver(chan)
 										 .addArg(line));
+			}
 			break;
 		}
 		default:
@@ -342,7 +441,7 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 	Conversation::write_im,
 	Conversation::write_conv,
 	Conversation::add_users,
-	NULL,//finch_chat_rename_user,
+	Conversation::chat_rename_user,
 	NULL,//Conversation::remove_users, use signal instead
 	NULL,//finch_chat_update_user,
 	Conversation::conv_present,//finch_conv_present, /* present */
@@ -368,6 +467,12 @@ void Conversation::init()
 				NULL);
 	purple_signal_connect(purple_conversations_get_handle(), "chat-buddy-leaving",
 				getHandler(), PURPLE_CALLBACK(remove_user),
+				NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "buddy-typing",
+			        getHandler(), PURPLE_CALLBACK(buddy_typing),
+				NULL);
+	purple_signal_connect(purple_conversations_get_handle(), "buddy-typing-stopped",
+			        getHandler(), PURPLE_CALLBACK(buddy_typing),
 				NULL);
 }
 
@@ -407,7 +512,13 @@ void Conversation::destroy(PurpleConversation* c)
 	switch(conv.getType())
 	{
 		case PURPLE_CONV_TYPE_IM:
+		{
+			irc::IRC* irc = Purple::getIM()->getIRC();
+			irc::UnknownBuddy* n = dynamic_cast<irc::UnknownBuddy*>(irc->getNick(conv));
+			if(n)
+				irc->removeNick(n->getNickname());
 			break;
+		}
 		case PURPLE_CONV_TYPE_CHAT:
 			conv.destroyChannel();
 			break;
@@ -426,9 +537,7 @@ void Conversation::write_im(PurpleConversation *c, const char *who,
 	if(flags & PURPLE_MESSAGE_RECV)
 	{
 		PurpleAccount *account = purple_conversation_get_account(c);
-		PurpleBuddy *buddy;
-		who = purple_conversation_get_name(c);
-		buddy = purple_find_buddy(account, who);
+		PurpleBuddy *buddy = purple_find_buddy(account, purple_conversation_get_name(c));
 		if (buddy)
 			who = purple_buddy_get_contact_alias(buddy);
 	}
@@ -445,6 +554,11 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 	if(flags & PURPLE_MESSAGE_RECV)
 	{
 		Conversation conv = Conversation(c);
+
+		bool action = false;
+		if(who && purple_message_meify((char*)message, -1))
+			action = true;
+
 		char* newline = purple_strdup_withhtml(message);
 		char* strip = purple_markup_strip_html(newline);
 		string from;
@@ -460,11 +574,11 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 					                             lt->tm_min,
 							             lt->tm_sec,
 							             strip);
-			conv.recvMessage(from, msg);
+			conv.recvMessage(from, msg, action);
 			g_free(msg);
 		}
 		else
-			conv.recvMessage(from, strip);
+			conv.recvMessage(from, strip ? strip : "", action);
 
 		g_free(strip);
 		g_free(newline);
@@ -501,8 +615,43 @@ void Conversation::remove_user(PurpleConversation* c, const char* cbname, const 
 		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
 		return;
 	}
-	irc::Nick* nick = chan->getChanUser(cbname)->getNick();
+	irc::ChanUser* cu = chan->getChanUser(cbname);
+	if(!cu)
+	{
+		b_log[W_ERR] << cbname << " tries to leave channel, but I don't know who is it!";
+		return;
+	}
+	irc::Nick* nick = cu->getNick();
 	nick->part(chan, reason ? reason : "");
+}
+
+void Conversation::chat_rename_user(PurpleConversation *c, const char *old,
+				    const char *new_n, const char *new_a)
+{
+	Conversation conv(c);
+	ChatBuddy cbuddy(conv, purple_conv_chat_cb_find(conv.getPurpleChat(), old));
+	if(!cbuddy.isValid())
+	{
+		b_log[W_ERR] << "Rename from " << old << " to " << new_n << " (" << new_a << ") which is an unknown chat buddy";
+		return;
+	}
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+	if(!chan)
+	{
+		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
+		return;
+	}
+
+	cbuddy = ChatBuddy(conv, purple_conv_chat_cb_find(conv.getPurpleChat(), new_n));
+	if(!cbuddy.isValid())
+	{
+		b_log[W_ERR] << "New chat buddy " << new_n << " (" << new_a << ") unknown";
+		return;
+	}
+	irc::ChanUser* chanuser = chan->getChanUser(old);
+	chan->renameBuddy(chanuser, cbuddy);
+
 }
 
 void Conversation::topic_changed(PurpleConversation* c, const char* who, const char* topic)
@@ -515,10 +664,37 @@ void Conversation::topic_changed(PurpleConversation* c, const char* who, const c
 		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
 		return;
 	}
-	irc::ChanUser* chanuser = 0;
+	irc::ChanUser* chanuser = NULL;
 	if(who)
-		chan->getChanUser(who);
+		chanuser = chan->getChanUser(who);
 	chan->setTopic(chanuser, topic ? topic : "");
+}
+
+void Conversation::buddy_typing(PurpleAccount* account, const char* who, gpointer null)
+{
+	if(!Purple::getIM()->hasTypingNotice())
+		return;
+
+	Conversation conv(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, account));
+	if(!conv.isValid() || who == NULL)
+		return;
+
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::Nick* n = conv.getNick();
+	if(!n)
+		n = irc->getNick(conv);
+	if(!n)
+		return;
+
+	PurpleConvIm *im = conv.getPurpleIm();
+	if(purple_conv_im_get_typing_state(im) == PURPLE_TYPING)
+		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+							 .setReceiver(irc->getUser())
+							 .addArg("\1TYPING 2\1"));
+	else
+		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+							 .setReceiver(irc->getUser())
+				                         .addArg("\1TYPING 0\1"));
 }
 
 }; /* namespace im */

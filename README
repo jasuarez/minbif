@@ -9,10 +9,11 @@ IRC-friendly instant messaging client.
 2. Installation
 
 You can provide several configuration options to make:
-* ENABLE_CACA=(0|1) — Do not use libcaca features to display icons (default=1)
+* ENABLE_CACA=(0|1) — Do not use libcaca features to display icons (default=1).
+* ENABLE_VIDEO=(0|1) — Enable the video viewer (default=0). Depends on ENABLE_CACA.
 
 Run:
-$ make [ENABLE_CACA=value]
+$ make [ENABLE_CACA=value] [ENABLE_VIDEO=value]
 
 It isn't possible to install minbif system-wide yet.
 
@@ -20,10 +21,12 @@ It isn't possible to install minbif system-wide yet.
 
 Copy the minbif.conf file and edit it.
 
-Then, edit your /etc/inetd.conf file, and add this line:
-  6667 stream tcp nowait <your-username> /usr/sbin/tcpd PATH_TO_/minbif/build.minbif/minbif PATH_TO_/minbif/minbif.conf
-
+In inetd mode, execute this command:
+# update-inetd --add '6667 stream tcp nowait username /usr/sbin/tcpd /usr/bin/minbif /etc/minbif/minbif.conf'
 Then, restart inetd, and use an IRC client to connect to minbif.
+
+In daemon fork mode, run minbif:
+# minbif /path/to/minbif.conf
 
 4. Documentation
 

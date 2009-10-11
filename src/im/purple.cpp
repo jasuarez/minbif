@@ -24,6 +24,10 @@
 #include "buddy.h"
 #include "conversation.h"
 #include "request.h"
+#include "ft.h"
+#include "media.h"
+#include "irc/irc.h"
+#include "irc/buddy_icon.h"
 #include "../version.h"
 #include "../log.h"
 #include "../util.h"
@@ -47,12 +51,14 @@ void Purple::debug(PurpleDebugLevel level, const char *category, const char *arg
 {
 	switch(level)
 	{
-		case PURPLE_DEBUG_WARNING:
-			b_log[W_DEBUG] << "[" << category << "] " << args;
+		case PURPLE_DEBUG_FATAL:
+			b_log[W_ERR] << "[" << category << "] " << args;
 			break;
 		case PURPLE_DEBUG_ERROR:
-		case PURPLE_DEBUG_FATAL:
-			b_log[W_WARNING] << "[" << category << "] " << args;
+			b_log[W_PURPLE] << "[" << category << "] " << args;
+			break;
+		case PURPLE_DEBUG_WARNING:
+			b_log[W_DEBUG] << "[" << category << "] " << args;
 			break;
 		default:
 			break;
@@ -81,21 +87,25 @@ void Purple::minbif_prefs_init()
 	purple_prefs_add_none("/minbif");
 
 	purple_prefs_add_string("/minbif/password", "");
+	purple_prefs_add_int("/minbif/typing_notice", 0);
 }
 
 GHashTable *Purple::ui_info = NULL;
 GHashTable *Purple::minbif_ui_get_info(void)
 {
-        if (ui_info == NULL) {
-                ui_info = g_hash_table_new(g_str_hash, g_str_equal);
+	if (ui_info == NULL)
+	{
+		ui_info = g_hash_table_new(g_str_hash, g_str_equal);
 
-                g_hash_table_insert(ui_info, (void*)"name",         (void*)MINBIF_VERSION_NAME);
-                g_hash_table_insert(ui_info, (void*)"version",      (void*)MINBIF_VERSION);
-                g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/minbif");
-                g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/minbif");
-        }
+		g_hash_table_insert(ui_info, (void*)"name",         (void*)MINBIF_VERSION_NAME);
+		g_hash_table_insert(ui_info, (void*)"version",      (void*)MINBIF_VERSION);
+		g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/minbif");
+		g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/minbif");
+		g_hash_table_insert(ui_info, (void*)"client_type",  (void*)"pc");
 
-        return ui_info;
+	}
+
+	return ui_info;
 }
 
 
@@ -134,30 +144,38 @@ void Purple::init(IM* im)
 
 	purple_set_blist(purple_blist_new());
 	purple_blist_load();
-
-	if (!purple_prefs_get_bool("/purple/savedstatus/startup_current_status"))
-		purple_savedstatus_activate(purple_savedstatus_get_startup());
-	purple_accounts_restore_current_statuses();
 }
 
 void Purple::inited()
 {
-	if(ui_info)
-		g_hash_table_destroy(ui_info);
 	Account::init();
 	Buddy::init();
 	Conversation::init();
 	Request::init();
+	FileTransfert::init();
+	Media::init();
+
+	irc::IRC* irc = getIM()->getIRC();
+	irc::BuddyIcon* bi = new irc::BuddyIcon(getIM(), irc);
+	irc->addNick(bi);
+
+	purple_prefs_set_bool("/purple/logging/log_ims", false);
+	purple_prefs_set_bool("/purple/logging/log_chats", false);
+	purple_prefs_set_bool("/purple/logging/log_system", false);
 }
 
 void Purple::uninit()
 {
 	assert(im != NULL);
 
+	if(ui_info)
+		g_hash_table_destroy(ui_info);
 	Account::uninit();
 	Buddy::uninit();
 	Conversation::uninit();
 	Request::uninit();
+	FileTransfert::uninit();
+	Media::uninit();
 }
 
 map<string, Protocol> Purple::getProtocolsList()
@@ -223,38 +241,13 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 {
 	string id = getNewAccountName(proto);
 	PurpleAccount *account = purple_account_new(username.c_str(), proto.getPurpleID().c_str());
-
 	purple_accounts_add(account);
 	purple_account_set_remember_password(account, TRUE);
-	purple_account_set_password(account, password.c_str());
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "id", id.c_str());
 
-	FOREACH(vector<Protocol::Option>, options, it)
-	{
-		Protocol::Option& option = *it;
-
-		switch(option.getType())
-		{
-			case PURPLE_PREF_STRING:
-				purple_account_set_string(account,
-						          option.getName().c_str(),
-							  option.getValue().c_str());
-				break;
-			case PURPLE_PREF_INT:
-				purple_account_set_int(account,
-						       option.getName().c_str(),
-						       option.getValueInt());
-				break;
-			case PURPLE_PREF_BOOLEAN:
-				purple_account_set_bool(account,
-						        option.getName().c_str(),
-							option.getValueBool());
-				break;
-			default:
-				/* not supported. */
-				break;
-		}
-	}
+	Account a(account);
+	a.setPassword(password);
+	a.setOptions(options);
 
 	const PurpleSavedStatus *saved_status;
 	saved_status = purple_savedstatus_get_current();
@@ -263,7 +256,7 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 		purple_account_set_enabled(account, MINBIF_VERSION_NAME, TRUE);
 	}
 
-	return Account(account, proto);
+	return a;
 }
 
 void Purple::delAccount(PurpleAccount* account)

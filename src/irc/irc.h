@@ -19,6 +19,7 @@
 #ifndef IRC_IRC_H
 #define IRC_IRC_H
 
+#include <stdint.h>
 #include <string>
 #include <map>
 #include <exception>
@@ -33,6 +34,8 @@ namespace im
 {
 	class IM;
 	class Buddy;
+	class Conversation;
+	class FileTransfert;
 };
 
 /** IRC related classes */
@@ -47,6 +50,7 @@ namespace irc
 	class User;
 	class Nick;
 	class Channel;
+	class DCC;
 
 	/** This class represents the user's server.
 	 *
@@ -67,6 +71,8 @@ namespace irc
 		map<string, Nick*> users;
 		map<string, Channel*> channels;
 		map<string, Server*> servers;
+		vector<DCC*> dccs;
+		vector<string> motd;
 
 		struct command_t
 		{
@@ -81,9 +87,13 @@ namespace irc
 		void cleanUpNicks();
 		void cleanUpChannels();
 		void cleanUpServers();
+		void cleanUpDCC();
+
 
 		/** Callback when it receives a new incoming message from socket. */
 		bool readIO(void*);
+
+		bool check_channel_join(void*);
 
 		void m_nick(Message m);     /**< Handler for the NICK message */
 		void m_user(Message m);     /**< Handler for the USER message */
@@ -100,15 +110,23 @@ namespace irc
 		void m_connect(Message m);  /**< Handler for the CONNECT message */
 		void m_squit(Message m);    /**< Handler for the SQUIT message */
 		void m_map(Message m);      /**< Handler for the MAP message */
+		void m_admin(Message m);    /**< Handler for the ADMIN message */
 		void m_join(Message m);     /**< Handler for the JOIN message */
 		void m_part(Message m);     /**< Handler for the PART message */
 		void m_list(Message m);     /**< Handler for the LIST message */
 		void m_mode(Message m);     /**< Handler for the MODE message */
+		void m_names(Message m);    /**< Handler for the NAMES message */
 		void m_ison(Message m);     /**< Handler for the ISON message */
 		void m_invite(Message m);   /**< Handler for the INVITE message */
 		void m_kick(Message m);     /**< Handler for the KICK message */
 		void m_kill(Message m);     /**< Handler for the KILL message */
 		void m_svsnick(Message m);  /**< Handler for the SVSNICK message */
+		void m_away(Message m);     /**< Handler for the AWAY message */
+		void m_motd(Message m);     /**< Handler for the MOTD message */
+		void m_oper(Message m);     /**< Handler for the OPER message */
+		void m_wallops(Message m);  /**< Handler for the WALLOPS message */
+		void m_rehash(Message m);   /**< Handler for the REHASH message */
+		void m_die(Message m);      /**< Handler for the DIE message */
 
 	public:
 
@@ -123,6 +141,8 @@ namespace irc
 		~IRC();
 
 		User* getUser() const { return user; }
+
+		im::IM* getIM() const { return im; }
 
 		/** Ends the auth sequence.
 		 *
@@ -144,14 +164,24 @@ namespace irc
 		Channel* getChannel(string channame) const;
 		void removeChannel(string channame);
 
+		void rehash(bool verbose = true);
+		void setMotd(const string& path);
+
 		void addNick(Nick* nick);
-		Nick* getNick(string nick) const;
+		Nick* getNick(string nick, bool case_sensitive = false) const;
 		Nick* getNick(const im::Buddy& buddy) const;
+		Nick* getNick(const im::Conversation& c) const;
 		void removeNick(string nick);
+		void renameNick(Nick* n, string newnick);
 
 		void addServer(Server* server);
 		Server* getServer(string server) const;
 		void removeServer(string server);
+
+		DCC* createDCCSend(const im::FileTransfert& ft, Nick* from);
+		DCC* createDCCGet(Nick* from, string filename, uint32_t addr,
+				  uint16_t port, ssize_t size, _CallBack* callback);
+		void updateDCC(const im::FileTransfert& ft, bool destroy = false);
 
 		/** Callback used by glibc to check user ping */
 		bool ping(void*);

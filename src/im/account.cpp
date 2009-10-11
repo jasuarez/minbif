@@ -60,6 +60,97 @@ string Account::getUsername() const
 	return account->username;
 }
 
+string Account::getPassword() const
+{
+	assert(isValid());
+	return purple_account_get_password(account);
+}
+
+void Account::setPassword(string password)
+{
+	assert(isValid());
+	purple_account_set_password(account, password.c_str());
+}
+
+vector<Protocol::Option> Account::getOptions() const
+{
+	assert(isValid());
+
+	vector<Protocol::Option> options = getProtocol().getOptions();
+	FOREACH(vector<Protocol::Option>, options, it)
+	{
+		Protocol::Option& option = *it;
+		switch(option.getType())
+		{
+			case PURPLE_PREF_STRING:
+				option.setValue(purple_account_get_string(account, option.getName().c_str(), option.getValue().c_str()));
+				break;
+			case PURPLE_PREF_INT:
+				option.setValue(t2s(purple_account_get_int(account, option.getName().c_str(), option.getValueInt())));
+				break;
+			case PURPLE_PREF_BOOLEAN:
+				option.setValue(purple_account_get_bool(account, option.getName().c_str(), option.getValueBool()) ? "true" : "false");
+				break;
+			default:
+				/* not supported. */
+				break;
+		}
+	}
+	return options;
+}
+
+void Account::setOptions(vector<Protocol::Option>& options)
+{
+	assert(isValid());
+	FOREACH(vector<Protocol::Option>, options, it)
+	{
+		Protocol::Option& option = *it;
+
+		switch(option.getType())
+		{
+			case PURPLE_PREF_STRING:
+				purple_account_set_string(account,
+						          option.getName().c_str(),
+							  option.getValue().c_str());
+				break;
+			case PURPLE_PREF_INT:
+				purple_account_set_int(account,
+						       option.getName().c_str(),
+						       option.getValueInt());
+				break;
+			case PURPLE_PREF_BOOLEAN:
+				purple_account_set_bool(account,
+						        option.getName().c_str(),
+							option.getValueBool());
+				break;
+			default:
+				/* not supported. */
+				break;
+		}
+	}
+
+}
+
+void Account::setBuddyIcon(const string& filename)
+{
+	assert(isValid());
+	PurplePlugin *plug = purple_find_prpl(purple_account_get_protocol_id(account));
+	if (plug) {
+		PurplePluginProtocolInfo *prplinfo = PURPLE_PLUGIN_PROTOCOL_INFO(plug);
+		if (prplinfo != NULL &&
+		    purple_account_get_bool(account, "use-global-buddyicon", TRUE) &&
+		    prplinfo->icon_spec.format) {
+			gchar *contents;
+			gsize len;
+			if (g_file_get_contents(filename.c_str(), &contents, &len, NULL))
+				purple_buddy_icons_set_account_icon(account, (guchar *)contents, len);
+
+			purple_account_set_buddy_icon_path(account, filename.c_str());
+		}
+	}
+
+}
+
 string Account::getID() const
 {
 	assert(isValid());
@@ -160,7 +251,34 @@ void Account::connect() const
 void Account::disconnect() const
 {
 	assert(isValid());
+	removeReconnection(true);
 	purple_account_set_enabled(account, MINBIF_VERSION_NAME, false);
+}
+
+int Account::delayReconnect() const
+{
+	int delay = purple_account_get_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", 15);
+	delay *= 2;
+
+	int id = g_timeout_add_seconds(delay, Account::reconnect, account);
+
+	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", delay);
+	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", id);
+	return delay;
+}
+
+void Account::removeReconnection(bool verbose) const
+{
+	int id = purple_account_get_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
+	if(id >= 0)
+	{
+		g_source_remove(id);
+		if(verbose)
+			b_log[W_INFO|W_SNO] << "Abort auto-reconnection to " << getServername();
+	}
+
+	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", 15);
+	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
 }
 
 void Account::createStatusChannel() const
@@ -256,7 +374,7 @@ bool Account::joinChat(const string& name) const
 	assert(isValid());
 	if(!isConnected())
 	{
-		b_log[W_SNO] << "Not connected";
+		b_log[W_SNO|W_INFO] << "Not connected";
 		return false;
 	}
 
@@ -357,11 +475,11 @@ PurpleConnectionUiOps Account::conn_ops =
 
 PurpleAccountUiOps Account::acc_ops =
 {
-        NULL,//notify_added,
+        notify_added,
         NULL,
-        NULL,//request_add,
-        NULL,//finch_request_authorize,
-        NULL,//finch_request_close,
+        request_add,
+        request_authorize,
+        request_close,
         NULL,
         NULL,
         NULL,
@@ -403,6 +521,13 @@ void Account::uninit()
 	purple_signals_disconnect_by_handle(getHandler());
 }
 
+gboolean Account::reconnect(void* data)
+{
+	Account acc((PurpleAccount*)data);
+	acc.connect();
+	return FALSE;
+}
+
 void Account::account_added(PurpleAccount* account)
 {
 }
@@ -411,7 +536,198 @@ void Account::account_removed(PurpleAccount* a)
 {
 	Account account(a);
 	account.abortChannelJoins();
+	account.removeReconnection();
 	account.leaveStatusChannel();
+}
+
+static char *make_info(PurpleAccount *account, PurpleConnection *gc, const char *remote_user,
+		  const char *id, const char *alias, const char *msg)
+{
+	if (msg != NULL && *msg == '\0')
+		msg = NULL;
+
+	return g_strdup_printf("%s%s%s%s has made %s his or her buddy%s%s",
+			remote_user,
+			(alias != NULL ? " ("  : ""),
+			(alias != NULL ? alias : ""),
+			(alias != NULL ? ")"   : ""),
+			(id != NULL
+				? id
+				: (purple_connection_get_display_name(gc) != NULL
+				   ? purple_connection_get_display_name(gc)
+				   : purple_account_get_username(account))),
+			(msg != NULL ? ": " : "."),
+			(msg != NULL ? msg  : ""));
+}
+
+typedef struct
+{
+	PurpleAccount *account;
+	char *username;
+	char *alias;
+} AddUserData;
+
+static void
+free_add_user_data(AddUserData *data)
+{
+	g_free(data->username);
+
+	if (data->alias != NULL)
+		g_free(data->alias);
+
+	g_free(data);
+}
+
+static void
+add_user_cb(AddUserData *data)
+{
+	PurpleConnection *gc = purple_account_get_connection(data->account);
+
+	if (g_list_find(purple_connections_get_all(), gc))
+	{
+		purple_blist_request_add_buddy(data->account, data->username,
+									 NULL, data->alias);
+	}
+
+	free_add_user_data(data);
+}
+
+void Account::notify_added(PurpleAccount *account, const char *remote_user,
+				const char *id, const char *alias,
+				const char *msg)
+{
+	char *buffer;
+	PurpleConnection *gc;
+
+	gc = purple_account_get_connection(account);
+
+	buffer = make_info(account, gc, remote_user, id, alias, msg);
+
+	purple_notify_info(NULL, NULL, buffer, NULL);
+
+	g_free(buffer);
+}
+
+void Account::request_add(PurpleAccount *account, const char *remote_user,
+			  const char *id, const char *alias,
+			  const char *msg)
+{
+	char *buffer;
+	PurpleConnection *gc;
+	AddUserData *data;
+
+	gc = purple_account_get_connection(account);
+
+	data = g_new0(AddUserData, 1);
+	data->account  = account;
+	data->username = g_strdup(remote_user);
+	data->alias    = (alias != NULL ? g_strdup(alias) : NULL);
+
+	buffer = make_info(account, gc, remote_user, id, alias, msg);
+	purple_request_action(NULL, NULL, "Add buddy to your list?",
+	                    buffer, PURPLE_DEFAULT_ACTION_NONE,
+						account, remote_user, NULL,
+						data, 2,
+	                    "Add",    G_CALLBACK(add_user_cb),
+	                    "Cancel", G_CALLBACK(free_add_user_data));
+	g_free(buffer);
+
+}
+
+typedef struct {
+	PurpleAccountRequestAuthorizationCb auth_cb;
+	PurpleAccountRequestAuthorizationCb deny_cb;
+	void *data;
+	char *username;
+	char *alias;
+	PurpleAccount *account;
+} auth_and_add;
+
+static void
+free_auth_and_add(auth_and_add *aa)
+{
+	g_free(aa->username);
+	g_free(aa->alias);
+	g_free(aa);
+}
+
+static void
+authorize_and_add_cb(auth_and_add *aa)
+{
+	aa->auth_cb(aa->data);
+	purple_blist_request_add_buddy(aa->account, aa->username,
+		                       NULL, aa->alias);
+	free_auth_and_add(aa);
+}
+
+static void
+deny_no_add_cb(auth_and_add *aa)
+{
+	aa->deny_cb(aa->data);
+	free_auth_and_add(aa);
+}
+
+void *Account::request_authorize(PurpleAccount *account,
+				const char *remote_user,
+				const char *id,
+				const char *alias,
+				const char *message,
+				gboolean on_list,
+				PurpleAccountRequestAuthorizationCb auth_cb,
+				PurpleAccountRequestAuthorizationCb deny_cb,
+				void *user_data)
+{
+	char *buffer;
+	PurpleConnection *gc;
+	void *uihandle;
+
+	gc = purple_account_get_connection(account);
+	if (message != NULL && *message == '\0')
+		message = NULL;
+
+	buffer = g_strdup_printf("%s%s%s%s wants to add %s to his or her buddy list%s%s",
+				remote_user,
+		                (alias != NULL ? " ("  : ""),
+		                (alias != NULL ? alias : ""),
+		                (alias != NULL ? ")"   : ""),
+		                (id != NULL
+		                ? id
+		                : (purple_connection_get_display_name(gc) != NULL
+		                ? purple_connection_get_display_name(gc)
+		                : purple_account_get_username(account))),
+		                (message != NULL ? ": " : "."),
+		                (message != NULL ? message  : ""));
+	if (!on_list) {
+		auth_and_add *aa = g_new(auth_and_add, 1);
+
+		aa->auth_cb = auth_cb;
+		aa->deny_cb = deny_cb;
+		aa->data = user_data;
+		aa->username = g_strdup(remote_user);
+		aa->alias = g_strdup(alias);
+		aa->account = account;
+
+		uihandle = purple_request_action(NULL, "Authorize buddy?", buffer, NULL,
+			PURPLE_DEFAULT_ACTION_NONE,
+			account, remote_user, NULL,
+			aa, 2,
+			"Authorize", authorize_and_add_cb,
+			"Deny", deny_no_add_cb);
+	} else {
+		uihandle = purple_request_action(NULL, "Authorize buddy?", buffer, NULL,
+			PURPLE_DEFAULT_ACTION_NONE,
+			account, remote_user, NULL,
+			user_data, 2,
+			"Authorize", auth_cb,
+			"Deny", deny_cb);
+	}
+	g_free(buffer);
+	return uihandle;
+}
+
+void Account::request_close(void *uihandle)
+{
+	purple_request_close(PURPLE_REQUEST_ACTION, uihandle);
 }
 
 void Account::connecting(PurpleConnection *gc,
@@ -430,6 +746,7 @@ void Account::connecting(PurpleConnection *gc,
 void Account::connected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
+	account.removeReconnection();
 	irc::IRC* irc = Purple::getIM()->getIRC();
 
 	b_log[W_INFO|W_SNO] << "Connection to " << account.getServername() << " established!";
@@ -501,8 +818,10 @@ void Account::disconnect_reason(PurpleConnection *gc,
 				PurpleConnectionError reason,
 				const char *text)
 {
-	Account account(gc->account);
-	b_log[W_ERR|W_SNO] << "Error(" << account.getServername() << "): " << text;
+	Account acc(gc->account);
+	int delay = acc.delayReconnect();
+	b_log[W_ERR|W_SNO] << "Error(" << acc.getServername() << "): " << text;
+	b_log[W_ERR|W_SNO] << "Reconnection in " << delay << " seconds";
 }
 
 }; /* namespace im */

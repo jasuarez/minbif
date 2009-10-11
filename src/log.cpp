@@ -31,16 +31,17 @@ static struct
 	uint32_t flag;
 	int level;
 	const char* s;
+	bool sys_log;
 } all_flags[] =
 {
-	{ W_SNO,        LOG_NOTICE,  ""           },
-	{ W_DEBUG,      LOG_DEBUG,   "DEBUG"      },
-	{ W_PARSE,      LOG_DEBUG,   "PARSE"      },
-	{ W_ROUTING,    LOG_DEBUG,   "ROUTING"    },
-	{ W_DESYNCH,    LOG_WARNING, "DESYNCH"    },
-	{ W_WARNING,    LOG_WARNING, "WARNING"    },
-	{ W_ERR,        LOG_ERR,     "ERR"        },
-	{ W_INFO,       LOG_NOTICE,  "INFO"       },
+	{ W_SNO,        LOG_NOTICE,  ""       , false    },
+	{ W_DEBUG,      LOG_DEBUG,   "DEBUG"  , false    },
+	{ W_PARSE,      LOG_DEBUG,   "PARSE"  , false    },
+	{ W_PURPLE,     LOG_DEBUG,   "PURPLE" , false    },
+	{ W_DESYNCH,    LOG_WARNING, "DESYNCH", false    },
+	{ W_WARNING,    LOG_WARNING, "WARNING", false    },
+	{ W_ERR,        LOG_ERR,     "ERR"    , true     },
+	{ W_INFO,       LOG_NOTICE,  "INFO"   , false    },
 };
 
 Log::flux::~flux()
@@ -57,7 +58,7 @@ Log::flux::~flux()
 		syslog(LOG_WARNING, "[SYSLOG] (%X) Unable to find how to log this message: %s", (uint32_t)flag, str.c_str());
 	else
 	{
-		if((all_flags[i].level == LOG_ERR || all_flags[i].level == LOG_WARNING) && b_log.ToSyslog())
+		if(all_flags[i].sys_log && b_log.ToSyslog())
 			syslog(all_flags[i].level, "[%s] %s", all_flags[i].s, str.c_str());
 
 		struct timeval t;
@@ -72,7 +73,7 @@ Log::flux::~flux()
 		if(b_log.getServerPoll())
 			b_log.getServerPoll()->log(flag, category + str);
 		else
-			std::cout << ":localhost.localdomain NOTICE AUTH :" << category << " " << str << "\r\n";
+			std::cout << category << " " << str << "\r\n";
 
 	}
 }

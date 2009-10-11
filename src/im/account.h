@@ -47,6 +47,22 @@ namespace im
 		static void account_signed_off_cb(PurpleConnection *gc, gpointer event);
 		static void account_added(PurpleAccount*);
 		static void account_removed(PurpleAccount*);
+		static void notify_added(PurpleAccount *account, const char *remote_user,
+						const char *id, const char *alias,
+						const char *msg);
+		static void request_add(PurpleAccount *account, const char *remote_user,
+					  const char *id, const char *alias,
+					  const char *msg);
+		static void *request_authorize(PurpleAccount *account,
+					const char *remote_user,
+					const char *id,
+					const char *alias,
+					const char *message,
+					gboolean on_list,
+					PurpleAccountRequestAuthorizationCb auth_cb,
+					PurpleAccountRequestAuthorizationCb deny_cb,
+					void *user_data);
+		static void request_close(void *uihandle);
 		static void connecting(PurpleConnection *gc,
 		                       const char *text,
 		                       size_t step,
@@ -56,6 +72,7 @@ namespace im
 		static void disconnect_reason(PurpleConnection *gc,
 		                              PurpleConnectionError reason,
 		                              const char *text);
+		static gboolean reconnect(void*);
 
 	public:
 
@@ -90,6 +107,15 @@ namespace im
 		/** Get username of this account */
 		string getUsername() const;
 
+		/** Get password of this account */
+		string getPassword() const;
+		void setPassword(string password);
+
+		vector<Protocol::Option> getOptions() const;
+		void setOptions(vector<Protocol::Option>& options);
+
+		void setBuddyIcon(const string& filename);
+
 		/** Get name of IRC server linked to this account.
 		 *
 		 * @return  a string in form \a "<username>:<protocol><number>"
@@ -109,6 +135,10 @@ namespace im
 		Protocol getProtocol() const { return proto; }
 		bool isConnected() const;
 		bool isConnecting() const;
+
+		/** Auto reconnect to this account with a delay. */
+		int delayReconnect() const;
+		void removeReconnection(bool verbose = false) const;
 
 		/** \todo TODO implement it */
 		vector<Buddy> getBuddies() const;

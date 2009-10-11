@@ -17,17 +17,24 @@
  */
 
 #include <cstring>
+#include <cerrno>
 
 #include "irc/buddy.h"
 #include "irc/server.h"
 #include "irc/channel.h"
+#include "irc/dcc.h"
+#include "irc/irc.h"
+#include "im/im.h"
 #include "im/account.h"
+#include "../callback.h"
+#include "../log.h"
 #include "../util.h"
+#include "../config.h"
 
 namespace irc {
 
 Buddy::Buddy(Server* server, im::Buddy _buddy)
-	: Nick(server, "","","",_buddy.getRealName()),
+	: ConvNick(server, "","","",_buddy.getRealName()),
 	  im_buddy(_buddy)
 {
 	string hostname = im_buddy.getName();
@@ -61,14 +68,69 @@ void Buddy::send(Message m)
 		{
 			if(chan && chan->isStatusChannel())
 				stringtok(text, " ");
+
+			/* Check if this is a DCC SEND message. */
+			if(process_dcc_get(text))
+				return;
+
 			if(!conv.isValid())
 			{
 				conv = im::Conversation(im_buddy.getAccount(), im_buddy);
 				conv.present();
+				conv.setNick(this);
 			}
 			conv.sendMessage(text);
 		}
 	}
+}
+
+bool Buddy::process_dcc_get(const string& text)
+{
+	if(conf.GetSection("file_transfers")->GetItem("enabled")->Boolean() == false)
+	{
+		b_log[W_ERR] << "File transfers are disabled on this server.";
+		return true;
+	}
+
+	string filename;
+	uint32_t addr;
+	uint16_t port;
+	ssize_t size;
+
+	if(DCCGet::parseDCCSEND(text, &filename, &addr, &port, &size))
+	{
+		RemoteServer* rm = dynamic_cast<RemoteServer*>(getServer());
+		if(!rm)
+			return true;
+
+		string path = rm->getIRC()->getIM()->getUserPath() + "/upload/";
+		if(!check_write_file(path, filename))
+		{
+			b_log[W_ERR] << "Unable to write into the upload directory '" << path << "': " << strerror(errno);
+			return true;
+		}
+		try
+		{
+			filename = path + "/" + filename;
+			rm->getIRC()->createDCCGet(this, filename, addr, port, size, new CallBack<Buddy>(this, &Buddy::received_file, strdup(filename.c_str())));
+
+		}
+		catch(const DCCGetError&)
+		{
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool Buddy::received_file(void* data)
+{
+	char* filename = static_cast<char*>(data);
+	im_buddy.sendFile(filename);
+	free(filename);
+	return true;
 }
 
 string Buddy::getRealName() const
@@ -96,6 +158,17 @@ bool Buddy::isOnline() const
 CacaImage Buddy::getIcon() const
 {
 	return im_buddy.getIcon();
+}
+
+string Buddy::getIconPath() const
+{
+	return im_buddy.getIconPath();
+}
+
+bool Buddy::retrieveInfo() const
+{
+	im_buddy.retrieveInfo();
+	return true;
 }
 
 }; /* namespace irc */

@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <glib/gstdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
 #include <string>
 #include <cstdarg>
 
@@ -114,4 +118,49 @@ string strlower(string s)
 	for(string::iterator it = s.begin(); it != s.end(); ++it)
 		*it = (char)tolower(*it);
 	return s;
+}
+
+bool is_ip(const char *ip)
+{
+	char *ptr = NULL;
+	int i = 0, d = 0;
+
+	for(; i < 4; ++i)			  /* 4 dots expected (IPv4) */
+	{					  /* Note about strtol: stores in endptr either NULL or '\0' if conversion is complete */
+		if(!isdigit((unsigned char) *ip)  /* most current case (not ip, letter host) */
+						  /* ok, valid number? */
+			|| (d = (int)strtol(ip, &ptr, 10)) < 0 || d > 255
+			|| (ptr && *ptr != 0 && (*ptr != '.' || 3 == i) && ptr != ip)) return false;
+		if(ptr) ip = ptr + 1, ptr = NULL;  /* jump the dot */
+	}
+	return true;
+}
+
+bool check_write_file(string path, string filename)
+{
+	/* Create the directory if not exist. */
+	DIR* d;
+	if(!(d = opendir(path.c_str())))
+	{
+		if(mkdir(path.c_str(), 0700) < 0)
+			return false;
+	}
+	else
+		closedir(d);
+
+	path += "/" + filename;
+
+	struct stat st;
+	if (g_stat(path.c_str(), &st) != 0)
+	{
+		/* File doesn't exist. */
+		const char* dir = g_path_get_dirname(path.c_str());
+
+		if(g_access(dir, W_OK) != 0)
+			return false;
+	}
+	else if(S_ISDIR(st.st_mode))
+		return false;
+
+	return true;
 }

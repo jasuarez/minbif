@@ -169,6 +169,12 @@ namespace irc
 		 */
 		void m_mode(Nick* sender, Message m);
 
+		/** Send NAMES reply to an user.
+		 *
+		 * @param nick  the receiver of messages.
+		 */
+		void sendNames(Nick* nick) const;
+
 		/** Show banlist to user */
 		virtual void showBanList(Nick* to) = 0;
 

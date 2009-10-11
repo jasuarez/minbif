@@ -1,3 +1,64 @@
+Minbif 1.0-beta2 (2009-10-10)
+	* CACAcam works.
+	* scripts/irssi/im_cacacam.pl: irssi script to display CACAcam in the
+	  buddy's query.
+	* Files send supported (/DCC SEND).
+	* Set accounts icon with /DCC SEND buddyicon.
+	* Daemon-fork mode supports IPv6.
+	* Display a MOTD at connection, or with the /MOTD command.
+	* Parameter irc/buddy_icons_url to display an URL to download icon in
+	  /WHOIS.
+	* /ADMIN away_idle (bool): enable/disable away when idling.
+	* /SVSNICK: reject invalid nicks.
+	* /MAP edit: edit an account.
+	* /OPER: authenticate as an IRC operator.
+	* /WALLOPS: oper command to send a wallops message to every launched
+	  minbif.
+	* /DIE: kill every minbif instances.
+	* /REHASH: reload configuration of every launched minbif.
+	* Handle SIGHUP signal to reload configuration file.
+	* IPC channel in daemon fork mode, to broadcast several commands.
+	* Wrote tests system.
+	* A buildbot is setup on http://buildbot.symlink.me
+	* Fix: join MSN channels when invited (it's still buggous, but doesn't
+	  crash anymore).
+	* Fix: memory leak with CACAImage.
+	* Fix: crash when an alias is overrided by server.
+	* Fix: iso-8859-15 charset crash.
+
+Minbif 1.0-beta (2009-09-28)
+	* Daemon fork mode.
+	* Ability to protect the minbif server with a password.
+	* File transfers support for reception.
+	* Buggy implementation of CACAcam (do not use it!).
+	* /SVSNICK command to change a buddy's nickname.
+	* /WHO can match on a server name or an account name.
+	* /NAMES command.
+	* /MAP ADD without any channel name will use the default &minbif
+	  channel.
+	* /AWAY command.
+	* '/STATS a' to display every available away status.
+	* /WHOIS displays the fully away message.
+	* /WII displays a larger icon and several information about buddy.
+	* /ADMIN command to display and change some minbif account parameters.
+	* Correctly handle the /ME command.
+	* Can leave status channels.
+	* Display notify messages.
+	* Auto-reconnect when disconnected by server.
+	* Auto-rejoin remote channels when reconnecting to minbif.
+	* Display remote channel topics.
+	* Display remote channel history at join (if supported by protocol).
+	* libpurple error messages are logged with the PURPLE loglevel.
+	* Handle SIGTERM.
+	* Support CTCP TYPING.
+	* Imported some bitlbee's irssi scripts and changed them to support
+	  minbif.
+	* Added a manpage.
+	* Fix: crash at remote channel member leave.
+	* Fix: crash when a remote channel member changes his nickname.
+	* Fix: hilight message are not displayed.
+	* Fix: correctly handle when a user tries to add me in his buddy list.
+
 Minbif 1.0-alpha (2009-05-10)
 	* First revision of project
 	* Minbif uses a library which abstracts all IM calls, and has several

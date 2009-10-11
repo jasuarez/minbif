@@ -28,6 +28,7 @@
 namespace irc
 {
 	using std::map;
+	class ChatBuddy;
 
 	class ConversationChannel : public Channel
 	{
@@ -53,6 +54,7 @@ namespace irc
 		virtual ChanUser* getChanUser(string nick) const;
 
 		void addBuddy(im::ChatBuddy cbuddy, int status = 0);
+		void renameBuddy(ChanUser* chanuser, im::ChatBuddy cbuddy);
 		virtual void delUser(Nick* nick, Message message = Message());
 
 		virtual string getTopic() const;

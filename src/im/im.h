@@ -69,12 +69,27 @@ namespace im
 		IM(irc::IRC* irc, string username);
 		~IM();
 
+		/** Restore previous status */
+		void restore();
+
 		/** Get path to user settings */
 		string getUserPath() const { return user_path; }
+
+		string getUsername() const { return username; }
 
 		/** Set user password */
 		void setPassword(const string& password);
 		string getPassword() const;
+
+		/** Set typing notice */
+		void setTypingNotice(bool enabled);
+		bool hasTypingNotice() const;
+
+		void setAwayIdle(bool enabled);
+		bool hasAwayIdle() const;
+
+		void setBuddyIcon(string path);
+		string getBuddyIconPath() const;
 
 		irc::IRC* getIRC() const { return irc; }
 
@@ -112,6 +127,9 @@ namespace im
 		 * @param account  Account instance
 		 */
 		void delAccount(Account account);
+
+		/** Set status on IM accounts */
+		bool setStatus(string status);
 	};
 
 };

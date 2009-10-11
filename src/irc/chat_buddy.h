@@ -26,7 +26,7 @@ namespace irc
 {
 
 	/** This class represents a chat buddy on IRC */
-	class ChatBuddy : public Nick
+	class ChatBuddy : public ConvNick
 	{
 		im::ChatBuddy im_cbuddy;
 		im::Conversation conv;
@@ -54,6 +54,10 @@ namespace irc
 		virtual bool isOnline() const { return true; }
 
 		im::ChatBuddy getChatBuddy() const { return im_cbuddy; }
+		void setChatBuddy(im::ChatBuddy cb) { im_cbuddy = cb; }
+
+		im::Conversation getConversation() const { return conv; }
+		void setConversation(const im::Conversation& c) { conv = c; }
 
 		/** Get buddy's real name. */
 		virtual string getRealName() const;

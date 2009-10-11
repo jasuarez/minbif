@@ -25,6 +25,7 @@ class _CallBack
 public:
 	virtual ~_CallBack() {}
 	virtual bool run() = 0;
+	virtual void setObj(void*) = 0;
 };
 
 template<typename T>
@@ -41,6 +42,11 @@ public:
                 return (obj->*func) (data);
         }
 
+	virtual void setObj(void* o)
+	{
+		obj = static_cast<T*>(o);
+	}
+
 private:
         T* obj;
         TFunc func;
@@ -48,6 +54,7 @@ private:
 };
 
 gboolean g_callback(void* data);
+gboolean g_callback_delete(void* data);
 void g_callback_input(void* data, gint n = 0, PurpleInputCondition input = (PurpleInputCondition)0);
 
 #endif /* CALLBACK_H */

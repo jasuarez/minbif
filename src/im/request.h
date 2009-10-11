@@ -40,6 +40,7 @@ namespace im
 	{
 	public:
 
+		virtual ~RequestField() {}
 		virtual int getID() const = 0;
 		virtual void setLabel(const string& label) = 0;
 		virtual string getLabel() const = 0;
@@ -67,6 +68,8 @@ namespace im
 			  data(_data)
 		{}
 
+		virtual ~RequestFieldAction() {}
+
 		int getID() const { return id; }
 		void setLabel(const string& l) { label = l; }
 		string getLabel() const { return label; }
@@ -84,6 +87,9 @@ namespace im
 		static PurpleNotifyUiOps notify_ops;
 		static void* notify_message(PurpleNotifyMsgType type, const char *title,
 				                const char *primary, const char *secondary);
+		static void* notify_formatted(const char *title, const char *primary, const char *secondary,
+				              const char *text);
+		static void* notify_userinfo(PurpleConnection *gc, const char *who, PurpleNotifyUserInfo *user_info);
 
 		static PurpleRequestUiOps uiops;
 		static RequestNick* nick;
@@ -112,6 +118,12 @@ namespace im
 				const char *cancel, GCallback cancel_cb,
 				PurpleAccount *account, const char *who, PurpleConversation *conv,
 				void *userdata);
+		static void* request_file(const char *title, const char *filename,
+				          gboolean savedialog,
+					  GCallback ok_cb, GCallback cancel_cb,
+					  PurpleAccount *account, const char *who, PurpleConversation *conv,
+					  void *user_data);
+		static void request_close(PurpleRequestType type, void *ui_handle);
 
 	public:
 

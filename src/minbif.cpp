@@ -16,44 +16,195 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <cerrno>
 #include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <cstring>
 #include <sys/resource.h>
 #include <libpurple/purple.h>
+#include <getopt.h>
 
 #include "minbif.h"
+#include "sighandler.h"
+#include "version.h"
 #include "config.h"
 #include "log.h"
 #include "util.h"
 #include "im/im.h"
 #include "server_poll/poll.h"
 
+/** This is a derived class from ConfigItem whose represent an integer range item */
+class ConfigItem_intrange : public ConfigItem_int
+{
+public:
+	ConfigItem_intrange(std::string _label, std::string _description, int _min = INT_MIN, int _max = INT_MAX, std::string def_value = "",
+		TCallBack cb = 0, MyConfig* _config = 0, ConfigSection* _parent = 0)
+		: ConfigItem_int(_label, _description, _min, _max, def_value, cb, _config, _parent)
+		{}
+
+	virtual ConfigItem* Clone() const
+	{
+		return new ConfigItem_intrange(Label(), Description(), min, max, DefValue(), CallBack(), GetConfig(), Parent());
+	}
+
+	/** We return a string form of this integer */
+	virtual std::string String() const { std::ostringstream oss; oss << value_min << "-" << value_max; return oss.str(); }
+	virtual int MinInteger() const { return value_min; }
+	virtual int MaxInteger() const { return value_max; }
+
+	virtual bool SetValue(std::string s)
+	{
+		string min_s, max_s;
+		bool on_min = true;
+
+		for(std::string::const_iterator it = s.begin(); it != s.end(); ++it)
+		{
+			if(isdigit(*it))
+			{
+				if(on_min) min_s += *it;
+				else max_s += *it;
+			}
+			else if(on_min && (*it == ':' || *it == '-'))
+				on_min = false;
+			else
+				return false;
+
+		}
+		std::istringstream(min_s) >> value_min;
+		std::istringstream(max_s) >> value_max;
+		return (value_min >= min && value_max >= value_min && value_max <= max);
+	}
+
+	std::string ValueType() const
+	{
+		std::ostringstream off, off2;
+		std::string in, ax;
+		off << min;
+		in = off.str();
+		off2 << max;
+		ax = off2.str();
+		return "integer range (between " + in + " and " + ax + ")";
+	}
+
+private:
+	int value_min, value_max;
+};
+
 Minbif::Minbif()
-	: loop(0), server_poll(0)
+	: loop(NULL),
+	  server_poll(0)
 {
 	ConfigSection* section;
 	section = conf.AddSection("path", "Path information", false);
 	section->AddItem(new ConfigItem_string("users", "Users directory"));
+	section->AddItem(new ConfigItem_string("motd", "Path to motd", " "));
 
 	section = conf.AddSection("irc", "Server information", false);
 	section->AddItem(new ConfigItem_string("hostname", "Server hostname", " "));
+	section->AddItem(new ConfigItem_string("password", "Global server password", " "));
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
+	section->AddItem(new ConfigItem_string("buddy_icons_url", "URL to display in /WHOIS to get a buddy icon", " "));
 
-	section = conf.AddSection("logging", "Log informations", false);
+	ConfigSection* sub = section->AddSection("daemon", "Daemon information", true);
+	sub->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
+	sub->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
+	sub->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
+
+	sub = section->AddSection("oper", "Define an IRC operator", true);
+	sub->AddItem(new ConfigItem_string("login", "Nickname of IRC operator"), true);
+	sub->AddItem(new ConfigItem_string("password", "IRC operator password"));
+
+	section = conf.AddSection("file_transfers", "File transfers parameters", false);
+	section->AddItem(new ConfigItem_bool("enabled", "Enable file transfers", "true"));
+	section->AddItem(new ConfigItem_bool("dcc", "Send files to IRC user with DCC", "true"));
+	section->AddItem(new ConfigItem_intrange("port_range", "Port range to listen on for DCC", 1024, 65535, "1024-65535"));
+
+	section = conf.AddSection("logging", "Log information", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
+
 }
 
 Minbif::~Minbif()
 {
 	delete server_poll;
+	remove_pidfile();
+}
+
+void Minbif::remove_pidfile(void)
+{
+	if(pidfile.empty())
+		return;
+	std::ifstream fp(pidfile.c_str());
+	if(!fp)
+		return;
+	int i;
+	fp >> i;
+	if(i != getpid())
+		return;
+
+	unlink(pidfile.c_str());
+
+}
+
+void Minbif::usage(int argc, char** argv)
+{
+	std::cerr << "Usage: " << argv[0] << " [OPTIONS]... <CONFIG_PATH>" << std::endl << std::endl;
+	std::cerr << "Options:" << std::endl;
+	std::cerr << "  -h, --help             Display this notice" << std::endl;
+	std::cerr << "  -v, --version          Version of minbif" << std::endl;
+	std::cerr << "  -p, --pidfile=PIDFILE  Path to pid file" << std::endl;
+}
+
+void Minbif::version(void)
+{
+	std::cout << MINBIF_VERSION << " © 2009 Romain Bignon " << MINBIF_BUILD << std::endl;
 }
 
 int Minbif::main(int argc, char** argv)
 {
-	if(argc < 2)
+	static struct option long_options[] =
 	{
-		b_log << "Syntax: " << argv[0] << " config_file";
+		{ "pidfile",       1, NULL, 'p' },
+		{ "help",          0, NULL, 'h' },
+		{ "version",       0, NULL, 'v' },
+		{ NULL,            0, NULL, 0   }
+	};
+	int option_index = 0, c;
+	while((c = getopt_long(argc, argv, "p:hv", long_options, &option_index)) != -1)
+		switch(c)
+		{
+		case 'h':
+			usage(argc, argv);
+			return EXIT_SUCCESS;
+			break;
+		case 'v':
+			version();
+			return EXIT_SUCCESS;
+			break;
+		case 'p':
+		{
+			std::ifstream fi(optarg);
+			if(fi)
+			{
+				std::cerr << "It seems that minbif is already launched. Perhaps try to erase file " << optarg << std::endl;
+				fi.close();
+				return EXIT_FAILURE;
+			}
+			pidfile = optarg;
+			break;
+		}
+		default:
+			return EXIT_FAILURE;
+			break;
+		}
+
+	if(optind >= argc)
+	{
+		std::cerr << argv[0] << ": wrong argument count" << std::endl;
+		usage(argc, argv);
 		return EXIT_FAILURE;
 	}
 
@@ -67,7 +218,7 @@ int Minbif::main(int argc, char** argv)
 			setrlimit(RLIMIT_CORE, &rlim);
 		}
 
-		if(!conf.Load(argv[1]))
+		if(!conf.Load(argv[optind]))
 		{
 			b_log[W_ERR] << "Unable to load configuration, exiting..";
 			return EXIT_FAILURE;
@@ -81,6 +232,20 @@ int Minbif::main(int argc, char** argv)
 				                this);
 		b_log.setServerPoll(server_poll);
 
+		if(!pidfile.empty())
+		{
+			std::ofstream fo(pidfile.c_str());
+			if(!fo)
+			{
+				std::cerr << "Unable to create file '" << pidfile << "': " << strerror(errno) << std::endl;
+				return EXIT_FAILURE;
+			}
+			fo << getpid() << std::endl;
+			fo.close();
+		}
+		sighandler.setApplication(this);
+
+		g_thread_init(NULL);
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
 
@@ -101,6 +266,18 @@ int Minbif::main(int argc, char** argv)
 	}
 
 	return EXIT_FAILURE;
+}
+
+void Minbif::rehash()
+{
+	if(!conf.Load())
+	{
+		b_log[W_ERR] << "Unable to load configuration, exiting..";
+		quit();
+	}
+	b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
+	if(server_poll)
+		server_poll->rehash();
 }
 
 void Minbif::quit()

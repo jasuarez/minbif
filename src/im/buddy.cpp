@@ -71,18 +71,56 @@ string Buddy::getAlias() const
 
 void Buddy::setAlias(string alias) const
 {
+	assert(isValid());
 	purple_blist_alias_buddy(buddy, alias.c_str());
+
+	/* XXX
+	 * If this method is called while adding a new buddy in local
+	 * blist, and if the email address doesn't exist, there is a race
+	 * condition because the buddy isn't added on the MSN server,
+	 * and the fucking libpurple's MSN plugin doesn't check it and crashes.
+	 *
+	 * It isn't possible to avoid sending alias to server, because at
+	 * connection, local aliases are overrided by server aliases.
+	 *
+	 * So, for *now* (and until the pidgin crash will be fixed),
+	 * I assume that minbif'll crash in this case, and I don't care
+	 * about, you've had to correctly typing, fool!
+	 *
+	 * Ref: http://developer.pidgin.im/ticket/10393
+	 */
 	serv_alias_buddy(buddy);
+}
+
+void Buddy::retrieveInfo() const
+{
+	assert(isValid());
+	assert(buddy->account != NULL);
+	serv_get_info(purple_account_get_connection(buddy->account), purple_buddy_get_name(buddy));
+}
+
+void Buddy::sendFile(string filename)
+{
+	assert(isValid());
+	serv_send_file(purple_account_get_connection(purple_buddy_get_account(buddy)),
+		       purple_buddy_get_name(buddy),
+		       filename.c_str());
 }
 
 string Buddy::getRealName() const
 {
 	assert(isValid());
 	const char* rn = purple_buddy_get_server_alias(buddy);
-	if(rn)
+	if(rn && *rn)
 		return rn;
 	else
-		return "";
+	{
+		const char* servernick = purple_blist_node_get_string((PurpleBlistNode*)buddy, "servernick");
+		if(servernick && *servernick)
+			return servernick;
+		else
+			return getName();
+	}
 }
 
 bool Buddy::isOnline() const
@@ -100,10 +138,37 @@ bool Buddy::isAvailable() const
 string Buddy::getStatus() const
 {
 	PurpleStatus* status = purple_presence_get_active_status(buddy->presence);
-	if(status)
-		return purple_status_get_name(status);
-	else
-		return "bite";
+	if(!status)
+		return "";
+
+	string s = purple_status_get_name(status);
+
+	PurplePlugin* prpl = purple_find_prpl(purple_account_get_protocol_id(buddy->account));
+	PurplePluginProtocolInfo* prpl_info = NULL;
+
+	if(prpl)
+		prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
+
+	if(prpl_info && prpl_info->status_text && buddy->account->gc)
+	{
+		char* tmp = prpl_info->status_text(buddy);
+		const char* end;
+
+		if(tmp)
+		{
+			if(!g_utf8_validate(tmp, -1, &end))
+			{
+				char* utf8 = g_strndup(tmp, g_utf8_pointer_to_offset(tmp, end));
+				g_free(tmp);
+				tmp = utf8;
+			}
+			char* tmp2 = purple_markup_strip_html(tmp);
+			s += string(": ") + tmp2;
+			g_free(tmp2);
+			g_free(tmp);
+		}
+	}
+	return s;
 }
 
 Account Buddy::getAccount() const
@@ -120,6 +185,16 @@ CacaImage Buddy::getIcon() const
 		return CacaImage();
 
 	return CacaImage(purple_buddy_icon_get_full_path(bicon));
+}
+
+string Buddy::getIconPath() const
+{
+	assert(isValid());
+	PurpleBuddyIcon* bicon = purple_buddy_icons_find(buddy->account, buddy->name);//purple_buddy_get_icon(buddy);
+	if(!bicon)
+		return "";
+
+	return purple_buddy_icon_get_full_path(bicon);
 }
 
 PurpleGroup* Buddy::getPurpleGroup() const
@@ -182,14 +257,16 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 				n->setNickname(n->getNickname() + "_");
 
 			Purple::getIM()->getIRC()->addNick(n);
-
-			/* WARN! This function probably recalls this one, so it is
-			 *       really NECESSARY to call them at end of this block.
-			 *       If n is not in IRC's user list, two irc::Buddy
-			 *       instances will be inserted, with one lost.
-			 */
-			buddy.setAlias(n->getNickname());
 		}
+		/* If server overrides the IRC nickname as alias, force it.
+		 * WARN! This function probably recalls this one, so it is
+		 *       really NECESSARY to call them at end of this block.
+		 *       If n is not in IRC's user list, two irc::Buddy
+		 *       instances will be inserted, with one lost.
+		 */
+		if(buddy.getAlias() != n->getNickname())
+			buddy.setAlias(n->getNickname());
+
 		string channame = buddy.getAccount().getStatusChannel();
 		irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
 
@@ -221,10 +298,12 @@ void Buddy::removed_node(PurpleBuddyList *list, PurpleBlistNode *node)
 	if (PURPLE_BLIST_NODE_IS_BUDDY(node))
 	{
 		Buddy buddy = Buddy((PurpleBuddy*)node);
-		irc::Nick* n = Purple::getIM()->getIRC()->getNick(buddy);
+		irc::Buddy* n = dynamic_cast<irc::Buddy*>(Purple::getIM()->getIRC()->getNick(buddy));
 		if(n)
 		{
 			n->quit("Removed");
+			if(n->getConversation().isValid() && n->getConversation().getNick() == n)
+				n->getConversation().setNick(NULL);
 			Purple::getIM()->getIRC()->removeNick(n->getNickname());
 		}
 	}

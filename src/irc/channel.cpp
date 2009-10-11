@@ -108,6 +108,33 @@ Channel::~Channel()
 	users.clear();
 }
 
+void Channel::sendNames(Nick* nick) const
+{
+	string names;
+	for(vector<ChanUser*>::const_iterator it = users.begin(); it != users.end(); ++it)
+	{
+		if(!names.empty())
+			names += " ";
+		if((*it)->hasStatus(ChanUser::OP))
+			names += "@";
+		else if((*it)->hasStatus(ChanUser::HALFOP))
+			names += "%";
+		else if((*it)->hasStatus(ChanUser::VOICE))
+			names += "+";
+		names += (*it)->getNick()->getNickname();
+
+	}
+
+	nick->send(Message(RPL_NAMREPLY).setSender(irc)
+			           .setReceiver(nick)
+				   .addArg("=")
+				   .addArg(getName())
+				   .addArg(names));
+	nick->send(Message(RPL_ENDOFNAMES).setSender(irc)
+			           .setReceiver(nick)
+				   .addArg(getName())
+				   .addArg("End of /NAMES list"));
+}
 
 ChanUser* Channel::addUser(Nick* nick, int status)
 {
@@ -125,32 +152,13 @@ ChanUser* Channel::addUser(Nick* nick, int status)
 			m.setReceiver(this);
 			(*it)->getNick()->send(m);
 		}
-
-		if(!names.empty())
-			names += " ";
-		if((*it)->hasStatus(ChanUser::OP))
-			names += "@";
-		else if((*it)->hasStatus(ChanUser::HALFOP))
-			names += "%";
-		else if((*it)->hasStatus(ChanUser::VOICE))
-			names += "+";
-		names += (*it)->getNick()->getNickname();
-
 	}
 	nick->send(Message(RPL_TOPIC).setSender(irc)
 			             .setReceiver(nick)
 				     .addArg(getName())
 				     .addArg(getTopic()));
 
-	nick->send(Message(RPL_NAMREPLY).setSender(irc)
-			           .setReceiver(nick)
-				   .addArg("=")
-				   .addArg(getName())
-				   .addArg(names));
-	nick->send(Message(RPL_ENDOFNAMES).setSender(irc)
-			           .setReceiver(nick)
-				   .addArg(getName())
-				   .addArg("End of /NAMES list"));
+	sendNames(nick);
 	return chanuser;
 }
 

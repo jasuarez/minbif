@@ -49,6 +49,10 @@ guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunctio
 string strupper(string s);
 string strlower(string s);
 
+bool is_ip(const char *ip);
+
+bool check_write_file(string path, string filename);
+
 #define FOREACH(t, v, it) \
 	for(t::iterator it = v.begin(); it != v.end(); ++it)
 

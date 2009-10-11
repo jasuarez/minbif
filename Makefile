@@ -1,5 +1,6 @@
 ENABLE_CACA ?= ON
-CMAKE_OPTIONS = -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=0 -DENABLE_CACA=$(ENABLE_CACA)
+ENABLE_VIDEO ?= OFF
+CMAKE_OPTIONS = -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=0 -DENABLE_CACA=$(ENABLE_CACA) -DENABLE_VIDEO=$(ENABLE_VIDEO)
 
 all: build.minbif/Makefile
 	make -C build.minbif all
@@ -18,4 +19,7 @@ clean:
 doc:
 	cd doc/ && /usr/bin/doxygen
 
-.PHONY: all clean install doc
+tests:
+	make -C tests
+
+.PHONY: all clean install doc tests

@@ -24,18 +24,17 @@
 namespace irc {
 	class IRC;
 };
-class _CallBack;
 
 class InetdServerPoll : public ServerPoll
 {
 	irc::IRC* irc;
-	_CallBack* stop_cb;
 
 public:
 
 	InetdServerPoll(Minbif* application);
 	~InetdServerPoll();
 
+	void rehash();
 	void kill(irc::IRC* irc);
 	bool stopServer_cb(void*);
 

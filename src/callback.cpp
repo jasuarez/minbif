@@ -1,4 +1,5 @@
 /*
+ * Minbif - IRC instant messaging gateway
  * Copyright(C) 2009 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,28 +19,40 @@
 #include "callback.h"
 #include "log.h"
 
-void g_callback_input(void* data, gint, PurpleInputCondition i)
+static bool _callback(void* data)
 {
-	_CallBack* cb = static_cast<_CallBack*>(data);
-
-	if(!data)
+	_CallBack* cb;
+	if(!data || !(cb = static_cast<_CallBack*>(data)))
 	{
 		b_log[W_ERR] << "g_callback() handled with non CallBack instance";
-		return;
+		return false;
 	}
 
-	cb->run();
+	return cb->run();
+}
+
+
+void g_callback_input(void* data, gint src, PurpleInputCondition i)
+{
+	_callback(data);
 }
 
 gboolean g_callback(void* data)
 {
-	_CallBack* cb = static_cast<_CallBack*>(data);
+	return _callback(data);
+}
 
-	if(!data)
+gboolean g_callback_delete(void* data)
+{
+	_CallBack* cb;
+	if(!data || !(cb = static_cast<_CallBack*>(data)))
 	{
 		b_log[W_ERR] << "g_callback() handled with non CallBack instance";
-		return FALSE;
+		return false;
 	}
 
-	return cb->run();
+	bool ret = cb->run();
+	if(!ret)
+		delete cb;
+	return ret;
 }

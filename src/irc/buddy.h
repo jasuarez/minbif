@@ -27,10 +27,13 @@ namespace irc
 {
 
 	/** This class represents a buddy on IRC */
-	class Buddy : public Nick
+	class Buddy : public ConvNick
 	{
 		im::Buddy im_buddy;
 		im::Conversation conv;
+
+		bool process_dcc_get(const string& text);
+		bool received_file(void* data);
 
 	public:
 
@@ -55,12 +58,18 @@ namespace irc
 		virtual bool isOnline() const;
 
 		im::Buddy getBuddy() const { return im_buddy; }
+		im::Conversation getConversation() const { return conv; }
+		void setConversation(const im::Conversation& c) { conv = c; }
 
 		/** Get icon in an coloured ASCII-art form. */
-		CacaImage getIcon() const;
+		virtual CacaImage getIcon() const;
+
+		virtual string getIconPath() const;
 
 		/** Get buddy's real name. */
 		virtual string getRealName() const;
+
+		virtual bool retrieveInfo() const;
 
 	};
 

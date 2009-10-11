@@ -25,6 +25,11 @@
 
 class CacaImage;
 
+namespace im
+{
+	class Conversation;
+}
+
 namespace irc
 {
 	class Server;
@@ -56,6 +61,7 @@ namespace irc
 		enum {
 			REGISTERED = 1 << 0,
 			PING       = 1 << 1,
+			OPER       = 1 << 2
 		};
 
 		/** Build the Nick object.
@@ -124,6 +130,13 @@ namespace irc
 		 */
 		void privmsg(Nick* to, string message);
 
+		/** Mode message
+		 *
+		 * @param sender  user who sent message
+		 * @param m  mode message
+		 */
+		virtual void m_mode(Nick* sender, Message m);
+
 		/** Get all channels user is on. */
 		vector<ChanUser*> getChannels() const;
 
@@ -161,6 +174,8 @@ namespace irc
 		virtual string getRealname() const { return realname; }
 		void setRealname(string r) { realname = r; }
 
+		virtual bool retrieveInfo() const { return false; }
+
 		void setFlag(unsigned flag) { flags |= flag; }
 		void delFlag(unsigned flag) { flags &= ~flag; }
 		bool hasFlag(unsigned flag) const { return flags & flag; }
@@ -171,6 +186,16 @@ namespace irc
 		virtual bool isOnline() const { return true; }
 
 		virtual CacaImage getIcon() const;
+		virtual string getIconPath() const { return ""; }
+	};
+
+	class ConvNick : public Nick
+	{
+	public:
+		ConvNick(Server* server, string nickname, string identname, string hostname, string realname="");
+
+		virtual im::Conversation getConversation() const = 0;
+		virtual void setConversation(const im::Conversation& c) = 0;
 	};
 
 }; /* namespace irc */

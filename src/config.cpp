@@ -1,6 +1,6 @@
 /* config.cpp - This is a library to make a configuration
  *
- * Copyright (C) 2006-2009 Romain Bignon  <romain@symlink.me>
+ * Copyright (C) 2009 Romain Bignon  <romain@symlink.me>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,8 @@ bool MyConfig::Load(std::string _path)
 		std::cerr << path + ": File not found" << std::endl;
 		return false;
 	}
+
+	Clean();
 
 	std::string ligne;
 	line_count = 0;
@@ -247,6 +249,21 @@ ConfigSection* MyConfig::AddSection(std::string label, std::string description, 
 	return AddSection(new ConfigSection(label, description, multiple, this, 0));
 }
 
+void MyConfig::Clean()
+{
+	FORit(SectionMap, sections, it)
+	{
+		if(it->second->IsCopy())
+			delete it->second;
+		else
+		{
+			it->second->SetFound(false);
+			it->second->Clean();
+		}
+	}
+}
+
+
 bool MyConfig::FindEmpty()
 {
 	std::string begin = "in global porty: ";
@@ -325,6 +342,20 @@ std::vector<ConfigSection*> ConfigSection::GetSectionClones(std::string label)
 		s.push_back(it->second);
 
 	return s;
+}
+
+void ConfigSection::Clean()
+{
+	FORit(SectionMap, sections, it)
+	{
+		if(it->second->IsCopy())
+			delete it->second;
+		else
+		{
+			it->second->SetFound(false);
+			it->second->Clean();
+		}
+	}
 }
 
 bool ConfigSection::FindEmpty()

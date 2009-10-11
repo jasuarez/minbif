@@ -77,6 +77,15 @@ namespace im
 		/** Get IM real name */
 		string getRealName() const;
 
+		/** Ask server to send server info.
+		 *
+		 * It'll be showed with notify_userinfo callback.
+		 */
+		void retrieveInfo() const;
+
+		/** Send a file to this buddy. */
+		void sendFile(string filename);
+
 		bool isOnline() const;
 		bool isAvailable() const;
 		string getStatus() const;
@@ -86,6 +95,8 @@ namespace im
 		 * @return  an instance of CacaImage
 		 */
 		CacaImage getIcon() const;
+
+		string getIconPath() const;
 
 		PurpleGroup* getPurpleGroup() const;
 		PurpleBuddy* getPurpleBuddy() const { return buddy; }

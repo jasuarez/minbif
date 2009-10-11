@@ -49,6 +49,10 @@ namespace irc
 
 		void close() { fd = -1; }
 
+		string getModes() const;
+
+		virtual void m_mode(Nick* sender, Message m);
+
 		/** Set last read timestamp to now */
 		void setLastReadNow();
 		time_t getLastRead() const { return last_read; }

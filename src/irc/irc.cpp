@@ -21,22 +21,29 @@
 #include <netdb.h>
 #include <cstring>
 #include <algorithm>
+#include <cassert>
+#include <fstream>
 
 #include "../log.h"
 #include "../util.h"
 #include "../callback.h"
 #include "../version.h"
 #include "../sock.h"
+#include "../config.h"
 #include "im/im.h"
 #include "server_poll/poll.h"
 #include "irc.h"
+#include "settings.h"
 #include "buddy.h"
+#include "chat_buddy.h"
+#include "unknown_buddy.h"
 #include "message.h"
 #include "user.h"
 #include "channel.h"
 #include "status_channel.h"
 #include "conversation_channel.h"
 #include "caca_image.h"
+#include "dcc.h"
 
 namespace irc {
 
@@ -56,8 +63,10 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_CONNECT, &IRC::m_connect, 1, 0, Nick::REGISTERED },
 	{ MSG_SQUIT,   &IRC::m_squit,   1, 0, Nick::REGISTERED },
 	{ MSG_MAP,     &IRC::m_map,     0, 0, Nick::REGISTERED },
+	{ MSG_ADMIN,   &IRC::m_admin,   0, 0, Nick::REGISTERED },
 	{ MSG_JOIN,    &IRC::m_join,    1, 0, Nick::REGISTERED },
 	{ MSG_PART,    &IRC::m_part,    1, 0, Nick::REGISTERED },
+	{ MSG_NAMES,   &IRC::m_names,   1, 0, Nick::REGISTERED },
 	{ MSG_LIST,    &IRC::m_list,    0, 0, Nick::REGISTERED },
 	{ MSG_MODE,    &IRC::m_mode,    1, 0, Nick::REGISTERED },
 	{ MSG_ISON,    &IRC::m_ison,    1, 0, Nick::REGISTERED },
@@ -65,6 +74,12 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_KICK,    &IRC::m_kick,    2, 0, Nick::REGISTERED },
 	{ MSG_KILL,    &IRC::m_kill,    1, 0, Nick::REGISTERED },
 	{ MSG_SVSNICK, &IRC::m_svsnick, 2, 0, Nick::REGISTERED },
+	{ MSG_AWAY,    &IRC::m_away,    0, 0, Nick::REGISTERED },
+	{ MSG_MOTD,    &IRC::m_motd,    0, 0, Nick::REGISTERED },
+	{ MSG_OPER,    &IRC::m_oper,    2, 0, Nick::REGISTERED },
+	{ MSG_WALLOPS, &IRC::m_wallops, 1, 0, Nick::OPER },
+	{ MSG_REHASH,  &IRC::m_rehash,  0, 0, Nick::OPER },
+	{ MSG_DIE,     &IRC::m_die,     1, 0, Nick::OPER },
 };
 
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
@@ -130,6 +145,8 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 		ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
 	}
 
+	rehash(false);
+
 	user->send(Message(MSG_NOTICE).setSender(this).setReceiver("AUTH").addArg("Minbif-IRCd initialized, please go on"));
 }
 
@@ -148,13 +165,55 @@ IRC::~IRC()
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
-	printf("Cleaned IRC\n");
+	cleanUpDCC();
+}
+
+DCC* IRC::createDCCSend(const im::FileTransfert& ft, Nick* n)
+{
+	DCC* dcc = new DCCSend(ft, n, user);
+	dccs.push_back(dcc);
+	return dcc;
+}
+
+DCC* IRC::createDCCGet(Nick* from, string filename, uint32_t addr,
+		       uint16_t port, ssize_t size, _CallBack* callback)
+{
+	DCC* dcc = new DCCGet(from, filename, addr, port, size, callback);
+	dccs.push_back(dcc);
+	return dcc;
+}
+
+void IRC::updateDCC(const im::FileTransfert& ft, bool destroy)
+{
+	for(vector<DCC*>::iterator it = dccs.begin(); it != dccs.end();)
+	{
+		/* Purge */
+		if((*it)->isFinished())
+		{
+			delete *it;
+			it = dccs.erase(it);
+		}
+		else
+		{
+			if((*it)->getFileTransfert() == ft)
+				(*it)->updated(destroy);
+			++it;
+		}
+	}
+}
+
+void IRC::cleanUpDCC()
+{
+	for(vector<DCC*>::iterator it = dccs.begin(); it != dccs.end(); ++it)
+		delete *it;
+
+	dccs.clear();
 }
 
 void IRC::addChannel(Channel* chan)
 {
 	if(channels.find(chan->getName()) != channels.end())
-		b_log[W_ERR] << "!!!!!WARNING!!!!! Channel " << chan->getName() << " already exists!";
+		b_log[W_DESYNCH] << "/!\\ Channel " << chan->getName() << " already exists!";
 	channels[chan->getName()] = chan;
 }
 
@@ -188,15 +247,23 @@ void IRC::cleanUpChannels()
 void IRC::addNick(Nick* nick)
 {
 	if(users.find(nick->getNickname()) != users.end())
-		b_log[W_ERR] << "!!!!!WARNING!!!!! User " << nick->getNickname() << " already exists!";
+		b_log[W_DESYNCH] << "/!\\ User " << nick->getNickname() << " already exists!";
 	users[nick->getNickname()] = nick;
 }
 
-Nick* IRC::getNick(string nickname) const
+void IRC::renameNick(Nick* nick, string newnick)
+{
+	users.erase(nick->getNickname());
+	nick->setNickname(newnick);
+	addNick(nick);
+}
+
+Nick* IRC::getNick(string nickname, bool case_sensitive) const
 {
 	map<string, Nick*>::const_iterator it;
-	nickname = strlower(nickname);
-	for(it = users.begin(); it != users.end() && strlower(it->first) != nickname; ++it)
+	if(!case_sensitive)
+		nickname = strlower(nickname);
+	for(it = users.begin(); it != users.end() && (case_sensitive ? it->first : strlower(it->first)) != nickname; ++it)
 		;
 
 	if(it == users.end())
@@ -220,11 +287,38 @@ Nick* IRC::getNick(const im::Buddy& buddy) const
 		return it->second;
 }
 
+Nick* IRC::getNick(const im::Conversation& conv) const
+{
+	map<string, Nick*>::const_iterator it;
+	ConvNick* n;
+	for(it = users.begin();
+	    it != users.end() && (!(n = dynamic_cast<ConvNick*>(it->second)) || n->getConversation() != conv);
+	    ++it)
+		;
+
+	if(it == users.end())
+		return NULL;
+	else
+		return it->second;
+}
+
 void IRC::removeNick(string nickname)
 {
 	map<string, Nick*>::iterator it = users.find(nickname);
 	if(it != users.end())
 	{
+		for(vector<DCC*>::iterator dcc = dccs.begin(); dcc != dccs.end();)
+			if((*dcc)->isFinished())
+			{
+				delete *dcc;
+				dcc = dccs.erase(dcc);
+			}
+			else
+			{
+				if((*dcc)->getPeer() == it->second)
+					(*dcc)->setPeer(NULL);
+				++dcc;
+			}
 		delete it->second;
 		users.erase(it);
 	}
@@ -281,6 +375,31 @@ void IRC::cleanUpServers()
 	servers.clear();
 }
 
+void IRC::rehash(bool verbose)
+{
+	setMotd(conf.GetSection("path")->GetItem("motd")->String());
+	if(verbose)
+		b_log[W_INFO|W_SNO] << "Server configuration rehashed.";
+}
+
+void IRC::setMotd(const string& path)
+{
+	std::ifstream fp(path.c_str());
+	if(!fp)
+	{
+		b_log[W_WARNING] << "Unable to read MOTD";
+		return;
+	}
+
+	char buf[512];
+	motd.clear();
+	while(fp)
+	{
+		fp.getline(buf, 511);
+		motd.push_back(buf);
+	}
+	fp.close();
+}
 
 void IRC::quit(string reason)
 {
@@ -316,6 +435,14 @@ void IRC::sendWelcome()
 		if(im->getPassword().empty())
 		{
 			/* New user. */
+
+			string global_passwd = conf.GetSection("irc")->GetItem("password")->String();
+			if(global_passwd != " " && user->getPassword() != global_passwd)
+			{
+				quit("This server is protected by a global private password.  Ask administrator.");
+				return;
+			}
+
 			im->setPassword(user->getPassword());
 		}
 		else if(im->getPassword() != user->getPassword())
@@ -326,14 +453,13 @@ void IRC::sendWelcome()
 
 		user->setFlag(Nick::REGISTERED);
 
-		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif gateway, " + user->getNickname() + "!"));
-		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Host " + getServerName() + " is running Minbif"));
+		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif IRC gateway, " + user->getNickname() + "!"));
+		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Your host is " + getServerName() + ", running " MINBIF_VERSION));
+		user->send(Message(RPL_CREATED).setSender(this).setReceiver(user).addArg("This server was created " __DATE__ " " __TIME__));
 
-		user->send(Message(RPL_MOTDSTART).setSender(this).setReceiver(user).addArg("- " + getServerName() + " Message Of The Day -"));
-		if (im->getAccountsList().empty())
-			user->send(Message(RPL_MOTD).setSender(this).setReceiver(user).addArg("Advice: you should start by adding an account using the /MAP command."));
+		m_motd(Message());
 
-		user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
+		im->restore();
 	}
 	catch(im::IMError& e)
 	{
@@ -379,7 +505,7 @@ bool IRC::readIO(void*)
 	string sbuf, line;
 	ssize_t r;
 
-	if((r = read( 0, buf, sizeof buf - 1 )) <= 0)
+	if((r = read(fd, buf, sizeof buf - 1 )) <= 0)
 	{
 		if(r == 0)
 			this->quit("Connection reset by peer...");
@@ -391,7 +517,6 @@ bool IRC::readIO(void*)
 	}
 	buf[r] = 0;
 	sbuf = buf;
-
 
 	while((line = stringtok(sbuf, "\r\n")).empty() == false)
 	{
@@ -416,9 +541,16 @@ bool IRC::readIO(void*)
 							   .addArg(m.getCommand())
 							   .addArg("Not enough parameters"));
 		else if(commands[i].flags && !user->hasFlag(commands[i].flags))
-			user->send(Message(ERR_NOTREGISTERED).setSender(this)
-							     .setReceiver(user)
-							     .addArg("Register first"));
+		{
+			if(commands[i].flags == Nick::REGISTERED)
+				user->send(Message(ERR_NOTREGISTERED).setSender(this)
+								     .setReceiver(user)
+								     .addArg("Register first"));
+			else
+				user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+						                    .setReceiver(user)
+								    .addArg("Permission Denied: Insufficient privileges"));
+		}
 		else
 		{
 			commands[i].count++;
@@ -459,9 +591,7 @@ void IRC::m_nick(Message message)
 							.addArg("This nick contains invalid characters"));
 	else
 	{
-		users.erase(user->getNickname());
-		user->setNickname(message.getArg(0));
-		users[message.getArg(0)] = user;
+		renameNick(user, message.getArg(0));
 
 		sendWelcome();
 	}
@@ -515,7 +645,8 @@ void IRC::m_version(Message message)
 	user->send(Message(RPL_VERSION).setSender(this)
 				       .setReceiver(user)
 				       .addArg(MINBIF_VERSION)
-				       .addArg(getServerName()));
+				       .addArg(getServerName())
+				       .addArg(MINBIF_BUILD));
 }
 
 /** WHO */
@@ -531,7 +662,7 @@ void IRC::m_who(Message message)
 		{
 			Nick* n = it->second;
 			string channame = "*";
-			if(arg.empty() || arg == "*" || arg == "0" || arg == n->getNickname())
+			if(arg.empty() || arg == "*" || arg == "0" || arg == n->getNickname() || n->getServer()->getServerName().find(arg) != string::npos)
 			{
 				vector<ChanUser*> chans = n->getChannels();
 				if(!chans.empty())
@@ -574,6 +705,9 @@ void IRC::m_whois(Message message)
 						  .addArg("Nick does not exist"));
 		return;
 	}
+	bool extended_whois = false;
+	if(message.countArgs() > 1)
+		extended_whois = true;
 
 	user->send(Message(RPL_WHOISUSER).setSender(this)
 					 .setReceiver(user)
@@ -605,11 +739,16 @@ void IRC::m_whois(Message message)
 					    .setReceiver(user)
 					    .addArg(n->getNickname())
 					    .addArg(n->getAwayMessage()));
+	if(n->hasFlag(Nick::OPER))
+		user->send(Message(RPL_WHOISOPERATOR).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(n->getNickname())
+						     .addArg("is an IRC Operator"));
 
 	CacaImage icon = n->getIcon();
 	try
 	{
-		string buf = icon.getIRCBuffer(0, 10);
+		string buf = icon.getIRCBuffer(0, extended_whois ? 15 : 10);
 		string line;
 		user->send(Message(RPL_WHOISACTUALLY).setSender(this)
 					       .setReceiver(user)
@@ -637,11 +776,26 @@ void IRC::m_whois(Message message)
 					       .addArg(n->getNickname())
 					       .addArg("libcaca and imlib2 are required to display icon"));
 	}
+	string url = conf.GetSection("irc")->GetItem("buddy_icons_url")->String();
+	string icon_path = n->getIconPath();
+	if(url != " " && !icon_path.empty())
+	{
+		icon_path = icon_path.substr(im->getUserPath().size());
+		user->send(Message(RPL_WHOISACTUALLY).setSender(this)
+						       .setReceiver(user)
+						       .addArg(n->getNickname())
+						       .addArg("Icon URL: " + url + im->getUsername() + icon_path));
+	}
 
-	user->send(Message(RPL_ENDOFWHOIS).setSender(this)
-					  .setReceiver(user)
-					  .addArg(n->getNickname())
-					  .addArg("End of /WHOIS list"));
+	/* Retrieve server info about this buddy only if this is an extended
+	 * whois. In this case, do not send a ENDOFWHOIS because this
+	 * is an asynchronous call.
+	 */
+	if(!extended_whois || !n->retrieveInfo())
+		user->send(Message(RPL_ENDOFWHOIS).setSender(this)
+						  .setReceiver(user)
+						  .addArg(n->getNickname())
+						  .addArg("End of /WHOIS list"));
 
 }
 
@@ -665,11 +819,10 @@ void IRC::m_whowas(Message message)
 void IRC::m_privmsg(Message message)
 {
 	Message relayed(message.getCommand());
-	string targets = message.getArg(0);
-	const char * delim=",";
-	string target = stringtok(targets, delim);
+	string targets = message.getArg(0), target;
 
-	while (target!=""){
+	while ((target = stringtok(targets, ",")).empty() == false)
+	{
 		relayed.setSender(user);
 		relayed.addArg(message.getArg(1));
 
@@ -705,8 +858,7 @@ void IRC::m_privmsg(Message message)
 					    .setReceiver(user)
 					    .addArg(n->getNickname())
 					    .addArg(n->getAwayMessage()));
-}
-		target=stringtok(targets, delim);
+		}
 	}
 }
 
@@ -719,6 +871,11 @@ void IRC::m_stats(Message message)
 
 	switch(arg[0])
 	{
+		case 'a':
+			for(unsigned i = 0; i < (unsigned)PURPLE_STATUS_NUM_PRIMITIVES; ++i)
+				notice(user, string(purple_primitive_get_id_from_type((PurpleStatusPrimitive)i)) +
+					     ": " + purple_primitive_get_name_from_type((PurpleStatusPrimitive)i));
+			break;
 		case 'm':
 			for(size_t i = 0; i < sizeof commands / sizeof *commands; ++i)
 				user->send(Message(RPL_STATSCOMMANDS).setSender(this)
@@ -740,6 +897,7 @@ void IRC::m_stats(Message message)
 		}
 		default:
 			arg = "*";
+			notice(user, "a (aways) - List all away messages availables");
 			notice(user, "m (commands) - List all IRC commands");
 			notice(user, "p (protocols) - List all protocols");
 			break;
@@ -860,7 +1018,11 @@ void IRC::m_map(Message message)
 				for(size_t i = 2; i < message.countArgs(); ++i)
 				{
 					string s = message.getArg(i);
-					if(s[0] == '-')
+					if(username.empty())
+						username = s;
+					else if(password.empty())
+						password = s;
+					else if(s[0] == '-')
 					{
 						size_t name_pos = 1;
 						string value = "true";
@@ -888,12 +1050,7 @@ void IRC::m_map(Message message)
 							return;
 						}
 						it->setValue(value);
-						b_log[W_ERR] << it->getName() << "=" << value;
 					}
-					else if(username.empty())
-						username = s;
-					else if(password.empty())
-						password = s;
 					else if(channel.empty())
 					{
 						channel = s;
@@ -906,9 +1063,71 @@ void IRC::m_map(Message message)
 				}
 
 				added_account = im->addAccount(proto, username, password, options);
+				if(channel.empty())
+					channel = "&minbif";
 				added_account.setStatusChannel(channel);
 				added_account.createStatusChannel();
 
+				break;
+			}
+			case 'e':
+			{
+				if(message.countArgs() < 2)
+				{
+					notice(user, "Usage: /MAP edit ACCOUNT [KEY [VALUE]]");
+					break;
+				}
+				im::Account account = im->getAccount(message.getArg(1));
+				if(!account.isValid())
+				{
+					notice(user, "Error: Account " + message.getArg(1) + " is unknown");
+					return;
+				}
+				vector<im::Protocol::Option> options = account.getOptions();
+				if(message.countArgs() < 3)
+				{
+					notice(user, "-- Parameters of account " + account.getServername() + " --");
+					FOREACH(vector<im::Protocol::Option>, options, it)
+					{
+						im::Protocol::Option& option = *it;
+						notice(user, option.getName() + " = " + option.getValue());
+					}
+					return;
+				}
+				vector<im::Protocol::Option>::iterator option;
+				for(option = options.begin();
+				    option != options.end() && option->getName() != message.getArg(2);
+				    ++option)
+					;
+
+				if(option == options.end())
+					return;
+
+				if(message.countArgs() < 4)
+					notice(user, option->getName() + " = " + option->getValue());
+				else
+				{
+					string value;
+					for(unsigned i = 3; i < message.countArgs(); ++i)
+					{
+						if(!value.empty()) value += " ";
+						value += message.getArg(i);
+					}
+
+					if(option->getType() == PURPLE_PREF_BOOLEAN && value != "true" && value != "false")
+					{
+						notice(user, "Error: Option '" + option->getName() + "' is a boolean ('true' or 'false')");
+						return;
+					}
+					/* TODO check if value is an integer if option is an integer */
+					option->setValue(value);
+					if(option->getType() == PURPLE_PREF_INT)
+						notice(user, option->getName() + " = " + t2s(option->getValueInt()));
+					else
+						notice(user, option->getName() + " = " + option->getValue());
+					account.setOptions(options);
+				}
+				return;
 				break;
 			}
 			case 'd':
@@ -916,7 +1135,7 @@ void IRC::m_map(Message message)
 			{
 				if(message.countArgs() != 2)
 				{
-					notice(user, "Usage: /MAP rem NAME");
+					notice(user, "Usage: /MAP rem ACCOUNT");
 					return;
 				}
 				im::Account account = im->getAccount(message.getArg(1));
@@ -930,10 +1149,11 @@ void IRC::m_map(Message message)
 				break;
 			}
 			case 'h':
-				notice(user,"a, add: add ACCOUNT to your accounts");
+				notice(user,"a, add: add an account");
+				notice(user,"e, edit: edit an account");
 				notice(user,"r, rem: remove ACCOUNT from your accounts");
 			default:
-				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD [CHANNEL] [options] ] | [rem NAME] | [help]");
+				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD [CHANNEL] [options] ] | [edit ACCOUNT [KEY [VALUE]]] | [rem ACCOUNT] | [help]");
 				break;
 		}
 	}
@@ -970,6 +1190,64 @@ void IRC::m_map(Message message)
 				      .setReceiver(user)
 				      .addArg("End of /MAP"));
 
+}
+
+/** ADMIN [key value] */
+void IRC::m_admin(Message message)
+{
+	assert(im != NULL);
+
+	static struct
+	{
+		const char* key;
+		bool display;
+		SettingBase* setting;
+	} settings[] = {
+		{ "password",      true,  new SettingPassword(this, im) },
+		{ "typing_notice", true,  new SettingTypingNotice(this, im) },
+		{ "away_idle",     true,  new SettingAwayIdle(this, im) },
+		{ "minbif",        false, new SettingMinbif(this, im) },
+	};
+
+	if(message.countArgs() == 0)
+	{
+		for(unsigned i = 0; i < (sizeof settings / sizeof *settings); ++i)
+			if(settings[i].display)
+				user->send(Message(RPL_ADMINME).setSender(this)
+							       .setReceiver(user)
+							       .addArg(string("- ") + settings[i].key + " = " + settings[i].setting->getValue()));
+		return;
+	}
+
+	unsigned i;
+	for(i = 0; i < (sizeof settings / sizeof *settings) && message.getArg(0) != settings[i].key; ++i)
+		;
+
+	if(i >= (sizeof settings / sizeof *settings))
+		return;
+
+	if(message.countArgs() == 1)
+	{
+		user->send(Message(RPL_ADMINME).setSender(this)
+					       .setReceiver(user)
+					       .addArg(string("- ") + settings[i].key + " = " + settings[i].setting->getValue()));
+		return;
+	}
+
+	vector<string> args = message.getArgs();
+	string value;
+	for(vector<string>::iterator it = args.begin() + 1; it != args.end(); ++it)
+	{
+		if(!value.empty())
+			value += " ";
+		value += *it;
+	}
+
+	settings[i].setting->setValue(value);
+
+	user->send(Message(RPL_ADMINME).setSender(this)
+				       .setReceiver(user)
+				       .addArg(string("- ") + settings[i].key + " = " + settings[i].setting->getValue()));
 }
 
 /** JOIN channame */
@@ -1043,6 +1321,7 @@ void IRC::m_join(Message message)
 									     .addArg("No such channel"));
 				}
 
+				g_timeout_add(500, g_callback_delete, new CallBack<IRC>(this, &IRC::check_channel_join, g_strdup(channame.c_str())));
 
 #if 0
 				chan = new ConversationChannel(this, conv);
@@ -1065,6 +1344,20 @@ void IRC::m_join(Message message)
 				break;
 		}
 	}
+}
+
+bool IRC::check_channel_join(void* data)
+{
+	char* name = static_cast<char*>(data);
+
+	if(!getChannel(name))
+		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+					             .setReceiver(user)
+					             .addArg(name)
+					             .addArg("No such channel"));
+
+	g_free(data);
+	return false;
 }
 
 /** PART chan [:message] */
@@ -1142,6 +1435,7 @@ void IRC::m_mode(Message message)
 			return;
 		}
 		relayed.setReceiver(n);
+		n->m_mode(user, relayed);
 	}
 
 }
@@ -1165,6 +1459,22 @@ void IRC::m_ison(Message message)
 	user->send(Message(RPL_ISON).setSender(this)
 				    .setReceiver(user)
 				    .addArg(list));
+}
+
+/** NAMES chan */
+void IRC::m_names(Message message)
+{
+	Channel* chan = getChannel(message.getArg(0));
+	if(!chan)
+	{
+		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(message.getArg(1))
+						     .addArg("No such channel"));
+		return;
+	}
+
+	chan->sendNames(user);
 }
 
 /** INVITE nick chan */
@@ -1338,7 +1648,15 @@ void IRC::m_svsnick(Message message)
 		return;
 	}
 
-	if(getNick(message.getArg(1)))
+	if(!Nick::isValidNickname(message.getArg(1)))
+	{
+		user->send(Message(ERR_ERRONEUSNICKNAME).setSender(this)
+							.setReceiver(user)
+							.addArg("This nick contains invalid characters"));
+		return;
+	}
+
+	if(getNick(message.getArg(1), true))
 	{
 		user->send(Message(ERR_NICKNAMEINUSE).setSender(this)
 				                     .setReceiver(user)
@@ -1350,10 +1668,105 @@ void IRC::m_svsnick(Message message)
 	user->send(Message(MSG_NICK).setSender(buddy)
 				    .addArg(message.getArg(1)));
 
-	users.erase(buddy->getNickname());
-	buddy->setNickname(message.getArg(1));
-	addNick(buddy);
+	renameNick(buddy, message.getArg(1));
 	buddy->getBuddy().setAlias(message.getArg(1));
+}
+
+/** AWAY [message] */
+void IRC::m_away(Message message)
+{
+	string away;
+	if(message.countArgs())
+		away = message.getArg(0);
+
+	if(im->setStatus(away))
+	{
+		user->setAwayMessage(away);
+		if(away.empty())
+			user->send(Message(RPL_UNAWAY).setSender(this)
+					              .setReceiver(user)
+						      .addArg("You are no longer marked as being away"));
+		else
+			user->send(Message(RPL_NOWAWAY).setSender(this)
+					               .setReceiver(user)
+						       .addArg("You have been marked as being away"));
+	}
+}
+
+/* MOTD */
+void IRC::m_motd(Message message)
+{
+	user->send(Message(RPL_MOTDSTART).setSender(this).setReceiver(user).addArg("- " + getServerName() + " Message Of The Day -"));
+	for(vector<string>::iterator s = motd.begin(); s != motd.end(); ++s)
+		user->send(Message(RPL_MOTD).setSender(this).setReceiver(user).addArg("- " + *s));
+
+	user->send(Message(RPL_ENDOFMOTD).setSender(this).setReceiver(user).addArg("End of /MOTD command."));
+}
+
+/* OPER login password */
+void IRC::m_oper(Message message)
+{
+	if(user->hasFlag(Nick::OPER))
+	{
+		user->send(Message(RPL_YOUREOPER).setSender(this)
+						 .setReceiver(user)
+						 .addArg("You are already an IRC Operator"));
+		return;
+	}
+
+	vector<ConfigSection*> opers = conf.GetSection("irc")->GetSectionClones("oper");
+	for(vector<ConfigSection*>::iterator it = opers.begin(); it != opers.end(); ++it)
+	{
+		ConfigSection* oper = *it;
+
+		if(oper->GetItem("login")->String() == message.getArg(0) &&
+		   oper->GetItem("password")->String() == message.getArg(1))
+		{
+			user->setFlag(Nick::OPER);
+			user->send(Message(MSG_MODE).setSender(user)
+					            .setReceiver(user)
+						    .addArg("+o"));
+			user->send(Message(RPL_YOUREOPER).setSender(this)
+					                 .setReceiver(user)
+							 .addArg("You are now an IRC Operator"));
+			poll->ipc_send(Message(MSG_OPER).addArg(user->getNickname()));
+			return;
+		}
+	}
+
+	user->send(Message(ERR_PASSWDMISMATCH).setSender(this)
+			                      .setReceiver(user)
+					      .addArg("Password incorrect"));
+}
+
+/* WALLOPS :message */
+void IRC::m_wallops(Message message)
+{
+	if(!poll->ipc_send(Message(MSG_WALLOPS).addArg(getUser()->getNickname())
+			                       .addArg(message.getArg(0))))
+	{
+		b_log[W_ERR] << "You're alone!";
+	}
+}
+
+/* REHASH */
+void IRC::m_rehash(Message message)
+{
+	getUser()->send(Message(RPL_REHASHING).setSender(this)
+			                      .setReceiver(user)
+					      .addArg("Rehashing"));
+	poll->rehash();
+}
+
+/* DIE message */
+void IRC::m_die(Message message)
+{
+	if(!poll->ipc_send(Message(MSG_DIE).addArg(getUser()->getNickname())
+				           .addArg(message.getArg(0))))
+	{
+		b_log[W_INFO|W_SNO] << "This instance of MinBif is dying... Reason: " << message.getArg(0);
+		quit("Shutdown requested: " + message.getArg(0));
+	}
 }
 
 }; /* namespace irc */

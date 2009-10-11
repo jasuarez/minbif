@@ -23,6 +23,8 @@
 
 #include "im.h"
 #include "purple.h"
+#include "../irc/irc.h"
+#include "../irc/user.h"
 #include "../log.h"
 #include "../util.h"
 
@@ -94,6 +96,13 @@ IM::~IM()
 	purple_core_quit();
 }
 
+void IM::restore()
+{
+	if (!purple_prefs_get_bool("/purple/savedstatus/startup_current_status"))
+		purple_savedstatus_activate(purple_savedstatus_get_startup());
+	purple_accounts_restore_current_statuses();
+}
+
 void IM::setPassword(const string& password)
 {
 	purple_prefs_set_string("/minbif/password", password.c_str());
@@ -102,6 +111,26 @@ void IM::setPassword(const string& password)
 string IM::getPassword() const
 {
 	return purple_prefs_get_string("/minbif/password");
+}
+
+void IM::setTypingNotice(bool enabled)
+{
+	purple_prefs_set_int("/minbif/typing_notice", enabled ? 1 : 0);
+}
+
+bool IM::hasTypingNotice() const
+{
+	return purple_prefs_get_int("/minbif/typing_notice");
+}
+
+void IM::setAwayIdle(bool enabled)
+{
+	purple_prefs_set_bool("/purple/away/away_when_idle", enabled);
+}
+
+bool IM::hasAwayIdle() const
+{
+	return purple_prefs_get_bool("/purple/away/away_when_idle");
 }
 
 map<string, Protocol> IM::getProtocolsList() const
@@ -152,6 +181,56 @@ Account IM::addAccount(Protocol proto, string username, string password, vector<
 void IM::delAccount(Account user)
 {
 	Purple::delAccount(user.getPurpleAccount());
+}
+
+void IM::setBuddyIcon(string path)
+{
+	map<string, Account> alist = getAccountsList();
+	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)
+		it->second.setBuddyIcon(path);
+}
+
+string IM::getBuddyIconPath() const
+{
+	return string(purple_user_dir()) + "/buddy_icon/";
+}
+
+bool IM::setStatus(string away)
+{
+	away = strlower(away);
+	PurpleStatusPrimitive prim = PURPLE_STATUS_AVAILABLE;
+	if(away.empty() == false)
+	{
+		unsigned i;
+		string status_list;
+		for(i = 0; i < (unsigned)PURPLE_STATUS_NUM_PRIMITIVES &&
+		           strlower(purple_primitive_get_name_from_type((PurpleStatusPrimitive)i)) != away &&
+			   purple_primitive_get_id_from_type((PurpleStatusPrimitive)i) != away;
+		    ++i)
+			status_list += string(" ") + purple_primitive_get_id_from_type((PurpleStatusPrimitive)i);
+
+		if(i >= PURPLE_STATUS_NUM_PRIMITIVES)
+		{
+			irc->notice(irc->getUser(), "Warning: This message does not exist. Try with:");
+			irc->notice(irc->getUser(), status_list);
+			prim = PURPLE_STATUS_EXTENDED_AWAY;
+		}
+		else
+		{
+			prim = (PurpleStatusPrimitive)i;
+			away = purple_primitive_get_name_from_type(prim);
+		}
+	}
+
+	PurpleSavedStatus* status = purple_savedstatus_find_transient_by_type_and_message(prim, purple_primitive_get_name_from_type(prim));
+	if(!status)
+	{
+		status = purple_savedstatus_new(NULL, prim);
+		purple_savedstatus_set_message(status, away.c_str());
+	}
+	purple_savedstatus_activate(status);
+
+	return true;
 }
 
 }; /* namespace im */
