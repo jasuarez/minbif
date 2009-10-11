@@ -298,10 +298,12 @@ void Buddy::removed_node(PurpleBuddyList *list, PurpleBlistNode *node)
 	if (PURPLE_BLIST_NODE_IS_BUDDY(node))
 	{
 		Buddy buddy = Buddy((PurpleBuddy*)node);
-		irc::Nick* n = Purple::getIM()->getIRC()->getNick(buddy);
+		irc::Buddy* n = dynamic_cast<irc::Buddy*>(Purple::getIM()->getIRC()->getNick(buddy));
 		if(n)
 		{
 			n->quit("Removed");
+			if(n->getConversation().isValid() && n->getConversation().getNick() == n)
+				n->getConversation().setNick(NULL);
 			Purple::getIM()->getIRC()->removeNick(n->getNickname());
 		}
 	}

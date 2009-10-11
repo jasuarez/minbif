@@ -290,13 +290,9 @@ Nick* IRC::getNick(const im::Buddy& buddy) const
 Nick* IRC::getNick(const im::Conversation& conv) const
 {
 	map<string, Nick*>::const_iterator it;
-	Buddy* nb;
-	ChatBuddy* cb;
-	UnknownBuddy* ub;
+	ConvNick* n;
 	for(it = users.begin();
-	    it != users.end() && (!(nb = dynamic_cast<Buddy*>(it->second)) || nb->getConversation() != conv)
-	                      && (!(cb = dynamic_cast<ChatBuddy*>(it->second)) || cb->getConversation() != conv)
-	                      && (!(ub = dynamic_cast<UnknownBuddy*>(it->second)) || ub->getConversation() != conv);
+	    it != users.end() && (!(n = dynamic_cast<ConvNick*>(it->second)) || n->getConversation() != conv);
 	    ++it)
 		;
 

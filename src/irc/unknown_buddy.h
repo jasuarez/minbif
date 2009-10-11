@@ -26,7 +26,7 @@ namespace irc
 {
 
 	/** This class represents an unknown buddy on IRC */
-	class UnknownBuddy : public Nick
+	class UnknownBuddy : public ConvNick
 	{
 		im::Conversation conv;
 
@@ -53,6 +53,7 @@ namespace irc
 		virtual bool isOnline() const { return true; }
 
 		im::Conversation getConversation() const { return conv; }
+		void setConversation(const im::Conversation& c) { conv = c; }
 
 		/** Get buddy's real name. */
 		virtual string getRealName() const;

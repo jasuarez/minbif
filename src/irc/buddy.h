@@ -27,7 +27,7 @@ namespace irc
 {
 
 	/** This class represents a buddy on IRC */
-	class Buddy : public Nick
+	class Buddy : public ConvNick
 	{
 		im::Buddy im_buddy;
 		im::Conversation conv;
@@ -59,6 +59,7 @@ namespace irc
 
 		im::Buddy getBuddy() const { return im_buddy; }
 		im::Conversation getConversation() const { return conv; }
+		void setConversation(const im::Conversation& c) { conv = c; }
 
 		/** Get icon in an coloured ASCII-art form. */
 		virtual CacaImage getIcon() const;

@@ -236,4 +236,10 @@ void Nick::m_mode(Nick* user, Message m)
 					    .addArg("Permission Denied: Insufficient privileges"));
 }
 
+ConvNick::ConvNick(Server* server, string nickname, string identname, string hostname, string realname)
+	: Nick(server, nickname, identname, hostname, realname)
+{
+
+}
+
 }; /* namespace irc */

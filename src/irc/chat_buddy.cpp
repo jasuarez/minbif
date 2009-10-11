@@ -26,7 +26,7 @@
 namespace irc {
 
 ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
-	: Nick(server, "","","",""),
+	: ConvNick(server, "","","",""),
 	  im_cbuddy(_cbuddy)
 {
 	string hostname = im_cbuddy.getRealName();
@@ -48,8 +48,6 @@ ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
 
 ChatBuddy::~ChatBuddy()
 {
-	if(conv.isValid())
-		conv.leave();
 }
 
 void ChatBuddy::send(Message m)
@@ -63,6 +61,7 @@ void ChatBuddy::send(Message m)
 			{
 				conv = im::Conversation(im_cbuddy.getAccount(), im_cbuddy);
 				conv.present();
+				conv.setNick(this);
 			}
 			conv.sendMessage(text);
 		}

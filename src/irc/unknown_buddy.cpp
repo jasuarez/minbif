@@ -25,7 +25,7 @@
 namespace irc {
 
 UnknownBuddy::UnknownBuddy(Server* server, im::Conversation _conv)
-	: Nick(server, "","","",""),
+	: ConvNick(server, "","","",""),
 	  conv(_conv)
 {
 	string hostname = conv.getName();
@@ -47,8 +47,6 @@ UnknownBuddy::UnknownBuddy(Server* server, im::Conversation _conv)
 
 UnknownBuddy::~UnknownBuddy()
 {
-	if(conv.isValid())
-		conv.leave();
 }
 
 void UnknownBuddy::send(Message m)

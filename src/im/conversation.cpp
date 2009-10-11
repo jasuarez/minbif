@@ -185,6 +185,31 @@ PurpleConversationType Conversation::getType() const
 	return purple_conversation_get_type(conv);
 }
 
+void Conversation::setNick(irc::Nick* n)
+{
+	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_IM);
+
+	irc::Nick* last = getNick();
+	conv->ui_data = n;
+
+	if(last && last != n)
+	{
+		if(dynamic_cast<irc::UnknownBuddy*>(last))
+		{
+			irc::IRC* irc = Purple::getIM()->getIRC();
+			irc->removeNick(last->getNickname());
+		}
+	}
+}
+
+irc::Nick* Conversation::getNick() const
+{
+	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_IM);
+	return static_cast<irc::Nick*>(conv->ui_data);
+}
+
 void Conversation::present() const
 {
 	assert(isValid());
@@ -255,7 +280,7 @@ PurpleConvIm* Conversation::getPurpleIm() const
 	return PURPLE_CONV_IM(conv);
 }
 
-void Conversation::sendMessage(string text) const
+void Conversation::sendMessage(string text)
 {
 	assert(isValid());
 
@@ -322,7 +347,7 @@ void Conversation::sendMessage(string text) const
 	purple_idle_touch();
 }
 
-void Conversation::recvMessage(string from, string text, bool action) const
+void Conversation::recvMessage(string from, string text, bool action)
 {
 	assert(isValid());
 	irc::IRC* irc = Purple::getIM()->getIRC();
@@ -330,21 +355,27 @@ void Conversation::recvMessage(string from, string text, bool action) const
 	{
 		case PURPLE_CONV_TYPE_IM:
 		{
-			irc::Nick* n = irc->getNick(*this);
-
+			irc::Nick* n = getNick();
 			if(!n)
 			{
-				/* If there isn't any conversation, try to find a buddy. */
-				n = irc->getNick(from);
-
-				if(!n || !dynamic_cast<irc::Buddy*>(n))
+				/* There isn't any Nick associated to this conversation. Try to
+				 * find a Nick with this conversation object. */
+				n = irc->getNick(*this);
+				if(!n)
 				{
-					/* Ok, there isn't any buddy, so I create an unknown buddy to chat with him. */
-					n = new irc::UnknownBuddy(irc->getServer(getAccount().getServername()), *this);
-					while((irc->getNick(n->getNickname())))
-						n->setNickname(n->getNickname() + "_");
-					irc->addNick(n);
+					/* If there isn't any conversation, try to find a buddy. */
+					n = irc->getNick(from);
+
+					if(!n || !dynamic_cast<irc::Buddy*>(n))
+					{
+						/* Ok, there isn't any buddy, so I create an unknown buddy to chat with him. */
+						n = new irc::UnknownBuddy(irc->getServer(getAccount().getServername()), *this);
+						while((irc->getNick(n->getNickname())))
+							n->setNickname(n->getNickname() + "_");
+						irc->addNick(n);
+					}
 				}
+				setNick(n);
 			}
 
 			string line;
@@ -628,7 +659,7 @@ void Conversation::topic_changed(PurpleConversation* c, const char* who, const c
 		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
 		return;
 	}
-	irc::ChanUser* chanuser = 0;
+	irc::ChanUser* chanuser = NULL;
 	if(who)
 		chanuser = chan->getChanUser(who);
 	chan->setTopic(chanuser, topic ? topic : "");
@@ -640,20 +671,17 @@ void Conversation::buddy_typing(PurpleAccount* account, const char* who, gpointe
 		return;
 
 	Conversation conv(purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, who, account));
-	irc::IRC* irc = Purple::getIM()->getIRC();
-	PurpleConvIm *im = NULL;
-
 	if(!conv.isValid() || who == NULL)
 		return;
 
-	im = conv.getPurpleIm();
-
-	PurpleBuddy *buddy = purple_find_buddy(account, who);
-	irc::Nick* n = irc->getNick(buddy);
-
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::Nick* n = conv.getNick();
+	if(!n)
+		n = irc->getNick(conv);
 	if(!n)
 		return;
 
+	PurpleConvIm *im = conv.getPurpleIm();
 	if(purple_conv_im_get_typing_state(im) == PURPLE_TYPING)
 		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 							 .setReceiver(irc->getUser())

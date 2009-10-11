@@ -22,6 +22,11 @@
 #include <libpurple/purple.h>
 #include <string>
 
+namespace irc
+{
+	class Nick;
+}
+
 namespace im
 {
 	using std::string;
@@ -79,13 +84,16 @@ namespace im
 		Account getAccount() const;
 		PurpleConversationType getType() const;
 
+		void setNick(irc::Nick* n);
+		irc::Nick* getNick() const;
+
 		void createChannel() const;
 		void destroyChannel() const;
 
 		void present() const;
 		void leave();
-		void sendMessage(string text) const;
-		void recvMessage(string from, string text, bool action = false) const;
+		void sendMessage(string text);
+		void recvMessage(string from, string text, bool action = false);
 
 		void invite(const string& buddy, const string& message);
 	};
@@ -117,6 +125,6 @@ namespace im
 
 	};
 
-};
+}
 
 #endif /* IM_CONVERSATION_H */

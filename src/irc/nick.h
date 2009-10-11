@@ -25,6 +25,11 @@
 
 class CacaImage;
 
+namespace im
+{
+	class Conversation;
+}
+
 namespace irc
 {
 	class Server;
@@ -182,6 +187,15 @@ namespace irc
 
 		virtual CacaImage getIcon() const;
 		virtual string getIconPath() const { return ""; }
+	};
+
+	class ConvNick : public Nick
+	{
+	public:
+		ConvNick(Server* server, string nickname, string identname, string hostname, string realname="");
+
+		virtual im::Conversation getConversation() const = 0;
+		virtual void setConversation(const im::Conversation& c) = 0;
 	};
 
 }; /* namespace irc */
