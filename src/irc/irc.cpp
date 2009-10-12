@@ -1101,7 +1101,10 @@ void IRC::m_map(Message message)
 					;
 
 				if(option == options.end())
+				{
+					notice(user, "Key " + message.getArg(2) + " does not exist.");
 					return;
+				}
 
 				if(message.countArgs() < 4)
 					notice(user, option->getName() + " = " + option->getValue());
@@ -1224,7 +1227,10 @@ void IRC::m_admin(Message message)
 		;
 
 	if(i >= (sizeof settings / sizeof *settings))
+	{
+		notice(user, "Key " + message.getArg(0) + " does not exist.");
 		return;
+	}
 
 	if(message.countArgs() == 1)
 	{
