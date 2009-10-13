@@ -154,18 +154,21 @@ string Conversation::getName() const
 		return "";
 }
 
-string Conversation::getChanName() const
+string Conversation::normalizeIRCName(string name, const Account& acc)
 {
-	assert(isValid());
-
-	string name = getName();
 	for(string::iterator it = name.begin(); it != name.end(); ++it)
 		if(*it == ' ')
 			*it = '_';
 
-	string n = "#" + name + ":" + getAccount().getID();
+	string n = "#" + name + ":" + acc.getID();
 
 	return n;
+}
+
+string Conversation::getChanName() const
+{
+	assert(isValid());
+	return normalizeIRCName(getName(), getAccount());
 }
 
 string Conversation::getChanTopic() const

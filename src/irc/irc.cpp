@@ -1389,20 +1389,32 @@ void IRC::m_part(Message message)
 /** LIST */
 void IRC::m_list(Message message)
 {
-	user->send(Message(RPL_LISTSTART).setSender(this)
-					 .setReceiver(user)
-					 .addArg("Channel")
-					 .addArg("Users  Name"));
+	if(message.countArgs() == 0)
+	{
+		user->send(Message(RPL_LISTSTART).setSender(this)
+						 .setReceiver(user)
+						 .addArg("Channel")
+						 .addArg("Users  Name"));
+		for(map<string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
+			user->send(Message(RPL_LIST).setSender(this)
+						    .setReceiver(user)
+						    .addArg(it->second->getName())
+						    .addArg(t2s(it->second->countUsers())));
 
-	for(map<string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it)
-		user->send(Message(RPL_LIST).setSender(this)
-					    .setReceiver(user)
-					    .addArg(it->second->getName())
-					    .addArg(t2s(it->second->countUsers())));
-
-	user->send(Message(RPL_LISTEND).setSender(this)
-				       .setReceiver(user)
-				       .addArg("End of /LIST"));
+		user->send(Message(RPL_LISTEND).setSender(this)
+					       .setReceiver(user)
+					       .addArg("End of /LIST"));
+		return;
+	}
+	im::Account account = im->getAccount(message.getArg(0));
+	if(!account.isValid() || !account.isConnected())
+	{
+		user->send(Message(RPL_LISTEND).setSender(this)
+					       .setReceiver(user)
+					       .addArg("End of /LIST"));
+		return;
+	}
+	account.displayRoomList();
 }
 
 /** MODE target [modes ..] */

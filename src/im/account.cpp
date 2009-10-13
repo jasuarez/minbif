@@ -246,6 +246,12 @@ vector<Buddy> Account::getBuddies() const
 	return buddies;
 }
 
+void Account::displayRoomList() const
+{
+	assert(isValid());
+	purple_roomlist_get_list(account->gc);
+}
+
 void Account::connect() const
 {
 	assert(isValid());

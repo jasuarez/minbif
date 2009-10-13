@@ -24,6 +24,7 @@
 #include "buddy.h"
 #include "conversation.h"
 #include "request.h"
+#include "roomlist.h"
 #include "ft.h"
 #include "media.h"
 #include "irc/irc.h"
@@ -149,6 +150,7 @@ void Purple::init(IM* im)
 void Purple::inited()
 {
 	Account::init();
+	RoomList::init();
 	Buddy::init();
 	Conversation::init();
 	Request::init();
@@ -171,6 +173,7 @@ void Purple::uninit()
 	if(ui_info)
 		g_hash_table_destroy(ui_info);
 	Account::uninit();
+	RoomList::uninit();
 	Buddy::uninit();
 	Conversation::uninit();
 	Request::uninit();

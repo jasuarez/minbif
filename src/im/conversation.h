@@ -79,6 +79,7 @@ namespace im
 		PurpleConvIm* getPurpleIm() const;
 
 		string getName() const;
+		static string normalizeIRCName(string name, const Account& acc);
 		string getChanName() const;
 		string getChanTopic() const;
 		Account getAccount() const;

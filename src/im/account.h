@@ -116,6 +116,11 @@ namespace im
 
 		void setBuddyIcon(const string& filename);
 
+		/** Get room list from this account.
+		 * The roomlist callbacks will be called.
+		 */
+		void displayRoomList() const;
+
 		/** Get name of IRC server linked to this account.
 		 *
 		 * @return  a string in form \a "<username>:<protocol><number>"
