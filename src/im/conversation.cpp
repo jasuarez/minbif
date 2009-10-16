@@ -244,6 +244,8 @@ void Conversation::invite(const string& buddy, const string& message)
 void Conversation::createChannel() const
 {
 	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_CHAT);
+
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	irc::ConversationChannel* chan = new irc::ConversationChannel(irc, *this);
 
@@ -267,6 +269,8 @@ void Conversation::createChannel() const
 void Conversation::destroyChannel() const
 {
 	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_CHAT);
+
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	irc->removeChannel(getChanName());
 }

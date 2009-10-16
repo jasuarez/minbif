@@ -203,6 +203,7 @@ bool IM::setStatus(string away)
 	{
 		unsigned i;
 		string status_list;
+		/* Looking for an existant status equivalent to the away message. */
 		for(i = 0; i < (unsigned)PURPLE_STATUS_NUM_PRIMITIVES &&
 		           strlower(purple_primitive_get_name_from_type((PurpleStatusPrimitive)i)) != away &&
 			   purple_primitive_get_id_from_type((PurpleStatusPrimitive)i) != away;
@@ -211,6 +212,8 @@ bool IM::setStatus(string away)
 
 		if(i >= PURPLE_STATUS_NUM_PRIMITIVES)
 		{
+			/* If the status does not exist, set the EXTENDED_AWAY status and set the message
+			 * given in the \b away string as the status message. */
 			irc->notice(irc->getUser(), "Warning: This message does not exist. Try with:");
 			irc->notice(irc->getUser(), status_list);
 			prim = PURPLE_STATUS_EXTENDED_AWAY;

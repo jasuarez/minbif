@@ -75,6 +75,7 @@ namespace im
 		/** Get path to user settings */
 		string getUserPath() const { return user_path; }
 
+		/** Get username of this account. */
 		string getUsername() const { return username; }
 
 		/** Set user password */
@@ -85,10 +86,17 @@ namespace im
 		void setTypingNotice(bool enabled);
 		bool hasTypingNotice() const;
 
+		/** Set away idle */
 		void setAwayIdle(bool enabled);
 		bool hasAwayIdle() const;
 
+		/** Set path to the buddy icon.
+		 *
+		 * This buddy icon will used on every IM accounts.
+		 */
 		void setBuddyIcon(string path);
+
+		/** Get path to current buddy icon. */
 		string getBuddyIconPath() const;
 
 		irc::IRC* getIRC() const { return irc; }

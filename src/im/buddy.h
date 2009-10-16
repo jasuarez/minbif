@@ -96,6 +96,7 @@ namespace im
 		 */
 		CacaImage getIcon() const;
 
+		/** Get path to the icon. */
 		string getIconPath() const;
 
 		PurpleGroup* getPurpleGroup() const;

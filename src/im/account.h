@@ -44,7 +44,7 @@ namespace im
 		static PurpleConnectionUiOps conn_ops;
 		static PurpleAccountUiOps acc_ops;
 		static void* getHandler();
-		static void account_signed_off_cb(PurpleConnection *gc, gpointer event);
+		static void account_signed_on_cb(PurpleConnection *gc, gpointer event);
 		static void account_added(PurpleAccount*);
 		static void account_removed(PurpleAccount*);
 		static void notify_added(PurpleAccount *account, const char *remote_user,
@@ -114,6 +114,7 @@ namespace im
 		vector<Protocol::Option> getOptions() const;
 		void setOptions(vector<Protocol::Option>& options);
 
+		/** Set path to the buddy icon to use for this account. */
 		void setBuddyIcon(const string& filename);
 
 		/** Get room list from this account.
@@ -133,8 +134,15 @@ namespace im
 		/** Set status channel name */
 		void setStatusChannel(const string& c);
 
+		/** Enqueue a channel name to join at connection. */
 		void enqueueChannelJoin(const string& c);
+
+		/** Try to join every channels in queue.
+		 * It also remove them from queue.
+		 */
 		void flushChannelJoins();
+
+		/** Clear the channel joins queue without trying to join them. */
 		void abortChannelJoins();
 
 		Protocol getProtocol() const { return proto; }
@@ -143,6 +151,8 @@ namespace im
 
 		/** Auto reconnect to this account with a delay. */
 		int delayReconnect() const;
+
+		/** Abort the auto-reconnection. */
 		void removeReconnection(bool verbose = false) const;
 
 		/** \todo TODO implement it */

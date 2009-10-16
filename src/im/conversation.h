@@ -79,23 +79,72 @@ namespace im
 		PurpleConvIm* getPurpleIm() const;
 
 		string getName() const;
+
+		/** Get a normalized IRC channel name.
+		 *
+		 * On IRC, channels name must begin with '#' and are uniq.
+		 *
+		 * For a given channel on a given account, the IRC channel name
+		 * will be: "#name:accid".
+		 *
+		 * @param name  IM channel name
+		 * @param acc  account which hosts this channel
+		 * @return  an IRC channel name string.
+		 */
 		static string normalizeIRCName(string name, const Account& acc);
+
 		string getChanName() const;
 		string getChanTopic() const;
 		Account getAccount() const;
 		PurpleConversationType getType() const;
 
+		/** Set the irc::Nick* object associated to this conversation.
+		 *
+		 * It is valid only if this is an IM conversation.
+		 *
+		 * @param n  irc::Nick object
+		 * @param purge_unknown  if the current associated nick is an
+		 *                       irc::UnknownBuddy object, purge it
+		 *                       from IRC.
+		 */
 		void setNick(irc::Nick* n, bool purge_unknown = true);
+
+		/** Get the irc::Nick* object associated to this conversation. */
 		irc::Nick* getNick() const;
 
+		/** Create the IRC channel associated to this conversation. */
 		void createChannel() const;
+
+		/** Destroy the IRC channel associated to this conversation. */
 		void destroyChannel() const;
 
+		/** Present the conversation to user. */
 		void present() const;
+
+		/** Leave the conversation. */
 		void leave();
+
+		/** Send a message in this conversation.
+		 *
+		 * @param text  text to send.
+		 */
 		void sendMessage(string text);
+
+		/** A message is received, this function present it to user.
+		 *
+		 * @param from  nickname of sender
+		 * @param text  text message
+		 * @param action  this is an action (/me)
+		 */
 		void recvMessage(string from, string text, bool action = false);
 
+		/** Invite a buddy into this conversation.
+		 *
+		 * This is available only for the CHAT conversations.
+		 *
+		 * @param buddy  buddy's name
+		 * @param message  message to send with invitation.
+		 */
 		void invite(const string& buddy, const string& message);
 	};
 

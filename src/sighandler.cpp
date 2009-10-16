@@ -72,6 +72,10 @@ bool SigHandler::quit(void*)
 
 void SigHandler::handler(int r)
 {
+	/* A signal handler MUST NOT take time, and call any else function
+	 * than g_timeout*. This is because we are in an unsafe state, as
+	 * the stack is interromped.
+	 */
 	switch(r)
 	{
 		case SIGCHLD:
@@ -91,6 +95,7 @@ void SigHandler::handler(int r)
 			g_timeout_add(0, g_callback_delete, new CallBack<SigHandler>(&sighandler, &SigHandler::quit));
 			break;
 		default:
+			/* This signal is not catched by minbif, so raise it. */
 			raise(r);
 	}
 }

@@ -267,6 +267,7 @@ void Account::disconnect() const
 
 int Account::delayReconnect() const
 {
+	assert(isValid());
 	int delay = purple_account_get_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", 15);
 	delay *= 2;
 
@@ -279,6 +280,7 @@ int Account::delayReconnect() const
 
 void Account::removeReconnection(bool verbose) const
 {
+	assert(isValid());
 	int id = purple_account_get_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
 	if(id >= 0)
 	{
@@ -513,7 +515,7 @@ void Account::init()
 				getHandler(), PURPLE_CALLBACK(account_removed),
 				NULL);
 	purple_signal_connect(purple_connections_get_handle(), "signed-on", getHandler(),
-				G_CALLBACK(account_signed_off_cb),
+				G_CALLBACK(account_signed_on_cb),
 				GINT_TO_POINTER(PURPLE_CONV_ACCOUNT_ONLINE));
 
 
@@ -763,11 +765,12 @@ void Account::connected(PurpleConnection* gc)
 
 }
 
-void Account::account_signed_off_cb(PurpleConnection *gc, gpointer event)
+void Account::account_signed_on_cb(PurpleConnection *gc, gpointer event)
 {
 	Account account = Account(gc->account);
 	GList* list = purple_get_chats();
 
+	/* Rejoin channels. */
 	for(; list; list = list->next)
 	{
 		PurpleChat *chat;
@@ -802,6 +805,8 @@ void Account::disconnected(PurpleConnection* gc)
 	GList* list = purple_get_chats();
 
 	account.abortChannelJoins();
+
+	/* Enqueue channels to auto-rejoin. */
 	for(; list; list = list->next)
 	{
 		Conversation c((PurpleConversation*)list->data);
@@ -816,7 +821,6 @@ void Account::disconnected(PurpleConnection* gc)
 		else
 			purple_conversation_set_data(c.getPurpleConversation(), "want-to-rejoin", GINT_TO_POINTER(TRUE));
 	}
-
 
 	b_log[W_INFO|W_SNO] << "Closing link with " << account.getServername();
 	Purple::getIM()->getIRC()->removeServer(account.getServername());

@@ -38,8 +38,8 @@ namespace irc
 
 		/** Build buddy object
 		 *
+		 * @param im  IM instance
 		 * @param server  up-server
-		 * @param buddy  IM buddy object.
 		 */
 		BuddyIcon(im::IM* im, Server* server);
 		~BuddyIcon();

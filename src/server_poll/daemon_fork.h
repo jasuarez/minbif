@@ -33,6 +33,7 @@ using std::vector;
 
 class DaemonForkServerPoll : public ServerPoll
 {
+	/** IPC child data structure */
 	struct child_t
 	{
 		int fd;
@@ -40,6 +41,7 @@ class DaemonForkServerPoll : public ServerPoll
 		_CallBack* read_cb;
 	};
 
+	/** IPC commands array. */
 	static struct ipc_cmds_t
 	{
 		const char* cmd;
@@ -47,10 +49,20 @@ class DaemonForkServerPoll : public ServerPoll
 		unsigned min_args;
 	} ipc_cmds[];
 
-	void m_wallops(child_t* child, irc::Message m);
-	void m_rehash(child_t* child, irc::Message m);
-	void m_die(child_t* child, irc::Message m);
-	void m_oper(child_t* child, irc::Message m);
+	/** \page IPC
+	 *
+	 * Daemon fork mode forks everytimes there is a new connection.
+	 *
+	 * Communication between children and parent is made with two sockets
+	 * that are shared. Every commands are formatted like an IRC command,
+	 * and the irc::Message class can be used to parse or format commands.
+	 * Note that it is forbidden to set a sender or a receiver.
+	 *
+	 */
+	void m_wallops(child_t* child, irc::Message m);     /**< IPC handler for the WALLOPS command. */
+	void m_rehash(child_t* child, irc::Message m);      /**< IPC handler for the REHASH command. */
+	void m_die(child_t* child, irc::Message m);         /**< IPC handler for the DIE command. */
+	void m_oper(child_t* child, irc::Message m);        /**< IPC handler for the OPER command. */
 
 	irc::IRC* irc;
 	int sock;
@@ -59,8 +71,30 @@ class DaemonForkServerPoll : public ServerPoll
 	vector<child_t*> childs;
 
 	bool ipc_read(void*);
+
+	/** Master sends a IPC message to a child.
+	 *
+	 * @param child  child data structure
+	 * @param m  message to send
+	 * @return  true if the message has correctly been sent.
+	 */
 	bool ipc_master_send(child_t* child, const irc::Message& m);
+
+	/** Master broadcasts a IPC message to every children.
+	 *
+	 * @param m  message to send
+	 * @param butone  optional argument. If != NULL, the message is sent
+	 *                to everybody except this one
+	 * @return  true if the message has correctly been sent to at least
+	 *               one child
+	 */
 	bool ipc_master_broadcast(const irc::Message& m, child_t* butone = NULL);
+
+	/** Child send a message to his master.
+	 *
+	 * @param m  message to send
+	 * @return  true if the message has correctly been sent.
+	 */
 	bool ipc_child_send(const irc::Message& m);
 
 public:

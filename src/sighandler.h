@@ -25,15 +25,20 @@ class SigHandler
 {
 	Minbif* app;
 
+	/** Handler called by libc */
 	static void handler(int r);
-	bool rehash(void*);
-	bool quit(void*);
+
+	bool rehash(void*);    /**< rehash callback */
+	bool quit(void*);      /**< quit callback */
 
 public:
 
 	SigHandler();
 	~SigHandler();
 
+	/** Assign an application object to the sighandler.
+	 * @param app  Minbif instance.
+	 */
 	void setApplication(Minbif* app);
 };
 
