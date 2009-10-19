@@ -355,6 +355,7 @@ void IRC::removeServer(string servername)
 		for(map<string, Nick*>::iterator nt = users.begin(); nt != users.end();)
 			if(nt->second->getServer() == it->second)
 			{
+				nt->second->quit(it->second->getName() + " " + getName());
 				delete nt->second;
 				users.erase(nt);
 				nt = users.begin();
@@ -1066,7 +1067,6 @@ void IRC::m_map(Message message)
 				if(channel.empty())
 					channel = "&minbif";
 				added_account.setStatusChannel(channel);
-				added_account.createStatusChannel();
 
 				break;
 			}

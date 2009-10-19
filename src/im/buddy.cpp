@@ -92,6 +92,20 @@ void Buddy::setAlias(string alias) const
 	serv_alias_buddy(buddy);
 }
 
+irc::Buddy* Buddy::getNick() const
+{
+	assert(isValid());
+	PurpleBlistNode* node = PURPLE_BLIST_NODE(buddy);
+	return static_cast<irc::Buddy*>(node->ui_data);
+}
+
+void Buddy::setNick(irc::Buddy* b)
+{
+	assert(isValid());
+	PurpleBlistNode* node = PURPLE_BLIST_NODE(buddy);
+	node->ui_data = b;
+}
+
 void Buddy::retrieveInfo() const
 {
 	assert(isValid());
@@ -105,6 +119,36 @@ void Buddy::sendFile(string filename)
 	serv_send_file(purple_account_get_connection(purple_buddy_get_account(buddy)),
 		       purple_buddy_get_name(buddy),
 		       filename.c_str());
+}
+
+void Buddy::updated() const
+{
+	string channame = getAccount().getStatusChannel();
+	if(channame.empty())
+		return;
+
+	irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
+
+	if(!chan)
+		return;
+
+	irc::Buddy* n = getNick();
+	if(isOnline())
+	{
+		irc::ChanUser* chanuser = n->getChanUser(chan);
+		if(!chanuser)
+			n->join(chan, isAvailable() ? irc::ChanUser::VOICE : 0);
+		else if(isAvailable() ^ chanuser->hasStatus(irc::ChanUser::VOICE))
+		{
+			if(isAvailable())
+				chan->setMode(Purple::getIM()->getIRC(), irc::ChanUser::VOICE, chanuser);
+			else
+				chan->delMode(Purple::getIM()->getIRC(), irc::ChanUser::VOICE, chanuser);
+		}
+
+	}
+	else if(n->isOn(chan))
+		n->quit("Signed-Off");
 }
 
 string Buddy::getRealName() const
@@ -245,7 +289,7 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 	if (PURPLE_BLIST_NODE_IS_BUDDY(node))
 	{
 		Buddy buddy = Buddy((PurpleBuddy*)node);
-		irc::Nick* n = Purple::getIM()->getIRC()->getNick(buddy);
+		irc::Buddy* n = buddy.getNick();
 		if(!n)
 		{
 			irc::Server* server = Purple::getIM()->getIRC()->getServer(buddy.getAccount().getServername());
@@ -267,29 +311,7 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 		if(buddy.getAlias() != n->getNickname())
 			buddy.setAlias(n->getNickname());
 
-		string channame = buddy.getAccount().getStatusChannel();
-		irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
-
-		if(chan)
-		{
-			if(buddy.isOnline())
-			{
-				irc::ChanUser* chanuser = n->getChanUser(chan);
-				if(!chanuser)
-					n->join(chan, buddy.isAvailable() ? irc::ChanUser::VOICE : 0);
-				else if(buddy.isAvailable() ^ chanuser->hasStatus(irc::ChanUser::VOICE))
-				{
-					if(buddy.isAvailable())
-						chan->setMode(Purple::getIM()->getIRC(), irc::ChanUser::VOICE, chanuser);
-					else
-						chan->delMode(Purple::getIM()->getIRC(), irc::ChanUser::VOICE, chanuser);
-				}
-
-			}
-			else if(!buddy.isOnline() && n->isOn(chan))
-				n->quit("Leaving...");
-		}
-
+		buddy.updated();
 	}
 }
 
@@ -298,7 +320,9 @@ void Buddy::removed_node(PurpleBuddyList *list, PurpleBlistNode *node)
 	if (PURPLE_BLIST_NODE_IS_BUDDY(node))
 	{
 		Buddy buddy = Buddy((PurpleBuddy*)node);
-		irc::Buddy* n = dynamic_cast<irc::Buddy*>(Purple::getIM()->getIRC()->getNick(buddy));
+		irc::Buddy* n = buddy.getNick();
+		if(!n)
+			n = dynamic_cast<irc::Buddy*>(Purple::getIM()->getIRC()->getNick(buddy));
 		if(n)
 		{
 			n->quit("Removed");

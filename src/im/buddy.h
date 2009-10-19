@@ -24,6 +24,11 @@
 
 #include "caca_image.h"
 
+namespace irc
+{
+	class Buddy;
+};
+
 namespace im
 {
 	using std::string;
@@ -77,11 +82,20 @@ namespace im
 		/** Get IM real name */
 		string getRealName() const;
 
+		/** Get IRC Nick object. */
+		irc::Buddy* getNick() const;
+
+		/** Set IRC Nick object. */
+		void setNick(irc::Buddy* irc_buddy);
+
 		/** Ask server to send server info.
 		 *
 		 * It'll be showed with notify_userinfo callback.
 		 */
 		void retrieveInfo() const;
+
+		/** Buddy has been updated, so change his IRC status. */
+		void updated() const;
 
 		/** Send a file to this buddy. */
 		void sendFile(string filename);

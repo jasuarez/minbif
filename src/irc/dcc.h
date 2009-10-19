@@ -84,28 +84,28 @@ namespace irc {
 		void setPeer(Nick* n) { sender = n; }
 	};
 
+	/** The DCC class used to send a file to a IRC user.
+	 *
+	 * An instance of this class is created when a file transfert starts
+	 * on im->minbif. It creates a DCC server on a random port.
+	 *
+	 * When IRC user is connected on server, try to open the file that
+	 * libpurple is currently writting. If success, read 512 bytes and
+	 * send it to IRC user with DCC connection.
+	 *
+	 * Everytimes we receive an ACK from IRC user on DCC connection, or
+	 * when libpurple sends us a percentage update, retry to send data
+	 * to DCC user.
+	 *
+	 * When im->minbif transfert is finished, the minbif->irc transfert
+	 * isn't finished. So the 'ft' reference is removed, and this is the
+	 * read callback which ask to retry to send data to DCC user from
+	 * file.
+	 *
+	 * The file descriptor keeps open.
+	 */
 	class DCCSend : public DCCServer
 	{
-		/** The DCC class used to send a file to a IRC user.
-		 *
-		 * An instance of this class is created when a file transfert starts
-		 * on im->minbif. It creates a DCC server on a random port.
-		 *
-		 * When IRC user is connected on server, try to open the file that
-		 * libpurple is currently writting. If success, read 512 bytes and
-		 * send it to IRC user with DCC connection.
-		 *
-		 * Everytimes we receive an ACK from IRC user on DCC connection, or
-		 * when libpurple sends us a percentage update, retry to send data
-		 * to DCC user.
-		 *
-		 * When im->minbif transfert is finished, the minbif->irc transfert
-		 * isn't finished. So the 'ft' reference is removed, and this is the
-		 * read callback which ask to retry to send data to DCC user from
-		 * file.
-		 *
-		 * The file descriptor keeps open.
-		 */
 		im::FileTransfert ft;
 
 		string local_filename;

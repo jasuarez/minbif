@@ -28,6 +28,7 @@
 #include "irc/irc.h"
 #include "irc/status_channel.h"
 #include "irc/user.h"
+#include "irc/buddy.h"
 
 namespace im {
 
@@ -174,7 +175,10 @@ string Account::getStatusChannel() const
 void Account::setStatusChannel(const string& c)
 {
 	assert(isValid());
+
+	leaveStatusChannel();
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "channel", c.c_str());
+	createStatusChannel();
 }
 
 void Account::enqueueChannelJoin(const string& c)
@@ -243,6 +247,16 @@ vector<Buddy> Account::getBuddies() const
 {
 	assert(isValid());
 	vector<Buddy> buddies;
+	GSList* bl = purple_find_buddies(account, NULL);
+	GSList* cur;
+
+	for(cur = bl; cur != NULL; cur = cur->next)
+	{
+		PurpleBuddy* b = PURPLE_BUDDY(cur->data);
+		buddies.push_back(Buddy(b));
+	}
+	g_slist_free(bl);
+
 	return buddies;
 }
 
@@ -312,6 +326,10 @@ void Account::createStatusChannel() const
 		irc->getUser()->join(chan, irc::ChanUser::OP);
 	}
 	chan->addAccount(*this);
+
+	vector<Buddy> buddies = getBuddies();
+	for(vector<Buddy>::iterator b = buddies.begin(); b != buddies.end(); ++b)
+		b->updated();
 }
 
 void Account::leaveStatusChannel() const
@@ -328,6 +346,10 @@ void Account::leaveStatusChannel() const
 	chan = dynamic_cast<irc::StatusChannel*>(irc->getChannel(channame));
 	if(chan)
 		chan->removeAccount(*this);
+
+	vector<Buddy> buddies = getBuddies();
+	for(vector<Buddy>::iterator b = buddies.begin(); b != buddies.end(); ++b)
+		b->getNick()->quit(b->getNick()->getServer()->getName() + " " + irc->getName());
 }
 
 vector<string> Account::getDenyList() const

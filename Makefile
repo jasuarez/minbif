@@ -7,7 +7,7 @@ all: build.minbif/Makefile
 
 build.minbif/Makefile:
 	[ -d build.minbif ] || mkdir build.minbif; \
-	cd build.minbif && cmake $(CMAKE_OPTIONS) ..
+	cd build.minbif && cmake $(CMAKE_OPTIONS) .. || cd .. && rm -rf build.minbif
 
 install:
 	make -C build.minbif install

@@ -52,12 +52,16 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 	setNickname(nickname);
 	setIdentname(identname);
 	setHostname(hostname);
+
+	im_buddy.setNick(this);
 }
 
 Buddy::~Buddy()
 {
 	if(conv.isValid() && conv.getNick() == this)
 		conv.setNick(NULL);
+	if(im_buddy.isValid())
+		im_buddy.setNick(NULL);
 }
 
 void Buddy::send(Message m)
