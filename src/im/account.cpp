@@ -388,7 +388,8 @@ void Account::leaveStatusChannel() const
 
 	vector<Buddy> buddies = getBuddies();
 	for(vector<Buddy>::iterator b = buddies.begin(); b != buddies.end(); ++b)
-		b->getNick()->quit(b->getNick()->getServer()->getName() + " " + irc->getName());
+		if(b->getNick())
+			b->getNick()->part(chan, "Leaving status channel");
 }
 
 vector<string> Account::getDenyList() const

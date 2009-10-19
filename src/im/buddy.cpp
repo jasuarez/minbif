@@ -95,14 +95,14 @@ void Buddy::setAlias(string alias) const
 irc::Buddy* Buddy::getNick() const
 {
 	assert(isValid());
-	PurpleBlistNode* node = PURPLE_BLIST_NODE(buddy);
+	PurpleBlistNode* node = (PurpleBlistNode*)buddy;
 	return static_cast<irc::Buddy*>(node->ui_data);
 }
 
 void Buddy::setNick(irc::Buddy* b)
 {
 	assert(isValid());
-	PurpleBlistNode* node = PURPLE_BLIST_NODE(buddy);
+	PurpleBlistNode* node = (PurpleBlistNode*)buddy;
 	node->ui_data = b;
 }
 
