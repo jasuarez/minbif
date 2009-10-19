@@ -226,17 +226,21 @@ Protocol Purple::getProtocolByPurpleID(string id)
 string Purple::getNewAccountName(Protocol proto)
 {
 	GList* list = purple_accounts_get_all();
+	GList* iter;
 	int i = 0;
 
-	for(; list; list = list->next)
+	for(iter = list; iter; iter = (iter ? iter->next : list))
 	{
-		Protocol account_proto = getProtocolByPurpleID(((PurpleAccount*)list->data)->protocol_id);
-		if(account_proto != proto)
+		Account acc((PurpleAccount*)iter->data);
+		if(acc.getProtocol() != proto)
 			continue;
 
-		string id = purple_account_get_ui_string(((PurpleAccount*)list->data), MINBIF_VERSION_NAME, "id", "");
+		string id = acc.getID();
 		if(id == proto.getID() + t2s(i))
+		{
 			i = s2t<int>(id.substr(proto.getID().size())) + 1;
+			iter = NULL; // restart
+		}
 	}
 	return proto.getID() + t2s(i);
 }
@@ -250,6 +254,7 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "id", id.c_str());
 
 	Account a(account);
+	a.setID(id);
 	a.setPassword(password);
 	a.setOptions(options);
 

@@ -104,6 +104,8 @@ namespace im
 		 */
 		string getID() const;
 
+		void setID(string id) const;
+
 		/** Get username of this account */
 		string getUsername() const;
 

@@ -101,6 +101,9 @@ vector<Protocol::Option> Account::getOptions() const
 				break;
 		}
 	}
+	/* Minbif specific prefs */
+	options.push_back(Protocol::Option(PURPLE_PREF_STRING, "accid", "ID", getID()));
+	options.push_back(Protocol::Option(PURPLE_PREF_STRING, "status_channel", "Status Channel", getStatusChannel()));
 	return options;
 }
 
@@ -114,9 +117,31 @@ void Account::setOptions(vector<Protocol::Option>& options)
 		switch(option.getType())
 		{
 			case PURPLE_PREF_STRING:
-				purple_account_set_string(account,
-						          option.getName().c_str(),
-							  option.getValue().c_str());
+				/* XXX This is fucking ugly. */
+				if(option.getName() == "accid")
+				{
+					if(getID() == option.getValue())
+						{}
+					else if(isConnected())
+						b_log[W_ERR] << "Can't change ID of a connected account";
+					else if(Purple::getIM()->getAccount(option.getValue()).isValid() == true)
+						b_log[W_ERR] << "This ID is already used.";
+					else
+						setID(option.getValue());
+				}
+				else if(option.getName() == "status_channel")
+				{
+					if(getStatusChannel() == option.getValue())
+						{}
+					else if(!irc::Channel::isChanName(option.getValue()) || !irc::Channel::isStatusChannel(option.getValue()))
+						b_log[W_ERR] << "'" << option.getValue() << "' is not a valid channel name";
+					else
+						setStatusChannel(option.getValue());
+				}
+				else
+					purple_account_set_string(account,
+								  option.getName().c_str(),
+								  option.getValue().c_str());
 				break;
 			case PURPLE_PREF_INT:
 				purple_account_set_int(account,
@@ -156,12 +181,21 @@ void Account::setBuddyIcon(const string& filename)
 
 }
 
+void Account::setID(string id) const
+{
+	assert(isValid());
+	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "id", id.c_str());
+}
+
 string Account::getID() const
 {
 	assert(isValid());
 	string n = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "id", "");
 	if(n.empty())
+	{
 		n = Purple::getNewAccountName(proto);
+		setID(n);
+	}
 	return n;
 }
 

@@ -35,9 +35,10 @@ string Protocol::Option::nameFromText(string s) const
 	return s;
 }
 
-Protocol::Option::Option(PurplePrefType _type, string _name, string _text)
+Protocol::Option::Option(PurplePrefType _type, string _name, string _text, string _value)
 	: type(_type),
 	  name(_name),
+	  value(_value),
 	  text(_text)
 {}
 

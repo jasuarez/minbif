@@ -45,7 +45,7 @@ namespace im
 
 		public:
 
-			Option(PurplePrefType type, string name, string text);
+			Option(PurplePrefType type, string name, string text, string value = "");
 			Option();
 
 			bool operator==(string s) const;
