@@ -281,12 +281,17 @@ vector<Buddy> Account::getBuddies() const
 {
 	assert(isValid());
 	vector<Buddy> buddies;
+	if(!purple_get_blist())
+		return buddies;
+
 	GSList* bl = purple_find_buddies(account, NULL);
 	GSList* cur;
 
 	for(cur = bl; cur != NULL; cur = cur->next)
 	{
-		PurpleBuddy* b = PURPLE_BUDDY(cur->data);
+		if(!PURPLE_BLIST_NODE_IS_BUDDY((PurpleBlistNode*)cur->data))
+			continue;
+		PurpleBuddy* b = (PurpleBuddy*)cur->data;
 		buddies.push_back(Buddy(b));
 	}
 	g_slist_free(bl);
