@@ -25,6 +25,7 @@
 namespace irc
 {
 	class Nick;
+	class ConversationChannel;
 }
 
 namespace im
@@ -112,6 +113,9 @@ namespace im
 		/** Get the irc::Nick* object associated to this conversation. */
 		irc::Nick* getNick() const;
 
+		void setChannel(irc::ConversationChannel* c) const;
+		irc::ConversationChannel* getChannel() const;
+
 		/** Create the IRC channel associated to this conversation. */
 		void createChannel() const;
 
@@ -165,6 +169,7 @@ namespace im
 		bool isValid() const { return cbuddy != NULL; }
 
 		string getName() const;
+		string getAlias() const;
 		string getRealName() const;
 		bool isMe() const;
 		int getChanStatus() const;

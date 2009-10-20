@@ -49,7 +49,13 @@ ChatBuddy::ChatBuddy()
 string ChatBuddy::getName() const
 {
 	assert(isValid());
-	return cbuddy->name;
+	return cbuddy->name ? cbuddy->name : "";
+}
+
+string ChatBuddy::getAlias() const
+{
+	assert(isValid());
+	return cbuddy->alias ? cbuddy->alias : getName();
 }
 
 string ChatBuddy::getRealName() const
@@ -213,6 +219,20 @@ irc::Nick* Conversation::getNick() const
 	return static_cast<irc::Nick*>(conv->ui_data);
 }
 
+void Conversation::setChannel(irc::ConversationChannel* c) const
+{
+	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_CHAT);
+	conv->ui_data = c;
+}
+
+irc::ConversationChannel* Conversation::getChannel() const
+{
+	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_CHAT);
+	return static_cast<irc::ConversationChannel*>(conv->ui_data);
+}
+
 void Conversation::present() const
 {
 	assert(isValid());
@@ -248,6 +268,10 @@ void Conversation::createChannel() const
 
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	irc::ConversationChannel* chan = new irc::ConversationChannel(irc, *this);
+	setChannel(chan);
+
+	while(irc->getChannel(chan->getName()))
+		chan->setName(chan->getName() + "_");
 
 	irc->addChannel(chan);
 
@@ -272,7 +296,7 @@ void Conversation::destroyChannel() const
 	assert(getType() == PURPLE_CONV_TYPE_CHAT);
 
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc->removeChannel(getChanName());
+	irc->removeChannel(getChannel()->getName());
 }
 
 PurpleConvChat* Conversation::getPurpleChat() const
@@ -398,7 +422,7 @@ void Conversation::recvMessage(string from, string text, bool action)
 		}
 		case PURPLE_CONV_TYPE_CHAT:
 		{
-			irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(getChanName()));
+			irc::ConversationChannel* chan = getChannel();
 			if(!chan)
 			{
 				b_log[W_WARNING] << "Received message in unknown chat " << getChanName() << ": " << text;
@@ -606,8 +630,7 @@ void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
 	{
 		ChatBuddy cbuddy = ChatBuddy(conv, (PurpleConvChatBuddy *)l->data);
 
-		irc::IRC* irc = Purple::getIM()->getIRC();
-		irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+		irc::ConversationChannel* chan = conv.getChannel();
 		if(!chan)
 		{
 			b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
@@ -620,8 +643,7 @@ void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
 void Conversation::remove_user(PurpleConversation* c, const char* cbname, const char *reason)
 {
 	Conversation conv(c);
-	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+	irc::ConversationChannel* chan = conv.getChannel();
 	if(!chan)
 	{
 		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
@@ -647,8 +669,7 @@ void Conversation::chat_rename_user(PurpleConversation *c, const char *old,
 		b_log[W_ERR] << "Rename from " << old << " to " << new_n << " (" << new_a << ") which is an unknown chat buddy";
 		return;
 	}
-	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+	irc::ConversationChannel* chan = conv.getChannel();
 	if(!chan)
 	{
 		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();
@@ -669,8 +690,7 @@ void Conversation::chat_rename_user(PurpleConversation *c, const char *old,
 void Conversation::topic_changed(PurpleConversation* c, const char* who, const char* topic)
 {
 	Conversation conv(c);
-	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc::ConversationChannel* chan = dynamic_cast<irc::ConversationChannel*>(irc->getChannel(conv.getChanName()));
+	irc::ConversationChannel* chan = conv.getChannel();
 	if(!chan)
 	{
 		b_log[W_ERR] << "Conversation channel doesn't exist: " << conv.getChanName();

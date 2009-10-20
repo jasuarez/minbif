@@ -77,6 +77,7 @@ void ConversationChannel::processRemoveBan(Nick* from, string nick, string ident
 void ConversationChannel::addBuddy(im::ChatBuddy cbuddy, int status)
 {
 	ChanUser* cul;
+	b_log[W_ERR] << cbuddy.getName();
 	if(cbuddy.isMe())
 		cul = irc->getUser()->join(this, status);
 	else
@@ -139,6 +140,15 @@ ChanUser* ConversationChannel::getChanUser(string nick) const
 		if(it->first.getName() == nick)
 			return it->second;
 	return NULL;
+}
+
+ChanUser* ConversationChannel::getChanUser(const im::ChatBuddy& cb) const
+{
+	map<im::ChatBuddy, ChanUser*>::const_iterator it = cbuddies.find(cb);
+	if(it != cbuddies.end())
+		return it->second;
+	else
+		return NULL;
 }
 
 void ConversationChannel::broadcast(Message m, Nick* butone)
