@@ -48,7 +48,7 @@ Log::flux::~flux()
 {
 	int i;
 
-	if(!(flag & b_log.LoggedFlags()))
+	if(!(flag & b_log.getLoggedFlags()))
 		return;
 
 	for(i = (sizeof all_flags / sizeof *all_flags) - 1; i >= 0 && !(flag & all_flags[i].flag); --i)
@@ -58,7 +58,7 @@ Log::flux::~flux()
 		syslog(LOG_WARNING, "[SYSLOG] (%X) Unable to find how to log this message: %s", (uint32_t)flag, str.c_str());
 	else
 	{
-		if(all_flags[i].sys_log && b_log.ToSyslog())
+		if(all_flags[i].sys_log && b_log.toSyslog())
 			syslog(all_flags[i].level, "[%s] %s", all_flags[i].s, str.c_str());
 
 		struct timeval t;
@@ -90,7 +90,20 @@ Log::~Log()
 	closelog();
 }
 
-void Log::SetLoggedFlags(std::string s, bool _to_syslog)
+std::string Log::formatLoggedFlags() const
+{
+	std::string s;
+	int i;
+	for(i = (sizeof all_flags / sizeof *all_flags) - 1; i >= 0; --i)
+		if(logged_flags & all_flags[i].flag)
+		{
+			if(!s.empty()) s.append(" ");
+			s += all_flags[i].s;
+		}
+	return s;
+}
+
+void Log::setLoggedFlags(std::string s, bool _to_syslog)
 {
 	std::string token;
 

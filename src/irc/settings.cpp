@@ -20,6 +20,7 @@
 #include "im/im.h"
 #include "irc.h"
 #include "user.h"
+#include "../log.h"
 
 namespace irc
 {
@@ -93,6 +94,17 @@ bool SettingMinbif::setValue(string)
 {
 	getIRC()->notice(getIRC()->getUser(), "Wilmer, I see you!");
 	return false;
+}
+
+string SettingLogLevel::getValue() const
+{
+	return b_log.formatLoggedFlags();
+}
+
+bool SettingLogLevel::setValue(string s)
+{
+	b_log.setLoggedFlags(s, b_log.toSyslog());
+	return true;
 }
 
 }; /* ns irc */

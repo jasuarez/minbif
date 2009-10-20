@@ -521,6 +521,7 @@ bool IRC::readIO(void*)
 	while((line = stringtok(sbuf, "\r\n")).empty() == false)
 	{
 		Message m = Message::parse(line);
+		b_log[W_PARSE|W_DEBUG] << "<< " << line;
 		size_t i;
 		for(i = 0;
 		    i < (sizeof commands / sizeof *commands) &&
@@ -542,7 +543,7 @@ bool IRC::readIO(void*)
 							   .addArg("Not enough parameters"));
 		else if(commands[i].flags && !user->hasFlag(commands[i].flags))
 		{
-			if(commands[i].flags == Nick::REGISTERED)
+			if(!user->hasFlag(Nick::REGISTERED))
 				user->send(Message(ERR_NOTREGISTERED).setSender(this)
 								     .setReceiver(user)
 								     .addArg("Register first"));
@@ -1208,6 +1209,7 @@ void IRC::m_admin(Message message)
 		{ "password",      true,  new SettingPassword(this, im) },
 		{ "typing_notice", true,  new SettingTypingNotice(this, im) },
 		{ "away_idle",     true,  new SettingAwayIdle(this, im) },
+		{ "log_level",     true,  new SettingLogLevel(this, im) },
 		{ "minbif",        false, new SettingMinbif(this, im) },
 	};
 

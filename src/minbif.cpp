@@ -223,7 +223,7 @@ int Minbif::main(int argc, char** argv)
 			b_log[W_ERR] << "Unable to load configuration, exiting..";
 			return EXIT_FAILURE;
 		}
-		b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
+		b_log.setLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 
 		/* Set users directory path and if I have rights to write in. */
 		im::IM::setPath(conf.GetSection("path")->GetItem("users")->String());
@@ -275,7 +275,7 @@ void Minbif::rehash()
 		b_log[W_ERR] << "Unable to load configuration, exiting..";
 		quit();
 	}
-	b_log.SetLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
+	b_log.setLoggedFlags(conf.GetSection("logging")->GetItem("level")->String(), conf.GetSection("logging")->GetItem("to_syslog")->Boolean());
 	if(server_poll)
 		server_poll->rehash();
 }

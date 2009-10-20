@@ -59,9 +59,10 @@ public:
 
 	~Log();
 
-	void SetLoggedFlags(std::string s, bool to_syslog = true);
-	uint32_t LoggedFlags() const { return logged_flags; }
-	bool ToSyslog() const { return to_syslog; }
+	void setLoggedFlags(std::string s, bool to_syslog = true);
+	std::string formatLoggedFlags() const;
+	uint32_t getLoggedFlags() const { return logged_flags; }
+	bool toSyslog() const { return to_syslog; }
 
 	void setServerPoll(const ServerPoll* _poll) { poll = _poll; }
 	const ServerPoll* getServerPoll() const { return poll; }
