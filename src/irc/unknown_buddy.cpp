@@ -20,7 +20,7 @@
 
 #include "irc/unknown_buddy.h"
 #include "im/account.h"
-#include "../util.h"
+#include "core/util.h"
 
 namespace irc {
 

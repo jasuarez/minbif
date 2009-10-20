@@ -19,7 +19,7 @@
 #include "poll.h"
 #include "inetd.h"
 #include "daemon_fork.h"
-#include "../log.h"
+#include "core/log.h"
 
 ServerPoll* ServerPoll::build(ServerPoll::poll_type_t type, Minbif* application)
 {

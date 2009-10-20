@@ -18,12 +18,12 @@
 
 #include <cassert>
 
-#include "purple.h"
-#include "../log.h"
+#include "im/purple.h"
 #include "im/buddy.h"
 #include "im/account.h"
 #include "im/im.h"
-#include "../util.h"
+#include "core/util.h"
+#include "core/log.h"
 #include "irc/buddy.h"
 #include "irc/irc.h"
 #include "irc/channel.h"

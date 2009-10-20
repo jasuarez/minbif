@@ -30,7 +30,7 @@
 #include "irc/buddy.h"
 #include "irc/chat_buddy.h"
 #include "irc/unknown_buddy.h"
-#include "../log.h"
+#include "core/log.h"
 
 namespace im {
 

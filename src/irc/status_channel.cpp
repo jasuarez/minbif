@@ -23,8 +23,8 @@
 #include "nick.h"
 #include "buddy.h"
 #include "im/account.h"
-#include "../util.h"
-#include "../log.h"
+#include "core/util.h"
+#include "core/log.h"
 
 namespace irc {
 

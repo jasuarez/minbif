@@ -21,7 +21,7 @@
 #include "nick.h"
 #include "user.h"
 #include "irc.h"
-#include "../log.h"
+#include "core/log.h"
 
 namespace irc {
 

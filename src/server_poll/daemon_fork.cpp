@@ -25,17 +25,17 @@
 #include <arpa/inet.h>
 
 #include "daemon_fork.h"
-#include "../config.h"
+#include "core/config.h"
 #include "irc/irc.h"
 #include "irc/user.h"
 #include "irc/message.h"
 #include "irc/replies.h"
-#include "../config.h"
-#include "../callback.h"
-#include "../log.h"
-#include "../minbif.h"
-#include "../util.h"
-#include "../sock.h"
+#include "core/config.h"
+#include "core/callback.h"
+#include "core/log.h"
+#include "core/minbif.h"
+#include "core/util.h"
+#include "core/sock.h"
 
 DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	: ServerPoll(application),

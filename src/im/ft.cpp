@@ -24,8 +24,8 @@
 #include "im/buddy.h"
 #include "irc/irc.h"
 #include "irc/dcc.h"
-#include "../log.h"
-#include "../config.h"
+#include "core/log.h"
+#include "core/config.h"
 
 namespace im {
 

@@ -23,9 +23,9 @@
 #include "irc/irc.h"
 #include "irc/dcc.h"
 #include "im/im.h"
-#include "callback.h"
-#include "../util.h"
-#include "../log.h"
+#include "core/callback.h"
+#include "core/util.h"
+#include "core/log.h"
 
 namespace irc {
 

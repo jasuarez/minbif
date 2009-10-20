@@ -19,7 +19,7 @@
 #ifndef IRC_BUDDY_ICON_H
 #define IRC_BUDDY_ICON_H
 
-#include "nick.h"
+#include "irc/nick.h"
 
 namespace im
 {

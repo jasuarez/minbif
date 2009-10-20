@@ -20,8 +20,8 @@
 
 #include <map>
 
-#include "entity.h"
-#include "message.h"
+#include "core/entity.h"
+#include "irc/message.h"
 
 class CacaImage;
 

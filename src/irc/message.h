@@ -22,7 +22,7 @@
 #include <vector>
 #include <exception>
 
-#include "replies.h"
+#include "irc/replies.h"
 
 class Entity;
 

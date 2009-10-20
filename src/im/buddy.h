@@ -22,7 +22,7 @@
 #include <libpurple/purple.h>
 #include <string>
 
-#include "caca_image.h"
+#include "core/caca_image.h"
 
 namespace irc
 {

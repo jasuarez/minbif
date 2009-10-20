@@ -23,10 +23,10 @@
 #include "irc/irc.h"
 #include "irc/dcc.h"
 #include "irc/user.h"
-#include "../log.h"
-#include "../caca_image.h"
-#include "../util.h"
-#include "../callback.h"
+#include "core/log.h"
+#include "core/caca_image.h"
+#include "core/util.h"
+#include "core/callback.h"
 
 namespace im {
 

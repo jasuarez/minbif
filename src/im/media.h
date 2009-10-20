@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 
-#include "mutex.h"
+#include "core/mutex.h"
 
 #ifdef HAVE_VIDEO
 #include <libpurple/media-gst.h>

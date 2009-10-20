@@ -19,7 +19,7 @@
 #include <cassert>
 #include <cstring>
 #include "protocol.h"
-#include "../util.h"
+#include "core/util.h"
 
 namespace im {
 

@@ -21,7 +21,7 @@
 #include "irc/chat_buddy.h"
 #include "irc/server.h"
 #include "im/account.h"
-#include "../util.h"
+#include "core/util.h"
 
 namespace irc {
 

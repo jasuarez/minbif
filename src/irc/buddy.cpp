@@ -26,10 +26,10 @@
 #include "irc/irc.h"
 #include "im/im.h"
 #include "im/account.h"
-#include "../callback.h"
-#include "../log.h"
-#include "../util.h"
-#include "../config.h"
+#include "core/callback.h"
+#include "core/log.h"
+#include "core/util.h"
+#include "core/config.h"
 
 namespace irc {
 

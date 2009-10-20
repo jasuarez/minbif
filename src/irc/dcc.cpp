@@ -24,10 +24,10 @@
 #include "dcc.h"
 #include "nick.h"
 #include "message.h"
-#include "../callback.h"
-#include "../util.h"
-#include "../log.h"
-#include "../config.h"
+#include "core/callback.h"
+#include "core/util.h"
+#include "core/log.h"
+#include "core/config.h"
 
 namespace irc {
 

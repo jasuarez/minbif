@@ -18,7 +18,7 @@
 #ifndef IRC_SERVER_H
 #define IRC_SERVER_H
 
-#include "entity.h"
+#include "core/entity.h"
 #include "im/account.h"
 
 namespace irc

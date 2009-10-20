@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "message.h"
-#include "../entity.h"
-#include "../util.h"
+#include "core/entity.h"
+#include "core/util.h"
 
 namespace irc
 {

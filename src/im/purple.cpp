@@ -29,9 +29,9 @@
 #include "media.h"
 #include "irc/irc.h"
 #include "irc/buddy_icon.h"
-#include "../version.h"
-#include "../log.h"
-#include "../util.h"
+#include "core/version.h"
+#include "core/log.h"
+#include "core/util.h"
 
 namespace im {
 

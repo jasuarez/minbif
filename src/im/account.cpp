@@ -18,13 +18,13 @@
 
 #include <cassert>
 
-#include "account.h"
-#include "conversation.h"
-#include "buddy.h"
-#include "purple.h"
-#include "../log.h"
-#include "../version.h"
-#include "im.h"
+#include "im/im.h"
+#include "im/account.h"
+#include "im/conversation.h"
+#include "im/buddy.h"
+#include "im/purple.h"
+#include "core/log.h"
+#include "core/version.h"
 #include "irc/irc.h"
 #include "irc/status_channel.h"
 #include "irc/user.h"

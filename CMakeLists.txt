@@ -3,14 +3,14 @@ cmake_minimum_required(VERSION 2.6)
 
 SET(BIN_NAME minbif)
 ADD_EXECUTABLE(${BIN_NAME}
-		src/minbif.cpp
-		src/sighandler.cpp
-		src/util.cpp
-		src/log.cpp
-		src/mutex.cpp
-		src/callback.cpp
-		src/config.cpp
-		src/caca_image.cpp
+		src/core/minbif.cpp
+		src/core/sighandler.cpp
+		src/core/util.cpp
+		src/core/log.cpp
+		src/core/mutex.cpp
+		src/core/callback.cpp
+		src/core/config.cpp
+		src/core/caca_image.cpp
 		src/server_poll/poll.cpp
 		src/server_poll/inetd.cpp
 		src/server_poll/daemon_fork.cpp

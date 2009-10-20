@@ -16,14 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "roomlist.h"
-#include "conversation.h"
-#include "purple.h"
-#include "im.h"
+#include "im/roomlist.h"
+#include "im/conversation.h"
+#include "im/purple.h"
+#include "im/im.h"
 #include "irc/irc.h"
 #include "irc/user.h"
-#include "../log.h"
-#include "../util.h"
+#include "core/log.h"
+#include "core/util.h"
 
 namespace im {
 

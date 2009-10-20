@@ -19,11 +19,11 @@
 #include <cassert>
 #include <algorithm>
 
-#include "nick.h"
-#include "server.h"
-#include "channel.h"
-#include "caca_image.h"
-#include "../util.h"
+#include "irc/nick.h"
+#include "irc/server.h"
+#include "irc/channel.h"
+#include "core/caca_image.h"
+#include "core/util.h"
 
 namespace irc {
 

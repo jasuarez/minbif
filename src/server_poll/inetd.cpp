@@ -20,12 +20,12 @@
 #include <glib/gmain.h>
 
 #include "inetd.h"
-#include "../irc/irc.h"
-#include "../irc/user.h"
-#include "../config.h"
-#include "../callback.h"
-#include "../log.h"
-#include "../minbif.h"
+#include "irc/irc.h"
+#include "irc/user.h"
+#include "core/config.h"
+#include "core/callback.h"
+#include "core/log.h"
+#include "core/minbif.h"
 
 InetdServerPoll::InetdServerPoll(Minbif* application)
 	: ServerPoll(application),

@@ -25,9 +25,9 @@
 #include "purple.h"
 #include "irc/irc.h"
 #include "irc/user.h"
-#include "../util.h"
-#include "../log.h"
-#include "../config.h"
+#include "core/util.h"
+#include "core/log.h"
+#include "core/config.h"
 
 namespace im {
 

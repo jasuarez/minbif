@@ -17,12 +17,12 @@
 
 #include <cassert>
 
-#include "message.h"
-#include "irc.h"
-#include "nick.h"
-#include "channel.h"
-#include "../util.h"
-#include "entity.h"
+#include "irc/message.h"
+#include "irc/irc.h"
+#include "irc/nick.h"
+#include "irc/channel.h"
+#include "core/util.h"
+#include "core/entity.h"
 
 namespace irc {
 

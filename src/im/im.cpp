@@ -23,10 +23,10 @@
 
 #include "im.h"
 #include "purple.h"
-#include "../irc/irc.h"
-#include "../irc/user.h"
-#include "../log.h"
-#include "../util.h"
+#include "irc/irc.h"
+#include "irc/user.h"
+#include "core/log.h"
+#include "core/util.h"
 
 namespace im
 {

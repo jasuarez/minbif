@@ -20,7 +20,7 @@
 #include "im/im.h"
 #include "irc.h"
 #include "user.h"
-#include "../log.h"
+#include "core/log.h"
 
 namespace irc
 {

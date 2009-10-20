@@ -19,7 +19,7 @@
 #include "nick.h"
 #include "message.h"
 #include "irc.h"
-#include "../util.h"
+#include "core/util.h"
 
 namespace irc {
 
