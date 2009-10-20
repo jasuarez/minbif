@@ -17,6 +17,7 @@
  */
 
 #include <cassert>
+#include <cstring>
 
 #include "im/im.h"
 #include "im/account.h"
@@ -443,6 +444,17 @@ void Account::removeBuddy(Buddy buddy) const
 	purple_blist_remove_buddy(buddy.getPurpleBuddy());
 }
 
+bool Account::supportsChats() const
+{
+	assert(isValid());
+	PurpleConnection *gc = purple_account_get_connection(account);
+	PurplePluginProtocolInfo *prpl_info = NULL;
+
+	prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
+
+	return (prpl_info->chat_info != NULL);
+}
+
 bool Account::joinChat(const string& name) const
 {
 	assert(isValid());
@@ -481,6 +493,49 @@ bool Account::joinChat(const string& name) const
 		g_hash_table_destroy(hash);
 
 #else /* !0 */
+	if(!supportsChats())
+	{
+		/* Ok, so chats are not officially supported on this protocol...
+		 * But there is another way to create a group chat, for example
+		 * on MSN, where we can initiate a chat with a buddy, and invite
+		 * others people in.
+		 *
+		 * But there is only one way to create this kind of group chat,
+		 * it's to call the callback function in a buddy's menu from
+		 * protocol plugin.
+		 *
+		 * So this FUCKING HACK is looking for the menu, and find the
+		 * string "Initiate _Chat", and call his callback.
+		 *
+		 * It's yeah ugly.
+		 */
+		PurpleConnection *gc = purple_account_get_connection(account);
+		GList *l, *ll;
+		PurplePluginProtocolInfo *prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
+
+		if(!prpl_info || !prpl_info->blist_node_menu)
+			return false;
+
+		irc::Buddy* n = dynamic_cast<irc::Buddy*>(Purple::getIM()->getIRC()->getNick(name));
+		if(!n)
+			return false;
+		PurpleBlistNode* node = (PurpleBlistNode*)n->getBuddy().getPurpleBuddy();
+		if(!node)
+			return false;
+
+		for(l = ll = prpl_info->blist_node_menu(node); l; l = l->next) {
+			PurpleMenuAction *act = (PurpleMenuAction *) l->data;
+			if(!act->children && act->callback != NULL && !strcasecmp(act->label, "Initiate _Chat"))
+			{
+				((void (*) (gpointer, gpointer))act->callback)(node, act->data);
+				g_list_free(ll);
+				return true;
+			}
+		}
+		g_list_free(ll);
+		return false;
+	}
+
 	PurpleChat *chat;
 	GHashTable *hash = NULL;
 	PurpleConnection *gc;

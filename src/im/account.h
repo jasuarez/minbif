@@ -194,6 +194,9 @@ namespace im
 		 */
 		void removeBuddy(Buddy buddy) const;
 
+		/** Does this account support chats? */
+		bool supportsChats() const;
+
 		/** Join a chat */
 		bool joinChat(const string& name) const;
 	};

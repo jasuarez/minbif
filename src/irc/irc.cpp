@@ -966,6 +966,7 @@ void IRC::m_map(Message message)
 		string arg = message.getArg(0);
 		switch(arg[0])
 		{
+			case 'A':
 			case 'a':
 			{
 				/* XXX Probably not needed. */
@@ -1070,6 +1071,7 @@ void IRC::m_map(Message message)
 
 				break;
 			}
+			case 'E':
 			case 'e':
 			{
 				if(message.countArgs() < 2)
@@ -1133,7 +1135,9 @@ void IRC::m_map(Message message)
 				return;
 				break;
 			}
+			case 'D':
 			case 'd':
+			case 'R':
 			case 'r':
 			{
 				if(message.countArgs() != 2)
@@ -1151,10 +1155,11 @@ void IRC::m_map(Message message)
 				im->delAccount(account);
 				break;
 			}
+			case 'H':
 			case 'h':
-				notice(user,"a, add: add an account");
-				notice(user,"e, edit: edit an account");
-				notice(user,"r, rem: remove ACCOUNT from your accounts");
+				notice(user,"add: add an account");
+				notice(user,"edit: edit an account");
+				notice(user,"rem: remove ACCOUNT from your accounts");
 			default:
 				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD [CHANNEL] [options] ] | [edit ACCOUNT [KEY [VALUE]]] | [rem ACCOUNT] | [help]");
 				break;
@@ -1327,8 +1332,8 @@ void IRC::m_join(Message message)
 									     .addArg(channame)
 									     .addArg("No such channel"));
 				}
-
-				g_timeout_add(500, g_callback_delete, new CallBack<IRC>(this, &IRC::check_channel_join, g_strdup(channame.c_str())));
+				else
+					g_timeout_add(500, g_callback_delete, new CallBack<IRC>(this, &IRC::check_channel_join, g_strdup(channame.c_str())));
 
 #if 0
 				chan = new ConversationChannel(this, conv);
