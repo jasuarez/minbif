@@ -22,6 +22,7 @@
 #include "status_channel.h"
 #include "nick.h"
 #include "buddy.h"
+#include "im/im.h"
 #include "im/account.h"
 #include "core/util.h"
 #include "core/log.h"
@@ -200,6 +201,54 @@ void StatusChannel::processRemoveBan(Nick* from, string nick, string ident, stri
 				   .addArg("-b")
 				   .addArg(ban));
 
+}
+
+bool StatusChannel::invite(Nick* from, const string& nickname, const string& message)
+{
+	string acc = nickname;
+	string username = stringtok(acc, ":");
+	im::Account account;
+	if(acc.empty())
+		account = irc->getIM()->getAccountFromChannel(getName());
+	else
+		account = irc->getIM()->getAccount(acc);
+
+	if(!account.isValid())
+	{
+		from->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+						     .setReceiver(from)
+						     .addArg(nickname)
+						     .addArg("No such channel"));
+		return false;
+	}
+	account.addBuddy(username, "minbif");
+	return true;
+}
+
+bool StatusChannel::kick(ChanUser* from, ChanUser* victim, const string& message)
+{
+	Buddy* buddy = dynamic_cast<Buddy*>(victim->getNick());
+	if(!buddy)
+	{
+		from->getNick()->send(Message(ERR_NOPRIVILEGES).setSender(this)
+						               .setReceiver(from)
+						               .addArg("Permission denied: you can only kick a buddy"));
+		return false;
+	}
+
+	RemoteServer* rt = dynamic_cast<RemoteServer*>(buddy->getServer());
+	if(!rt)
+	{
+		irc->notice(from->getNick(), victim->getName() + " is not on a remote server");
+		return false;
+	}
+	string reason = "Removed from buddy list";
+	if(message.empty() == false)
+		reason += ": " + message;
+
+	buddy->kicked(this, from, reason);
+	rt->getAccount().removeBuddy(buddy->getBuddy());
+	return true;
 }
 
 }; /* ns irc */

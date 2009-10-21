@@ -42,6 +42,9 @@ namespace irc
 		void addAccount(const im::Account& account);
 		void removeAccount(const im::Account& account);
 
+		virtual bool invite(Nick* from, const string& nickname, const string& message);
+		virtual bool kick(ChanUser* from, ChanUser* victim, const string& message);
+
 		virtual void showBanList(Nick* to);
 
 		virtual void processAddBan(Nick* from, string nick, string ident, string host, string accid);

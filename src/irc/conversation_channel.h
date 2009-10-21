@@ -60,7 +60,8 @@ namespace irc
 
 		virtual string getTopic() const;
 
-		void invite(const string& buddy, string message="");
+		virtual bool invite(Nick* from, const string& nickname, const string& message);
+		virtual bool kick(ChanUser* from, ChanUser* victim, const string& message);
 	};
 }; /* ns irc */
 

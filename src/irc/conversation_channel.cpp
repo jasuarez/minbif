@@ -166,9 +166,16 @@ string ConversationChannel::getTopic() const
 	return conv.getChanTopic();
 }
 
-void ConversationChannel::invite(const string& buddy, string message)
+bool ConversationChannel::invite(Nick* nick, const string& buddy, const string& message)
 {
 	conv.invite(buddy, message);
+	return true;
+}
+
+bool ConversationChannel::kick(ChanUser* from, ChanUser* victim, const string& message)
+{
+	/* TODO implement it */
+	return false;
 }
 
 }; /* namespace irc */

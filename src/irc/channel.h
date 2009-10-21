@@ -175,6 +175,12 @@ namespace irc
 		 */
 		void sendNames(Nick* nick) const;
 
+		/** Invite someone into that channel. */
+		virtual bool invite(Nick* from, const string& nick, const string& message) = 0;
+
+		/** Someone wants to kick someone else. */
+		virtual bool kick(ChanUser* from, ChanUser* who, const string& message) = 0;
+
 		/** Show banlist to user */
 		virtual void showBanList(Nick* to) = 0;
 
