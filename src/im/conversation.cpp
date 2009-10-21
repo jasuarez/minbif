@@ -474,7 +474,7 @@ PurpleConversationUiOps Conversation::conv_ui_ops =
 	Conversation::add_users,
 	Conversation::chat_rename_user,
 	NULL,//Conversation::remove_users, use signal instead
-	NULL,//finch_chat_update_user,
+	Conversation::update_user,
 	Conversation::conv_present,//finch_conv_present, /* present */
 	NULL,//finch_conv_has_focus, /* has_focus */
 	NULL, /* custom_smiley_add */
@@ -640,6 +640,25 @@ void Conversation::add_users(PurpleConversation *c, GList *cbuddies,
 	}
 }
 
+void Conversation::update_user(PurpleConversation* c, const char* user)
+{
+	Conversation conv(c);
+	ChatBuddy cbuddy(conv, purple_conv_chat_cb_find(conv.getPurpleChat(), user));
+	if(!cbuddy.isValid())
+	{
+		b_log[W_DESYNCH] << "Update channel user " << user << " who is not found";
+		return;
+	}
+	irc::ConversationChannel* chan = conv.getChannel();
+	if(!chan)
+	{
+		b_log[W_DESYNCH] << "Conversation channel doesn't exist: " << conv.getChanName();
+		return;
+	}
+
+	chan->updateBuddy(cbuddy);
+}
+
 void Conversation::remove_user(PurpleConversation* c, const char* cbname, const char *reason)
 {
 	Conversation conv(c);
@@ -684,7 +703,6 @@ void Conversation::chat_rename_user(PurpleConversation *c, const char *old,
 	}
 	irc::ChanUser* chanuser = chan->getChanUser(old);
 	chan->renameBuddy(chanuser, cbuddy);
-
 }
 
 void Conversation::topic_changed(PurpleConversation* c, const char* who, const char* topic)

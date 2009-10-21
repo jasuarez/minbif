@@ -99,9 +99,28 @@ void ConversationChannel::addBuddy(im::ChatBuddy cbuddy, int status)
 	cbuddies[cbuddy] = cul;
 }
 
+void ConversationChannel::updateBuddy(im::ChatBuddy cbuddy)
+{
+	ChanUser* chanuser = getChanUser(cbuddy);
+	int mlast = chanuser->getStatus();
+	int mnew = cbuddy.getChanStatus();
+	int add = 0, del = 0;
+	for(unsigned i = 0; i < (sizeof i) * 8; ++i)
+	{
+		if(!(mlast & (1 << i)) && mnew & (1 << i))
+			add |= 1 << i;
+		if(mlast & (1 << i) && !(mnew & (1 << i)))
+			del |= 1 << i;
+	}
+	if(add)
+		this->setMode(chanuser, add, chanuser);
+	if(del)
+		this->delMode(chanuser, del, chanuser);
+}
+
 void ConversationChannel::renameBuddy(ChanUser* chanuser, im::ChatBuddy cbuddy)
 {
-	irc::ChatBuddy* nick = dynamic_cast<irc::ChatBuddy*>(chanuser->getNick());
+	ChatBuddy* nick = dynamic_cast<irc::ChatBuddy*>(chanuser->getNick());
 
 	string new_nick = cbuddy.getName();
 	while(irc->getNick(new_nick))

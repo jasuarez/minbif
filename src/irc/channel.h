@@ -59,6 +59,7 @@ namespace irc
 		{
 			mode_t mode;
 			char c;
+			char prefix;
 		}  m2c[];
 
 		/** Build the ChanUser object.
@@ -80,6 +81,9 @@ namespace irc
 		Nick* getNick() const { return nick; }
 
 		Channel* getChannel() const { return chan; }
+
+		/** Get status prefix (@+%) */
+		string getPrefix() const;
 
 		/** Get the mode flag from char */
 		static mode_t c2mode(char c);

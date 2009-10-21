@@ -42,10 +42,21 @@ string ChanUser::getLongName() const
 }
 
 ChanUser::m2c_t ChanUser::m2c[] = {
-	{ ChanUser::VOICE, 'v' },
-	{ ChanUser::HALFOP,'h' },
-	{ ChanUser::OP,    'o' },
+	{ ChanUser::FOUNDER, 'q', '~' },
+	{ ChanUser::OP,      'o', '@' },
+	{ ChanUser::HALFOP,  'h', '%' },
+	{ ChanUser::VOICE,   'v', '+' },
 };
+
+string ChanUser::getPrefix() const
+{
+	string s;
+	size_t i;
+	for(i=0; i < sizeof m2c / sizeof *m2c; ++i)
+		if(status & m2c[i].mode && m2c[i].prefix != '\0')
+			s += m2c[i].prefix;
+	return s;
+}
 
 ChanUser::mode_t ChanUser::c2mode(char c)
 {
@@ -115,12 +126,7 @@ void Channel::sendNames(Nick* nick) const
 	{
 		if(!names.empty())
 			names += " ";
-		if((*it)->hasStatus(ChanUser::OP))
-			names += "@";
-		else if((*it)->hasStatus(ChanUser::HALFOP))
-			names += "%";
-		else if((*it)->hasStatus(ChanUser::VOICE))
-			names += "+";
+		names += (*it)->getPrefix();
 		names += (*it)->getNick()->getNickname();
 
 	}

@@ -55,6 +55,7 @@ namespace irc
 		ChanUser* getChanUser(const im::ChatBuddy& cb) const;
 
 		void addBuddy(im::ChatBuddy cbuddy, int status = 0);
+		void updateBuddy(im::ChatBuddy cbuddy);
 		void renameBuddy(ChanUser* chanuser, im::ChatBuddy cbuddy);
 		virtual void delUser(Nick* nick, Message message = Message());
 
