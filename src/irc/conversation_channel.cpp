@@ -77,7 +77,6 @@ void ConversationChannel::processRemoveBan(Nick* from, string nick, string ident
 void ConversationChannel::addBuddy(im::ChatBuddy cbuddy, int status)
 {
 	ChanUser* cul;
-	b_log[W_ERR] << cbuddy.getName();
 	if(cbuddy.isMe())
 		cul = irc->getUser()->join(this, status);
 	else

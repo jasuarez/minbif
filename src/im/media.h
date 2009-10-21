@@ -27,8 +27,8 @@
 
 #ifdef HAVE_VIDEO
 #include <libpurple/media-gst.h>
-#include "buddy.h"
-#include "caca_image.h"
+#include "im/buddy.h"
+#include "core/caca_image.h"
 #endif
 
 class _CallBack;

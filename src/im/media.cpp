@@ -17,9 +17,9 @@
  */
 
 #include <cstring>
-#include "media.h"
-#include "im.h"
-#include "purple.h"
+#include "im/media.h"
+#include "im/im.h"
+#include "im/purple.h"
 #include "irc/irc.h"
 #include "irc/dcc.h"
 #include "irc/user.h"
