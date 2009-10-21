@@ -281,12 +281,13 @@ void Channel::delMode(const Entity* sender, int modes, ChanUser* chanuser)
 
 }
 
-void Channel::setTopic(Entity* chanuser, string topic)
+bool Channel::setTopic(Entity* chanuser, const string& topic)
 {
 	this->topic = topic;
 	broadcast(Message(MSG_TOPIC).setSender(chanuser ? chanuser : irc)
 			            .setReceiver(this)
 				    .addArg(topic));
+	return true;
 }
 
 }; /* namespace irc */

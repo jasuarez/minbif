@@ -164,7 +164,8 @@ namespace irc
 		/** Get topic */
 		virtual string getTopic() const { return topic; }
 
-		void setTopic(Entity* who, string topic);
+		/* Set topic on channel */
+		virtual bool setTopic(Entity* who, const string& topic);
 
 		/** Mode message
 		 *
@@ -215,7 +216,6 @@ namespace irc
 		 * @param chanuser  channel user impacted.
 		 */
 		void setMode(const Entity* sender, int modes, ChanUser* chanuser);
-
 
 		/** Remove a mode on a channel user.
 		 *

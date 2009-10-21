@@ -113,9 +113,9 @@ void ConversationChannel::updateBuddy(im::ChatBuddy cbuddy)
 			del |= 1 << i;
 	}
 	if(add)
-		this->setMode(chanuser, add, chanuser);
+		this->setMode(irc, add, chanuser);
 	if(del)
-		this->delMode(chanuser, del, chanuser);
+		this->delMode(irc, del, chanuser);
 }
 
 void ConversationChannel::renameBuddy(ChanUser* chanuser, im::ChatBuddy cbuddy)
@@ -195,6 +195,14 @@ bool ConversationChannel::kick(ChanUser* from, ChanUser* victim, const string& m
 {
 	/* TODO implement it */
 	return false;
+}
+
+bool ConversationChannel::setTopic(Entity* from, const string& topic)
+{
+	if(irc->getUser() == from)
+		return conv.setTopic(topic);
+	else
+		return Channel::setTopic(from, topic);
 }
 
 }; /* namespace irc */

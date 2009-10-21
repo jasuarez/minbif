@@ -151,6 +151,9 @@ namespace im
 		 * @param message  message to send with invitation.
 		 */
 		void invite(const string& buddy, const string& message);
+
+		/** Set topic of conversation. */
+		bool setTopic(const string& topic);
 	};
 
 	class ChatBuddy

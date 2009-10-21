@@ -215,7 +215,7 @@ bool StatusChannel::invite(Nick* from, const string& nickname, const string& mes
 
 	if(!account.isValid())
 	{
-		from->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+		from->send(Message(ERR_NOSUCHCHANNEL).setSender(irc)
 						     .setReceiver(from)
 						     .addArg(nickname)
 						     .addArg("No such channel"));
@@ -230,8 +230,9 @@ bool StatusChannel::kick(ChanUser* from, ChanUser* victim, const string& message
 	Buddy* buddy = dynamic_cast<Buddy*>(victim->getNick());
 	if(!buddy)
 	{
-		from->getNick()->send(Message(ERR_NOPRIVILEGES).setSender(this)
+		from->getNick()->send(Message(ERR_CHANOPRIVSNEEDED).setSender(irc)
 						               .setReceiver(from)
+							       .addArg(getName())
 						               .addArg("Permission denied: you can only kick a buddy"));
 		return false;
 	}
@@ -249,6 +250,11 @@ bool StatusChannel::kick(ChanUser* from, ChanUser* victim, const string& message
 	buddy->kicked(this, from, reason);
 	rt->getAccount().removeBuddy(buddy->getBuddy());
 	return true;
+}
+
+bool StatusChannel::setTopic(Entity* from, const string& message)
+{
+	return false;
 }
 
 }; /* ns irc */

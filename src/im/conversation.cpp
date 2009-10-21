@@ -261,6 +261,27 @@ void Conversation::invite(const string& buddy, const string& message)
 				message.c_str(), buddy.c_str());
 }
 
+bool Conversation::setTopic(const string& topic)
+{
+	assert(isValid());
+	assert(getType() == PURPLE_CONV_TYPE_CHAT);
+
+	PurplePluginProtocolInfo *prpl_info = NULL;
+	PurpleConnection *gc;
+
+	gc = purple_conversation_get_gc(conv);
+
+	if(!gc || !(prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl)))
+		return false;
+
+	if(prpl_info->set_chat_topic == NULL)
+		return false;
+
+	prpl_info->set_chat_topic(gc, purple_conv_chat_get_id(getPurpleChat()),
+			topic.c_str());
+	return true;
+}
+
 void Conversation::createChannel() const
 {
 	assert(isValid());

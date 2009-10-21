@@ -67,6 +67,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_JOIN,    &IRC::m_join,    1, 0, Nick::REGISTERED },
 	{ MSG_PART,    &IRC::m_part,    1, 0, Nick::REGISTERED },
 	{ MSG_NAMES,   &IRC::m_names,   1, 0, Nick::REGISTERED },
+	{ MSG_TOPIC,   &IRC::m_topic,   1, 0, Nick::REGISTERED },
 	{ MSG_LIST,    &IRC::m_list,    0, 0, Nick::REGISTERED },
 	{ MSG_MODE,    &IRC::m_mode,    1, 0, Nick::REGISTERED },
 	{ MSG_ISON,    &IRC::m_ison,    1, 0, Nick::REGISTERED },
@@ -1499,6 +1500,28 @@ void IRC::m_names(Message message)
 	}
 
 	chan->sendNames(user);
+}
+
+/** TOPIC chan [message] */
+void IRC::m_topic(Message message)
+{
+	Channel* chan = getChannel(message.getArg(0));
+	if(!chan)
+		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+				                     .setReceiver(user)
+						     .addArg(message.getArg(1))
+						     .addArg("No such channel"));
+	else if(message.countArgs() < 2)
+		user->send(Message(RPL_TOPIC).setSender(this)
+					     .setReceiver(user)
+					     .addArg(chan->getName())
+					     .addArg(chan->getTopic()));
+	else if(!chan->setTopic(user, message.getArg(1)))
+		user->send(Message(ERR_CHANOPRIVSNEEDED).setSender(this)
+							.setReceiver(user)
+							.addArg(chan->getName())
+							.addArg("You have no rights to change this channel topic!"));
+
 }
 
 /** INVITE nick chan */

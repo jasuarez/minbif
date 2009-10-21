@@ -44,6 +44,7 @@ namespace irc
 
 		virtual bool invite(Nick* from, const string& nickname, const string& message);
 		virtual bool kick(ChanUser* from, ChanUser* victim, const string& message);
+		virtual bool setTopic(Entity* who, const string& message);
 
 		virtual void showBanList(Nick* to);
 
