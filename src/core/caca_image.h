@@ -69,7 +69,7 @@ public:
 	 * @param font_height  font height
 	 * @return  buffer of picture.
 	 */
-	string getIRCBuffer(unsigned width, unsigned height = 0, unsigned font_width = 6, unsigned font_height = 10);
+	string getIRCBuffer(unsigned width, unsigned height = 0, const char* output_type = "irc", unsigned font_width = 6, unsigned font_height = 10);
 
 	/** Get IRC buffer to ASCII art picture.
 	 * If buffer is empty, it builds it with default parameters.

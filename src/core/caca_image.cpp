@@ -127,11 +127,11 @@ void CacaImage::deinit()
 string CacaImage::getIRCBuffer()
 {
 	if(buf.empty())
-		return getIRCBuffer(width, height, font_width, font_height);
+		return getIRCBuffer(width, height, "irc", font_width, font_height);
 	return buf;
 }
 
-string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font_width, unsigned _font_height)
+string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, const char *output_type, unsigned _font_width, unsigned _font_height)
 {
 #ifndef USE_CACA
 	throw CacaNotLoaded();
@@ -176,7 +176,7 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, unsigned _font
 
 	size_t len;
 	char* tmp;
-	tmp = (char*)cucul_export_memory(cv, "ansi", &len);
+	tmp = (char*)cucul_export_memory(cv, output_type, &len);
 	if(!tmp)
 		throw CacaError();
 

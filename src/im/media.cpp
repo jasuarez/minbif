@@ -174,7 +174,7 @@ void Media::checkBuffer()
 				irc::Nick* sender = irc->getNick(buddy);
 				dcc = new irc::DCCChat(sender, irc->getUser());
 			}
-			string buf = it->getIRCBuffer(0, 20), line;
+			string buf = it->getIRCBuffer(0, 20, "ansi"), line;
 			dcc->dcc_send(buf);
 		}
 		catch(CacaError &e)

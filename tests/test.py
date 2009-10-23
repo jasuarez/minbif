@@ -36,7 +36,7 @@ except ImportError:
 from structs import Account, Buddy
 
 NOBUFFER_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), 'libnobuffer.so'))
-MINBIF_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'build.minbif', 'minbif'))
+MINBIF_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'build.minbif', 'src', 'minbif'))
 
 def getBacktrace(empty="Empty backtrace."):
     """
