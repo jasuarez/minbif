@@ -315,7 +315,7 @@ static void http_host_lookup_cb(GSList *hosts, gpointer data,
 	GSList *host_lookup_list;
 	struct sockaddr_in *addr;
 	gchar *hostname;
-	gchar *ip_address;
+	gchar *ip_address = NULL;
 	CoinCoinAccount *fba;
 	PurpleDnsQueryData *query;
 
@@ -354,14 +354,6 @@ static void http_host_lookup_cb(GSList *hosts, gpointer data,
 		return;
 	}
 
-	/* Discard the length... */
-	hosts = g_slist_delete_link(hosts, hosts);
-	/* Copy the address then free it... */
-	addr = hosts->data;
-	ip_address = g_strdup(inet_ntoa(addr->sin_addr));
-	g_free(addr);
-	hosts = g_slist_delete_link(hosts, hosts);
-
 	/*
 	 * DNS lookups can return a list of IP addresses, but we only cache
 	 * the first one.  So free the rest.
@@ -370,6 +362,11 @@ static void http_host_lookup_cb(GSList *hosts, gpointer data,
 	{
 		/* Discard the length... */
 		hosts = g_slist_delete_link(hosts, hosts);
+
+		addr = hosts->data;
+		if(!ip_address && addr->sin_addr.s_addr)
+			ip_address = g_strdup(inet_ntoa(addr->sin_addr));
+
 		/* Free the address... */
 		g_free(hosts->data);
 		hosts = g_slist_delete_link(hosts, hosts);
@@ -468,7 +465,7 @@ void http_post_or_get(CoinCoinAccount *fba, HttpMethod method,
 	g_string_append_printf(request, "Accept: */*\r\n");
 	/* linuxfr accepts only connections from that referer. */
 	g_string_append_printf(request, "Referer: http://%s%s/\r\n", host, real_url);
-	g_string_append_printf(request, "Cookie: isfbe=false;%s\r\n", cookies);
+	g_string_append_printf(request, "Cookie: %s\r\n", cookies);
 #ifdef HAVE_ZLIB
 	if (zlib_inflate != NULL)
 		g_string_append_printf(request, "Accept-Encoding: gzip\r\n");
