@@ -1512,10 +1512,19 @@ void IRC::m_topic(Message message)
 						     .addArg(message.getArg(1))
 						     .addArg("No such channel"));
 	else if(message.countArgs() < 2)
-		user->send(Message(RPL_TOPIC).setSender(this)
-					     .setReceiver(user)
-					     .addArg(chan->getName())
-					     .addArg(chan->getTopic()));
+	{
+		string topic = chan->getTopic();
+		if(topic.empty())
+			user->send(Message(RPL_NOTOPIC).setSender(this)
+					             .setReceiver(user)
+						     .addArg(chan->getName())
+						     .addArg("No topic set."));
+		else
+			user->send(Message(RPL_TOPIC).setSender(this)
+						     .setReceiver(user)
+						     .addArg(chan->getName())
+						     .addArg(topic));
+	}
 	else if(!chan->setTopic(user, message.getArg(1)))
 		user->send(Message(ERR_CHANOPRIVSNEEDED).setSender(this)
 							.setReceiver(user)

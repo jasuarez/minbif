@@ -322,7 +322,6 @@ static void coincoin_set_status(PurpleAccount *account, PurpleStatus *status)
 
 static void coincoin_keepalive(PurpleConnection *gc)
 {
-	purple_debug_info("coincoin", "keepalive\n");
 }
 
 static PurplePluginProtocolInfo prpl_info =

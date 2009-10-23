@@ -159,10 +159,17 @@ ChanUser* Channel::addUser(Nick* nick, int status)
 			(*it)->getNick()->send(m);
 		}
 	}
-	nick->send(Message(RPL_TOPIC).setSender(irc)
-			             .setReceiver(nick)
-				     .addArg(getName())
-				     .addArg(getTopic()));
+	string topic = getTopic();
+	if(topic.empty())
+		nick->send(Message(RPL_NOTOPIC).setSender(irc)
+					     .setReceiver(nick)
+					     .addArg(getName())
+					     .addArg("No topic set."));
+	else
+		nick->send(Message(RPL_TOPIC).setSender(irc)
+					     .setReceiver(nick)
+					     .addArg(getName())
+					     .addArg(topic));
 
 	sendNames(nick);
 	return chanuser;
