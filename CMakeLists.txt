@@ -49,7 +49,7 @@ IF(ENABLE_PLUGIN)
 			plugins/coincoin/connection.c)
 ENDIF(ENABLE_PLUGIN)
 
-target_link_libraries(${BIN_NAME} coincoin)
+target_link_libraries(${BIN_NAME})
 
 INCLUDE(FindPkgConfig)
 

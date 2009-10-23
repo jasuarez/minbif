@@ -1,0 +1,37 @@
+            LibPurple's CoinCoin Plugin
+            ***************************
+
+1. What is Coincoin?
+
+This is a plugin for the purple library, which allow to connect to a DaCode
+board, to read and send messages on it.
+
+The default board used by prpl-coincoin is linuxfr.org/board.
+
+A board has an unique chat space, so prpl-coincoin creates at connection an
+unique channel "board".
+
+2. How to install it
+
+Compile prpl-coincoin and copy the libcoincoin.so file to /usr/lib/purple-2/.
+
+Then, use your favorite purple client (for example MinBif), and the module is
+automatically loaded.
+
+3. How to use it
+
+Create a new account, and select the "CoinCoin" plugin. Then, you need to give
+this settings:
+
+* Username: your login on board
+* Server: the board hostname
+
+More complicated now, you need to locate your board cookies, and give two keys:
+* Password: the 'md5' cookie key
+* Cookie's unique ID: the 'unique_id' key
+
+4. You're connected
+
+The "board" channel is created, and you can chat!
+
+Have fun.
