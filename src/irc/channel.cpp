@@ -160,12 +160,7 @@ ChanUser* Channel::addUser(Nick* nick, int status)
 		}
 	}
 	string topic = getTopic();
-	if(topic.empty())
-		nick->send(Message(RPL_NOTOPIC).setSender(irc)
-					     .setReceiver(nick)
-					     .addArg(getName())
-					     .addArg("No topic set."));
-	else
+	if(!topic.empty())
 		nick->send(Message(RPL_TOPIC).setSender(irc)
 					     .setReceiver(nick)
 					     .addArg(getName())
