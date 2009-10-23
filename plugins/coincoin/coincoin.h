@@ -30,6 +30,7 @@
 #define CC_DEFAULT_HOSTNAME "linuxfr.org"
 #define CC_DEFAULT_BOARD "/board/remote.xml"
 #define CC_DEFAULT_POST "/board/add.html"
+#define CC_CHECK_INTERVAL 3
 #define CC_LAST_MESSAGE_MAX 10
 
 typedef struct _CoinCoinAccount CoinCoinAccount;

@@ -186,7 +186,7 @@ static void coincoin_login_cb(CoinCoinAccount *cca, gchar *response, gsize len,
 	{
 		purple_connection_error_reason(cca->pc,
 				PURPLE_CONNECTION_ERROR_AUTHENTICATION_FAILED,
-				"This is note a DaCode board.");
+				"This is not a DaCode board.");
 	}
 	else
 	{
@@ -194,7 +194,7 @@ static void coincoin_login_cb(CoinCoinAccount *cca, gchar *response, gsize len,
 		serv_got_joined_chat(cca->pc, 1, "board");
 
 		coincoin_parse_message(cca, response, len, userdata);
-		cca->new_messages_check_timer = g_timeout_add_seconds(3, (GSourceFunc)coincoin_check_new_messages, cca);
+		cca->new_messages_check_timer = g_timeout_add_seconds(CC_CHECK_INTERVAL, (GSourceFunc)coincoin_check_new_messages, cca);
 	}
 	xmlnode_free(node);
 }
@@ -205,7 +205,7 @@ static void coincoin_login(PurpleAccount *account)
 	PurpleConnection *gc;
 	CoinCoinAccount* cca;
 	gint flags = HTTP_METHOD_GET;
-	char **userparts;
+	char **parts, **part;
 	const char *username = purple_account_get_username(account);
 
 	gc = purple_account_get_connection(account);
@@ -213,10 +213,10 @@ static void coincoin_login(PurpleAccount *account)
 
 	cca = coincoin_account_new(account);
 
-	userparts = g_strsplit(username, "@", 2);
-	purple_connection_set_display_name(gc, userparts[0]);
-	cca->hostname = g_strdup(userparts[1]);
-	g_strfreev(userparts);
+	parts = g_strsplit(username, "@", 2);
+	purple_connection_set_display_name(gc, parts[0]);
+	cca->hostname = g_strdup(parts[1]);
+	g_strfreev(parts);
 
 	/* Error localized in libpurple jabber.c */
 	if (purple_account_get_bool(account, "ssl", FALSE))
@@ -235,11 +235,16 @@ static void coincoin_login(PurpleAccount *account)
 	purple_connection_set_state(gc, PURPLE_CONNECTING);
 	purple_connection_update_progress(gc, "Connecting", 1, 3);
 
-	purple_connection_get_display_name(gc);
-
 	g_hash_table_replace(cca->cookie_table, g_strdup("login"), g_strdup(purple_connection_get_display_name(gc)));
-	g_hash_table_replace(cca->cookie_table, g_strdup("md5"), g_strdup(purple_connection_get_password(gc)));
-	g_hash_table_replace(cca->cookie_table, g_strdup("unique_id"), g_strdup(purple_account_get_string(account, "unique_id", "")));
+
+	parts = g_strsplit(purple_connection_get_password(gc), ";", -1);
+	for(part = parts; *part; ++part)
+	{
+		char** keys = g_strsplit(*part, "=", 2);
+		g_hash_table_replace(cca->cookie_table, g_strdup(keys[0]), g_strdup(keys[1]));
+		g_strfreev(keys);
+	}
+	g_strfreev(parts);
 	http_post_or_get(cca, flags , cca->hostname,
 			purple_account_get_string(account, "board", CC_DEFAULT_BOARD),
 			NULL, coincoin_login_cb, NULL, FALSE);
@@ -444,9 +449,6 @@ static void _init_plugin(PurplePlugin *plugin)
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_string_new("Post path", "post", CC_DEFAULT_POST);
-	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
-
-	option = purple_account_option_string_new("Cookie's unique ID", "unique_id", "");
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_bool_new("Use SSL", "ssl", FALSE);

@@ -25,10 +25,8 @@ this settings:
 
 * Username: your login on board
 * Server: the board hostname
-
-More complicated now, you need to locate your board cookies, and give two keys:
-* Password: the 'md5' cookie key
-* Cookie's unique ID: the 'unique_id' key
+* Password: locate your cookies for the website (from your browser), and put
+            them here, separated by semi-colons (;)
 
 4. You're connected
 

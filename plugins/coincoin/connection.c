@@ -467,7 +467,7 @@ void http_post_or_get(CoinCoinAccount *fba, HttpMethod method,
 	}
 	g_string_append_printf(request, "Accept: */*\r\n");
 	/* linuxfr accepts only connections from that referer. */
-	g_string_append_printf(request, "Referer: http://linuxfr.org/board/add.html/\r\n");
+	g_string_append_printf(request, "Referer: http://%s%s/\r\n", host, real_url);
 	g_string_append_printf(request, "Cookie: isfbe=false;%s\r\n", cookies);
 #ifdef HAVE_ZLIB
 	if (zlib_inflate != NULL)
