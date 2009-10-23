@@ -1,123 +1,76 @@
-PROJECT(minbif)
 cmake_minimum_required(VERSION 2.6)
+PROJECT(minbif)
 
-SET(BIN_NAME minbif)
-ADD_EXECUTABLE(${BIN_NAME}
-		src/core/minbif.cpp
-		src/core/sighandler.cpp
-		src/core/util.cpp
-		src/core/log.cpp
-		src/core/mutex.cpp
-		src/core/callback.cpp
-		src/core/config.cpp
-		src/core/caca_image.cpp
-		src/server_poll/poll.cpp
-		src/server_poll/inetd.cpp
-		src/server_poll/daemon_fork.cpp
-		src/im/im.cpp
-		src/im/protocol.cpp
-		src/im/account.cpp
-		src/im/roomlist.cpp
-		src/im/buddy.cpp
-		src/im/conversation.cpp
-		src/im/request.cpp
-		src/im/ft.cpp
-		src/im/media.cpp
-		src/im/purple.cpp
-		src/irc/settings.cpp
-		src/irc/irc.cpp
-		src/irc/dcc.cpp
-		src/irc/message.cpp
-		src/irc/server.cpp
-		src/irc/nick.cpp
-		src/irc/user.cpp
-		src/irc/buddy_icon.cpp
-		src/irc/buddy.cpp
-		src/irc/unknown_buddy.cpp
-		src/irc/chat_buddy.cpp
-		src/irc/channel.cpp
-		src/irc/status_channel.cpp
-		src/irc/conversation_channel.cpp
-	      )
 SET(CONF_NAME minbif.conf)
 SET(MOTD_NAME minbif.motd)
 
-OPTION(ENABLE_PLUGIN "Enable plugin build" ON)
-IF(ENABLE_PLUGIN)
-       ADD_LIBRARY(coincoin SHARED
-			plugins/coincoin/coincoin.c
-			plugins/coincoin/connection.c)
-ENDIF(ENABLE_PLUGIN)
-
-target_link_libraries(${BIN_NAME})
+IF(NOT MAN_PREFIX)
+	SET(MAN_PREFIX ${CMAKE_INSTALL_PREFIX}/share/man/man8/)
+ENDIF(NOT MAN_PREFIX)
+IF(NOT CONF_PREFIX)
+	SET(CONF_PREFIX ${CMAKE_INSTALL_PREFIX}/etc/minbif)
+ENDIF(NOT CONF_PREFIX)
+IF(NOT DOC_PREFIX)
+	SET(DOC_PREFIX ${CMAKE_INSTALL_PREFIX}/share/doc/minbif)
+ENDIF(NOT DOC_PREFIX)
 
 INCLUDE(FindPkgConfig)
 
 PKG_CHECK_MODULES(PURPLE REQUIRED purple>=2.4)
 
-OPTION(ENABLE_CACA "Enable libcaca library" ON)
-IF(ENABLE_CACA)
-	PKG_CHECK_MODULES(CACA caca>=0.99)
-	PKG_CHECK_MODULES(IMLIB imlib2>=1.0)
+OPTION(ENABLE_MINBIF "Enable minbif compilation" ON)
+OPTION(ENABLE_PLUGIN "Enable plugin build" OFF)
 
-	IF(IMLIB_FOUND AND CACA_FOUND)
-		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_CACA")
-	ELSE(IMLIB_FOUND AND CACA_FOUND)
-		MESSAGE(FATAL_ERROR "Unable to find the libcaca and/or imlib2 libraries. To disable caca output, run 'make ENABLE_CACA=0'")
-	ENDIF(IMLIB_FOUND AND CACA_FOUND)
+IF(ENABLE_MINBIF)
+	OPTION(ENABLE_CACA "Enable libcaca library" ON)
+	IF(ENABLE_CACA)
+		PKG_CHECK_MODULES(CACA caca>=0.99)
+		PKG_CHECK_MODULES(IMLIB imlib2>=1.0)
 
-ENDIF(ENABLE_CACA)
+		IF(IMLIB_FOUND AND CACA_FOUND)
+			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_CACA")
+		ELSE(IMLIB_FOUND AND CACA_FOUND)
+			MESSAGE(FATAL_ERROR "Unable to find the libcaca and/or imlib2 libraries. To disable caca output, run 'make ENABLE_CACA=0'")
+		ENDIF(IMLIB_FOUND AND CACA_FOUND)
 
-OPTION(ENABLE_VIDEO "Enable video support" ON)
-IF(ENABLE_VIDEO)
-	PKG_CHECK_MODULES(GSTREAMER gstreamer-0.10>=0.10.10 gstreamer-interfaces-0.10>=0.10)
-	PKG_CHECK_MODULES(FARSIGHT farsight2-0.10>=0.0.9)
-	PKG_CHECK_MODULES(PURPLE_26 purple>=2.6.1)
-	IF(GSTREAMER_FOUND AND PURPLE_26_FOUND AND FARSIGHT_FOUND)
-		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_VIDEO")
-	ELSE(GSTREAMER_FOUND AND PURPLE_26_FOUND AND FARSIGHT_FOUND)
-		MESSAGE(FATAL_ERROR "Dependencies for video were not met. Install gstreamer, farsight and libpurple>=2.6 first. Or to disable video, run 'make ENABLE_VIDEO=0'")
-	ENDIF(GSTREAMER_FOUND AND PURPLE_26_FOUND AND FARSIGHT_FOUND)
-ENDIF(ENABLE_VIDEO)
+	ENDIF(ENABLE_CACA)
+
+	OPTION(ENABLE_VIDEO "Enable video support" ON)
+	IF(ENABLE_VIDEO)
+		PKG_CHECK_MODULES(GSTREAMER gstreamer-0.10>=0.10.10 gstreamer-interfaces-0.10>=0.10)
+		PKG_CHECK_MODULES(FARSIGHT farsight2-0.10>=0.0.9)
+		PKG_CHECK_MODULES(PURPLE_26 purple>=2.6.1)
+		IF(GSTREAMER_FOUND AND PURPLE_26_FOUND AND FARSIGHT_FOUND)
+			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_VIDEO")
+		ELSE(GSTREAMER_FOUND AND PURPLE_26_FOUND AND FARSIGHT_FOUND)
+			MESSAGE(FATAL_ERROR "Dependencies for video were not met. Install gstreamer, farsight and libpurple>=2.6 first. Or to disable video, run 'make ENABLE_VIDEO=0'")
+		ENDIF(GSTREAMER_FOUND AND PURPLE_26_FOUND AND FARSIGHT_FOUND)
+	ENDIF(ENABLE_VIDEO)
+ENDIF(ENABLE_MINBIF)
 
 INCLUDE_DIRECTORIES(${PURPLE_INCLUDE_DIRS} ${CACA_INCLUDE_DIRS} ${IMLIB_INCLUDE_DIRS} ${GSTREAMER_INCLUDE_DIRS} ${FARSIGHT_INCLUDE_DIRS} "src/")
 LINK_DIRECTORIES(${PURPLE_LINK_DIRS} ${CACA_LINK_DIRS} ${IMLIB_LINK_DIRS} ${GSTREAMER_LINK_DIRS} ${FARSIGHT_LINK_DIRS})
-TARGET_LINK_LIBRARIES(${BIN_NAME} "-lpthread -lstdc++" ${PURPLE_LDFLAGS} ${CACA_LDFLAGS} ${IMLIB_LDFLAGS} ${GSTREAMER_LDFLAGS} ${FARSIGHT_LDFLAGS})
-IF(ENABLE_PLUGIN)
-	TARGET_LINK_LIBRARIES(coincoin ${PURPLE_LDFLAGS})
-ENDIF(ENABLE_PLUGIN)
-
 
 SET(CMAKE_BUILD_TYPE ${BUILD})
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -D_REENTRANT -D_FILE_OFFSET_BITS=64 -Werror -Wall -Wextra -Wno-unused-parameter")
 SET(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 
-#STRING(COMPARE EQUAL ${CMAKE_BUILD_TYPE} "Debug" DEBUG_BUILD)
-#IF(DEBUG_BUILD)
-#	MESSAGE(STATUS "We'll perform tests during compilation")
-#	# Looks a bit like a hack.. should find a better way to do this
-#	SET(CMAKE_C_FLAGS "${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS}")
-#	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS}")
-#	SET(CMAKE_C_COMPILER "${CMAKE_CURRENT_SOURCE_DIR}/tools/gcc-wrapper/my-gcc.sh")
-#	SET(CMAKE_CXX_COMPILER "${CMAKE_CURRENT_SOURCE_DIR}/tools/gcc-wrapper/my-gcc.sh")
-#ENDIF(DEBUG_BUILD)
+IF(ENABLE_MINBIF)
+	add_subdirectory(src)
+ENDIF(ENABLE_MINBIF)
 
-IF(NOT CONF_PREFIX)
-	SET(CONF_PREFIX ${CMAKE_INSTALL_PREFIX}/etc/minbif)
-ENDIF(NOT CONF_PREFIX)
-IF(NOT MAN_INSTALL_PATH)
-	SET(MAN_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/man/)
-ENDIF(NOT MAN_INSTALL_PATH)
+IF(ENABLE_PLUGIN)
+	add_subdirectory(plugins)
+ENDIF(ENABLE_PLUGIN)
 
 MESSAGE(STATUS "Using compiler ${CMAKE_CXX_COMPILER}")
 MESSAGE(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-INSTALL(FILES man/minbif.8 DESTINATION ${MAN_INSTALL_PATH}/man8)
-INSTALL(TARGETS ${BIN_NAME}
-        DESTINATION bin)
+INSTALL(FILES man/minbif.8
+	DESTINATION ${MAN_PREFIX})
 INSTALL(FILES COPYING README
-        DESTINATION doc/minbif)
+	DESTINATION ${DOC_PREFIX})
 INSTALL(DIRECTORY doc/
-        DESTINATION doc/minbif)
+	DESTINATION ${DOC_PREFIX})
 INSTALL(FILES ${CONF_NAME} ${MOTD_NAME}
-        DESTINATION ${CONF_PREFIX})
+	DESTINATION ${CONF_PREFIX})
