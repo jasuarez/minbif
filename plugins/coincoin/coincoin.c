@@ -186,7 +186,7 @@ static void coincoin_login_cb(CoinCoinAccount *cca, gchar *response, gsize len,
 	{
 		purple_connection_error_reason(cca->pc,
 				PURPLE_CONNECTION_ERROR_AUTHENTICATION_FAILED,
-				"This is not a DaCode board.");
+				"This is not a DaCode board. (check 'board' and 'post' settings)");
 	}
 	else
 	{
@@ -196,7 +196,8 @@ static void coincoin_login_cb(CoinCoinAccount *cca, gchar *response, gsize len,
 		coincoin_parse_message(cca, response, len, userdata);
 		cca->new_messages_check_timer = g_timeout_add_seconds(CC_CHECK_INTERVAL, (GSourceFunc)coincoin_check_new_messages, cca);
 	}
-	xmlnode_free(node);
+	if(node)
+		xmlnode_free(node);
 }
 
 
