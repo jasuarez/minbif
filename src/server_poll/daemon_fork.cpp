@@ -88,26 +88,25 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 			res = res->ai_next;
 
 	if(sock < 0)
-	{
 		b_log[W_ERR] << "Unable to create a socket: " << strerror(errno);
-		goto out;
-	}
-
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof reuse_addr);
-
-	if(bind(sock, res->ai_addr, res->ai_addrlen) < 0 ||
-	   listen(sock, 5) < 0)
+	else
 	{
-		b_log[W_ERR] << "Unable to listen on " << bind_addr << ":" << port
-			     << ":" << sock << ": " << strerror(errno);
-		goto out;
+		setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof reuse_addr);
+
+		if(bind(sock, res->ai_addr, res->ai_addrlen) < 0 ||
+		   listen(sock, 5) < 0)
+		{
+			b_log[W_ERR] << "Unable to listen on " << bind_addr << ":" << port
+				     << ":" << sock << ": " << strerror(errno);
+		}
+		else
+		{
+			read_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::new_client_cb);
+			read_id = glib_input_add(sock, (PurpleInputCondition)PURPLE_INPUT_READ,
+						       g_callback_input, read_cb);
+		}
 	}
 
-	read_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::new_client_cb);
-	read_id = glib_input_add(sock, (PurpleInputCondition)PURPLE_INPUT_READ,
-				       g_callback_input, read_cb);
-
-out:
 	freeaddrinfo(addrinfo_bind);
 	if(!read_cb)
 		throw ServerPollError();
