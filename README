@@ -9,13 +9,21 @@ IRC-friendly instant messaging client.
 2. Installation
 
 You can provide several configuration options to make:
+* PREFIX=path — Installation prefix (default=/usr/local)
+* MAN_PREFIX=path — Manpages installation prefix (default=$PREFIX/share/man/man8)
+* CONF_PREFIX=path — Configuration files installation prefix (default=$PREFIX/etc/minbif)
+* DOC_PREFIX=path — Documentation files installation prefix (default=$PREFIX/share/doc/minbif)
+* ENABLE_MINBIF=(0|1) — Compile minbif (default=1).
 * ENABLE_CACA=(0|1) — Do not use libcaca features to display icons (default=1).
 * ENABLE_VIDEO=(0|1) — Enable the video viewer (default=0). Depends on ENABLE_CACA.
+* ENABLE_PLUGIN=(0|1) — Compile libpurple's plugins (default=0).
 
 Run:
-$ make [ENABLE_CACA=value] [ENABLE_VIDEO=value]
+$ make [PREFIX=path] [MAN_PREFIX=path] [CONF_PREFIX=path] [DOC_PREFIX=path]
+       [ENABLE_MINBIF=value] [ENABLE_CACA=value] [ENABLE_VIDEO=value] [ENABLE_PLUGIN=value]
 
-It isn't possible to install minbif system-wide yet.
+To install it use:
+$ make install
 
 3. Configuration
 
