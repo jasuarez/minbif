@@ -6,7 +6,15 @@
 This is a plugin for the purple library, which allow to connect to a DaCode
 board, to read and send messages on it.
 
-The default board used by prpl-coincoin is linuxfr.org/board.
+The default board used by prpl-coincoin is linuxfr.org/board, which popularized
+this kind of chat among a few french communities.
+
+Other softwares support this kind of board, like Templeet or Da Portative
+Bouchot.
+
+You can find a (non-exhaustive) list of boards on this page (look at the
+"tribune" links):
+http://chrisix.free.fr/pycoincoin/config/list.php
 
 A board has an unique chat space, so prpl-coincoin creates at connection an
 unique channel "board".
@@ -23,13 +31,21 @@ automatically loaded.
 Create a new account, and select the "CoinCoin" plugin. Then, you need to give
 this settings:
 
-* Username: your login on board
-* Server: the board hostname
+* Username: your login[@server] on board (if the @server part is not given,
+            defauts to linuxfr.org board)
 * Password: locate your cookies for the website (from your browser), and put
             them here, separated by semi-colons (;)
 
+Full example for a custom Da Portative Bouchot board:
+	/MAP ADD coincoin ToTo@tribioune.mydomain.tld
+	     md5=xxxxxxxxxxxxxxxxxxxxxxxx;unique_id=yyyyyyyyyyyyyyyyyyyyyyy
+	     -board /remote.xml -post /index.php/add
+
 4. You're connected
 
-The "board" channel is created, and you can chat!
+he *status* channel is always created in minbif, but always empty for coincoin
+accounts, as this system as no presence information.
+
+The *board* channel is automatically created, and you can chat!
 
 Have fun.
