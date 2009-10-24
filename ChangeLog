@@ -1,3 +1,24 @@
+Minbif 1.0-RC (2009-10-24)
+	* Auto-rejoin channels when disconnect/reconnect to an IM account, or
+	  when restart minbif.
+	* Channel users status changes are propagated to IRC user.
+	* /TOPIC command to change the conversation channel topic.
+	* Aibility to chat with a channel member.
+	* When an unknown buddy tries to send a message, create a temporary
+	  IRC user to chat with him anyway.
+	* /ADMIN log_level: change the log level.
+	* can change ID and status channel of an account with /MAP EDIT.
+	* /LIST <accid>: display list of channels for an account.
+	* MSN protocol: use /JOIN #nickname:accid to create a group chat with
+	  a buddy.
+	* prpl-coincoin: plugin to connect to a DaCode board.
+	* Reorganization of CMakeLists.txt files.
+	* Fix: Use libcaca 'irc' output for buddy icons.
+	* Fix: Correctly send a ERR_NOSUCHCHANNEL reply when a channel can't
+	  be joined.
+	* Fix: TYPING: send stale state to avoid the irssi's plugin to timeout.
+	* Fix: crash when a notify field is NULL.
+
 Minbif 1.0-beta2 (2009-10-10)
 	* CACAcam works.
 	* scripts/irssi/im_cacacam.pl: irssi script to display CACAcam in the
