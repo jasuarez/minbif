@@ -34,63 +34,6 @@
 #include "im/im.h"
 #include "server_poll/poll.h"
 
-/** This is a derived class from ConfigItem whose represent an integer range item */
-class ConfigItem_intrange : public ConfigItem_int
-{
-public:
-	ConfigItem_intrange(std::string _label, std::string _description, int _min = INT_MIN, int _max = INT_MAX, std::string def_value = "",
-		TCallBack cb = 0, MyConfig* _config = 0, ConfigSection* _parent = 0)
-		: ConfigItem_int(_label, _description, _min, _max, def_value, cb, _config, _parent)
-		{}
-
-	virtual ConfigItem* Clone() const
-	{
-		return new ConfigItem_intrange(Label(), Description(), min, max, DefValue(), CallBack(), GetConfig(), Parent());
-	}
-
-	/** We return a string form of this integer */
-	virtual std::string String() const { std::ostringstream oss; oss << value_min << "-" << value_max; return oss.str(); }
-	virtual int MinInteger() const { return value_min; }
-	virtual int MaxInteger() const { return value_max; }
-
-	virtual bool SetValue(std::string s)
-	{
-		string min_s, max_s;
-		bool on_min = true;
-
-		for(std::string::const_iterator it = s.begin(); it != s.end(); ++it)
-		{
-			if(isdigit(*it))
-			{
-				if(on_min) min_s += *it;
-				else max_s += *it;
-			}
-			else if(on_min && (*it == ':' || *it == '-'))
-				on_min = false;
-			else
-				return false;
-
-		}
-		std::istringstream(min_s) >> value_min;
-		std::istringstream(max_s) >> value_max;
-		return (value_min >= min && value_max >= value_min && value_max <= max);
-	}
-
-	std::string ValueType() const
-	{
-		std::ostringstream off, off2;
-		std::string in, ax;
-		off << min;
-		in = off.str();
-		off2 << max;
-		ax = off2.str();
-		return "integer range (between " + in + " and " + ax + ")";
-	}
-
-private:
-	int value_min, value_max;
-};
-
 Minbif::Minbif()
 	: loop(NULL),
 	  server_poll(0)
@@ -151,7 +94,7 @@ void Minbif::remove_pidfile(void)
 
 void Minbif::usage(int argc, char** argv)
 {
-	std::cerr << "Usage: " << argv[0] << " [OPTIONS]... <CONFIG_PATH>" << std::endl << std::endl;
+	std::cerr << "Usage: " << argv[0] << " [OPTIONS]... CONFIG_PATH" << std::endl << std::endl;
 	std::cerr << "Options:" << std::endl;
 	std::cerr << "  -h, --help             Display this notice" << std::endl;
 	std::cerr << "  -v, --version          Version of minbif" << std::endl;
