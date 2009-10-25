@@ -32,8 +32,6 @@ struct _CoinCoinMessage
 	gchar* from;
 	time_t timestamp;
 	gint64 id;
-
-	struct message_t* next;
 };
 
 void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gpointer userdata);

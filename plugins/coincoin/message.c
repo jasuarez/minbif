@@ -181,6 +181,7 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 	xmlnode* post;
 	GSList *last_msg = cca->messages;
 	GSList *iter;
+	GSList *messages = NULL;
 	unsigned i;
 
 	if(!node)
@@ -201,7 +202,7 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 			break;
 
 		msg = coincoin_message_new(id, post);
-		cca->messages = g_slist_prepend(cca->messages, msg);
+		messages = g_slist_prepend(messages, msg);
 
 		PurpleConvChatBuddy* cb = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(convo), msg->from);
 		if(!cb)
@@ -209,7 +210,7 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 	}
 
 	/* Flush messages (in reversed order) */
-	for(iter = cca->messages; iter != last_msg; iter = iter->next)
+	for(iter = messages; iter; )
 	{
 		CoinCoinMessage* msg = iter->data;
 		serv_got_chat_in(cca->pc,
@@ -218,6 +219,10 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 				 PURPLE_MESSAGE_DELAYED,
 				 msg->message,
 				 msg->timestamp);
+		GSList* link = iter;
+		iter = iter->next;
+		link->next = cca->messages;
+		cca->messages = link;
 	}
 	/* Now purge extra-messages */
 	for(i = 0, iter = last_msg; iter; ++i)
@@ -225,7 +230,12 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 		if(i < CC_LAST_MESSAGE_MAX)
 			iter = iter->next;
 		else if(i == CC_LAST_MESSAGE_MAX)
-			iter->next = NULL;
+		{
+			GSList* prev;
+			prev = iter;
+			iter = iter->next;
+			prev->next = NULL;
+		}
 		else
 		{
 			/* This user doesn't participate to conversation
@@ -238,6 +248,8 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 
 			if(it == iter || !it)
 				purple_conv_chat_remove_user(PURPLE_CONV_CHAT(convo), cur->from, NULL);
+			coincoin_message_free(cur);
+			iter->data = NULL;
 			iter = g_slist_delete_link(iter, iter);
 		}
 	}
