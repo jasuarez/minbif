@@ -31,7 +31,6 @@
 #define CC_DEFAULT_BOARD "/board/remote.xml"
 #define CC_DEFAULT_POST "/board/add.html"
 #define CC_CHECK_INTERVAL 30
-#define CC_LAST_MESSAGE_MAX 10
 
 typedef struct _CoinCoinAccount CoinCoinAccount;
 
@@ -43,7 +42,7 @@ struct _CoinCoinAccount {
 	GSList *conns; /**< A list of all active HttpConnections */
 	GSList *dns_queries;
 	GHashTable *cookie_table;
-	gint64 last_messages[CC_LAST_MESSAGE_MAX];
+	GSList* messages;
 	GHashTable *hostname_ip_cache;
 	guint new_messages_check_timer;
 
