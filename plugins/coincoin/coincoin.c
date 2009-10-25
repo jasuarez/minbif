@@ -89,16 +89,16 @@ struct message_t
 
 static void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gpointer userdata)
 {
+	PurpleConversation* convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, "board", cca->account);
+	if(!convo)
+		return; // not on the board channel
+
 	xmlnode* node = xmlnode_from_str(response, len);
 	xmlnode* post;
 	gint64 last_messages[CC_LAST_MESSAGE_MAX] = {0};
 	unsigned last_i = 0;
 	unsigned i;
 	struct message_t* messages = NULL;
-	PurpleConversation* convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, "board", cca->account);
-
-	if(!convo)
-		return; // not on the board channel
 
 	if(!node)
 	{
@@ -112,7 +112,7 @@ static void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize 
 		xmlnode* login = xmlnode_get_child(post, "login");
 		gint64 id = strtoul(xmlnode_get_attrib(post, "id"), NULL, 10);
 		struct message_t* msg;
-		struct tm t;
+		static struct tm t;
 		time_t tt = time(NULL);
 
 		for(i = 0; i < CC_LAST_MESSAGE_MAX && cca->last_messages[i] != id; ++i)
