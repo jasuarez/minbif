@@ -204,9 +204,12 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 		msg = coincoin_message_new(id, post);
 		messages = g_slist_prepend(messages, msg);
 
-		PurpleConvChatBuddy* cb = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(convo), msg->from);
-		if(!cb)
-			purple_conv_chat_add_user(PURPLE_CONV_CHAT(convo), msg->from, msg->info, PURPLE_CBFLAGS_NONE, FALSE);
+		if(strcmp(msg->from, purple_connection_get_display_name(cca->pc)))
+		{
+			PurpleConvChatBuddy* cb = purple_conv_chat_cb_find(PURPLE_CONV_CHAT(convo), msg->from);
+			if(!cb)
+				purple_conv_chat_add_user(PURPLE_CONV_CHAT(convo), msg->from, msg->info, PURPLE_CBFLAGS_NONE, FALSE);
+		}
 	}
 
 	/* Flush messages (in reversed order) */
@@ -242,12 +245,15 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 			 * anymore. So it can leave channel.
 			 */
 			CoinCoinMessage* cur = iter->data;
-			GSList* it = cca->messages;
-			while(it && it != iter && strcmp(((CoinCoinMessage*)it->data)->from, cur->from))
-				it = it->next;
+			if(strcmp(cur->from, purple_connection_get_display_name(cca->pc)))
+			{
+				GSList* it = cca->messages;
+				while(it && it != iter && strcmp(((CoinCoinMessage*)it->data)->from, cur->from))
+					it = it->next;
 
-			if(it == iter || !it)
-				purple_conv_chat_remove_user(PURPLE_CONV_CHAT(convo), cur->from, NULL);
+				if(it == iter || !it)
+					purple_conv_chat_remove_user(PURPLE_CONV_CHAT(convo), cur->from, NULL);
+			}
 			coincoin_message_free(cur);
 			iter->data = NULL;
 			iter = g_slist_delete_link(iter, iter);
