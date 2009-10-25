@@ -77,14 +77,15 @@ static const char *coincoin_blist_icon(PurpleAccount *a, PurpleBuddy *b)
 	return "coincoin";
 }
 
+/* From gcoincoin */
 static gchar *strutf8( const gchar *pc, guint uMaxChar )
 {
-	gunichar uCode ;
-	guchar   b ;
-	guint    uLen ;
-	GString *pString ;
-	guint    uChar ;
-	gchar   *pcEnd ;
+	gunichar     uCode ;
+	guchar       b ;
+	gsize        uLen ;
+	GString     *pString ;
+	guint        uChar ;
+	const gchar *pcEnd ;
 
 	if(( pc == NULL )||( *pc == 0 ))
 	{
@@ -97,12 +98,12 @@ static gchar *strutf8( const gchar *pc, guint uMaxChar )
 	}
 
 	uLen  = strlen( pc );
-	pcEnd = (gchar *) pc + uLen ;
+	pcEnd = &pc[ uLen ];
 	uChar = 0 ;
 
-	if( g_utf8_validate( pc, uLen, NULL ) )
+	if( g_utf8_validate( pc, (gssize) uLen, NULL ) )
 	{
-		gchar *pcStart = (gchar *) pc ;
+		const gchar *pcStart = pc ;
 		while(( pc < pcEnd )&&( uChar < uMaxChar ))
 		{
 			pc = g_utf8_next_char(pc);
