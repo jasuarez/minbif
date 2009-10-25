@@ -77,6 +77,117 @@ static const char *coincoin_blist_icon(PurpleAccount *a, PurpleBuddy *b)
 	return "coincoin";
 }
 
+static gchar *strutf8( const gchar *pc, guint uMaxChar )
+{
+	gunichar uCode ;
+	guchar   b ;
+	guint    uLen ;
+	GString *pString ;
+	guint    uChar ;
+	gchar   *pcEnd ;
+
+	if(( pc == NULL )||( *pc == 0 ))
+	{
+		return NULL ;
+	}
+
+	if( uMaxChar == 0 )
+	{
+		uMaxChar = G_MAXUINT ;
+	}
+
+	uLen  = strlen( pc );
+	pcEnd = (gchar *) pc + uLen ;
+	uChar = 0 ;
+
+	if( g_utf8_validate( pc, uLen, NULL ) )
+	{
+		gchar *pcStart = (gchar *) pc ;
+		while(( pc < pcEnd )&&( uChar < uMaxChar ))
+		{
+			pc = g_utf8_next_char(pc);
+			uChar++ ;
+		}
+		return g_strndup( pcStart, pc - pcStart );
+	}
+
+	pString = g_string_sized_new( uLen );
+	while(( pc < pcEnd )&&( uChar < uMaxChar ))
+	{
+		b = (guchar) *pc ;
+		if( b < 128 )
+		{
+			/* Keep ASCII characters, but remove all control characters
+			 * but CR, LF and TAB. */
+
+			if(( b > 31 )&&( b != 127 ))
+			{
+				g_string_append_c( pString, b );
+			}
+			else
+			{
+				switch( b )
+				{
+					case '\n':
+					case '\r':
+					case '\t':
+						break ;
+					default:
+						b = ' ' ;
+				}
+				g_string_append_c( pString, b );
+			}
+			pc++ ;
+		}
+		else
+		{
+			uCode = g_utf8_get_char_validated( pc, -1 );
+			if(( uCode != (gunichar)-1 )&&( uCode != (gunichar)-2 ))
+			{
+				/* Keep a valid UTF-8 character as is */
+				g_string_append_unichar( pString, uCode );
+				pc = g_utf8_next_char(pc);
+			}
+			else
+			{
+				/* Consider an invalid byte as an ISO-8859-1 character code.
+				 * We get rid of ASCII & ISO-8859-1 control characters. */
+
+				if(( b > 0x1F )&&( b < 0x7F ))
+				{
+					/* ASCII characters, excluding control characters */
+					g_string_append_c( pString, b );
+				}
+				else if( b > 0x9F )
+				{
+					/* ISO-8859-1 character, excluding control character (0x7F-0x9F) */
+					g_string_append_unichar( pString, (gunichar)b );
+				}
+				else
+				{
+					g_string_append_c( pString, ' ' );
+				}
+				pc++ ;
+			}
+		}
+		uChar++ ;
+	}
+
+	#ifdef DEBUG
+		g_assert( g_utf8_validate( pString->str, -1, NULL ) );
+	#endif
+
+	return g_string_free( pString, FALSE );
+}
+
+static xmlnode* coincoin_xmlparse(gchar* response, gsize len)
+{
+	gchar* utf8 = strutf8(response, len);
+	xmlnode* node = xmlnode_from_str(utf8, len);
+	g_free(utf8);
+	return node;
+}
+
 struct message_t
 {
 	gchar* message;
@@ -93,7 +204,7 @@ static void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize 
 	if(!convo)
 		return; // not on the board channel
 
-	xmlnode* node = xmlnode_from_str(response, len);
+	xmlnode* node = coincoin_xmlparse(response, len);
 	xmlnode* post;
 	gint64 last_messages[CC_LAST_MESSAGE_MAX] = {0};
 	unsigned last_i = 0;
@@ -148,7 +259,7 @@ static void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize 
 		serv_got_chat_in(cca->pc,
 				 purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)),
 				 msg->from,
-				 (cca->last_messages[0] == 0) ? PURPLE_MESSAGE_DELAYED : 0,
+				 PURPLE_MESSAGE_DELAYED,
 				 msg->message,
 				 msg->timestamp);
 		g_free(msg->message);
@@ -181,7 +292,7 @@ static void coincoin_login_cb(CoinCoinAccount *cca, gchar *response, gsize len,
 		gpointer userdata)
 {
 	purple_connection_update_progress(cca->pc, "Authenticating", 2, 3);
-	xmlnode* node = xmlnode_from_str(response, len);
+	xmlnode* node = coincoin_xmlparse(response, len);
 	if(!node || strcmp(node->name, "board"))
 	{
 		purple_connection_error_reason(cca->pc,
