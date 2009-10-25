@@ -224,17 +224,20 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 	{
 		if(i < CC_LAST_MESSAGE_MAX)
 			iter = iter->next;
+		else if(i == CC_LAST_MESSAGE_MAX)
+			iter->next = NULL;
 		else
 		{
 			/* This user doesn't participate to conversation
 			 * anymore. So it can leave channel.
 			 */
+			CoinCoinMessage* cur = iter->data;
 			GSList* it = cca->messages;
-			while(it != iter && strcmp(((CoinCoinMessage*)it->data)->from,
-						   ((CoinCoinMessage*)iter->data)->from))
+			while(it && it != iter && strcmp(((CoinCoinMessage*)it->data)->from, cur->from))
 				it = it->next;
-			if(it == iter)
-				purple_conv_chat_remove_user(PURPLE_CONV_CHAT(convo), ((CoinCoinMessage*)iter->data)->from, NULL);
+
+			if(it == iter || !it)
+				purple_conv_chat_remove_user(PURPLE_CONV_CHAT(convo), cur->from, NULL);
 			iter = g_slist_delete_link(iter, iter);
 		}
 	}
