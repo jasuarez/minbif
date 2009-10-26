@@ -245,7 +245,8 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 			 * anymore. So it can leave channel.
 			 */
 			CoinCoinMessage* cur = iter->data;
-			if(strcmp(cur->from, purple_connection_get_display_name(cca->pc)))
+			if(strcmp(cur->from, purple_connection_get_display_name(cca->pc)) &&
+			   purple_conv_chat_cb_find(PURPLE_CONV_CHAT(convo), cur->from))
 			{
 				GSList* it = cca->messages;
 				while(it && it != iter && strcmp(((CoinCoinMessage*)it->data)->from, cur->from))
