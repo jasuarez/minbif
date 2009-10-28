@@ -154,7 +154,7 @@ static void coincoin_login(PurpleAccount *account)
 	g_hash_table_replace(cca->cookie_table, g_strdup("login"), g_strdup(purple_connection_get_display_name(gc)));
 
 	parts = g_strsplit(purple_connection_get_password(gc), ";", -1);
-	for(part = parts; *part; ++part)
+	for(part = parts; part && *part; ++part)
 	{
 		char** keys = g_strsplit(*part, "=", 2);
 		g_hash_table_replace(cca->cookie_table, g_strdup(keys[0]), g_strdup(keys[1]));
