@@ -175,12 +175,30 @@ void coincoin_message_free(CoinCoinMessage* msg)
 static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 {
 	GString* s = g_string_sized_new(strlen(msg->message));
-	gchar *start;
+	gchar *start, *next;
 	struct tm t;
 
 	localtime_r(&msg->timestamp, &t);
-	for(start = msg->message; *start; ++start)
+	for(start = msg->message; *start; start = next)
 	{
+		next = g_utf8_next_char(start);
+		/* totoz */
+		if(*start == '[' && *(start+1) == ':')
+		{
+			gchar* end = start;
+			while(*end && *end != ']' && *end != ' ')
+				end = g_utf8_next_char(end);
+			if(*end == ']')
+			{
+				++end;
+				g_string_append(s, "<FONT COLOR=\"dark green\">");
+				g_string_append_len(s, start, end-start);
+				g_string_append(s, "</FONT>");
+				start = end;
+				next = g_utf8_next_char(start);
+			}
+		}
+		/* msg refs */
 		if((*start >= '0' && *start <= '9') || *start == ':')
 		{
 			unsigned ref = 1;
@@ -188,7 +206,7 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 			gchar* clock;
 
 			while(*end && ((*end >= '0' && *end <= '9') || *end == ':'))
-				++end;
+				end = g_utf8_next_char(end);
 
 			/* Detect ¹²³ unicode refs. */
 			if(*end == '\xc2' && end[1] != '\0')
@@ -210,15 +228,21 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 					g_string_append(s, ((CoinCoinMessage*)m->data)->from);
 					g_string_append(s, ": ");
 				}
+				g_string_append(s, "<FONT COLOR=\"red\">");
+				g_string_append(s, clock);
+				g_string_append(s, "</FONT>");
 			}
-			g_string_append(s, clock);
+			else
+				g_string_append(s, clock);
+
 			g_free(clock);
 
 			if(!*end)
 				break;
 			start = end;
+			next = g_utf8_next_char(start);
 		}
-		g_string_append_c(s, *start);
+		g_string_append_len(s, start, next-start);
 	}
 	g_free(msg->message);
 	msg->message = g_string_free(s, FALSE);
