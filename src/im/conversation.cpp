@@ -616,8 +616,7 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 		if(who && purple_message_meify((char*)message, -1))
 			action = true;
 
-		char* newline = purple_strdup_withhtml(message);
-		char* strip = purple_markup_strip_html(newline);
+		char* strip = markup2irc(message);
 		string from;
 
 		if(alias && *alias) from = alias;
@@ -638,7 +637,6 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 			conv.recvMessage(from, strip ? strip : "", action);
 
 		g_free(strip);
-		g_free(newline);
 	}
 }
 

@@ -48,6 +48,7 @@ guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunctio
 
 string strupper(string s);
 string strlower(string s);
+gchar* markup2irc(const gchar* markup);
 
 bool is_ip(const char *ip);
 

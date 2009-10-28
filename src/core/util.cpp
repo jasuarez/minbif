@@ -17,6 +17,7 @@
  */
 
 #include <glib/gstdio.h>
+#include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <string>
@@ -164,3 +165,153 @@ bool check_write_file(string path, string filename)
 
 	return true;
 }
+
+gchar* markup2irc(const gchar* markup)
+{
+	char* newline = purple_strdup_withhtml(markup);
+	GString* s = g_string_sized_new(strlen(newline));
+	gchar *ptr, *next, *buf;
+
+	for(ptr = newline; *ptr; ptr = next)
+	{
+		next = g_utf8_next_char(ptr);
+		if(*ptr == '<')
+		{
+			bool closed = false;
+			++ptr;
+			if(*ptr == '/')
+			{
+				closed = true;
+				++ptr;
+			}
+			while(*next && *next != '>')
+				next = g_utf8_next_char(next);
+			if(*next)
+				next = g_utf8_next_char(next);
+
+			switch(*ptr)
+			{
+				case 'i':
+				case 'I':
+					g_string_append_c(s, '\011');
+					break;
+				case 'u':
+				case 'U':
+					g_string_append_c(s, '\037');
+					break;
+				case 'B':
+				case 'b':
+					g_string_append_c(s, '\002');
+					break;
+				case 'F':
+				case 'f':
+					if(closed && !strncasecmp(ptr, "FONT", 4))
+					{
+						g_string_append_c(s, '\003');
+						break;
+					}
+					else if(!closed && !strncasecmp(ptr, "FONT ", 5))
+					{
+						static struct
+						{
+							const char* num;
+							const char* name;
+						} irc_colors[] = {
+							{ "00",  "white"      },
+							{ "01",  "black"      },
+							{ "02",  "blue"       },
+							{ "03",  "dark green" },
+							{ "04",  "red"        },
+							{ "05",  "brown"      },
+							{ "06",  "purple"     },
+							{ "07",  "orange"     },
+							{ "08",  "yellow"     },
+							{ "09",  "green"      },
+							{ "10", "teal"       },
+							{ "11", "cyan"       },
+							{ "12", "light blue" },
+							{ "13", "pink"       },
+							{ "14", "grey"       },
+							{ "15", "light grey" },
+						};
+						const char *foreground = NULL, *background = NULL;
+						bool is_foreground;
+						gchar* space;
+
+						ptr += 5;
+						/* loop on all attributes of the FONT tag to get
+						 * IRC colors.
+						 */
+						while(*ptr && *ptr != '>')
+						{
+							unsigned i;
+							if(!strncasecmp(ptr, "color=", 6))
+							{
+								ptr += 6;
+								if(*ptr == '"') ++ptr;
+								is_foreground = true;
+							}
+							else if(!strncasecmp(ptr, "back=", 5))
+							{
+								ptr += 5;
+								if(*ptr == '"') ++ptr;
+								is_foreground = false;
+							}
+							else
+								break;
+
+							space = ptr;
+							while(*space && *space != '"')
+								space = g_utf8_next_char(space);
+							for(i = 0; i < sizeof irc_colors / sizeof *irc_colors; ++i)
+								if(!strncasecmp(ptr, irc_colors[i].name, space-ptr))
+								{
+									if(is_foreground)
+										foreground = irc_colors[i].num;
+									else
+										background = irc_colors[i].num;
+									break;
+								}
+
+							if(*space == '"')
+								++space;
+
+							ptr = space;
+							while(*ptr && *ptr == ' ')
+								ptr = g_utf8_next_char(ptr);
+						}
+
+						if(foreground)
+						{
+							g_string_append_c(s, '\003');
+							g_string_append(s, foreground);
+							if(background)
+							{
+								g_string_append_c(s, ',');
+								g_string_append(s, background);
+							}
+						}
+						break;
+					}
+				default:
+					g_string_append_c(s, '<');
+					if(closed)
+						g_string_append_c(s, '/');
+					g_string_append_len(s, ptr, next-ptr);
+					continue;
+			}
+		}
+		else
+			g_string_append_len(s, ptr, next-ptr);
+	}
+	g_free(newline);
+
+	/* Strip all other html tags */
+	newline = g_string_free(s, FALSE);
+	buf = purple_markup_strip_html(newline);
+
+	g_free(newline);
+	return buf;
+}
+
+
