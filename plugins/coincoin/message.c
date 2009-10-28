@@ -161,6 +161,7 @@ CoinCoinMessage* coincoin_message_new(gint64 id, xmlnode* post)
 	msg->from = g_strdup(xmlnode_get_data(login));
 	msg->timestamp = tt;
 	msg->id = id;
+	msg->ref = 1;
 	return msg;
 }
 
@@ -169,6 +170,58 @@ void coincoin_message_free(CoinCoinMessage* msg)
 	g_free(msg->message);
 	g_free(msg->info);
 	g_free(msg);
+}
+
+static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
+{
+	GString* s = g_string_sized_new(strlen(msg->message));
+	gchar *start;
+	struct tm t;
+
+	localtime_r(&msg->timestamp, &t);
+	for(start = msg->message; *start; ++start)
+	{
+		if((*start >= '0' && *start <= '9') || *start == ':')
+		{
+			unsigned ref = 1;
+			gchar* end = start;
+			gchar* clock;
+
+			while(*end && ((*end >= '0' && *end <= '9') || *end == ':'))
+				++end;
+
+			/* Detect ¹²³ unicode refs. */
+			if(*end == '\xc2' && end[1] != '\0')
+			{
+				if(end[1] == '\xb9') ref = 1;       // ¹
+				else if(end[1] == '\xb2') ref = 2;  // ²
+				else if(end[1] == '\xb3') ref = 3;  // ³
+			}
+
+			clock = g_strndup(start, end-start);
+			if(sscanf(clock, "%02d:%02d:%02d", &t.tm_hour, &t.tm_min, &t.tm_sec) == 3)
+			{
+				time_t ts = mktime(&t);
+				GSList* m;
+				for(m = messages; m && (((CoinCoinMessage*)m->data)->timestamp != ts || (((CoinCoinMessage*)m->data)->ref != ref)); m = m->next)
+					;
+				if(m)
+				{
+					g_string_append(s, ((CoinCoinMessage*)m->data)->from);
+					g_string_append(s, ": ");
+				}
+			}
+			g_string_append(s, clock);
+			g_free(clock);
+
+			if(!*end)
+				break;
+			start = end;
+		}
+		g_string_append_c(s, *start);
+	}
+	g_free(msg->message);
+	msg->message = g_string_free(s, FALSE);
 }
 
 void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gpointer userdata)
@@ -216,12 +269,16 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 	for(iter = messages; iter; )
 	{
 		CoinCoinMessage* msg = iter->data;
+		coincoin_message_ref(msg, cca->messages);
 		serv_got_chat_in(cca->pc,
 				 purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)),
 				 msg->from,
 				 PURPLE_MESSAGE_DELAYED,
 				 msg->message,
 				 msg->timestamp);
+		if(cca->messages && ((CoinCoinMessage*)cca->messages->data)->timestamp == msg->timestamp)
+			msg->ref = ((CoinCoinMessage*)cca->messages->data)->ref + 1;
+
 		GSList* link = iter;
 		iter = iter->next;
 		link->next = cca->messages;

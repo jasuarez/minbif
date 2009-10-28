@@ -31,6 +31,7 @@ struct _CoinCoinMessage
 	gchar* info;
 	gchar* from;
 	time_t timestamp;
+	unsigned ref;
 	gint64 id;
 };
 
