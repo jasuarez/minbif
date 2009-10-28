@@ -4,3 +4,5 @@ ADD_LIBRARY(coincoin SHARED
 		connection.c)
 
 TARGET_LINK_LIBRARIES(coincoin ${PURPLE_LDFLAGS})
+INSTALL(TARGETS coincoin
+	DESTINATION lib/purple-2)
