@@ -369,6 +369,9 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_bool_new("Use SSL", "ssl", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
+	option = purple_account_option_bool_new("No reformat messages", "no_reformat_messages", FALSE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
 	_coincoin_plugin = plugin;
 }
 

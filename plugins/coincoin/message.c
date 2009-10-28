@@ -228,7 +228,7 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 					g_string_append(s, ((CoinCoinMessage*)m->data)->from);
 					g_string_append(s, ": ");
 				}
-				g_string_append(s, "<FONT COLOR=\"red\">");
+				g_string_append(s, "<FONT COLOR=\"yellow\">");
 				g_string_append(s, clock);
 				g_string_append(s, "</FONT>");
 			}
@@ -293,7 +293,9 @@ void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gp
 	for(iter = messages; iter; )
 	{
 		CoinCoinMessage* msg = iter->data;
-		coincoin_message_ref(msg, cca->messages);
+		if(!purple_account_get_bool(cca->account, "no_reformat_messages", FALSE))
+			coincoin_message_ref(msg, cca->messages);
+
 		serv_got_chat_in(cca->pc,
 				 purple_conv_chat_get_id(PURPLE_CONV_CHAT(convo)),
 				 msg->from,
