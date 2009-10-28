@@ -1,4 +1,9 @@
-Minbif 1.0-RC (2009-10-24)
+Minbif 1.0-rc2 (2009-10-28)
+	* Timestamps of delayed messages are bold formatted.
+	* coincoin: fix bad-encoded xml files.
+	* coincoin: display nickname of message sender before timestamps.
+
+Minbif 1.0-rc (2009-10-24)
 	* Auto-rejoin channels when disconnect/reconnect to an IM account, or
 	  when restart minbif.
 	* Channel users status changes are propagated to IRC user.
