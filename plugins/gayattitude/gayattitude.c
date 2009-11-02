@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009 Marc Dequènes, Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -229,7 +229,6 @@ static void gayattitude_login(PurpleAccount *account)
 
 	gchar* encoded_password = http_url_encode(password, TRUE);
 	postdata = g_strdup_printf("login=%s&passw=%s", username, encoded_password);
-	g_free(encoded_password);
 
 	http_post_or_get(gaa->http_handler, flags , GA_HOSTNAME, "/html/login",
 			postdata, gayattitude_login_cb, NULL, FALSE);
