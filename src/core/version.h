@@ -20,6 +20,8 @@
 #define VERSION_H
 
 #define MINBIF_VERSION_NAME "minbif"
+#define MINBIF_WEBSITE      "http://minbif.im"
+#define MINBIF_DEV_WEBSITE  "http://symlink.me/projects/show/minbif"
 
 #define MINBIF_VERSION_MAJOR   "1"
 #define MINBIF_VERSION_MINOR   "0"

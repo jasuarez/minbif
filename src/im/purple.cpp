@@ -100,8 +100,8 @@ GHashTable *Purple::minbif_ui_get_info(void)
 
 		g_hash_table_insert(ui_info, (void*)"name",         (void*)MINBIF_VERSION_NAME);
 		g_hash_table_insert(ui_info, (void*)"version",      (void*)MINBIF_VERSION);
-		g_hash_table_insert(ui_info, (void*)"website",      (void*)"http://symlink.me/wiki/minbif");
-		g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)"http://symlink.me/projects/show/minbif");
+		g_hash_table_insert(ui_info, (void*)"website",      (void*)MINBIF_WEBSITE);
+		g_hash_table_insert(ui_info, (void*)"dev_website",  (void*)MINBIF_DEV_WEBSITE);
 		g_hash_table_insert(ui_info, (void*)"client_type",  (void*)"pc");
 
 	}
