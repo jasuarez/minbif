@@ -20,6 +20,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 
 #include "dcc.h"
 #include "nick.h"

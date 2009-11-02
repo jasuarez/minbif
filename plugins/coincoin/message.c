@@ -228,7 +228,7 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 					g_string_append(s, ((CoinCoinMessage*)m->data)->from);
 					g_string_append(s, ": ");
 				}
-				g_string_append(s, "<FONT COLOR=\"yellow\">");
+				g_string_append(s, "<FONT COLOR=\"blue\">");
 				g_string_append(s, clock);
 				g_string_append(s, "</FONT>");
 			}
