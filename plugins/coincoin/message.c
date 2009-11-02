@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <string.h>
+
 #include "message.h"
 
 /* From gcoincoin */
@@ -248,8 +250,9 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 	msg->message = g_string_free(s, FALSE);
 }
 
-void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gpointer userdata)
+void coincoin_parse_message(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)
 {
+	CoinCoinAccount* cca = handler->data;
 	PurpleConversation* convo = purple_find_conversation_with_account(PURPLE_CONV_TYPE_CHAT, "board", cca->account);
 	if(!convo)
 		return; // not on the board channel

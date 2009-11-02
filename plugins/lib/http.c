@@ -1,6 +1,4 @@
 /*
- * libfacebook
- *
  * libfacebook is the property of its developers.  See the COPYRIGHT file
  * for more details.
  *
@@ -18,9 +16,49 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "connection.h"
+#include "http.h"
+#include <unistd.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
 
 static void http_attempt_connection(HttpConnection *);
+
+HttpHandler* http_handler_new(PurpleAccount* account, void* data)
+{
+	HttpHandler* handler = g_new0(HttpHandler, 1);
+	handler->account = account;
+	handler->pc = purple_account_get_connection(account);
+	handler->cookie_table = g_hash_table_new_full(g_str_hash, g_str_equal,
+			g_free, g_free);
+	handler->hostname_ip_cache = g_hash_table_new_full(g_str_hash, g_str_equal,
+			g_free, g_free);
+	handler->data = data;
+	return handler;
+}
+
+void http_handler_free(HttpHandler* handler)
+{
+	purple_debug_info("httpproxy", "destroying %d incomplete connections\n",
+			g_slist_length(handler->conns));
+
+	while (handler->conns != NULL)
+		http_connection_destroy(handler->conns->data);
+
+	while (handler->dns_queries != NULL) {
+		PurpleDnsQueryData *dns_query = handler->dns_queries->data;
+		purple_debug_info("httpproxy", "canceling dns query for %s\n",
+					purple_dnsquery_get_host(dns_query));
+		handler->dns_queries = g_slist_remove(handler->dns_queries, dns_query);
+		purple_dnsquery_destroy(dns_query);
+	}
+
+	g_hash_table_destroy(handler->cookie_table);
+	g_hash_table_destroy(handler->hostname_ip_cache);
+	g_free(handler);
+}
 
 #ifdef HAVE_ZLIB
 static guchar *http_gunzip(const guchar *gzip_data, ssize_t *len_ptr)
@@ -51,10 +89,10 @@ static guchar *http_gunzip(const guchar *gzip_data, ssize_t *len_ptr)
 	gzip_err = zlib_inflate(&zstr, Z_FINISH);
 	zlib_inflateEnd(&zstr);
 
-	purple_debug_info("gayattitude", "gzip len: %ld, len: %ld\n", gzip_len,
+	purple_debug_info("httpproxy", "gzip len: %ld, len: %ld\n", gzip_len,
 			gzip_data_len);
-	purple_debug_info("gayattitude", "gzip flags: %d\n", flags);
-	purple_debug_info("gayattitude", "gzip error: %d\n", gzip_err);
+	purple_debug_info("httpproxy", "gzip flags: %d\n", flags);
+	purple_debug_info("httpproxy", "gzip error: %d\n", gzip_err);
 
 	*len_ptr = gzip_len;
 	return output_data;
@@ -63,7 +101,7 @@ static guchar *http_gunzip(const guchar *gzip_data, ssize_t *len_ptr)
 
 void http_connection_destroy(HttpConnection *fbconn)
 {
-	fbconn->fba->conns = g_slist_remove(fbconn->fba->conns, fbconn);
+	fbconn->handler->conns = g_slist_remove(fbconn->handler->conns, fbconn);
 
 	if (fbconn->request != NULL)
 		g_string_free(fbconn->request, TRUE);
@@ -87,7 +125,7 @@ void http_connection_destroy(HttpConnection *fbconn)
 	g_free(fbconn);
 }
 
-static void http_update_cookies(GayAttitudeAccount *fba, const gchar *headers)
+static void http_update_cookies(HttpHandler *handler, const gchar *headers)
 {
 	const gchar *cookie_start;
 	const gchar *cookie_end;
@@ -113,10 +151,10 @@ static void http_update_cookies(GayAttitudeAccount *fba, const gchar *headers)
 		cookie_value= g_strndup(cookie_start, cookie_end-cookie_start);
 		cookie_start = cookie_end;
 
-		purple_debug_info("gayattitude", "got cookie %s=%s\n",
+		purple_debug_info("httpproxy", "got cookie %s=%s\n",
 				cookie_name, cookie_value);
 
-		g_hash_table_replace(fba->cookie_table, cookie_name,
+		g_hash_table_replace(handler->cookie_table, cookie_name,
 				cookie_value);
 	}
 }
@@ -144,9 +182,9 @@ static void http_connection_process_data(HttpConnection *fbconn)
 		tmp = g_memdup(tmp, len + 1);
 		tmp[len] = '\0';
 		fbconn->rx_buf[fbconn->rx_len - len] = '\0';
-		purple_debug_misc("gayattitude", "response headers\n%s\n",
+		purple_debug_misc("httpproxy", "response headers\n%s\n",
 				fbconn->rx_buf);
-		http_update_cookies(fbconn->fba, fbconn->rx_buf);
+		http_update_cookies(fbconn->handler, fbconn->rx_buf);
 
 #ifdef HAVE_ZLIB
 		if (strstr(fbconn->rx_buf, "Content-Encoding: gzip"))
@@ -167,16 +205,16 @@ static void http_connection_process_data(HttpConnection *fbconn)
 	fbconn->rx_buf = NULL;
 
 	if (fbconn->callback != NULL)
-		fbconn->callback(fbconn->fba, tmp, len, fbconn->user_data);
+		fbconn->callback(fbconn->handler, tmp, len, fbconn->user_data);
 
 	g_free(tmp);
 }
 
 static void http_fatal_connection_cb(HttpConnection *fbconn)
 {
-	PurpleConnection *pc = fbconn->fba->pc;
+	PurpleConnection *pc = fbconn->handler->pc;
 
-	purple_debug_error("gayattitude", "fatal connection error\n");
+	purple_debug_error("httpproxy", "fatal connection error\n");
 
 	http_connection_destroy(fbconn);
 
@@ -230,7 +268,7 @@ static void http_post_or_get_readdata_cb(gpointer data, gint source,
 			 * in this manner?  In any case, this differs from the behavior
 			 * of the standard recv() system call.
 			 */
-			purple_debug_warning("gayattitude",
+			purple_debug_warning("httpproxy",
 				"ssl error, but data received.  attempting to continue\n");
 		} else {
 			/* TODO: Is this a regular occurrence?  If so then maybe resend the request? */
@@ -275,13 +313,13 @@ static void http_post_or_get_connect_cb(gpointer data, gint source,
 
 	if (error_message)
 	{
-		purple_debug_error("gayattitude", "post_or_get_connect_cb %s\n",
+		purple_debug_error("httpproxy", "post_or_get_connect_cb %s\n",
 				error_message);
 		http_fatal_connection_cb(fbconn);
 		return;
 	}
 
-	purple_debug_info("gayattitude", "post_or_get_connect_cb\n");
+	purple_debug_info("httpproxy", "post_or_get_connect_cb\n");
 	fbconn->fd = source;
 
 	/* TODO: Check the return value of write() */
@@ -300,7 +338,7 @@ static void http_post_or_get_ssl_connect_cb(gpointer data,
 
 	fbconn = data;
 
-	purple_debug_info("gayattitude", "post_or_get_ssl_connect_cb\n");
+	purple_debug_info("httpproxy", "post_or_get_ssl_connect_cb\n");
 
 	/* TODO: Check the return value of write() */
 	len = purple_ssl_write(fbconn->ssl_conn,
@@ -316,15 +354,15 @@ static void http_host_lookup_cb(GSList *hosts, gpointer data,
 	struct sockaddr_in *addr;
 	gchar *hostname;
 	gchar *ip_address = NULL;
-	GayAttitudeAccount *fba;
+	HttpHandler *handler;
 	PurpleDnsQueryData *query;
 
-	purple_debug_info("gayattitude", "updating cache of dns addresses\n");
+	purple_debug_info("httpproxy", "updating cache of dns addresses\n");
 
 	/* Extract variables */
 	host_lookup_list = data;
 
-	fba = host_lookup_list->data;
+	handler = host_lookup_list->data;
 	host_lookup_list =
 			g_slist_delete_link(host_lookup_list, host_lookup_list);
 	hostname = host_lookup_list->data;
@@ -337,19 +375,19 @@ static void http_host_lookup_cb(GSList *hosts, gpointer data,
 	/* The callback has executed, so we no longer need to keep track of
 	 * the original query.  This always needs to run when the cb is
 	 * executed. */
-	fba->dns_queries = g_slist_remove(fba->dns_queries, query);
+	handler->dns_queries = g_slist_remove(handler->dns_queries, query);
 
 	/* Any problems, capt'n? */
 	if (error_message != NULL)
 	{
-		purple_debug_warning("gayattitude",
+		purple_debug_warning("httpproxy",
 				"Error doing host lookup: %s\n", error_message);
 		return;
 	}
 
 	if (hosts == NULL)
 	{
-		purple_debug_warning("gayattitude",
+		purple_debug_warning("httpproxy",
 				"Could not resolve host name\n");
 		return;
 	}
@@ -372,10 +410,10 @@ static void http_host_lookup_cb(GSList *hosts, gpointer data,
 		hosts = g_slist_delete_link(hosts, hosts);
 	}
 
-	purple_debug_info("gayattitude", "Host %s has IP %s\n",
+	purple_debug_info("httpproxy", "Host %s has IP %s\n",
 			hostname, ip_address);
 
-	g_hash_table_insert(fba->hostname_ip_cache, hostname, ip_address);
+	g_hash_table_insert(handler->hostname_ip_cache, hostname, ip_address);
 }
 
 static void http_cookie_foreach_cb(gchar *cookie_name,
@@ -386,15 +424,15 @@ static void http_cookie_foreach_cb(gchar *cookie_name,
 }
 
 /**
- * Serialize the fba->cookie_table hash table to a string.
+ * Serialize the handler->cookie_table hash table to a string.
  */
-gchar *http_cookies_to_string(GayAttitudeAccount *fba)
+static gchar *http_cookies_to_string(HttpHandler *handler)
 {
 	GString *str;
 
 	str = g_string_new(NULL);
 
-	g_hash_table_foreach(fba->cookie_table,
+	g_hash_table_foreach(handler->cookie_table,
 			(GHFunc)http_cookie_foreach_cb, str);
 
 	return g_string_free(str, FALSE);
@@ -404,14 +442,14 @@ static void http_ssl_connection_error(PurpleSslConnection *ssl,
 		PurpleSslErrorType errortype, gpointer data)
 {
 	HttpConnection *fbconn = data;
-	PurpleConnection *pc = fbconn->fba->pc;
+	PurpleConnection *pc = fbconn->handler->pc;
 
 	fbconn->ssl_conn = NULL;
 	http_connection_destroy(fbconn);
 	purple_connection_ssl_error(pc, errortype);
 }
 
-void http_post_or_get(GayAttitudeAccount *fba, HttpMethod method,
+void http_post_or_get(HttpHandler *handler, HttpMethod method,
 		const gchar *host, const gchar *url, const gchar *postdata,
 		HttpProxyCallbackFunc callback_func, gpointer user_data,
 		gboolean keepalive)
@@ -429,11 +467,11 @@ void http_post_or_get(GayAttitudeAccount *fba, HttpMethod method,
 	keepalive = FALSE;
 
 	if (host == NULL)
-		return;
+		host = "linuxfr.org";
 
-	if (fba && fba->account && fba->account->proxy_info &&
-		(fba->account->proxy_info->type == PURPLE_PROXY_HTTP ||
-		(fba->account->proxy_info->type == PURPLE_PROXY_USE_GLOBAL &&
+	if (handler && handler->account && handler->account->proxy_info &&
+		(handler->account->proxy_info->type == PURPLE_PROXY_HTTP ||
+		(handler->account->proxy_info->type == PURPLE_PROXY_USE_GLOBAL &&
 			purple_global_proxy_get_info() &&
 			purple_global_proxy_get_info()->type ==
 					PURPLE_PROXY_HTTP)))
@@ -444,8 +482,8 @@ void http_post_or_get(GayAttitudeAccount *fba, HttpMethod method,
 		real_url = g_strdup(url);
 	}
 
-	cookies = http_cookies_to_string(fba);
-	user_agent = purple_account_get_string(fba->account, "user-agent", "libpurple (plugin gayattitude)");
+	cookies = http_cookies_to_string(handler);
+	user_agent = purple_account_get_string(handler->account, "user-agent", "libpurple (plugin httpproxy)");
 
 	/* Build the request */
 	request = g_string_new(NULL);
@@ -478,7 +516,7 @@ void http_post_or_get(GayAttitudeAccount *fba, HttpMethod method,
 	g_string_append_printf(request, "Accept-Language: %s\r\n", language_names);
 	g_free(language_names);
 
-	purple_debug_misc("gayattitude", "sending request headers:\n%s\n",
+	purple_debug_misc("httpproxy", "sending request headers:\n%s\n",
 			request->str);
 
 	g_string_append_printf(request, "\r\n");
@@ -489,7 +527,7 @@ void http_post_or_get(GayAttitudeAccount *fba, HttpMethod method,
 	 * it in the debug log.  Without this condition a user's password is
 	 * printed in the debug log */
 	if (method == HTTP_METHOD_POST)
-		purple_debug_misc("gayattitude", "sending request data:\n%s\n",
+		purple_debug_misc("httpproxy", "sending request data:\n%s\n",
 			postdata);
 
 	g_free(cookies);
@@ -512,30 +550,30 @@ void http_post_or_get(GayAttitudeAccount *fba, HttpMethod method,
 		/* Don't do this for proxy connections, since proxies do the DNS lookup */
 		gchar *host_ip;
 
-		host_ip = g_hash_table_lookup(fba->hostname_ip_cache, host);
+		host_ip = g_hash_table_lookup(handler->hostname_ip_cache, host);
 		if (host_ip != NULL) {
-			purple_debug_info("gayattitude",
+			purple_debug_info("httpproxy",
 					"swapping original host %s with cached value of %s\n",
 					host, host_ip);
 			host = host_ip;
-		} else if (fba->account && !fba->account->disconnecting) {
+		} else if (handler->account && !handler->account->disconnecting) {
 			GSList *host_lookup_list = NULL;
 			PurpleDnsQueryData *query;
 
 			host_lookup_list = g_slist_prepend(
 					host_lookup_list, g_strdup(host));
 			host_lookup_list = g_slist_prepend(
-					host_lookup_list, fba);
+					host_lookup_list, handler);
 
 			query = purple_dnsquery_a(host, 80,
 					http_host_lookup_cb, host_lookup_list);
-			fba->dns_queries = g_slist_prepend(fba->dns_queries, query);
+			handler->dns_queries = g_slist_prepend(handler->dns_queries, query);
 			host_lookup_list = g_slist_append(host_lookup_list, query);
 		}
 	}
 
 	fbconn = g_new0(HttpConnection, 1);
-	fbconn->fba = fba;
+	fbconn->handler = handler;
 	fbconn->method = method;
 	fbconn->hostname = g_strdup(host);
 	fbconn->request = request;
@@ -544,14 +582,14 @@ void http_post_or_get(GayAttitudeAccount *fba, HttpMethod method,
 	fbconn->fd = -1;
 	fbconn->connection_keepalive = keepalive;
 	fbconn->request_time = time(NULL);
-	fba->conns = g_slist_prepend(fba->conns, fbconn);
+	handler->conns = g_slist_prepend(handler->conns, fbconn);
 
 	http_attempt_connection(fbconn);
 }
 
 static void http_attempt_connection(HttpConnection *fbconn)
 {
-	GayAttitudeAccount *fba = fbconn->fba;
+	HttpHandler *handler = fbconn->handler;
 
 #if 0
 	/* Connection to attempt retries.  This code doesn't work perfectly, but
@@ -559,12 +597,12 @@ static void http_attempt_connection(HttpConnection *fbconn)
 	if (time(NULL) - fbconn->request_time > 5) {
 		/* We've continuously tried to remake this connection for a
 		 * bit now.  It isn't happening, sadly.  Time to die. */
-		purple_debug_error("gayattitude", "could not connect after retries\n");
+		purple_debug_error("httpproxy", "could not connect after retries\n");
 		http_fatal_connection_cb(fbconn);
 		return;
 	}
 
-	purple_debug_info("gayattitude", "making connection attempt\n");
+	purple_debug_info("httpproxy", "making connection attempt\n");
 
 	/* TODO: If we're retrying the connection, consider clearing the cached
 	 * DNS value.  This will require some juggling with the hostname param */
@@ -574,11 +612,11 @@ static void http_attempt_connection(HttpConnection *fbconn)
 #endif
 
 	if (fbconn->method & HTTP_METHOD_SSL) {
-		fbconn->ssl_conn = purple_ssl_connect(fba->account, fbconn->hostname,
+		fbconn->ssl_conn = purple_ssl_connect(handler->account, fbconn->hostname,
 				443, http_post_or_get_ssl_connect_cb,
 				http_ssl_connection_error, fbconn);
 	} else {
-		fbconn->connect_data = purple_proxy_connect(NULL, fba->account,
+		fbconn->connect_data = purple_proxy_connect(NULL, handler->account,
 				fbconn->hostname, 80, http_post_or_get_connect_cb, fbconn);
 	}
 

@@ -16,45 +16,34 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "connection.h"
+#include <string.h>
+
+#include "../lib/http.h"
 #include "message.h"
 #include "coincoin.h"
 
 PurplePlugin *_coincoin_plugin = NULL;
 
-CoinCoinAccount* coincoin_account_new(PurpleAccount *account)
+static CoinCoinAccount* coincoin_account_new(PurpleAccount *account)
 {
 	CoinCoinAccount* cca;
 
 	cca = g_new0(CoinCoinAccount, 1);
 	cca->account = account;
 	cca->pc = purple_account_get_connection(account);
-	cca->cookie_table = g_hash_table_new_full(g_str_hash, g_str_equal,
-			g_free, g_free);
-	cca->hostname_ip_cache = g_hash_table_new_full(g_str_hash, g_str_equal,
-			g_free, g_free);
-
-	g_hash_table_replace(cca->cookie_table, g_strdup("test_cookie"),
-			g_strdup("1"));
-
+	cca->http_handler = http_handler_new(cca->account, cca);
 	cca->hostname = NULL;
 
 	account->gc->proto_data = cca;
 	return cca;
 }
 
-void coincoin_account_free(CoinCoinAccount* cca)
+static void coincoin_account_free(CoinCoinAccount* cca)
 {
-
 	if (cca->new_messages_check_timer) {
 		purple_timeout_remove(cca->new_messages_check_timer);
 	}
 
-	purple_debug_info("coincoin", "destroying %d incomplete connections\n",
-			g_slist_length(cca->conns));
-
-	while (cca->conns != NULL)
-		http_connection_destroy(cca->conns->data);
 	while (cca->messages != NULL)
 	{
 		CoinCoinMessage *msg = cca->messages->data;
@@ -62,16 +51,7 @@ void coincoin_account_free(CoinCoinAccount* cca)
 		coincoin_message_free(msg);
 	}
 
-	while (cca->dns_queries != NULL) {
-		PurpleDnsQueryData *dns_query = cca->dns_queries->data;
-		purple_debug_info("coincoin", "canceling dns query for %s\n",
-					purple_dnsquery_get_host(dns_query));
-		cca->dns_queries = g_slist_remove(cca->dns_queries, dns_query);
-		purple_dnsquery_destroy(dns_query);
-	}
-
-	g_hash_table_destroy(cca->cookie_table);
-	g_hash_table_destroy(cca->hostname_ip_cache);
+	http_handler_free(cca->http_handler);
 	g_free(cca->hostname);
 	g_free(cca);
 }
@@ -87,14 +67,16 @@ static void coincoin_check_new_messages(CoinCoinAccount* cca)
 	if (purple_account_get_bool(cca->account, "ssl", FALSE))
 		flags |= HTTP_METHOD_SSL;
 
-	http_post_or_get(cca, flags , cca->hostname,
+	http_post_or_get(cca->http_handler, flags , cca->hostname,
 			purple_account_get_string(cca->account, "board", CC_DEFAULT_BOARD),
 			NULL, coincoin_parse_message, NULL, FALSE);
 }
 
-static void coincoin_login_cb(CoinCoinAccount *cca, gchar *response, gsize len,
+static void coincoin_login_cb(HttpHandler *handler, gchar *response, gsize len,
 		gpointer userdata)
 {
+	CoinCoinAccount* cca = handler->data;
+
 	purple_connection_update_progress(cca->pc, "Authenticating", 2, 3);
 	xmlnode* node = coincoin_xmlparse(response, len);
 	if(!node || strcmp(node->name, "board"))
@@ -108,7 +90,7 @@ static void coincoin_login_cb(CoinCoinAccount *cca, gchar *response, gsize len,
 		purple_connection_set_state(cca->pc, PURPLE_CONNECTED);
 		serv_got_joined_chat(cca->pc, 1, "board");
 
-		coincoin_parse_message(cca, response, len, userdata);
+		coincoin_parse_message(cca->http_handler, response, len, userdata);
 		cca->new_messages_check_timer = g_timeout_add_seconds(CC_CHECK_INTERVAL, (GSourceFunc)coincoin_check_new_messages, cca);
 	}
 	if(node)
@@ -151,17 +133,17 @@ static void coincoin_login(PurpleAccount *account)
 	purple_connection_set_state(gc, PURPLE_CONNECTING);
 	purple_connection_update_progress(gc, "Connecting", 1, 3);
 
-	g_hash_table_replace(cca->cookie_table, g_strdup("login"), g_strdup(purple_connection_get_display_name(gc)));
+	g_hash_table_replace(cca->http_handler->cookie_table, g_strdup("login"), g_strdup(purple_connection_get_display_name(gc)));
 
 	parts = g_strsplit(purple_connection_get_password(gc), ";", -1);
 	for(part = parts; part && *part; ++part)
 	{
 		char** keys = g_strsplit(*part, "=", 2);
-		g_hash_table_replace(cca->cookie_table, g_strdup(keys[0]), g_strdup(keys[1]));
+		g_hash_table_replace(cca->http_handler->cookie_table, g_strdup(keys[0]), g_strdup(keys[1]));
 		g_strfreev(keys);
 	}
 	g_strfreev(parts);
-	http_post_or_get(cca, flags , cca->hostname,
+	http_post_or_get(cca->http_handler, flags , cca->hostname,
 			purple_account_get_string(account, "board", CC_DEFAULT_BOARD),
 			NULL, coincoin_login_cb, NULL, FALSE);
 }
@@ -184,7 +166,7 @@ static void coincoin_chat_leave (PurpleConnection *gc, int id)
 
 }
 
-static void coincoin_message_posted(CoinCoinAccount *cca, gchar *response, gsize len,
+static void coincoin_message_posted(HttpHandler *handler, gchar *response, gsize len,
 		gpointer userdata)
 {
 	if(len)
@@ -201,7 +183,7 @@ static int coincoin_chat_send(PurpleConnection *gc, int id, const char *what, Pu
 
 	gchar* msg = http_url_encode(what, 1);
 	gchar* postdata = g_strdup_printf("message=%s&section=1", msg);
-	http_post_or_get(cca, http_flags , cca->hostname,
+	http_post_or_get(cca->http_handler, http_flags , cca->hostname,
 			purple_account_get_string(cca->account, "post", CC_DEFAULT_POST),
 			postdata, coincoin_message_posted, NULL, FALSE);
 	g_free(postdata);

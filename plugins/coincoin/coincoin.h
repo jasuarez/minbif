@@ -20,12 +20,7 @@
 #define CC_COINCOIN_H
 
 #include <purple.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
+#include "../lib/http.h"
 
 #define CC_DEFAULT_HOSTNAME "linuxfr.org"
 #define CC_DEFAULT_BOARD "/board/remote.xml"
@@ -34,16 +29,11 @@
 
 typedef struct _CoinCoinAccount CoinCoinAccount;
 
-typedef void (*HttpProxyCallbackFunc)(CoinCoinAccount *fba, gchar *data, gsize data_len, gpointer user_data);
-
 struct _CoinCoinAccount {
 	PurpleAccount *account;
 	PurpleConnection *pc;
-	GSList *conns; /**< A list of all active HttpConnections */
-	GSList *dns_queries;
-	GHashTable *cookie_table;
+	HttpHandler* http_handler;
 	GSList* messages;
-	GHashTable *hostname_ip_cache;
 	guint new_messages_check_timer;
 
 	gchar* hostname;

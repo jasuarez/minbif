@@ -20,17 +20,13 @@
 #define GA_GAYATTITUDE_H
 
 #include <purple.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/HTMLparser.h>
+
+#include "../lib/http.h"
 
 #define GA_HOSTNAME "www.gayattitude.com"
 #define GA_HOSTNAME_PERSO "perso.gayattitude.com"
@@ -39,15 +35,10 @@
 typedef struct _GayAttitudeAccount GayAttitudeAccount;
 typedef struct _GayAttitudeBuddyInfoRequest GayAttitudeBuddyInfoRequest;
 
-typedef void (*HttpProxyCallbackFunc)(GayAttitudeAccount *fba, gchar *data, gsize data_len, gpointer user_data);
-
 struct _GayAttitudeAccount {
 	PurpleAccount *account;
 	PurpleConnection *pc;
-	GSList *conns; /**< A list of all active HttpConnections */
-	GSList *dns_queries;
-	GHashTable *cookie_table;
-	GHashTable *hostname_ip_cache;
+	HttpHandler* http_handler;
 	guint new_messages_check_timer;
 	GHashTable *ref_ids;
 };

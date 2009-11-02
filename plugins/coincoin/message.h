@@ -35,7 +35,7 @@ struct _CoinCoinMessage
 	gint64 id;
 };
 
-void coincoin_parse_message(CoinCoinAccount* cca, gchar* response, gsize len, gpointer userdata);
+void coincoin_parse_message(HttpHandler* handler, gchar* response, gsize len, gpointer userdata);
 xmlnode* coincoin_xmlparse(gchar* response, gsize len);
 void coincoin_message_free(CoinCoinMessage* msg);
 
