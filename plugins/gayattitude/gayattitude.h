@@ -1,0 +1,60 @@
+/*
+ * Minbif - IRC instant messaging gateway
+ * Copyright(C) 2009 Romain Bignon
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+#ifndef GA_GAYATTITUDE_H
+#define GA_GAYATTITUDE_H
+
+#include <purple.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
+#include <libxml/HTMLparser.h>
+
+#define GA_HOSTNAME "www.gayattitude.com"
+#define GA_HOSTNAME_PERSO "perso.gayattitude.com"
+#define GA_CHECK_INTERVAL 30
+
+typedef struct _GayAttitudeAccount GayAttitudeAccount;
+typedef struct _GayAttitudeBuddyInfoRequest GayAttitudeBuddyInfoRequest;
+
+typedef void (*HttpProxyCallbackFunc)(GayAttitudeAccount *fba, gchar *data, gsize data_len, gpointer user_data);
+
+struct _GayAttitudeAccount {
+	PurpleAccount *account;
+	PurpleConnection *pc;
+	GSList *conns; /**< A list of all active HttpConnections */
+	GSList *dns_queries;
+	GHashTable *cookie_table;
+	GHashTable *hostname_ip_cache;
+	guint new_messages_check_timer;
+	GHashTable *ref_ids;
+};
+
+struct _GayAttitudeBuddyInfoRequest {
+	gchar		*who;
+	gboolean	advertise;
+};
+
+#endif /* GA_GAYATTITUDE_H */
