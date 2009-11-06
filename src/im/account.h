@@ -198,9 +198,8 @@ namespace im
 		bool supportsChats() const;
 
 		/** Join a chat */
-		bool joinChat(const string& name) const;
+		bool joinChat(const string& name, const string& parameters) const;
 	};
-
 };
 
 #endif /* IM_ACCOUNT_H */

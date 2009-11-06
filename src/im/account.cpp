@@ -232,7 +232,7 @@ void Account::flushChannelJoins()
 	string list = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
 	string cname;
 	while((cname = stringtok(list, ",")).empty() == false)
-		this->joinChat(cname);
+		this->joinChat(cname, "");
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
 }
 
@@ -458,7 +458,7 @@ bool Account::supportsChats() const
 	return (prpl_info->chat_info != NULL);
 }
 
-bool Account::joinChat(const string& name) const
+bool Account::joinChat(const string& name, const string& parameters) const
 {
 	assert(isValid());
 	if(!isConnected())
@@ -548,6 +548,17 @@ bool Account::joinChat(const string& name) const
 	info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl(gc));
 	if (info->chat_info_defaults != NULL)
 		hash = info->chat_info_defaults(gc, name.c_str());
+
+	/* Parse parameters */
+	string param, params = parameters;
+	while((param = stringtok(params, ";")).empty() == false)
+	{
+		string key = stringtok(param, "=");
+		if(key.empty()) continue;
+		g_hash_table_replace(hash,
+				g_strdup(key.c_str()),
+				g_strdup(param.c_str()));
+	}
 
 	chat = purple_chat_new(account, name.c_str(), hash);
 

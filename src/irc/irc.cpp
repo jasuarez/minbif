@@ -1268,6 +1268,7 @@ void IRC::m_join(Message message)
 {
 	string names = message.getArg(0);
 	string channame;
+	string parameters = message.countArgs() > 1 ? message.getArg(1) : "";
 	while((channame = stringtok(names, ",")).empty() == false)
 	{
 		if(!Channel::isChanName(channame))
@@ -1305,6 +1306,7 @@ void IRC::m_join(Message message)
 
 				string accid = channame.substr(1);
 				string convname = stringtok(accid, ":");
+				string param = stringtok(parameters, ",");
 				if(accid.empty() || convname.empty())
 				{
 					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
@@ -1326,7 +1328,7 @@ void IRC::m_join(Message message)
 					continue;
 				}
 
-				if(!account.joinChat(convname))
+				if(!account.joinChat(convname, param))
 				{
 					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 									     .setReceiver(user)
