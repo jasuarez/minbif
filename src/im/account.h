@@ -21,6 +21,7 @@
 
 #include <libpurple/purple.h>
 #include <string>
+#include <map>
 #include <vector>
 
 #include "im/protocol.h"
@@ -29,6 +30,7 @@ namespace im
 {
 	using std::string;
 	using std::vector;
+	using std::map;
 	class Buddy;
 
 	/** This class represents an account.
@@ -199,6 +201,9 @@ namespace im
 
 		/** Join a chat */
 		bool joinChat(const string& name, const string& parameters) const;
+
+		/** Get parameters list */
+		map<string, string> getChatParameters() const;
 	};
 };
 

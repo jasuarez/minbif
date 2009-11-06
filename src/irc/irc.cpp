@@ -878,6 +878,25 @@ void IRC::m_stats(Message message)
 				notice(user, string(purple_primitive_get_id_from_type((PurpleStatusPrimitive)i)) +
 					     ": " + purple_primitive_get_name_from_type((PurpleStatusPrimitive)i));
 			break;
+		case 'c':
+		{
+			string accid = message.countArgs() > 1 ? message.getArg(1) : "";
+			im::Account account = im->getAccount(accid);
+			if(!account.isValid())
+				user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+								     .setReceiver(user)
+								     .addArg(accid)
+								     .addArg("No such account"));
+			else
+			{
+				map<string, string> m = account.getChatParameters();
+				for(map<string, string>::iterator it = m.begin();
+				    it != m.end();
+				    ++it)
+					notice(user, it->first + " = " + it->second);
+			}
+			break;
+		}
 		case 'm':
 			for(size_t i = 0; i < sizeof commands / sizeof *commands; ++i)
 				user->send(Message(RPL_STATSCOMMANDS).setSender(this)
@@ -900,6 +919,7 @@ void IRC::m_stats(Message message)
 		default:
 			arg = "*";
 			notice(user, "a (aways) - List all away messages availables");
+			notice(user, "c (chat params) - List all chat parameters for a specific account");
 			notice(user, "m (commands) - List all IRC commands");
 			notice(user, "p (protocols) - List all protocols");
 			break;

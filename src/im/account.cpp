@@ -458,6 +458,33 @@ bool Account::supportsChats() const
 	return (prpl_info->chat_info != NULL);
 }
 
+map<string, string> Account::getChatParameters() const
+{
+	assert(isValid());
+
+	PurpleConnection* gc = purple_account_get_connection(account);
+	map<string, string> m;
+	GList *list = NULL, *tmp;
+	GHashTable *defaults = NULL;
+
+	if (PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl)->chat_info != NULL)
+		list = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl)->chat_info(gc);
+	if (PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl)->chat_info_defaults != NULL)
+		defaults = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl)->chat_info_defaults(gc, NULL);
+
+	for(tmp = list; tmp; tmp = tmp->next)
+	{
+		struct proto_chat_entry *pce = static_cast<struct proto_chat_entry*>(tmp->data);
+		char* value = (char*)g_hash_table_lookup(defaults, pce->identifier);
+		m[pce->identifier] = value ? value : "";
+		g_free(pce);
+	}
+
+	g_list_free(list);
+	g_hash_table_destroy(defaults);
+	return m;
+}
+
 bool Account::joinChat(const string& name, const string& parameters) const
 {
 	assert(isValid());
