@@ -378,7 +378,7 @@ void Conversation::sendMessage(string text)
 	}
 
 	char *utf8 = purple_utf8_try_convert(text.c_str());
-	char *escape = g_markup_escape_text(utf8, -1);
+	char *escape = irc2markup(utf8);
 	char *apos = purple_strreplace(escape, "&apos;", "'");
 	g_free(escape);
 	escape = apos;

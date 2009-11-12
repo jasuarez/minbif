@@ -166,6 +166,143 @@ bool check_write_file(string path, string filename)
 	return true;
 }
 
+static struct
+{
+	const char* num;
+	const char* name;
+} irc_colors[] = {
+	{ "00", "white"      },
+	{ "01", "black"      },
+	{ "02", "blue"       },
+	{ "03", "dark green" },
+	{ "04", "red"        },
+	{ "05", "brown"      },
+	{ "06", "purple"     },
+	{ "07", "orange"     },
+	{ "08", "yellow"     },
+	{ "09", "green"      },
+	{ "10", "teal"       },
+	{ "11", "cyan"       },
+	{ "12", "light blue" },
+	{ "13", "pink"       },
+	{ "14", "grey"       },
+	{ "15", "light grey" },
+};
+
+/* Stolen from prpl-irc */
+gchar* irc2markup(const gchar* string)
+{
+	const char *cur, *end;
+	char fg[3] = "\0\0", bg[3] = "\0\0";
+	int fgnum, bgnum;
+	int font = 0, bold = 0, underline = 0, italic = 0;
+	GString *decoded;
+
+	if (string == NULL)
+		return NULL;
+
+	decoded = g_string_sized_new(strlen(string));
+
+	cur = string;
+	do {
+		char* tmp;
+		end = strpbrk(cur, "\002\003\007\017\026\037");
+
+		tmp = g_markup_escape_text(cur, end ? end - cur : -1);
+		decoded = g_string_append(decoded, tmp);
+		g_free(tmp);
+		cur = end ? end : cur + strlen(cur);
+
+		switch (*cur) {
+		case '\002':
+			cur++;
+			if (!bold) {
+				decoded = g_string_append(decoded, "<B>");
+				bold = TRUE;
+			} else {
+				decoded = g_string_append(decoded, "</B>");
+				bold = FALSE;
+			}
+			break;
+		case '\003':
+			cur++;
+			fg[0] = fg[1] = bg[0] = bg[1] = '\0';
+			if (isdigit(*cur))
+				fg[0] = *cur++;
+			if (isdigit(*cur))
+				fg[1] = *cur++;
+			if (*cur == ',') {
+				cur++;
+				if (isdigit(*cur))
+					bg[0] = *cur++;
+				if (isdigit(*cur))
+					bg[1] = *cur++;
+			}
+			if (font) {
+				decoded = g_string_append(decoded, "</FONT>");
+				font = FALSE;
+			}
+
+			if (fg[0]) {
+				fgnum = atoi(fg);
+				if (fgnum < 0 || fgnum > 15)
+					continue;
+				font = TRUE;
+				g_string_append_printf(decoded, "<FONT COLOR=\"%s\"", irc_colors[fgnum].name);
+				if (bg[0]) {
+					bgnum = atoi(bg);
+					if (bgnum >= 0 && bgnum < 16)
+						g_string_append_printf(decoded, " BACK=\"%s\"", irc_colors[bgnum].name);
+				}
+				decoded = g_string_append_c(decoded, '>');
+			}
+			break;
+		case '\011':
+			cur++;
+			if (!italic) {
+				decoded = g_string_append(decoded, "<I>");
+				italic = TRUE;
+			} else {
+				decoded = g_string_append(decoded, "</I>");
+				italic = FALSE;
+			}
+			break;
+		case '\037':
+			cur++;
+			if (!underline) {
+				decoded = g_string_append(decoded, "<U>");
+				underline = TRUE;
+			} else {
+				decoded = g_string_append(decoded, "</U>");
+				underline = FALSE;
+			}
+			break;
+		case '\007':
+		case '\026':
+			cur++;
+			break;
+		case '\017':
+			cur++;
+			/* fallthrough */
+		case '\000':
+			if (bold)
+				decoded = g_string_append(decoded, "</B>");
+			if (italic)
+				decoded = g_string_append(decoded, "</I>");
+			if (underline)
+				decoded = g_string_append(decoded, "</U>");
+			if (font)
+				decoded = g_string_append(decoded, "</FONT>");
+			break;
+		default:
+			purple_debug(PURPLE_DEBUG_ERROR, "irc", "Unexpected mIRC formatting character %d\n", *cur);
+		}
+	} while (*cur);
+
+	char* str = g_string_free(decoded, FALSE);
+	return str;
+}
+
 gchar* markup2irc(const gchar* markup)
 {
 	char* newline = purple_strdup_withhtml(markup);
@@ -215,28 +352,6 @@ gchar* markup2irc(const gchar* markup)
 					}
 					else if(!closed && !strncasecmp(ptr, "FONT ", 5))
 					{
-						static struct
-						{
-							const char* num;
-							const char* name;
-						} irc_colors[] = {
-							{ "00", "white"      },
-							{ "01", "black"      },
-							{ "02", "blue"       },
-							{ "03", "dark green" },
-							{ "04", "red"        },
-							{ "05", "brown"      },
-							{ "06", "purple"     },
-							{ "07", "orange"     },
-							{ "08", "yellow"     },
-							{ "09", "green"      },
-							{ "10", "teal"       },
-							{ "11", "cyan"       },
-							{ "12", "light blue" },
-							{ "13", "pink"       },
-							{ "14", "grey"       },
-							{ "15", "light grey" },
-						};
 						const char *foreground = NULL, *background = NULL;
 						bool is_foreground;
 						gchar* space;
