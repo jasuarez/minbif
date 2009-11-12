@@ -63,9 +63,18 @@ bool Nick::isValidNickname(const string& nick)
 string Nick::nickize(const string& n)
 {
 	string nick;
-	for(string::const_iterator c = n.begin(); c != n.end(); ++c)
+
+	/* Transliterate string. */
+	GIConv ic = g_iconv_open("ASCII//TRANSLIT", "UTF-8");
+	gchar* conv = g_convert_with_iconv(n.c_str(), n.size(), ic, NULL, NULL, NULL);
+
+	for(const char* c = conv ? conv : n.c_str(); *c; ++c)
 		if(strchr(nick_lc_chars, *c) || strchr(nick_uc_chars, *c))
 			nick += *c;
+
+	g_iconv_close(ic);
+	g_free(conv);
+
 	if(isdigit(nick[0]))
 		nick = "_" + nick;
 
