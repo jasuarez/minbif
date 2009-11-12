@@ -1,0 +1,5 @@
+ADD_LIBRARY(pluginlib
+		http.c
+		)
+TARGET_LINK_LIBRARIES(pluginlib ${PURPLE_LDFLAGS})
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
