@@ -113,7 +113,7 @@ static void gayattitude_parse_contact_list(HttpHandler* handler, gchar* response
 		}
 
 		int i;
-		gchar *prop;
+		gchar *prop = NULL;
 		xmlNode *contact_node;
 		for(i = 0; i < nodes->nodeNr; i++)
 		{
@@ -296,7 +296,7 @@ static void gayattitude_parse_contact_info(HttpHandler* handler, gchar* response
 	{
 		PurpleNotifyUserInfo *user_info = purple_notify_user_info_new();
 		int i;
-		GString *str;
+		GString *str = NULL;
 
 		/* Search short description */
 		xpathCtx->node = doc->parent;
