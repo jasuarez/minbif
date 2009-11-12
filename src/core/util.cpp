@@ -193,15 +193,18 @@ gchar* markup2irc(const gchar* markup)
 			{
 				case 'i':
 				case 'I':
-					g_string_append_c(s, '\011');
+					if(ptr+1 == next)
+						g_string_append_c(s, '\011');
 					break;
 				case 'u':
 				case 'U':
-					g_string_append_c(s, '\037');
+					if(ptr+1 == next)
+						g_string_append_c(s, '\037');
 					break;
 				case 'B':
 				case 'b':
-					g_string_append_c(s, '\002');
+					if(ptr+1 == next)
+						g_string_append_c(s, '\002');
 					break;
 				case 'F':
 				case 'f':
