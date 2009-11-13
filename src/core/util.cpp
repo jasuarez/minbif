@@ -299,8 +299,7 @@ gchar* irc2markup(const gchar* string)
 		}
 	} while (*cur);
 
-	char* str = g_string_free(decoded, FALSE);
-	return str;
+	return g_string_free(decoded, FALSE);
 }
 
 gchar* markup2irc(const gchar* markup)

@@ -1226,6 +1226,7 @@ void IRC::m_admin(Message message)
 {
 	assert(im != NULL);
 
+	/* XXX It should does not work with several instances of IRC */
 	static struct
 	{
 		const char* key;
@@ -1236,6 +1237,11 @@ void IRC::m_admin(Message message)
 		{ "typing_notice", true,  new SettingTypingNotice(this, im) },
 		{ "away_idle",     true,  new SettingAwayIdle(this, im) },
 		{ "log_level",     true,  new SettingLogLevel(this, im) },
+		{ "proxy",         true,  new SettingProxy(this, im) },
+		{ "proxy_host",    true,  new SettingProxyHost(this, im) },
+		{ "proxy_port",    true,  new SettingProxyPort(this, im) },
+		{ "proxy_user",    true,  new SettingProxyUsername(this, im) },
+		{ "proxy_pass",    true,  new SettingProxyPassword(this, im) },
 		{ "minbif",        false, new SettingMinbif(this, im) },
 	};
 

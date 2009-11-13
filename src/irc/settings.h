@@ -49,48 +49,25 @@ namespace irc
 		virtual bool setValue(string v) = 0;
 	};
 
-	class SettingPassword : public SettingBase
-	{
-	public:
-		SettingPassword(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
+#define SETTING(x) \
+	class Setting##x : public SettingBase \
+	{ \
+	public: \
+		Setting##x(IRC* irc, im::IM* im) : SettingBase(irc, im) {} \
+		virtual string getValue() const; \
+		virtual bool setValue(string v); \
+	}
 
-		virtual string getValue() const;
-		virtual bool setValue(string v);
-	};
-
-	class SettingTypingNotice : public SettingBase
-	{
-	public:
-		SettingTypingNotice(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
-
-		virtual string getValue() const;
-		virtual bool setValue(string v);
-	};
-
-	class SettingAwayIdle : public SettingBase
-	{
-	public:
-		SettingAwayIdle(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
-
-		virtual string getValue() const;
-		virtual bool setValue(string v);
-	};
-
-	class SettingMinbif : public SettingBase
-	{
-	public:
-		SettingMinbif(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
-		virtual string getValue() const;
-		virtual bool setValue(string v);
-	};
-
-	class SettingLogLevel : public SettingBase
-	{
-	public:
-		SettingLogLevel(IRC* irc, im::IM* im) : SettingBase(irc, im) {}
-		virtual string getValue() const;
-		virtual bool setValue(string v);
-	};
+SETTING(Password);
+SETTING(TypingNotice);
+SETTING(AwayIdle);
+SETTING(Minbif);
+SETTING(LogLevel);
+SETTING(Proxy);
+SETTING(ProxyHost);
+SETTING(ProxyPort);
+SETTING(ProxyUsername);
+SETTING(ProxyPassword);
 
 }; /* ns irc */
 

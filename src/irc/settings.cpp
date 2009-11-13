@@ -20,6 +20,7 @@
 #include "im/im.h"
 #include "irc.h"
 #include "user.h"
+#include "core/util.h"
 #include "core/log.h"
 
 namespace irc
@@ -106,5 +107,101 @@ bool SettingLogLevel::setValue(string s)
 	b_log.setLoggedFlags(s, b_log.toSyslog());
 	return true;
 }
+
+string SettingProxy::getValue() const
+{
+	return purple_prefs_get_string("/purple/proxy/type");
+}
+
+bool SettingProxy::setValue(string s)
+{
+	static const char* l[] = {"none", "sock4", "sock5", "http", "envvar"};
+
+	for(unsigned i = 0; i < sizeof(l) / sizeof(*l); ++i)
+		if(s == l[i])
+		{
+			purple_prefs_set_string("/purple/proxy/type", s.c_str());
+			return true;
+		}
+
+	getIRC()->notice(getIRC()->getUser(), "Available values are: none, sock4, sock5, http, envvar");
+	return false;
+}
+
+string SettingProxyHost::getValue() const
+{
+	PurpleProxyInfo* proxy = purple_global_proxy_get_info();
+	const char* s = proxy ? purple_proxy_info_get_host(proxy) : "";
+	return s ? s : "";
+}
+
+bool SettingProxyHost::setValue(string s)
+{
+	PurpleProxyInfo* proxy = purple_global_proxy_get_info();
+	if(proxy)
+	{
+		purple_proxy_info_set_host(proxy, s.c_str());
+		return true;
+	}
+	else
+		return false;
+}
+
+string SettingProxyPort::getValue() const
+{
+	PurpleProxyInfo* proxy = purple_global_proxy_get_info();
+	return proxy ? t2s(purple_proxy_info_get_port(proxy)) : "";
+}
+
+bool SettingProxyPort::setValue(string s)
+{
+	PurpleProxyInfo* proxy = purple_global_proxy_get_info();
+	if(proxy)
+	{
+		purple_proxy_info_set_port(proxy, s2t<int>(s));
+		return true;
+	}
+	else
+		return false;
+}
+
+string SettingProxyUsername::getValue() const
+{
+	PurpleProxyInfo* proxy = purple_global_proxy_get_info();
+	const char* s = proxy ? purple_proxy_info_get_username(proxy) : "";
+	return s ? s : "";
+}
+
+bool SettingProxyUsername::setValue(string s)
+{
+	PurpleProxyInfo* proxy = purple_global_proxy_get_info();
+	if(proxy)
+	{
+		purple_proxy_info_set_username(proxy, s.c_str());
+		return true;
+	}
+	else
+		return false;
+}
+
+string SettingProxyPassword::getValue() const
+{
+	PurpleProxyInfo* proxy = purple_global_proxy_get_info();
+	const char* s = proxy ? purple_proxy_info_get_password(proxy) : "";
+	return s ? s : "";
+}
+
+bool SettingProxyPassword::setValue(string s)
+{
+	PurpleProxyInfo* proxy = purple_global_proxy_get_info();
+	if(proxy)
+	{
+		purple_proxy_info_set_password(proxy, s.c_str());
+		return true;
+	}
+	else
+		return false;
+}
+
 
 }; /* ns irc */
