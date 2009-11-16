@@ -551,6 +551,15 @@ static PurplePluginInfo info =
 
 static void _init_plugin(PurplePlugin *plugin)
 {
+	PurpleAccountOption *option;
+	GHashTable *ui_info = purple_core_get_ui_info();
+	const gchar *ui_name = g_hash_table_lookup(ui_info, "version");
+	if(!ui_name)
+		ui_name = GA_NAME;
+
+	option = purple_account_option_string_new("User-agent", "user-agent", ui_name);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
 	_gayattitude_plugin = plugin;
 }
 

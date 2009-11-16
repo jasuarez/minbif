@@ -483,7 +483,7 @@ void http_post_or_get(HttpHandler *handler, HttpMethod method,
 	}
 
 	cookies = http_cookies_to_string(handler);
-	user_agent = purple_account_get_string(handler->account, "user-agent", "libpurple (plugin httpproxy)");
+	user_agent = purple_account_get_string(handler->account, "user-agent", "libpurple");
 
 	/* Build the request */
 	request = g_string_new(NULL);

@@ -338,9 +338,16 @@ static void _init_plugin(PurplePlugin *plugin)
 {
 	PurpleAccountOption *option;
 	PurpleAccountUserSplit *split;
+	GHashTable *ui_info = purple_core_get_ui_info();
+	const gchar *ui_name = g_hash_table_lookup(ui_info, "version");
+	if(!ui_name)
+		ui_name = CC_NAME;
 
 	split = purple_account_user_split_new("Server", CC_DEFAULT_HOSTNAME, '@');
 	prpl_info.user_splits = g_list_append(prpl_info.user_splits, split);
+
+	option = purple_account_option_string_new("User-agent", "user-agent", ui_name);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_string_new("Board path", "board", CC_DEFAULT_BOARD);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);

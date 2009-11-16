@@ -28,6 +28,7 @@
 
 #include "../lib/http.h"
 
+#define GA_NAME "libpurple (gayattitude)"
 #define GA_HOSTNAME "www.gayattitude.com"
 #define GA_HOSTNAME_PERSO "perso.gayattitude.com"
 #define GA_CHECK_INTERVAL 30

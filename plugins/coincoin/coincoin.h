@@ -22,6 +22,7 @@
 #include <purple.h>
 #include "../lib/http.h"
 
+#define CC_NAME "libpurple (coincoin)"
 #define CC_DEFAULT_HOSTNAME "linuxfr.org"
 #define CC_DEFAULT_BOARD "/board/remote.xml"
 #define CC_DEFAULT_POST "/board/add.html"
