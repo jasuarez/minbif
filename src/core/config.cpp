@@ -251,14 +251,18 @@ ConfigSection* MyConfig::AddSection(std::string label, std::string description, 
 
 void MyConfig::Clean()
 {
-	FORit(SectionMap, sections, it)
+	for(SectionMap::iterator it = sections.begin(); it != sections.end();)
 	{
 		if(it->second->IsCopy())
+		{
 			delete it->second;
+			sections.erase(it++);
+		}
 		else
 		{
 			it->second->SetFound(false);
 			it->second->Clean();
+			++it;
 		}
 	}
 }
@@ -271,11 +275,11 @@ bool MyConfig::FindEmpty()
 
 	FORit(SectionMap, sections, it)
 		if(!it->second->Found())
-	{
-		ConfigSection* s = it->second;
-		if(s->IsMultiple() == false)
-			Error(begin << "missing section '" << s->Label() << "' (" << s->Description() << ")");
-	}
+		{
+			ConfigSection* s = it->second;
+			if(s->IsMultiple() == false)
+				Error(begin << "missing section '" << s->Label() << "' (" << s->Description() << ")");
+		}
 
 	return error;
 }
@@ -346,14 +350,18 @@ std::vector<ConfigSection*> ConfigSection::GetSectionClones(std::string label)
 
 void ConfigSection::Clean()
 {
-	FORit(SectionMap, sections, it)
+	for(SectionMap::iterator it = sections.begin(); it != sections.end();)
 	{
 		if(it->second->IsCopy())
+		{
 			delete it->second;
+			sections.erase(it++);
+		}
 		else
 		{
 			it->second->SetFound(false);
 			it->second->Clean();
+			++it;
 		}
 	}
 }
