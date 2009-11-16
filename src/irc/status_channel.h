@@ -41,6 +41,7 @@ namespace irc
 
 		void addAccount(const im::Account& account);
 		void removeAccount(const im::Account& account);
+		size_t countAccounts() const { return accounts.size(); }
 
 		virtual bool invite(Nick* from, const string& nickname, const string& message);
 		virtual bool kick(ChanUser* from, ChanUser* victim, const string& message);

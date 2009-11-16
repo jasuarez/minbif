@@ -387,13 +387,20 @@ void Account::leaveStatusChannel() const
 		return;
 
 	chan = dynamic_cast<irc::StatusChannel*>(irc->getChannel(channame));
-	if(chan)
-		chan->removeAccount(*this);
+	if(!chan)
+	{
+		b_log[W_ERR] << "Status channel " << channame << " is not found.";
+		return;
+	}
+	chan->removeAccount(*this);
 
 	vector<Buddy> buddies = getBuddies();
 	for(vector<Buddy>::iterator b = buddies.begin(); b != buddies.end(); ++b)
 		if(b->getNick())
 			b->getNick()->part(chan, "Leaving status channel");
+
+	if(chan->countAccounts() == 0)
+		irc->removeChannel(channame);
 }
 
 vector<string> Account::getDenyList() const

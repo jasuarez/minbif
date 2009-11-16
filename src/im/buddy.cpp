@@ -133,6 +133,10 @@ void Buddy::updated() const
 		return;
 
 	irc::Buddy* n = getNick();
+	if(!n)
+		n = dynamic_cast<irc::Buddy*>(Purple::getIM()->getIRC()->getNick(*this));
+	if(!n)
+		return;
 	if(isOnline())
 	{
 		irc::ChanUser* chanuser = n->getChanUser(chan);
