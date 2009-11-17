@@ -37,7 +37,8 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
 		              conf.GetSection("irc")->GetItem("ping")->Integer());
 #ifndef DEBUG
-		if(isatty(fileno(stderr)))
+		/* Don't check if this is a tty, because it always returns false when launched in inetd. */
+		if(fileno(stderr) >= 0)
 			close(fileno(stderr));
 #endif /* DEBUG */
 	}
