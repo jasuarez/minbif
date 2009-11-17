@@ -624,11 +624,13 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 
 		if(flags & PURPLE_MESSAGE_DELAYED)
 		{
-			struct tm* lt = localtime(&mtime);
+			struct tm lt;
 			char* msg;
-			msg = g_strdup_printf("[\002%02d:%02d:%02d\002] %s", lt->tm_hour,
-					                                     lt->tm_min,
-							                     lt->tm_sec,
+
+			localtime_r(&mtime, &lt);
+			msg = g_strdup_printf("[\002%02d:%02d:%02d\002] %s", lt.tm_hour,
+					                                     lt.tm_min,
+							                     lt.tm_sec,
 							                     strip);
 			conv.recvMessage(from, msg, action);
 			g_free(msg);

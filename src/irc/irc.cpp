@@ -1439,17 +1439,17 @@ void IRC::m_list(Message message)
 		user->send(Message(RPL_LISTEND).setSender(this)
 					       .setReceiver(user)
 					       .addArg("End of /LIST"));
-		return;
 	}
-	im::Account account = im->getAccount(message.getArg(0));
-	if(!account.isValid() || !account.isConnected())
+	else
 	{
-		user->send(Message(RPL_LISTEND).setSender(this)
-					       .setReceiver(user)
-					       .addArg("End of /LIST"));
-		return;
+		im::Account account = im->getAccount(message.getArg(0));
+		if(!account.isValid() || !account.isConnected())
+			user->send(Message(RPL_LISTEND).setSender(this)
+						       .setReceiver(user)
+						       .addArg("End of /LIST"));
+		else
+			account.displayRoomList();
 	}
-	account.displayRoomList();
 }
 
 /** MODE target [modes ..] */
