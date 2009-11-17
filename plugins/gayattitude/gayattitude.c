@@ -133,6 +133,7 @@ static void gayattitude_parse_contact_list(HttpHandler* handler, gchar* response
 					purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
 					xmlXPathFreeContext(xpathCtx);
 					xmlFreeDoc(doc);
+					g_free(prop);
 					return;
 				}
 				if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
@@ -155,8 +156,8 @@ static void gayattitude_parse_contact_list(HttpHandler* handler, gchar* response
 
 				xmlXPathFreeObject(xpathObj2);
 			}
+			g_free(prop);
 		}
-		g_free(prop);
 	}
 
 	/* Cleanup */
