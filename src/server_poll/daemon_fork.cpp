@@ -83,28 +83,30 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 		throw ServerPollError();
 	}
 
-	for(res = addrinfo_bind; res && sock < 0;)
-		if((sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
-			res = res->ai_next;
-
-	if(sock < 0)
-		b_log[W_ERR] << "Unable to create a socket: " << strerror(errno);
-	else
+	for(res = addrinfo_bind; res && sock < 0; res = res->ai_next)
 	{
-		setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof reuse_addr);
+		sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if(sock < 0)
+			continue;
 
+		setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof reuse_addr);
 		if(bind(sock, res->ai_addr, res->ai_addrlen) < 0 ||
 		   listen(sock, 5) < 0)
 		{
-			b_log[W_ERR] << "Unable to listen on " << bind_addr << ":" << port
-				     << ":" << sock << ": " << strerror(errno);
+			close(sock);
+			sock = -1;
 		}
-		else
-		{
-			read_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::new_client_cb);
-			read_id = glib_input_add(sock, (PurpleInputCondition)PURPLE_INPUT_READ,
-						       g_callback_input, read_cb);
-		}
+	}
+
+	if(sock < 0)
+		b_log[W_ERR] << "Unable to listen on " << bind_addr << ":" << port
+			     << ": " << strerror(errno);
+	else
+	{
+
+		read_cb = new CallBack<DaemonForkServerPoll>(this, &DaemonForkServerPoll::new_client_cb);
+		read_id = glib_input_add(sock, (PurpleInputCondition)PURPLE_INPUT_READ,
+					       g_callback_input, read_cb);
 	}
 
 	freeaddrinfo(addrinfo_bind);
@@ -194,13 +196,13 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 			close(fds[0]);
 
 			/* Cleanup all childs accumulated when I was parent. */
-			for(vector<child_t*>::iterator it = childs.begin(); it != childs.end();)
+			for(vector<child_t*>::iterator it = childs.begin(); it != childs.end(); it = childs.erase(it))
 			{
 				child_t* child = *it;
 				close(child->fd);
 				delete child->read_cb;
 				g_source_remove(child->read_id);
-				it = childs.erase(it);
+				delete child;
 			}
 		}
 
