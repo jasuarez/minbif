@@ -36,6 +36,10 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 		irc = new irc::IRC(this, 0,
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
 		              conf.GetSection("irc")->GetItem("ping")->Integer());
+#ifndef DEBUG
+		if(isatty(fileno(stderr)))
+			close(fileno(stderr));
+#endif /* DEBUG */
 	}
 	catch(irc::AuthError &e)
 	{
