@@ -1,0 +1,22 @@
+# xinetd file for minbif. Please check this file before using it, the
+# user, port and/or binary location might be wrong.
+
+# This file assumes you have ircd somewhere in your /etc/services, if things
+# don't work, check that file first.
+
+# You also should set type=0 in minbif.conf
+service ircd
+{
+    socket_type     = stream
+    protocol        = tcp
+    wait            = no
+
+    # You might want to change these two
+    user            = minbif
+    server          = /usr/bin/minbif /etc/minbif/minbif.conf
+
+    # uncomment this to change the port and avoid editing /etc/services
+    #type            = UNLISTED
+    port            = 6667
+    disable         = no
+}
