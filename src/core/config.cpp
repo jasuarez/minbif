@@ -364,6 +364,8 @@ void ConfigSection::Clean()
 			++it;
 		}
 	}
+	for(ItemMap::iterator it = items.begin(); it != items.end(); ++it)
+		it->second->SetFound(false);
 }
 
 bool ConfigSection::FindEmpty()
