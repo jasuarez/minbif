@@ -1,0 +1,42 @@
+{
+   LIBPURPLE
+   Memcheck:Leak
+   ...
+   fun:purple_core_init
+   ...
+}
+{
+   GSTREAMER
+   Memcheck:Leak
+   ...
+   fun:g_thread_init_glib
+   ...
+}
+{
+   GTHREADS
+   Memcheck:Leak
+   ...
+   fun:gst_init_check
+   ...
+}
+{
+   PLUGIN_INIT
+   Memcheck:Leak
+   ...
+   fun:purple_init_plugin
+   ...
+}
+{
+   PLUGIN_NETWORK_INIT
+   Memcheck:Leak
+   ...
+   fun:purple_network_init
+   ...
+}
+{
+   PLUGIN_SSL_INIT
+   Memcheck:Leak
+   ...
+   fun:purple_ssl_init
+   ...
+}

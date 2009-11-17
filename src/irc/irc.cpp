@@ -506,7 +506,7 @@ bool IRC::readIO(void*)
 	string sbuf, line;
 	ssize_t r;
 
-	if((r = read(fd, buf, sizeof buf - 1 )) <= 0)
+	if((r = read(fd, buf, sizeof buf - 1)) <= 0)
 	{
 		if(r == 0)
 			this->quit("Connection reset by peer...");
