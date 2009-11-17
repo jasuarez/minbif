@@ -2,3 +2,5 @@ build.minbif
 doc/html
 *.so
 *.pyc
+Session.vim
+tests/config.py

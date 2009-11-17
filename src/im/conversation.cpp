@@ -64,7 +64,12 @@ string ChatBuddy::getRealName() const
 
 	PurplePluginProtocolInfo* prpl = conv.getAccount().getProtocol().getPurpleProtocol();
 	if(prpl->get_cb_real_name)
-		return prpl->get_cb_real_name(conv.getAccount().getPurpleConnection(), conv.getPurpleChat()->id, cbuddy->name);
+	{
+		gchar* tmp = prpl->get_cb_real_name(conv.getAccount().getPurpleConnection(), conv.getPurpleChat()->id, cbuddy->name);
+		string realname = tmp;
+		g_free(tmp);
+		return realname;
+	}
 	else
 		return getName();
 }
