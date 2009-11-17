@@ -304,19 +304,19 @@ static PurplePluginInfo info =
 	PURPLE_PLUGIN_MAGIC,
 	PURPLE_MAJOR_VERSION,
 	PURPLE_MINOR_VERSION,
-	PURPLE_PLUGIN_PROTOCOL,                             /**< type           */
+	PURPLE_PLUGIN_PROTOCOL,                           /**< type           */
 	NULL,                                             /**< ui_requirement */
 	0,                                                /**< flags          */
 	NULL,                                             /**< dependencies   */
-	PURPLE_PRIORITY_DEFAULT,                            /**< priority       */
+	PURPLE_PRIORITY_DEFAULT,                          /**< priority       */
 
-	"prpl-coincoin",                                       /**< id             */
-	"CoinCoin",                                            /**< name           */
-	"1.0",                                  /**< version        */
-	"coincoin Protocol Plugin",                        /**  summary        */
-	"The Coincoin Protocol",    /**  description    */
-	"Romain Bignon",                                             /**< author         */
-	"http://symlink.me/wiki/minbif",                                     /**< homepage       */
+	"prpl-coincoin",                                  /**< id             */
+	"CoinCoin",                                       /**< name           */
+	"1.0",                                            /**< version        */
+	"coincoin Protocol Plugin",                       /**  summary        */
+	"The Coincoin Protocol",                          /**  description    */
+	"Romain Bignon",                                  /**< author         */
+	"http://symlink.me/wiki/minbif",                  /**< homepage       */
 
 	load_plugin,                                      /**< load           */
 	NULL,                                             /**< unload         */

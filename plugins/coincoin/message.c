@@ -138,6 +138,7 @@ CoinCoinMessage* coincoin_message_new(gint64 id, xmlnode* post)
 	xmlnode* message = xmlnode_get_child(post, "message");
 	xmlnode* info = xmlnode_get_child(post, "info");
 	xmlnode* login = xmlnode_get_child(post, "login");
+	gchar *data, *ptr;
 	static struct tm t;
 	time_t tt = time(NULL);
 
@@ -149,21 +150,23 @@ CoinCoinMessage* coincoin_message_new(gint64 id, xmlnode* post)
 		tt = mktime(&t);
 
 	/* Skip chars before message. */
-	gchar* data = xmlnode_get_data(message);
-	while(data && (*data == '\t' || *data == '\n' || *data == '\r'))
-		++data;
+	ptr = data = xmlnode_get_data(message);
+	while(ptr && (*ptr == '\t' || *ptr == '\n' || *ptr == '\r'))
+		++ptr;
 
 	msg = g_new0(CoinCoinMessage, 1);
 	if(!msg)
 	{
 		return NULL;
 	}
-	msg->message = g_strdup(data);
-	msg->info = g_strdup(xmlnode_get_data(info));
-	msg->from = g_strdup(xmlnode_get_data(login));
+	msg->message = g_strdup(ptr);
+	msg->info = xmlnode_get_data(info);
+	msg->from = xmlnode_get_data(login);
 	msg->timestamp = tt;
 	msg->id = id;
 	msg->ref = 1;
+
+	g_free(data);
 	return msg;
 }
 
@@ -171,6 +174,7 @@ void coincoin_message_free(CoinCoinMessage* msg)
 {
 	g_free(msg->message);
 	g_free(msg->info);
+	g_free(msg->from);
 	g_free(msg);
 }
 
