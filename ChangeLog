@@ -1,3 +1,16 @@
+Minbif 1.0 (2009-11-18)
+	* Global proxy settings with the /ADMIN command.
+	* Ability to set parameters when joining a conversation channel.
+	* /STATS c: display all available parameters of a specific account.
+	* Transliteration of buddies' IRC nicknames.
+	* Handle mIRC format chars when sending a message.
+	* gayattitude: new prpl-plugin.
+	* coincoin: improvment.
+	* accounts: fix auto-reconnection.
+	* Fix: remove a status channel when there isn't any associated account.
+	* Fix: fix crash when rehashing twice.
+	* Fix: memory leaks.
+
 Minbif 1.0-rc2 (2009-10-28)
 	* Timestamps of delayed messages are bold formatted.
 	* coincoin: fix bad-encoded xml files.
