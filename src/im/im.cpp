@@ -214,8 +214,6 @@ bool IM::setStatus(string away)
 		{
 			/* If the status does not exist, set the EXTENDED_AWAY status and set the message
 			 * given in the \b away string as the status message. */
-			irc->notice(irc->getUser(), "Warning: This message does not exist. Try with:");
-			irc->notice(irc->getUser(), status_list);
 			prim = PURPLE_STATUS_EXTENDED_AWAY;
 		}
 		else
@@ -227,10 +225,8 @@ bool IM::setStatus(string away)
 
 	PurpleSavedStatus* status = purple_savedstatus_find_transient_by_type_and_message(prim, purple_primitive_get_name_from_type(prim));
 	if(!status)
-	{
 		status = purple_savedstatus_new(NULL, prim);
-		purple_savedstatus_set_message(status, away.c_str());
-	}
+	purple_savedstatus_set_message(status, away.c_str());
 	purple_savedstatus_activate(status);
 
 	return true;
