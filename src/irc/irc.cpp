@@ -687,7 +687,7 @@ void IRC::m_who(Message message)
 							.addArg(n->getServer()->getServerName())
 							.addArg(n->getNickname())
 							.addArg(n->isAway() ? "G" : "H")
-							.addArg("0 " + n->getRealname()));
+							.addArg("0 " + n->getRealName()));
 		}
 	user->send(Message(RPL_ENDOFWHO).setSender(this)
 					.setReceiver(user)
@@ -717,7 +717,7 @@ void IRC::m_whois(Message message)
 					 .addArg(n->getIdentname())
 					 .addArg(n->getHostname())
 					 .addArg("*")
-					 .addArg(n->getRealname()));
+					 .addArg(n->getRealName()));
 	vector<ChanUser*> chanusers = n->getChannels();
 	string chans;
 	FOREACH(vector<ChanUser*>, chanusers, chanuser)

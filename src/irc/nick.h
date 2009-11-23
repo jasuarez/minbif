@@ -171,7 +171,7 @@ namespace irc
 		string getHostname() const { return hostname; }
 		void setHostname(string h);
 
-		virtual string getRealname() const { return realname; }
+		virtual string getRealName() const { return realname; }
 		void setRealname(string r) { realname = r; }
 
 		virtual bool retrieveInfo() const { return false; }
