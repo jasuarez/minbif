@@ -328,7 +328,7 @@ int Account::delayReconnect() const
 	int id = purple_account_get_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
 	if(id >= 0)
 		g_source_remove(id);
-	id = g_timeout_add_seconds(delay, Account::reconnect, account);
+	id = g_timeout_add(delay*1000, Account::reconnect, account);
 
 	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "delay-reconnect", delay);
 	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", id);

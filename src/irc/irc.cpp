@@ -143,7 +143,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	if(ping_freq > 0)
 	{
 		ping_cb = new CallBack<IRC>(this, &IRC::ping);
-		ping_id = g_timeout_add_seconds((int)ping_freq, g_callback, ping_cb);
+		ping_id = g_timeout_add((int)ping_freq * 1000, g_callback, ping_cb);
 	}
 
 	rehash(false);
