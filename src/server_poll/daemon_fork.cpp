@@ -61,7 +61,8 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 		}
 		else if(r > 0)
 			exit(EXIT_SUCCESS);
-		chdir("/");
+		string path = conf.GetSection("path")->GetItem("users")->String();
+		chdir(path.c_str());
 		if(isatty(0)) close(0);
 		if(isatty(1)) close(1);
 		if(isatty(2)) close(2);
