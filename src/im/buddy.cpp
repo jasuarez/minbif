@@ -106,6 +106,13 @@ void Buddy::setNick(irc::Buddy* b)
 	node->ui_data = b;
 }
 
+string Buddy::getGroupName() const
+{
+	assert(isValid());
+	PurpleGroup* group = purple_buddy_get_group(buddy);
+	return group && group->name ? group->name : "";
+}
+
 void Buddy::retrieveInfo() const
 {
 	assert(isValid());

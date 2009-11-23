@@ -82,6 +82,9 @@ namespace im
 		/** Get IM real name */
 		string getRealName() const;
 
+		/** Get buddy group */
+		string getGroupName() const;
+
 		/** Get IRC Nick object. */
 		irc::Buddy* getNick() const;
 

@@ -142,7 +142,7 @@ bool Buddy::received_file(void* data)
 
 string Buddy::getRealName() const
 {
-	return im_buddy.getRealName();
+	return im_buddy.getRealName() + " [Group: " + im_buddy.getGroupName() + "]";
 }
 
 string Buddy::getAwayMessage() const
