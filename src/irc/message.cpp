@@ -26,12 +26,12 @@
 
 namespace irc {
 
-string _StoredEntity::getName() const
+string Message::StoredEntity::getName() const
 {
 	return entity ? entity->getName() : name;
 }
 
-string _StoredEntity::getLongName() const
+string Message::StoredEntity::getLongName() const
 {
 	return entity ? entity->getLongName() : name;
 }
@@ -56,12 +56,12 @@ string Message::format() const
 	if(receiver.isSet())
 		buf += " " + receiver.getName();
 
-	for(vector<string>::const_iterator it = args.begin(); it != args.end(); ++it)
+	for(ArgVector::const_iterator it = args.begin(); it != args.end(); ++it)
 	{
 		buf += " ";
-		if(it->find(' ') != string::npos || it->c_str()[0] == ':')
+		if(it->isLong() || it->getStr().find(' ') != string::npos || it->getStr()[0] == ':')
 			buf += ":";
-		buf += *it;
+		buf += it->getStr();
 	}
 
 	buf += "\r\n";
@@ -101,33 +101,41 @@ Message& Message::setReceiver(string n)
 	return *this;
 }
 
-Message& Message::addArg(string s)
+Message& Message::addArg(string s, bool is_long)
 {
-	if(!args.empty() && args.back().find(' ') != string::npos)
+	if(!args.empty() && args.back().isLong())
 		throw MalformedMessage();
 
-	args.push_back(s);
+	args.push_back(StoredArg(s, is_long));
 	return *this;
 }
 
-Message& Message::setArg(size_t i, string s)
+Message& Message::setArg(size_t i, string s, bool is_long)
 {
 	if(i == args.size())
 		return addArg(s);
 
 	assert(i < args.size());
 
-	if((i+1) < args.size() && args.back().find(' ') != string::npos)
+	if((i+1) < args.size() && args.back().isLong())
 		throw MalformedMessage();
 
-	args[i] = s;
+	args[i] = StoredArg(s, is_long);
 	return *this;
 }
 
 string Message::getArg(size_t n) const
 {
 	assert(n < args.size());
-	return args[n];
+	return args[n].getStr();
+}
+
+vector<string> Message::getArgsStr() const
+{
+	vector<string> v;
+	for(ArgVector::const_iterator it = args.begin(); it != args.end(); ++it)
+		v.push_back(it->getStr());
+	return v;
 }
 
 Message Message::parse(string line)
@@ -140,7 +148,7 @@ Message Message::parse(string line)
 			m.setCommand(strupper(s));
 		else if(s[0] == ':')
 		{
-			m.addArg(s.substr(1) + (line.empty() ? "" : " " + line));
+			m.addArg(s.substr(1) + (line.empty() ? "" : " " + line), true);
 			break;
 		}
 		else
@@ -151,14 +159,14 @@ Message Message::parse(string line)
 
 void Message::rebuildWithQuotes()
 {
-	for(vector<string>::iterator s = args.begin(); s != args.end(); ++s)
+	for(ArgVector::iterator s = args.begin(); s != args.end(); ++s)
 	{
-		if((*s)[0] == '"' && s->find(' ') == string::npos)
+		if(s->getStr()[0] == '"' && s->getStr().find(' ') == string::npos)
 		{
-			vector<string>::iterator next = s;
-			*s = s->substr(1);
+			ArgVector::iterator next = s;
+			s->setStr(s->getStr().substr(1));
 
-			while((*next)[next->size()-1] != '"')
+			while(next->getStr()[next->getStr().size()-1] != '"')
 			{
 				if(next == s)
 					++next;
@@ -168,10 +176,10 @@ void Message::rebuildWithQuotes()
 				if(next == args.end())
 					break;
 
-				*s += " " + *next;
+				s->setStr(" " + next->getStr());
 			}
-			if((*s)[s->size()-1] == '"')
-				*s = s->substr(0, s->size()-1);
+			if(s->getStr()[s->getStr().size()-1] == '"')
+				s->setStr(s->getStr().substr(0, s->getStr().size()-1));
 			if(next == args.end())
 				break;
 			else if(next != s)

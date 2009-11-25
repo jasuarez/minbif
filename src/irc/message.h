@@ -33,29 +33,44 @@ namespace irc
 
 	class MalformedMessage : public std::exception {};
 
-	class _StoredEntity
-	{
-		const Entity* entity;
-		string name;
-
-	public:
-		_StoredEntity() : entity(NULL) {}
-
-		void setEntity(const Entity* e) { entity = e; name.clear(); }
-		void setName(string n) { name = n; entity = NULL; }
-
-		bool isSet() const { return entity || !name.empty(); }
-		const Entity* getEntity() const { return entity; }
-		string getName() const;
-		string getLongName() const;
-	};
-
 	class Message
 	{
+	public:
+		class StoredArg
+		{
+			string str;
+			bool is_long;
+		public:
+			StoredArg(const string& _str, bool _is_long)
+				: str(_str), is_long(_is_long || _str.find(' ') != string::npos)
+			{}
+			const string& getStr() const { return str; }
+			void setStr(const string& _str) { str = _str; is_long = str.find(' ') != string::npos; }
+			bool isLong() const { return is_long; }
+		};
+		typedef vector<StoredArg> ArgVector;
+	private:
+		class StoredEntity
+		{
+			const Entity* entity;
+			string name;
+
+		public:
+			StoredEntity() : entity(NULL) {}
+
+			void setEntity(const Entity* e) { entity = e; name.clear(); }
+			void setName(string n) { name = n; entity = NULL; }
+
+			bool isSet() const { return entity || !name.empty(); }
+			const Entity* getEntity() const { return entity; }
+			string getName() const;
+			string getLongName() const;
+		};
+
 		string cmd;
-		_StoredEntity sender;
-		_StoredEntity receiver;
-		vector<string> args;
+		StoredEntity sender;
+		StoredEntity receiver;
+		ArgVector args;
 	public:
 
 		Message(string command);
@@ -67,15 +82,16 @@ namespace irc
 		Message& setSender(string name);
 		Message& setReceiver(const Entity* entity);
 		Message& setReceiver(string name);
-		Message& addArg(string);
-		Message& setArg(size_t, string);
+		Message& addArg(string str, bool is_long = false);
+		Message& setArg(size_t pos, string str, bool is_long = false);
 
 		string getCommand() const { return cmd; }
 		const Entity* getSender() const { return sender.getEntity(); }
 		const Entity* getReceiver() const { return receiver.getEntity(); }
 		string getArg(size_t n) const;
 		size_t countArgs() const { return args.size(); }
-		vector<string> getArgs() const { return args; }
+		ArgVector getArgs() const { return args; }
+		vector<string> getArgsStr() const;
 
 		string format() const;
 		void rebuildWithQuotes();
