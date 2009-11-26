@@ -26,12 +26,12 @@
 
 namespace irc {
 
-string _StoredEntity::getName() const
+string Message::StoredEntity::getName() const
 {
 	return entity ? entity->getName() : name;
 }
 
-string _StoredEntity::getLongName() const
+string Message::StoredEntity::getLongName() const
 {
 	return entity ? entity->getLongName() : name;
 }

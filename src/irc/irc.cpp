@@ -567,6 +567,8 @@ bool IRC::readIO(void*)
 void IRC::m_ping(Message message)
 {
 	message.setCommand(MSG_PONG);
+	message.setSender(this);
+	message.setReceiver(this);
 	user->send(message);
 }
 

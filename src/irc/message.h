@@ -33,28 +33,28 @@ namespace irc
 
 	class MalformedMessage : public std::exception {};
 
-	class _StoredEntity
-	{
-		const Entity* entity;
-		string name;
-
-	public:
-		_StoredEntity() : entity(NULL) {}
-
-		void setEntity(const Entity* e) { entity = e; name.clear(); }
-		void setName(string n) { name = n; entity = NULL; }
-
-		bool isSet() const { return entity || !name.empty(); }
-		const Entity* getEntity() const { return entity; }
-		string getName() const;
-		string getLongName() const;
-	};
-
 	class Message
 	{
+		class StoredEntity
+		{
+			const Entity* entity;
+			string name;
+
+		public:
+			StoredEntity() : entity(NULL) {}
+
+			void setEntity(const Entity* e) { entity = e; name.clear(); }
+			void setName(string n) { name = n; entity = NULL; }
+
+			bool isSet() const { return entity || !name.empty(); }
+			const Entity* getEntity() const { return entity; }
+			string getName() const;
+			string getLongName() const;
+		};
+
 		string cmd;
-		_StoredEntity sender;
-		_StoredEntity receiver;
+		StoredEntity sender;
+		StoredEntity receiver;
 		vector<string> args;
 	public:
 
