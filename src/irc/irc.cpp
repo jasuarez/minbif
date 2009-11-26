@@ -1273,13 +1273,13 @@ void IRC::m_admin(Message message)
 		return;
 	}
 
-	Message::ArgVector args = message.getArgs();
+	vector<string> args = message.getArgs();
 	string value;
-	for(Message::ArgVector::iterator it = args.begin() + 1; it != args.end(); ++it)
+	for(vector<string>::iterator it = args.begin() + 1; it != args.end(); ++it)
 	{
 		if(!value.empty())
 			value += " ";
-		value += it->getStr();
+		value += *it;
 	}
 
 	settings[i].setting->setValue(value);

@@ -215,7 +215,7 @@ void Channel::m_mode(Nick* user, Message m)
 						     .addArg("1212313"));
 		return;
 	}
-	vector<string> args = m.getArgsStr();
+	vector<string> args = m.getArgs();
 	vector<string>::iterator arg = args.begin();
 	string modes = *arg++;
 	bool add = true;
