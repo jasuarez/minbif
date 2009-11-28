@@ -27,25 +27,18 @@
 #include <libxml/HTMLparser.h>
 
 #include "../lib/http.h"
+#include "ga_account.h"
+#include "ga_buddy.h"
 
 #define GA_NAME "libpurple (gayattitude)"
 #define GA_HOSTNAME "www.gayattitude.com"
 #define GA_HOSTNAME_PERSO "perso.gayattitude.com"
 #define GA_CHECK_INTERVAL 30
 
-typedef struct _GayAttitudeAccount GayAttitudeAccount;
 typedef struct _GayAttitudeBuddyInfoRequest GayAttitudeBuddyInfoRequest;
 typedef struct _GayAttitudeDelayedMessageRequest GayAttitudeDelayedMessageRequest;
 
 typedef void (*GayAttitudeRequestInfoCallbackFunc)(GayAttitudeAccount* gaa, gpointer user_data);
-
-struct _GayAttitudeAccount {
-	PurpleAccount *account;
-	PurpleConnection *pc;
-	HttpHandler* http_handler;
-	guint new_messages_check_timer;
-	GHashTable *ref_ids;
-};
 
 struct _GayAttitudeBuddyInfoRequest {
 	gchar					*who;
@@ -56,7 +49,7 @@ struct _GayAttitudeBuddyInfoRequest {
 
 struct _GayAttitudeDelayedMessageRequest {
 	GayAttitudeAccount	*gaa;
-	PurpleBuddy		*buddy;
+	GayAttitudeBuddy	*gabuddy;
 	gchar			*what;
 	PurpleMessageFlags	flags;
 };

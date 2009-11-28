@@ -125,7 +125,7 @@ static void gayattitude_parse_contact_list(HttpHandler* handler, gchar* response
 			{
 				/* enforce current search node and look for contact details */
 				gchar *contact_name;
-				PurpleBuddy *buddy;
+				GayAttitudeBuddy *gabuddy;
 				xpathCtx->node = contact_node;
 				xpathObj2 = xmlXPathEvalExpression((xmlChar*) "./div[@class='ITEM2']/div[@class='pseudo']/a/text()", xpathCtx);
 				if (xpathObj2 == NULL)
@@ -141,11 +141,11 @@ static void gayattitude_parse_contact_list(HttpHandler* handler, gchar* response
 					contact_name = (gchar*) xpathObj2->nodesetval->nodeTab[0]->content;
 					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "found buddy from server: %s\n", contact_name);
 
-					buddy = purple_find_buddy(gaa->account, contact_name);
-					if (!buddy)
+					gabuddy = ga_find_gabuddy(gaa, contact_name);
+					if (!gabuddy)
 					{
-						buddy = purple_buddy_new(gaa->account, contact_name, NULL);
-						purple_blist_add_buddy(buddy, NULL, group, NULL);
+						gabuddy = ga_gabuddy_new(gaa, contact_name);
+						purple_blist_add_buddy(gabuddy->buddy, NULL, group, NULL);
 						purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "added missing buddy: %s\n", contact_name);
 					}
 					if (strstr(prop, "ITEMONLINE"))
@@ -374,16 +374,16 @@ static void gayattitude_get_info(PurpleConnection *gc, const char *who)
 	gayattitude_request_info(gc->proto_data, who, TRUE, NULL, NULL);
 }
 
-static int gayattitude_do_send_im(GayAttitudeAccount *gaa, PurpleBuddy *buddy, const char *what, PurpleMessageFlags flags)
+static int gayattitude_do_send_im(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags)
 {
-	gchar *ref_id = g_hash_table_lookup(gaa->ref_ids, buddy->name);
+	gchar *ref_id = g_hash_table_lookup(gaa->ref_ids, gabuddy->buddy->name);
 	if (!ref_id)
 	{
-		purple_debug_error("gayattitude", "send_im: could not find ref_id for buddy '%s'\n", buddy->name);
+		purple_debug_error("gayattitude", "send_im: could not find ref_id for buddy '%s'\n", gabuddy->buddy->name);
 		return 1;
 	}
 
-	gchar* url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", buddy->name, ref_id);
+	gchar* url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", gabuddy->buddy->name, ref_id);
 	gchar* msg = http_url_encode(what, TRUE);
 	gchar* postdata = g_strdup_printf("msg=%s&sendchat=Envoyer+(Shift-Entr%%82e)&fond=&sendmail=0", msg);
 	http_post_or_get(gaa->pc->proto_data, HTTP_METHOD_POST, GA_HOSTNAME, url_path,
@@ -392,23 +392,23 @@ static int gayattitude_do_send_im(GayAttitudeAccount *gaa, PurpleBuddy *buddy, c
 	g_free(msg);
 	g_free(postdata);
 	g_free(url_path);
-	purple_debug_info("gayattitude", "sending message to '%s'\n", buddy->name);
+	purple_debug_info("gayattitude", "sending message to '%s'\n", gabuddy->buddy->name);
 
 	return 0;
 }
 
 void gayattitude_send_im_delayed_cb(GayAttitudeAccount *gaa, GayAttitudeDelayedMessageRequest *delayed_msg)
 {
-	gayattitude_do_send_im(gaa, delayed_msg->buddy, delayed_msg->what, delayed_msg->flags);
+	gayattitude_do_send_im(gaa, delayed_msg->gabuddy, delayed_msg->what, delayed_msg->flags);
 }
 
 static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags)
 {
 	GayAttitudeAccount* gaa = gc->proto_data;
-	PurpleBuddy *buddy;
+	GayAttitudeBuddy *gabuddy;
 
-	buddy = purple_find_buddy(gaa->account, who);
-	if (!buddy)
+	gabuddy = ga_find_gabuddy(gaa, who);
+	if (!gabuddy)
 	{
 		purple_debug_error("gayattitude", "send_im: buddy '%s' does not exist\n", who);
 		return 1;
@@ -421,14 +421,14 @@ static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char
 
 		GayAttitudeDelayedMessageRequest *delayed_msg = g_new0(GayAttitudeDelayedMessageRequest, TRUE);
 		delayed_msg->gaa = gaa;
-		delayed_msg->buddy = buddy;
+		delayed_msg->gabuddy = gabuddy;
 		delayed_msg->what = g_strdup(what);
 		delayed_msg->flags = flags;
 
 		gayattitude_request_info(gaa, who, FALSE, (GayAttitudeRequestInfoCallbackFunc) gayattitude_send_im_delayed_cb, (gpointer) delayed_msg);
 	}
 	else
-		gayattitude_do_send_im(gaa, buddy, what, flags);
+		gayattitude_do_send_im(gaa, gabuddy, what, flags);
 
 	return 0;
 }
@@ -463,6 +463,11 @@ static void gayattitude_keepalive(PurpleConnection *gc)
 {
 }
 
+void ga_buddy_free(PurpleBuddy *buddy)
+{
+	ga_gabuddy_free(buddy->proto_data);
+	buddy->proto_data = NULL;
+}
 static PurplePluginProtocolInfo prpl_info =
 {
 	OPT_PROTO_PASSWORD_OPTIONAL,
@@ -509,7 +514,7 @@ static PurplePluginProtocolInfo prpl_info =
 	NULL,					/* alias_buddy */
 	NULL,					/* group_buddy */
 	NULL,					/* rename_group */
-	NULL,					/* buddy_free */
+	ga_buddy_free,				/* buddy_free */
 	NULL,					/* convo_closed */
 	purple_normalize_nocase,		/* normalize */
 	NULL,					/* set_buddy_icon */
