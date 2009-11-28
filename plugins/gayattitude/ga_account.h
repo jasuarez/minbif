@@ -11,7 +11,6 @@ struct _GayAttitudeAccount {
 	PurpleConnection *pc;
 	HttpHandler* http_handler;
 	guint new_messages_check_timer;
-	GHashTable *ref_ids;
 };
 
 #endif /* GA_GAACCOUNT_H */

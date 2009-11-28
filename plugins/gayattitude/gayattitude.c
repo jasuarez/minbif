@@ -29,7 +29,6 @@ GayAttitudeAccount* gayattitude_account_new(PurpleAccount *account)
 	gaa->account = account;
 	gaa->pc = purple_account_get_connection(account);
 	gaa->http_handler = http_handler_new(account, gaa);
-	gaa->ref_ids = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
 	account->gc->proto_data = gaa;
 	return gaa;
@@ -42,7 +41,6 @@ void gayattitude_account_free(GayAttitudeAccount* gaa)
 	}
 
 	http_handler_free(gaa->http_handler);
-	g_hash_table_destroy(gaa->ref_ids);
 	g_free(gaa);
 }
 
@@ -246,144 +244,20 @@ static void gayattitude_close(PurpleConnection *gc)
 	gayattitude_account_free(gc->proto_data);
 }
 
-static void gayattitude_parse_contact_info(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)
+static void ga_get_info(PurpleConnection *gc, const char *who)
 {
-	htmlDocPtr doc;
-	xmlXPathContextPtr xpathCtx;
-	xmlXPathObjectPtr xpathObj;
-	GayAttitudeAccount *gaa = handler->data;
-	GayAttitudeBuddyInfoRequest *request = userdata;
-
-	doc = htmlReadMemory(response, len, "gayattitude.xml", NULL, 0);
-	if (doc == NULL)
-	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XML Parsing).\n");
-		return;
-	}
-
-	/* Create xpath evaluation context */
-	xpathCtx = xmlXPathNewContext(doc);
-	if(xpathCtx == NULL)
-	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath context init).\n");
-		xmlFreeDoc(doc);
-		return;
-	}
-
-	xmlNode *info_node;
-	gchar *prop;
-
-	/* Search internal Ref ID */
-	xpathObj = xmlXPathEvalExpression((xmlChar*) "//input[@type='hidden' and @name='ref_id']", xpathCtx);
-	if(xpathObj == NULL)
-	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
-		xmlXPathFreeContext(xpathCtx);
-		xmlFreeDoc(doc);
-		return;
-	}
-	if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
-	{
-		info_node = xpathObj->nodesetval->nodeTab[0];
-		prop = (gchar*) xmlGetProp(info_node, (xmlChar*) "value");
-		if (!g_hash_table_lookup(gaa->ref_ids, request->who))
-			g_hash_table_insert(gaa->ref_ids, g_strdup(request->who), prop);
-		else
-			g_free(prop);
-	}
-	xmlXPathFreeObject(xpathObj);
-
-	if (request->advertise)
-	{
-		PurpleNotifyUserInfo *user_info = purple_notify_user_info_new();
-		int i;
-		GString *str = NULL;
-
-		/* Search short description */
-		xpathCtx->node = doc->parent;
-		xpathObj = xmlXPathEvalExpression((xmlChar*) "//div[@id='PORTRAITHEADER2']/p/text()", xpathCtx);
-		if(xpathObj == NULL)
-		{
-			purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
-			xmlXPathFreeContext(xpathCtx);
-			xmlFreeDoc(doc);
-			return;
-		}
-		if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
-		{
-			info_node = xpathObj->nodesetval->nodeTab[0];
-			purple_notify_user_info_add_pair(user_info, "Short Description", (gchar*) info_node->content);
-		}
-		xmlXPathFreeObject(xpathObj);
-
-		/* Search user research */
-		xpathCtx->node = doc->parent;
-		xpathObj = xmlXPathEvalExpression((xmlChar*) "//div[@id='bloc_recherche']/p/text()", xpathCtx);
-		if(xpathObj == NULL)
-		{
-			purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
-			xmlXPathFreeContext(xpathCtx);
-			xmlFreeDoc(doc);
-			return;
-		}
-		if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
-		{
-			for(i = 0; i < xpathObj->nodesetval->nodeNr; i++)
-			{
-				info_node = xpathObj->nodesetval->nodeTab[i];
-				if (i == 0)
-					str = g_string_new((gchar*) info_node->content);
-				else
-					g_string_append_printf(str, " -- %s", info_node->content);
-			}
-			purple_notify_user_info_add_pair(user_info, "Research", str->str);
-			g_string_free(str, TRUE);
-		}
-		xmlXPathFreeObject(xpathObj);
-
-		purple_notify_userinfo(gaa->pc, request->who, user_info, NULL, NULL);
-		purple_notify_user_info_destroy(user_info);
-	}
-
-	/* Cleanup */
-	xmlXPathFreeContext(xpathCtx);
-	xmlFreeDoc(doc);
-
-	/* Chained Callback */
-	if (request->callback)
-		request->callback(gaa, request->callback_data);
-}
-
-static void gayattitude_request_info(GayAttitudeAccount* gaa, const char *who, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data)
-{
-	gchar *url_path;
-	GayAttitudeBuddyInfoRequest *request = g_new0(GayAttitudeBuddyInfoRequest, TRUE);
-
-	url_path = g_strdup_printf("/%s", who);
-	request->who = g_strdup(who);
-	request->advertise = advertise;
-	request->callback = callback;
-	request->callback_data = callback_data;
-	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME_PERSO, url_path,
-			NULL, gayattitude_parse_contact_info, (gpointer) request, FALSE);
-	g_free(url_path);
-}
-
-static void gayattitude_get_info(PurpleConnection *gc, const char *who)
-{
-	gayattitude_request_info(gc->proto_data, who, TRUE, NULL, NULL);
+	ga_request_info(gc->proto_data, who, TRUE, NULL, NULL);
 }
 
 static int gayattitude_do_send_im(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags)
 {
-	gchar *ref_id = g_hash_table_lookup(gaa->ref_ids, gabuddy->buddy->name);
-	if (!ref_id)
+	if (!gabuddy->ref_id)
 	{
 		purple_debug_error("gayattitude", "send_im: could not find ref_id for buddy '%s'\n", gabuddy->buddy->name);
 		return 1;
 	}
 
-	gchar* url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", gabuddy->buddy->name, ref_id);
+	gchar* url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", gabuddy->buddy->name, gabuddy->ref_id);
 	gchar* msg = http_url_encode(what, TRUE);
 	gchar* postdata = g_strdup_printf("msg=%s&sendchat=Envoyer+(Shift-Entr%%82e)&fond=&sendmail=0", msg);
 	http_post_or_get(gaa->pc->proto_data, HTTP_METHOD_POST, GA_HOSTNAME, url_path,
@@ -414,8 +288,7 @@ static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char
 		return 1;
 	}
 
-	gchar *ref_id = g_hash_table_lookup(gaa->ref_ids, who);
-	if (!ref_id)
+	if (!gabuddy->ref_id)
 	{
 		purple_debug_error("gayattitude", "send_im: ref_id for buddy '%s' is unknown, starting lookup for delayed message\n", who);
 
@@ -425,7 +298,7 @@ static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char
 		delayed_msg->what = g_strdup(what);
 		delayed_msg->flags = flags;
 
-		gayattitude_request_info(gaa, who, FALSE, (GayAttitudeRequestInfoCallbackFunc) gayattitude_send_im_delayed_cb, (gpointer) delayed_msg);
+		ga_request_info(gaa, who, FALSE, (GayAttitudeRequestInfoCallbackFunc) gayattitude_send_im_delayed_cb, (gpointer) delayed_msg);
 	}
 	else
 		gayattitude_do_send_im(gaa, gabuddy, what, flags);
@@ -468,6 +341,7 @@ void ga_buddy_free(PurpleBuddy *buddy)
 	ga_gabuddy_free(buddy->proto_data);
 	buddy->proto_data = NULL;
 }
+
 static PurplePluginProtocolInfo prpl_info =
 {
 	OPT_PROTO_PASSWORD_OPTIONAL,
@@ -487,7 +361,7 @@ static PurplePluginProtocolInfo prpl_info =
 	gayattitude_send_im,			/* send_im */
 	NULL,					/* set_info */
 	NULL,					/* send_typing */
-	gayattitude_get_info,			/* get_info */
+	ga_get_info,				/* get_info */
 	gayattitude_set_status,			/* set_status */
 	NULL,					/* set_idle */
 	NULL,					/* change_passwd */

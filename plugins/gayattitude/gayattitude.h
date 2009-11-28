@@ -20,32 +20,17 @@
 #define GA_GAYATTITUDE_H
 
 #include <purple.h>
-#include <libxml/tree.h>
-#include <libxml/parser.h>
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
-#include <libxml/HTMLparser.h>
 
 #include "../lib/http.h"
 #include "ga_account.h"
 #include "ga_buddy.h"
+/* XXX: temporary until all processing stuff is split */
+#include "ga_parsing.h"
 
 #define GA_NAME "libpurple (gayattitude)"
-#define GA_HOSTNAME "www.gayattitude.com"
-#define GA_HOSTNAME_PERSO "perso.gayattitude.com"
 #define GA_CHECK_INTERVAL 30
 
-typedef struct _GayAttitudeBuddyInfoRequest GayAttitudeBuddyInfoRequest;
 typedef struct _GayAttitudeDelayedMessageRequest GayAttitudeDelayedMessageRequest;
-
-typedef void (*GayAttitudeRequestInfoCallbackFunc)(GayAttitudeAccount* gaa, gpointer user_data);
-
-struct _GayAttitudeBuddyInfoRequest {
-	gchar					*who;
-	gboolean				advertise;
-	GayAttitudeRequestInfoCallbackFunc	callback;
-	gpointer				callback_data;
-};
 
 struct _GayAttitudeDelayedMessageRequest {
 	GayAttitudeAccount	*gaa;
