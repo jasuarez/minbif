@@ -21,29 +21,6 @@
 
 PurplePlugin *_gayattitude_plugin = NULL;
 
-GayAttitudeAccount* gayattitude_account_new(PurpleAccount *account)
-{
-	GayAttitudeAccount* gaa;
-
-	gaa = g_new0(GayAttitudeAccount, 1);
-	gaa->account = account;
-	gaa->pc = purple_account_get_connection(account);
-	gaa->http_handler = http_handler_new(account, gaa);
-
-	account->gc->proto_data = gaa;
-	return gaa;
-}
-
-void gayattitude_account_free(GayAttitudeAccount* gaa)
-{
-	if (gaa->new_messages_check_timer) {
-		purple_timeout_remove(gaa->new_messages_check_timer);
-	}
-
-	http_handler_free(gaa->http_handler);
-	g_free(gaa);
-}
-
 static const char *gayattitude_blist_icon(PurpleAccount *a, PurpleBuddy *b)
 {
 	return "gayattitude";
@@ -59,189 +36,23 @@ struct message_t
 	struct message_t* next;
 };
 
-static void gayattitude_parse_contact_list(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)
+static void ga_login(PurpleAccount *account)
 {
-	htmlDocPtr doc;
-	xmlXPathContextPtr xpathCtx;
-	xmlXPathObjectPtr xpathObj, xpathObj2;
-	GayAttitudeAccount* gaa = handler->data;
-	gchar* group_name = userdata;
-
-	doc = htmlReadMemory(response, len, "gayattitude.xml", NULL, 0);
-	if (doc == NULL)
-	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XML Parsing).\n");
-		return;
-	}
-
-	/* Create xpath evaluation context */
-	xpathCtx = xmlXPathNewContext(doc);
-	if(xpathCtx == NULL)
-	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath context init).\n");
-		xmlFreeDoc(doc);
-		return;
-	}
-
-	/* Evaluate xpath expression */
-	xpathObj = xmlXPathEvalExpression((xmlChar*) "//div[@id='ANNUAIRE']/div[@id='RESULTATS']/div", xpathCtx);
-	if(xpathObj == NULL)
-	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
-		xmlXPathFreeContext(xpathCtx);
-		xmlFreeDoc(doc);
-		return;
-	}
-	if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
-	{
-		/* Print results */
-		xmlNodeSetPtr nodes = xpathObj->nodesetval;
-		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "number of nodes found: %i\n", nodes->nodeNr);
-
-		PurpleGroup *group = NULL;
-		if (group_name)
-		{
-			group = purple_find_group(group_name);
-			if (!group)
-			{
-				group = purple_group_new(group_name);
-				purple_blist_add_group(group, NULL);
-			}
-			g_free(group_name);
-		}
-
-		int i;
-		gchar *prop = NULL;
-		xmlNode *contact_node;
-		for(i = 0; i < nodes->nodeNr; i++)
-		{
-			contact_node = nodes->nodeTab[i];
-			prop = (gchar*) xmlGetProp(contact_node, (xmlChar*) "class");
-
-			/* look for contacts */
-			if (prop && g_str_has_prefix(prop, "ITEM"))
-			{
-				/* enforce current search node and look for contact details */
-				gchar *contact_name;
-				GayAttitudeBuddy *gabuddy;
-				xpathCtx->node = contact_node;
-				xpathObj2 = xmlXPathEvalExpression((xmlChar*) "./div[@class='ITEM2']/div[@class='pseudo']/a/text()", xpathCtx);
-				if (xpathObj2 == NULL)
-				{
-					purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
-					xmlXPathFreeContext(xpathCtx);
-					xmlFreeDoc(doc);
-					g_free(prop);
-					return;
-				}
-				if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
-				{
-					contact_name = (gchar*) xpathObj2->nodesetval->nodeTab[0]->content;
-					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "found buddy from server: %s\n", contact_name);
-
-					gabuddy = ga_find_gabuddy(gaa, contact_name);
-					if (!gabuddy)
-					{
-						gabuddy = ga_gabuddy_new(gaa, contact_name);
-						purple_blist_add_buddy(gabuddy->buddy, NULL, group, NULL);
-						purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "added missing buddy: %s\n", contact_name);
-					}
-					if (strstr(prop, "ITEMONLINE"))
-						purple_prpl_got_user_status(gaa->account, contact_name, "available", NULL);
-					else
-						purple_prpl_got_user_status(gaa->account, contact_name, "offline", NULL);
-				}
-
-				xmlXPathFreeObject(xpathObj2);
-			}
-			g_free(prop);
-		}
-	}
-
-	/* Cleanup */
-	xmlXPathFreeObject(xpathObj);
-	xmlXPathFreeContext(xpathCtx);
-	xmlFreeDoc(doc);
-}
-
-static void gayattitude_update_buddy_list(GayAttitudeAccount* gaa)
-{
-	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/annuaire/liste?liste=contacts-checklist",
-			NULL, gayattitude_parse_contact_list, g_strdup("Checklist"), FALSE);
-	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/annuaire/liste?liste=contacts-friendlist",
-			NULL, gayattitude_parse_contact_list, g_strdup("Friendlist"), FALSE);
-	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/annuaire/liste?liste=contacts-hotlist",
-			NULL, gayattitude_parse_contact_list, g_strdup("Hotlist"), FALSE);
-	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/annuaire/liste?liste=contacts-blogolist",
-			NULL, gayattitude_parse_contact_list, g_strdup("Blogolist"), FALSE);
-	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/annuaire/liste?liste=contacts-blacklist",
-			NULL, gayattitude_parse_contact_list, g_strdup("Blacklist"), FALSE);
-	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/annuaire/liste?liste=contacts-whitelist",
-			NULL, gayattitude_parse_contact_list, g_strdup("Whitelist"), FALSE);
-}
-
-static void gayattitude_check_new_messages_and_buddy_status(GayAttitudeAccount* gaa)
-{
-	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/annuaire/liste?liste=contacts-online",
-			NULL, gayattitude_parse_contact_list, NULL, FALSE);
-}
-
-static void gayattitude_login_cb(HttpHandler* handler, gchar *response, gsize len,
-		gpointer userdata)
-{
-	GayAttitudeAccount *gaa = handler->data;
-	purple_connection_update_progress(gaa->pc, "Authenticating", 2, 3);
-
-	if (!g_hash_table_lookup(gaa->http_handler->cookie_table, "cookielogin"))
-	{
-		purple_connection_error_reason(gaa->pc,
-				PURPLE_CONNECTION_ERROR_AUTHENTICATION_FAILED,
-				"Could not log in GA. (check 'username' and 'password' settings)");
-	}
-	else
-	{
-		purple_connection_set_state(gaa->pc, PURPLE_CONNECTED);
-		gayattitude_update_buddy_list(gaa);
-		gaa->new_messages_check_timer = g_timeout_add_seconds(GA_CHECK_INTERVAL, (GSourceFunc)gayattitude_check_new_messages_and_buddy_status, gaa);
-	}
-}
-
-
-static void gayattitude_login(PurpleAccount *account)
-{
-	PurpleConnection *gc;
 	GayAttitudeAccount* gaa;
-	gint flags = HTTP_METHOD_POST;
-	gchar *postdata;
-	const char *username = purple_account_get_username(account);
-	const char *password = purple_account_get_password(account);
 
-	gc = purple_account_get_connection(account);
-	gc->flags |= PURPLE_CONNECTION_NO_NEWLINES;
-
-	gaa = gayattitude_account_new(account);
-
-	purple_connection_set_display_name(gc, username);
-
-	purple_connection_set_state(gc, PURPLE_CONNECTING);
-	purple_connection_update_progress(gc, "Connecting", 1, 3);
-
-	gchar* encoded_password = http_url_encode(password, TRUE);
-	postdata = g_strdup_printf("login=%s&passw=%s", username, encoded_password);
-
-	http_post_or_get(gaa->http_handler, flags , GA_HOSTNAME, "/html/login",
-			postdata, gayattitude_login_cb, NULL, FALSE);
-
-	g_free(encoded_password);
-	g_free(postdata);
+	gaa = ga_account_new(account);
+	ga_account_login(gaa);
 }
 
-static void gayattitude_close(PurpleConnection *gc)
+static void ga_close(PurpleConnection *gc)
 {
 	g_return_if_fail(gc != NULL);
 	g_return_if_fail(gc->proto_data != NULL);
 
-	gayattitude_account_free(gc->proto_data);
+	GayAttitudeAccount* gaa = gc->proto_data;
+
+	ga_account_logout(gaa);
+	ga_account_free(gaa);
 }
 
 static void ga_get_info(PurpleConnection *gc, const char *who)
@@ -356,8 +167,8 @@ static PurplePluginProtocolInfo prpl_info =
 	NULL,					/* blist_node_menu */
 	NULL,					/* chat_info */
 	NULL,					/* chat_info_defaults */
-	gayattitude_login,			/* login */
-	gayattitude_close,			/* close */
+	ga_login,				/* login */
+	ga_close,				/* close */
 	gayattitude_send_im,			/* send_im */
 	NULL,					/* set_info */
 	NULL,					/* send_typing */

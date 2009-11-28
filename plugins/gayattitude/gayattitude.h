@@ -28,7 +28,6 @@
 #include "ga_parsing.h"
 
 #define GA_NAME "libpurple (gayattitude)"
-#define GA_CHECK_INTERVAL 30
 
 typedef struct _GayAttitudeDelayedMessageRequest GayAttitudeDelayedMessageRequest;
 
