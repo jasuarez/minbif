@@ -26,16 +26,6 @@ static const char *ga_plugin_blist_icon(PurpleAccount *a, PurpleBuddy *b)
 	return "gayattitude";
 }
 
-struct message_t
-{
-	gchar* message;
-	gchar* from;
-	time_t timestamp;
-	gint64 id;
-
-	struct message_t* next;
-};
-
 static void ga_plugin_login(PurpleAccount *account)
 {
 	GayAttitudeAccount* gaa;
@@ -60,34 +50,7 @@ static void ga_plugin_get_info(PurpleConnection *gc, const char *who)
 	ga_gabuddy_request_info(gc->proto_data, who, TRUE, NULL, NULL);
 }
 
-static int gayattitude_do_send_im(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags)
-{
-	if (!gabuddy->ref_id)
-	{
-		purple_debug_error("gayattitude", "send_im: could not find ref_id for buddy '%s'\n", gabuddy->buddy->name);
-		return 1;
-	}
-
-	gchar* url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", gabuddy->buddy->name, gabuddy->ref_id);
-	gchar* msg = http_url_encode(what, TRUE);
-	gchar* postdata = g_strdup_printf("msg=%s&sendchat=Envoyer+(Shift-Entr%%82e)&fond=&sendmail=0", msg);
-	http_post_or_get(gaa->pc->proto_data, HTTP_METHOD_POST, GA_HOSTNAME, url_path,
-			postdata, NULL, NULL, FALSE);
-
-	g_free(msg);
-	g_free(postdata);
-	g_free(url_path);
-	purple_debug_info("gayattitude", "sending message to '%s'\n", gabuddy->buddy->name);
-
-	return 0;
-}
-
-void gayattitude_send_im_delayed_cb(GayAttitudeAccount *gaa, GayAttitudeDelayedMessageRequest *delayed_msg)
-{
-	gayattitude_do_send_im(gaa, delayed_msg->gabuddy, delayed_msg->what, delayed_msg->flags);
-}
-
-static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags)
+static int ga_plugin_send_im(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags)
 {
 	GayAttitudeAccount* gaa = gc->proto_data;
 	GayAttitudeBuddy *gabuddy;
@@ -99,22 +62,7 @@ static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char
 		return 1;
 	}
 
-	if (!gabuddy->ref_id)
-	{
-		purple_debug_error("gayattitude", "send_im: ref_id for buddy '%s' is unknown, starting lookup for delayed message\n", who);
-
-		GayAttitudeDelayedMessageRequest *delayed_msg = g_new0(GayAttitudeDelayedMessageRequest, TRUE);
-		delayed_msg->gaa = gaa;
-		delayed_msg->gabuddy = gabuddy;
-		delayed_msg->what = g_strdup(what);
-		delayed_msg->flags = flags;
-
-		ga_gabuddy_request_info(gaa, who, FALSE, (GayAttitudeRequestInfoCallbackFunc) gayattitude_send_im_delayed_cb, (gpointer) delayed_msg);
-	}
-	else
-		gayattitude_do_send_im(gaa, gabuddy, what, flags);
-
-	return 0;
+	return ga_message_send(gaa, gabuddy, what, flags);
 }
 
 static GList *ga_plugin_status_types(PurpleAccount *account)
@@ -169,7 +117,7 @@ static PurplePluginProtocolInfo ga_plugin_prpl_info =
 	NULL,					/* chat_info_defaults */
 	ga_plugin_login,			/* login */
 	ga_plugin_close,			/* close */
-	gayattitude_send_im,			/* send_im */
+	ga_plugin_send_im,			/* send_im */
 	NULL,					/* set_info */
 	NULL,					/* send_typing */
 	ga_plugin_get_info,			/* get_info */

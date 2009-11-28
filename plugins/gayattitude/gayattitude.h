@@ -24,18 +24,8 @@
 #include "../lib/http.h"
 #include "ga_account.h"
 #include "ga_buddy.h"
-/* XXX: temporary until all processing stuff is split */
-#include "ga_parsing.h"
+#include "ga_message.h"
 
 #define GA_NAME "libpurple (gayattitude)"
-
-typedef struct _GayAttitudeDelayedMessageRequest GayAttitudeDelayedMessageRequest;
-
-struct _GayAttitudeDelayedMessageRequest {
-	GayAttitudeAccount	*gaa;
-	GayAttitudeBuddy	*gabuddy;
-	gchar			*what;
-	PurpleMessageFlags	flags;
-};
 
 #endif /* GA_GAYATTITUDE_H */

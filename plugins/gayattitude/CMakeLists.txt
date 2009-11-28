@@ -2,6 +2,7 @@ ADD_LIBRARY(gayattitude SHARED
 		ga_account.c
 		ga_buddy.c
 		ga_buddylist.c
+		ga_message.c
 		gayattitude.c
 		)
 
