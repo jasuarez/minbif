@@ -58,7 +58,7 @@ static int ga_plugin_send_im(PurpleConnection *gc, const char *who, const char *
 	gabuddy = ga_gabuddy_find(gaa, who);
 	if (!gabuddy)
 	{
-		purple_debug_error("gayattitude", "send_im: buddy '%s' does not exist\n", who);
+		purple_debug_error("gayattitude", "ga_plugin: buddy '%s' does not exist\n", who);
 		return 1;
 	}
 

@@ -58,10 +58,12 @@ static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize l
 	GayAttitudeAccount *gaa = handler->data;
 	GayAttitudeBuddyInfoRequest *request = userdata;
 
+	purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddy: Fetching info for '%s'.\n", request->gabuddy->buddy->name);
+
 	doc = htmlReadMemory(response, len, "gayattitude.xml", NULL, 0);
 	if (doc == NULL)
 	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XML Parsing).\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddy: Unable to parse response (XML Parsing).\n");
 		return;
 	}
 
@@ -69,7 +71,7 @@ static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize l
 	xpathCtx = xmlXPathNewContext(doc);
 	if(xpathCtx == NULL)
 	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath context init).\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddy: Unable to parse response (XPath context init).\n");
 		xmlFreeDoc(doc);
 		return;
 	}
@@ -79,10 +81,12 @@ static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize l
 	/* Search internal Ref ID */
 	if (!request->gabuddy->ref_id)
 	{
+		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddy: Fetching missing ref_id for '%s'.\n", request->gabuddy->buddy->name);
+
 		xpathObj = xmlXPathEvalExpression((xmlChar*) "//input[@type='hidden' and @name='ref_id']", xpathCtx);
 		if(xpathObj == NULL)
 		{
-			purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
+			purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddy: Unable to parse response (XPath evaluation).\n");
 			xmlXPathFreeContext(xpathCtx);
 			xmlFreeDoc(doc);
 			return;
@@ -91,6 +95,7 @@ static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize l
 		{
 			info_node = xpathObj->nodesetval->nodeTab[0];
 			request->gabuddy->ref_id  = (gchar*) xmlGetProp(info_node, (xmlChar*) "value");
+			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddy: Found ref_id for '%s': %s.\n", request->gabuddy->buddy->name, request->gabuddy->ref_id);
 		}
 		xmlXPathFreeObject(xpathObj);
 	}
@@ -106,7 +111,7 @@ static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize l
 		xpathObj = xmlXPathEvalExpression((xmlChar*) "//div[@id='PORTRAITHEADER2']/p/text()", xpathCtx);
 		if(xpathObj == NULL)
 		{
-			purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
+			purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddy: Unable to parse response (XPath evaluation).\n");
 			xmlXPathFreeContext(xpathCtx);
 			xmlFreeDoc(doc);
 			return;
@@ -123,7 +128,7 @@ static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize l
 		xpathObj = xmlXPathEvalExpression((xmlChar*) "//div[@id='bloc_recherche']/p/text()", xpathCtx);
 		if(xpathObj == NULL)
 		{
-			purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
+			purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddy: Unable to parse response (XPath evaluation).\n");
 			xmlXPathFreeContext(xpathCtx);
 			xmlFreeDoc(doc);
 			return;
@@ -153,7 +158,10 @@ static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize l
 
 	/* Chained Callback */
 	if (request->callback)
+	{
+		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddy: Calling callback after info for '%s' was retrieved\n", request->gabuddy->buddy->name);
 		request->callback(gaa, request->callback_data);
+	}
 }
 
 void ga_gabuddy_request_info(GayAttitudeAccount* gaa, const char *who, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data)

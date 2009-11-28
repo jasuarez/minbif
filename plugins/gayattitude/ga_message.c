@@ -6,7 +6,7 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 {
 	if (!gabuddy->ref_id)
 	{
-		purple_debug_error("gayattitude", "send_im: could not find ref_id for buddy '%s'\n", gabuddy->buddy->name);
+		purple_debug_error("gayattitude", "ga_message: could not find ref_id for buddy '%s'\n", gabuddy->buddy->name);
 		return 1;
 	}
 
@@ -19,13 +19,14 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 	g_free(msg);
 	g_free(postdata);
 	g_free(url_path);
-	purple_debug_info("gayattitude", "sending message to '%s'\n", gabuddy->buddy->name);
+	purple_debug_info("gayattitude", "ga_message: sending message to '%s'\n", gabuddy->buddy->name);
 
 	return 0;
 }
 
 static void ga_message_send_delayed_cb(GayAttitudeAccount *gaa, GayAttitudeDelayedMessageRequest *delayed_msg)
 {
+	purple_debug_info("gayattitude", "ga_message: prepare to send delayed message to '%s'\n", delayed_msg->gabuddy->buddy->name);
 	ga_message_send_real(gaa, delayed_msg->gabuddy, delayed_msg->what, delayed_msg->flags);
 }
 
@@ -33,7 +34,7 @@ int ga_message_send(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const ch
 {
 	if (!gabuddy->ref_id)
 	{
-		purple_debug_error("gayattitude", "send_im: ref_id for buddy '%s' is unknown, starting lookup for delayed message\n", gabuddy->buddy->name);
+		purple_debug_error("gayattitude", "ga_message: ref_id for buddy '%s' is unknown, starting lookup for delayed message\n", gabuddy->buddy->name);
 
 		GayAttitudeDelayedMessageRequest *delayed_msg = g_new0(GayAttitudeDelayedMessageRequest, TRUE);
 		delayed_msg->gaa = gaa;

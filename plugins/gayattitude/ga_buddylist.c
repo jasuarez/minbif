@@ -13,7 +13,7 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 	doc = htmlReadMemory(response, len, "gayattitude.xml", NULL, 0);
 	if (doc == NULL)
 	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XML Parsing).\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddylist: Unable to parse response (XML Parsing).\n");
 		return;
 	}
 
@@ -21,7 +21,7 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 	xpathCtx = xmlXPathNewContext(doc);
 	if(xpathCtx == NULL)
 	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath context init).\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddylist: Unable to parse response (XPath context init).\n");
 		xmlFreeDoc(doc);
 		return;
 	}
@@ -30,7 +30,7 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 	xpathObj = xmlXPathEvalExpression((xmlChar*) "//div[@id='ANNUAIRE']/div[@id='RESULTATS']/div", xpathCtx);
 	if(xpathObj == NULL)
 	{
-		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
+		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddylist: Unable to parse response (XPath evaluation).\n");
 		xmlXPathFreeContext(xpathCtx);
 		xmlFreeDoc(doc);
 		return;
@@ -39,7 +39,7 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 	{
 		/* Print results */
 		xmlNodeSetPtr nodes = xpathObj->nodesetval;
-		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "number of nodes found: %i\n", nodes->nodeNr);
+		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddylist: number of nodes found: %i\n", nodes->nodeNr);
 
 		PurpleGroup *group = NULL;
 		if (group_name)
@@ -71,7 +71,7 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 				xpathObj2 = xmlXPathEvalExpression((xmlChar*) "./div[@class='ITEM2']/div[@class='pseudo']/a/text()", xpathCtx);
 				if (xpathObj2 == NULL)
 				{
-					purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "Unable to parse response (XPath evaluation).\n");
+					purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddylist: Unable to parse response (XPath evaluation).\n");
 					xmlXPathFreeContext(xpathCtx);
 					xmlFreeDoc(doc);
 					g_free(prop);
@@ -80,14 +80,14 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 				if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
 				{
 					contact_name = (gchar*) xpathObj2->nodesetval->nodeTab[0]->content;
-					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "found buddy from server: %s\n", contact_name);
+					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddylist: found buddy from server: %s\n", contact_name);
 
 					gabuddy = ga_gabuddy_find(gaa, contact_name);
 					if (!gabuddy)
 					{
 						gabuddy = ga_gabuddy_new(gaa, contact_name);
 						purple_blist_add_buddy(gabuddy->buddy, NULL, group, NULL);
-						purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "added missing buddy: %s\n", contact_name);
+						purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddylist: added missing buddy: %s\n", contact_name);
 					}
 					if (strstr(prop, "ITEMONLINE"))
 						purple_prpl_got_user_status(gaa->account, contact_name, "available", NULL);
