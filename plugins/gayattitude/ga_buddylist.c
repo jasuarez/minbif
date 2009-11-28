@@ -82,7 +82,7 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 					contact_name = (gchar*) xpathObj2->nodesetval->nodeTab[0]->content;
 					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "found buddy from server: %s\n", contact_name);
 
-					gabuddy = ga_find_gabuddy(gaa, contact_name);
+					gabuddy = ga_gabuddy_find(gaa, contact_name);
 					if (!gabuddy)
 					{
 						gabuddy = ga_gabuddy_new(gaa, contact_name);

@@ -21,7 +21,7 @@
 
 PurplePlugin *_gayattitude_plugin = NULL;
 
-static const char *gayattitude_blist_icon(PurpleAccount *a, PurpleBuddy *b)
+static const char *ga_plugin_blist_icon(PurpleAccount *a, PurpleBuddy *b)
 {
 	return "gayattitude";
 }
@@ -36,7 +36,7 @@ struct message_t
 	struct message_t* next;
 };
 
-static void ga_login(PurpleAccount *account)
+static void ga_plugin_login(PurpleAccount *account)
 {
 	GayAttitudeAccount* gaa;
 
@@ -44,7 +44,7 @@ static void ga_login(PurpleAccount *account)
 	ga_account_login(gaa);
 }
 
-static void ga_close(PurpleConnection *gc)
+static void ga_plugin_close(PurpleConnection *gc)
 {
 	g_return_if_fail(gc != NULL);
 	g_return_if_fail(gc->proto_data != NULL);
@@ -55,9 +55,9 @@ static void ga_close(PurpleConnection *gc)
 	ga_account_free(gaa);
 }
 
-static void ga_get_info(PurpleConnection *gc, const char *who)
+static void ga_plugin_get_info(PurpleConnection *gc, const char *who)
 {
-	ga_request_info(gc->proto_data, who, TRUE, NULL, NULL);
+	ga_gabuddy_request_info(gc->proto_data, who, TRUE, NULL, NULL);
 }
 
 static int gayattitude_do_send_im(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags)
@@ -92,7 +92,7 @@ static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char
 	GayAttitudeAccount* gaa = gc->proto_data;
 	GayAttitudeBuddy *gabuddy;
 
-	gabuddy = ga_find_gabuddy(gaa, who);
+	gabuddy = ga_gabuddy_find(gaa, who);
 	if (!gabuddy)
 	{
 		purple_debug_error("gayattitude", "send_im: buddy '%s' does not exist\n", who);
@@ -109,7 +109,7 @@ static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char
 		delayed_msg->what = g_strdup(what);
 		delayed_msg->flags = flags;
 
-		ga_request_info(gaa, who, FALSE, (GayAttitudeRequestInfoCallbackFunc) gayattitude_send_im_delayed_cb, (gpointer) delayed_msg);
+		ga_gabuddy_request_info(gaa, who, FALSE, (GayAttitudeRequestInfoCallbackFunc) gayattitude_send_im_delayed_cb, (gpointer) delayed_msg);
 	}
 	else
 		gayattitude_do_send_im(gaa, gabuddy, what, flags);
@@ -117,7 +117,7 @@ static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char
 	return 0;
 }
 
-static GList *gayattitude_status_types(PurpleAccount *account)
+static GList *ga_plugin_status_types(PurpleAccount *account)
 {
 	PurpleStatusType *type;
 	GList *types = NULL;
@@ -131,7 +131,7 @@ static GList *gayattitude_status_types(PurpleAccount *account)
 	return types;
 }
 
-static void gayattitude_set_status(PurpleAccount *account, PurpleStatus *status)
+static void ga_plugin_set_status(PurpleAccount *account, PurpleStatus *status)
 {
 	PurpleConnection *gc = purple_account_get_connection(account);
 	//const char *status_id = purple_status_get_id(status);
@@ -143,37 +143,37 @@ static void gayattitude_set_status(PurpleAccount *account, PurpleStatus *status)
 
 }
 
-static void gayattitude_keepalive(PurpleConnection *gc)
+static void ga_plugin_keepalive(PurpleConnection *gc)
 {
 }
 
-void ga_buddy_free(PurpleBuddy *buddy)
+static void ga_plugin_buddy_free(PurpleBuddy *buddy)
 {
 	ga_gabuddy_free(buddy->proto_data);
 	buddy->proto_data = NULL;
 }
 
-static PurplePluginProtocolInfo prpl_info =
+static PurplePluginProtocolInfo ga_plugin_prpl_info =
 {
 	OPT_PROTO_PASSWORD_OPTIONAL,
 	NULL,					/* user_splits */
 	NULL,					/* protocol_options */
 	NO_BUDDY_ICONS,				/* icon_spec */
-	gayattitude_blist_icon,			/* list_icon */
+	ga_plugin_blist_icon,			/* list_icon */
 	NULL,					/* list_emblems */
 	NULL,					/* status_text */
 	NULL,					/* tooltip_text */
-	gayattitude_status_types,		/* away_states */
+	ga_plugin_status_types,			/* away_states */
 	NULL,					/* blist_node_menu */
 	NULL,					/* chat_info */
 	NULL,					/* chat_info_defaults */
-	ga_login,				/* login */
-	ga_close,				/* close */
+	ga_plugin_login,			/* login */
+	ga_plugin_close,			/* close */
 	gayattitude_send_im,			/* send_im */
 	NULL,					/* set_info */
 	NULL,					/* send_typing */
-	ga_get_info,				/* get_info */
-	gayattitude_set_status,			/* set_status */
+	ga_plugin_get_info,			/* get_info */
+	ga_plugin_set_status,			/* set_status */
 	NULL,					/* set_idle */
 	NULL,					/* change_passwd */
 	NULL,					/* add_buddy */
@@ -192,14 +192,14 @@ static PurplePluginProtocolInfo prpl_info =
 	NULL,					/* chat_leave */
 	NULL,					/* chat_whisper */
 	NULL,					/* chat_send */
-	gayattitude_keepalive,			/* keepalive */
+	ga_plugin_keepalive,			/* keepalive */
 	NULL,					/* register_user */
 	NULL,					/* get_cb_info */
 	NULL,					/* get_cb_away */
 	NULL,					/* alias_buddy */
 	NULL,					/* group_buddy */
 	NULL,					/* rename_group */
-	ga_buddy_free,				/* buddy_free */
+	ga_plugin_buddy_free,			/* buddy_free */
 	NULL,					/* convo_closed */
 	purple_normalize_nocase,		/* normalize */
 	NULL,					/* set_buddy_icon */
@@ -226,36 +226,36 @@ static PurplePluginProtocolInfo prpl_info =
 	NULL					 /* can_do_media */
 };
 
-static gboolean load_plugin (PurplePlugin *plugin) {
+static gboolean ga_plugin_load (PurplePlugin *plugin) {
 
 	return TRUE;
 }
 
-static PurplePluginInfo info =
+static PurplePluginInfo ga_plugin_info =
 {
 	PURPLE_PLUGIN_MAGIC,
 	PURPLE_MAJOR_VERSION,
 	PURPLE_MINOR_VERSION,
-	PURPLE_PLUGIN_PROTOCOL,                             /**< type           */
+	PURPLE_PLUGIN_PROTOCOL,                           /**< type           */
 	NULL,                                             /**< ui_requirement */
 	0,                                                /**< flags          */
 	NULL,                                             /**< dependencies   */
-	PURPLE_PRIORITY_DEFAULT,                            /**< priority       */
+	PURPLE_PRIORITY_DEFAULT,                          /**< priority       */
 
-	"prpl-gayattitude",                                       /**< id             */
-	"GayAttitude",                                            /**< name           */
-	"1.0",                                  /**< version        */
-	"gayattitude Protocol Plugin",                        /**  summary        */
-	"www.gayattitude.com chat",    /**  description    */
-	"Marc Dequènes, Romain Bignon",                                             /**< author         */
-	"http://symlink.me/wiki/minbif",                                     /**< homepage       */
+	"prpl-gayattitude",                               /**< id             */
+	"GayAttitude",                                    /**< name           */
+	"1.0",                                            /**< version        */
+	"gayattitude Protocol Plugin",                    /**  summary        */
+	"www.gayattitude.com chat",                       /**  description    */
+	"Marc Dequènes, Romain Bignon",                   /**< author         */
+	"http://symlink.me/wiki/minbif",                  /**< homepage       */
 
-	load_plugin,                                      /**< load           */
+	ga_plugin_load,                                   /**< load           */
 	NULL,                                             /**< unload         */
 	NULL,                                             /**< destroy        */
 
 	NULL,                                             /**< ui_info        */
-	&prpl_info,                                       /**< extra_info     */
+	&ga_plugin_prpl_info,                             /**< extra_info     */
 	NULL,                                             /**< prefs_info     */
 	NULL,
 
@@ -266,7 +266,7 @@ static PurplePluginInfo info =
 	NULL
 };
 
-static void _init_plugin(PurplePlugin *plugin)
+static void ga_plugin_init(PurplePlugin *plugin)
 {
 	PurpleAccountOption *option;
 	GHashTable *ui_info = purple_core_get_ui_info();
@@ -275,9 +275,9 @@ static void _init_plugin(PurplePlugin *plugin)
 		ui_name = GA_NAME;
 
 	option = purple_account_option_string_new("User-agent", "user-agent", ui_name);
-	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+	ga_plugin_prpl_info.protocol_options = g_list_append(ga_plugin_prpl_info.protocol_options, option);
 
 	_gayattitude_plugin = plugin;
 }
 
-PURPLE_INIT_PLUGIN(gayattitude, _init_plugin, info);
+PURPLE_INIT_PLUGIN(gayattitude, ga_plugin_init, ga_plugin_info);

@@ -2,7 +2,7 @@
 #include "ga_buddy.h"
 
 
-GayAttitudeBuddy *ga_get_gabuddy_from_buddy(PurpleBuddy *buddy, gboolean create)
+GayAttitudeBuddy *ga_gabuddy_get_from_buddy(PurpleBuddy *buddy, gboolean create)
 {
 	GayAttitudeBuddy *gabuddy;
 
@@ -20,7 +20,7 @@ GayAttitudeBuddy *ga_get_gabuddy_from_buddy(PurpleBuddy *buddy, gboolean create)
 	return gabuddy;
 }
 
-GayAttitudeBuddy *ga_find_gabuddy(GayAttitudeAccount *gaa, const gchar *buddyname)
+GayAttitudeBuddy *ga_gabuddy_find(GayAttitudeAccount *gaa, const gchar *buddyname)
 {
 	PurpleBuddy *buddy;
 	GayAttitudeBuddy *gabuddy;
@@ -29,7 +29,7 @@ GayAttitudeBuddy *ga_find_gabuddy(GayAttitudeAccount *gaa, const gchar *buddynam
 	if (!buddy)
 		return NULL;
 
-	gabuddy = ga_get_gabuddy_from_buddy(buddy, TRUE);
+	gabuddy = ga_gabuddy_get_from_buddy(buddy, TRUE);
 
 	return gabuddy;
 }
@@ -39,7 +39,7 @@ GayAttitudeBuddy *ga_gabuddy_new(GayAttitudeAccount *gaa, const gchar *buddyname
 	PurpleBuddy *buddy;
 
 	buddy = purple_buddy_new(gaa->account, buddyname, NULL);
-	return ga_get_gabuddy_from_buddy(buddy, TRUE);
+	return ga_gabuddy_get_from_buddy(buddy, TRUE);
 }
 
 void ga_gabuddy_free(GayAttitudeBuddy *gabuddy)
@@ -156,13 +156,13 @@ static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize l
 		request->callback(gaa, request->callback_data);
 }
 
-void ga_request_info(GayAttitudeAccount* gaa, const char *who, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data)
+void ga_gabuddy_request_info(GayAttitudeAccount* gaa, const char *who, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data)
 {
 	gchar *url_path;
 	GayAttitudeBuddyInfoRequest *request = g_new0(GayAttitudeBuddyInfoRequest, TRUE);
 	GayAttitudeBuddy *gabuddy;
 
-	gabuddy = ga_find_gabuddy(gaa, who);
+	gabuddy = ga_gabuddy_find(gaa, who);
 	if (!gabuddy)
 		return;
 
