@@ -1,5 +1,6 @@
 
 #include "ga_buddylist.h"
+#include <string.h>
 
 static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)
 {
@@ -125,6 +126,6 @@ void ga_buddylist_update(GayAttitudeAccount* gaa)
 void ga_buddylist_check_status(GayAttitudeAccount* gaa)
 {
 	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/annuaire/liste?liste=contacts-online",
-			NULL, gayattitude_parse_contact_list, NULL, FALSE);
+			NULL, ga_buddylist_parse_cb, NULL, FALSE);
 }
 
