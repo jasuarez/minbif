@@ -28,6 +28,7 @@ static void ga_message_send_delayed_cb(GayAttitudeAccount *gaa, GayAttitudeDelay
 {
 	purple_debug_info("gayattitude", "ga_message: prepare to send delayed message to '%s'\n", delayed_msg->gabuddy->buddy->name);
 	ga_message_send_real(gaa, delayed_msg->gabuddy, delayed_msg->what, delayed_msg->flags);
+	g_free(delayed_msg);
 }
 
 int ga_message_send(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags)
