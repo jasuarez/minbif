@@ -348,9 +348,13 @@ static void gayattitude_parse_contact_info(HttpHandler* handler, gchar* response
 	/* Cleanup */
 	xmlXPathFreeContext(xpathCtx);
 	xmlFreeDoc(doc);
+
+	/* Chained Callback */
+	if (request->callback)
+		request->callback(gaa, request->callback_data);
 }
 
-static void gayattitude_request_info(GayAttitudeAccount* gaa, const char *who, gboolean advertise)
+static void gayattitude_request_info(GayAttitudeAccount* gaa, const char *who, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data)
 {
 	gchar *url_path;
 	GayAttitudeBuddyInfoRequest *request = g_new0(GayAttitudeBuddyInfoRequest, TRUE);
@@ -358,6 +362,8 @@ static void gayattitude_request_info(GayAttitudeAccount* gaa, const char *who, g
 	url_path = g_strdup_printf("/%s", who);
 	request->who = g_strdup(who);
 	request->advertise = advertise;
+	request->callback = callback;
+	request->callback_data = callback_data;
 	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME_PERSO, url_path,
 			NULL, gayattitude_parse_contact_info, (gpointer) request, FALSE);
 	g_free(url_path);
@@ -365,7 +371,35 @@ static void gayattitude_request_info(GayAttitudeAccount* gaa, const char *who, g
 
 static void gayattitude_get_info(PurpleConnection *gc, const char *who)
 {
-	gayattitude_request_info(gc->proto_data, who, TRUE);
+	gayattitude_request_info(gc->proto_data, who, TRUE, NULL, NULL);
+}
+
+static int gayattitude_do_send_im(GayAttitudeAccount *gaa, PurpleBuddy *buddy, const char *what, PurpleMessageFlags flags)
+{
+	gchar *ref_id = g_hash_table_lookup(gaa->ref_ids, buddy->name);
+	if (!ref_id)
+	{
+		purple_debug_error("gayattitude", "send_im: could not find ref_id for buddy '%s'\n", buddy->name);
+		return 1;
+	}
+
+	gchar* url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", buddy->name, ref_id);
+	gchar* msg = http_url_encode(what, TRUE);
+	gchar* postdata = g_strdup_printf("msg=%s&sendchat=Envoyer+(Shift-Entr%%82e)&fond=&sendmail=0", msg);
+	http_post_or_get(gaa->pc->proto_data, HTTP_METHOD_POST, GA_HOSTNAME, url_path,
+			postdata, NULL, NULL, FALSE);
+
+	g_free(msg);
+	g_free(postdata);
+	g_free(url_path);
+	purple_debug_info("gayattitude", "sending message to '%s'\n", buddy->name);
+
+	return 0;
+}
+
+void gayattitude_send_im_delayed_cb(GayAttitudeAccount *gaa, GayAttitudeDelayedMessageRequest *delayed_msg)
+{
+	gayattitude_do_send_im(gaa, delayed_msg->buddy, delayed_msg->what, delayed_msg->flags);
 }
 
 static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags)
@@ -383,26 +417,18 @@ static int gayattitude_send_im(PurpleConnection *gc, const char *who, const char
 	gchar *ref_id = g_hash_table_lookup(gaa->ref_ids, who);
 	if (!ref_id)
 	{
-		purple_debug_error("gayattitude", "send_im: ref_id for buddy '%s' is unknown, starting lookup\n", who);
-		gayattitude_request_info(gaa, who, FALSE);
-		ref_id = g_hash_table_lookup(gaa->ref_ids, who);
-		if (!ref_id)
-		{
-			purple_debug_error("gayattitude", "send_im: could not find ref_id for buddy '%s'\n", who);
-			return 1;
-		}
+		purple_debug_error("gayattitude", "send_im: ref_id for buddy '%s' is unknown, starting lookup for delayed message\n", who);
+
+		GayAttitudeDelayedMessageRequest *delayed_msg = g_new0(GayAttitudeDelayedMessageRequest, TRUE);
+		delayed_msg->gaa = gaa;
+		delayed_msg->buddy = buddy;
+		delayed_msg->what = g_strdup(what);
+		delayed_msg->flags = flags;
+
+		gayattitude_request_info(gaa, who, FALSE, (GayAttitudeRequestInfoCallbackFunc) gayattitude_send_im_delayed_cb, (gpointer) delayed_msg);
 	}
-
-	gchar* url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", who, ref_id);
-	gchar* msg = http_url_encode(what, TRUE);
-	gchar* postdata = g_strdup_printf("msg=%s&sendchat=Envoyer+(Shift-Entr%%82e)&fond=&sendmail=0", msg);
-	http_post_or_get(gc->proto_data, HTTP_METHOD_POST, GA_HOSTNAME, url_path,
-			postdata, NULL, NULL, FALSE);
-
-	g_free(msg);
-	g_free(postdata);
-	g_free(url_path);
-	purple_debug_info("gayattitude", "sending message to '%s'\n", who);
+	else
+		gayattitude_do_send_im(gaa, buddy, what, flags);
 
 	return 0;
 }

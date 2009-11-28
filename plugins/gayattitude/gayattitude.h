@@ -35,6 +35,9 @@
 
 typedef struct _GayAttitudeAccount GayAttitudeAccount;
 typedef struct _GayAttitudeBuddyInfoRequest GayAttitudeBuddyInfoRequest;
+typedef struct _GayAttitudeDelayedMessageRequest GayAttitudeDelayedMessageRequest;
+
+typedef void (*GayAttitudeRequestInfoCallbackFunc)(GayAttitudeAccount* gaa, gpointer user_data);
 
 struct _GayAttitudeAccount {
 	PurpleAccount *account;
@@ -45,8 +48,17 @@ struct _GayAttitudeAccount {
 };
 
 struct _GayAttitudeBuddyInfoRequest {
-	gchar		*who;
-	gboolean	advertise;
+	gchar					*who;
+	gboolean				advertise;
+	GayAttitudeRequestInfoCallbackFunc	callback;
+	gpointer				callback_data;
+};
+
+struct _GayAttitudeDelayedMessageRequest {
+	GayAttitudeAccount	*gaa;
+	PurpleBuddy		*buddy;
+	gchar			*what;
+	PurpleMessageFlags	flags;
 };
 
 #endif /* GA_GAYATTITUDE_H */
