@@ -8,7 +8,7 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 {
 	htmlDocPtr doc;
 	xmlXPathContextPtr xpathCtx;
-	xmlXPathObjectPtr xpathObj, xpathObj2;
+	xmlXPathObjectPtr xpathObj;
 	GayAttitudeAccount* gaa = handler->data;
 	gchar* group_name = userdata;
 
@@ -56,32 +56,22 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 		}
 
 		int i;
-		gchar *prop = NULL;
+		xmlChar *xmlprop = NULL;
 		xmlNode *contact_node;
 		for(i = 0; i < nodes->nodeNr; i++)
 		{
 			contact_node = nodes->nodeTab[i];
-			prop = (gchar*) xmlGetProp(contact_node, (xmlChar*) "class");
+			xmlprop = xmlGetProp(contact_node, (xmlChar*) "class");
 
 			/* look for contacts */
-			if (prop && g_str_has_prefix(prop, "ITEM"))
+			if (xmlprop && g_str_has_prefix((gchar*) xmlprop, "ITEM"))
 			{
-				/* enforce current search node and look for contact details */
 				gchar *contact_name;
 				GayAttitudeBuddy *gabuddy;
-				xpathCtx->node = contact_node;
-				xpathObj2 = xmlXPathEvalExpression((xmlChar*) "./div[@class='ITEM2']/div[@class='pseudo']/a/text()", xpathCtx);
-				if (xpathObj2 == NULL)
+
+				contact_name = g_parsing_quick_xpath_node_content(xpathCtx, "./div[@class='ITEM2']/div[@class='pseudo']/a", NULL, contact_node);
+				if (contact_name)
 				{
-					purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddylist: Unable to parse response (XPath evaluation).\n");
-					xmlXPathFreeContext(xpathCtx);
-					xmlFreeDoc(doc);
-					g_free(prop);
-					return;
-				}
-				if (!xmlXPathNodeSetIsEmpty(xpathObj2->nodesetval))
-				{
-					contact_name = (gchar*) xpathObj2->nodesetval->nodeTab[0]->content;
 					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddylist: found buddy from server: %s\n", contact_name);
 
 					gabuddy = ga_gabuddy_find(gaa, contact_name);
@@ -91,14 +81,14 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 						purple_blist_add_buddy(gabuddy->buddy, NULL, group, NULL);
 						purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddylist: added missing buddy: %s\n", contact_name);
 					}
-					if (strstr(prop, "ITEMONLINE"))
+					if (strstr((char*) xmlprop, "ITEMONLINE"))
 						purple_prpl_got_user_status(gaa->account, contact_name, "available", NULL);
 					else
 						purple_prpl_got_user_status(gaa->account, contact_name, "offline", NULL);
+					g_free(contact_name);
 				}
-				xmlXPathFreeObject(xpathObj2);
 			}
-			g_free(prop);
+			xmlFree(xmlprop);
 		}
 	}
 
