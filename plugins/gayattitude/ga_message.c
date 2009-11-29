@@ -116,7 +116,7 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 				message_id = g_ascii_strtoull(message_idstr + 3, NULL, 10);
 			g_free(message_idstr);
 
-			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message id: %llu\n", message_id);
+			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message id: %" G_GUINT64_FORMAT "\n", message_id);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message date: %s\n", message_date);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message sender: %s\n", message_sender);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message content: %s\n", message_content);
@@ -126,7 +126,7 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 				PurpleConversation *conv;
 				gchar *conv_name;
 
-				conv_name = g_strdup_printf("%s_%llu", message_sender, message_id);
+				conv_name = g_strdup_printf("%s_%" G_GUINT64_FORMAT, message_sender, message_id);
 				conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, conv_name);
 				/* TODO: convert message_date into time_t */
 				purple_conversation_write(conv, message_sender, message_content, PURPLE_MESSAGE_RECV, 0);
