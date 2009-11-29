@@ -9,12 +9,16 @@ GayAttitudeBuddy *ga_gabuddy_get_from_buddy(PurpleBuddy *buddy, gboolean create)
 	if (!buddy)
 		return NULL;
 
+	purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddy: Looking for GayAttitudeBuddy for buddy '%s'.\n", buddy->name);
+
 	gabuddy = buddy->proto_data;
 	if (!gabuddy && create)
 	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddy: Creating GayAttitudeBuddy for buddy '%s'.\n", buddy->name);
 		gabuddy = g_new0(GayAttitudeBuddy, TRUE);
 		gabuddy->buddy = buddy;
 		gabuddy->ref_id = NULL;
+		buddy->proto_data = gabuddy;
 	}
 
 	return gabuddy;
