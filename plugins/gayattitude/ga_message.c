@@ -4,6 +4,8 @@
 
 static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags)
 {
+	purple_debug_info("gayattitude", "ga_message: about to send message to '%s' with ref_id '%s'.\n", gabuddy->buddy->name, gabuddy->ref_id);
+	gabuddy = ga_gabuddy_find(gaa, gabuddy->buddy->name);
 	if (!gabuddy->ref_id)
 	{
 		purple_debug_error("gayattitude", "ga_message: could not find ref_id for buddy '%s'\n", gabuddy->buddy->name);
@@ -13,7 +15,7 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 	gchar* url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", gabuddy->buddy->name, gabuddy->ref_id);
 	gchar* msg = http_url_encode(what, TRUE);
 	gchar* postdata = g_strdup_printf("msg=%s&sendchat=Envoyer+(Shift-Entr%%82e)&fond=&sendmail=0", msg);
-	http_post_or_get(gaa->pc->proto_data, HTTP_METHOD_POST, GA_HOSTNAME, url_path,
+	http_post_or_get(gaa->http_handler, HTTP_METHOD_POST, GA_HOSTNAME, url_path,
 			postdata, NULL, NULL, FALSE);
 
 	g_free(msg);
