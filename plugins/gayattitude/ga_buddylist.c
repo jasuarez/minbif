@@ -77,7 +77,7 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 					g_free(prop);
 					return;
 				}
-				if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
+				if (!xmlXPathNodeSetIsEmpty(xpathObj2->nodesetval))
 				{
 					contact_name = (gchar*) xpathObj2->nodesetval->nodeTab[0]->content;
 					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddylist: found buddy from server: %s\n", contact_name);
@@ -94,7 +94,6 @@ static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize l
 					else
 						purple_prpl_got_user_status(gaa->account, contact_name, "offline", NULL);
 				}
-
 				xmlXPathFreeObject(xpathObj2);
 			}
 			g_free(prop);
