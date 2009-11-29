@@ -1,6 +1,8 @@
 
 #include "ga_account.h"
 #include "ga_buddylist.h"
+#include "ga_message.h"
+#include "ga_parsing.h"
 
 
 GayAttitudeAccount* ga_account_new(PurpleAccount *account)
@@ -54,6 +56,8 @@ static void ga_account_login_cb(HttpHandler* handler, gchar *response, gsize len
 		ga_buddylist_update(gaa);
 		gaa->new_messages_check_timer = g_timeout_add_seconds(GA_CHECK_INTERVAL,
 			(GSourceFunc)ga_account_check_changes, gaa);
+		/* temporary, later in the ga_account_check_changes() function */
+		ga_message_check_received(gaa);
 	}
 }
 

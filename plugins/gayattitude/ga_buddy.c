@@ -1,5 +1,6 @@
 
 #include "ga_buddy.h"
+#include "ga_parsing.h"
 
 
 GayAttitudeBuddy *ga_gabuddy_get_from_buddy(PurpleBuddy *buddy, gboolean create)

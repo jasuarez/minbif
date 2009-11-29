@@ -1,5 +1,7 @@
 
 #include "ga_buddylist.h"
+#include "ga_buddy.h"
+#include "ga_parsing.h"
 #include <string.h>
 
 static void ga_buddylist_parse_cb(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)

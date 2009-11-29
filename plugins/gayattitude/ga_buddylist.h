@@ -3,8 +3,6 @@
 
 #include <purple.h>
 #include "ga_account.h"
-#include "ga_buddy.h"
-#include "ga_parsing.h"
 
 void ga_buddylist_update(GayAttitudeAccount* gaa);
 void ga_buddylist_check_status(GayAttitudeAccount* gaa);

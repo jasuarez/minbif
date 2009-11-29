@@ -16,5 +16,6 @@ struct _GayAttitudeDelayedMessageRequest {
 };
 
 int ga_message_send(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags);
+void ga_message_check_received(GayAttitudeAccount *gaa);
 
 #endif /* GA_GAMESSAGE_H */

@@ -3,7 +3,6 @@
 
 #include <purple.h>
 #include "ga_account.h"
-#include "ga_parsing.h"
 
 
 typedef struct _GayAttitudeBuddy GayAttitudeBuddy;
