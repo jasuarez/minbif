@@ -98,8 +98,6 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
 
-	fcntl(0, F_SETFL, O_NONBLOCK);
-
 	/* Get the user's hostname. */
 	string userhost = "localhost.localdomain";
 	if(getpeername(fd, (struct sockaddr*) &sock, &socklen) == 0)
