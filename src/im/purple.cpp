@@ -162,7 +162,7 @@ void Purple::inited()
 	irc::BuddyIcon* bi = new irc::BuddyIcon(getIM(), irc);
 	irc->addNick(bi);
 
-	bool conv_logs = conf.GetSection("logging")->GetItem("conv_logs")->Boolean(),
+	bool conv_logs = conf.GetSection("logging")->GetItem("conv_logs")->Boolean();
 	purple_prefs_set_bool("/purple/logging/log_ims", conv_logs);
 	purple_prefs_set_bool("/purple/logging/log_chats", conv_logs);
 	purple_prefs_set_bool("/purple/logging/log_system", conv_logs);
