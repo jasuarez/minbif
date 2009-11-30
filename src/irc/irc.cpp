@@ -1522,7 +1522,7 @@ void IRC::m_names(Message message)
 	{
 		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 				                     .setReceiver(user)
-						     .addArg(message.getArg(1))
+						     .addArg(message.getArg(0))
 						     .addArg("No such channel"));
 		return;
 	}
@@ -1537,7 +1537,7 @@ void IRC::m_topic(Message message)
 	if(!chan)
 		user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 				                     .setReceiver(user)
-						     .addArg(message.getArg(1))
+						     .addArg(message.getArg(0))
 						     .addArg("No such channel"));
 	else if(message.countArgs() < 2)
 	{
