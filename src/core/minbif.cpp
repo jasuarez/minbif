@@ -67,7 +67,7 @@ Minbif::Minbif()
 	section = conf.AddSection("logging", "Log information", false);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
-	section->AddItem(new ConfigItem_bool("conv_logs", "Enable conversation logging"));
+	section->AddItem(new ConfigItem_bool("conv_logs", "Enable conversation logging", "false"));
 
 }
 
