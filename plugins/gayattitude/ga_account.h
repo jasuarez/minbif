@@ -14,6 +14,7 @@ struct _GayAttitudeAccount {
 	PurpleConnection *pc;
 	HttpHandler* http_handler;
 	guint new_messages_check_timer;
+	guint64 latest_msg_id;
 };
 
 GayAttitudeAccount* ga_account_new(PurpleAccount *account);

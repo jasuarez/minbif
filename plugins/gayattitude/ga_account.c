@@ -13,6 +13,7 @@ GayAttitudeAccount* ga_account_new(PurpleAccount *account)
 	gaa->account = account;
 	gaa->pc = purple_account_get_connection(account);
 	gaa->http_handler = http_handler_new(account, gaa);
+	gaa->latest_msg_id = 0;
 	account->gc->proto_data = gaa;
 
 	/* basic init */
@@ -35,7 +36,7 @@ void ga_account_free(GayAttitudeAccount* gaa)
 static void ga_account_check_changes(GayAttitudeAccount* gaa)
 {
 	ga_buddylist_check_status(gaa);
-	/* TODO: check new messages */
+	ga_message_check_received(gaa);
 }
 
 static void ga_account_login_cb(HttpHandler* handler, gchar *response, gsize len,
@@ -54,10 +55,9 @@ static void ga_account_login_cb(HttpHandler* handler, gchar *response, gsize len
 	{
 		purple_connection_set_state(gaa->pc, PURPLE_CONNECTED);
 		ga_buddylist_update(gaa);
+		ga_account_check_changes(gaa);
 		gaa->new_messages_check_timer = g_timeout_add_seconds(GA_CHECK_INTERVAL,
 			(GSourceFunc)ga_account_check_changes, gaa);
-		/* temporary, later in the ga_account_check_changes() function */
-		ga_message_check_received(gaa);
 	}
 }
 

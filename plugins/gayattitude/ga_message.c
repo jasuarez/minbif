@@ -96,6 +96,7 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: number of nodes found: %u\n", nodes->nodeNr);
 
 		xmlNode *message_node;
+		guint64 new_latest_msg_id = gaa->latest_msg_id;
 		for(i = 0; i < nodes->nodeNr; i++)
 		{
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message %u\n", i);
@@ -121,17 +122,26 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message sender: %s\n", message_sender);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message content: %s\n", message_content);
 
-			if (message_id && message_date && message_sender && message_content)
+			if (message_id && message_date && message_sender && message_content && (message_id > gaa->latest_msg_id))
 			{
 				PurpleConversation *conv;
 				gchar *conv_name;
 
 				conv_name = g_strdup_printf("%s_%" G_GUINT64_FORMAT, message_sender, message_id);
-				conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, conv_name);
+				conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, conv_name, gaa->account);
+				if (!conv)
+					conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, conv_name);
 				/* TODO: convert message_date into time_t */
 				purple_conversation_write(conv, message_sender, message_content, PURPLE_MESSAGE_RECV, 0);
+
+				if (message_id > new_latest_msg_id)
+				new_latest_msg_id = message_id;
 			}
+			if (message_id <= gaa->latest_msg_id)
+				purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: skipped message from %s with id %" G_GUINT64_FORMAT "\n", message_sender, message_id);
 		}
+
+		gaa->latest_msg_id = new_latest_msg_id;
 	}
 
 	/* Cleanup */
