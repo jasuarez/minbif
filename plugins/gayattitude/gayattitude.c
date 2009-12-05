@@ -101,6 +101,13 @@ static void ga_plugin_buddy_free(PurpleBuddy *buddy)
 	buddy->proto_data = NULL;
 }
 
+static void ga_plugin_conv_closed(PurpleConnection *gc, const char *who)
+{
+	GayAttitudeAccount* gaa = gc->proto_data;
+
+	g_hash_table_remove(gaa->conv_latest_msg_id, who);
+}
+
 static PurplePluginProtocolInfo ga_plugin_prpl_info =
 {
 	OPT_PROTO_PASSWORD_OPTIONAL,
@@ -148,7 +155,7 @@ static PurplePluginProtocolInfo ga_plugin_prpl_info =
 	NULL,					/* group_buddy */
 	NULL,					/* rename_group */
 	ga_plugin_buddy_free,			/* buddy_free */
-	NULL,					/* convo_closed */
+	ga_plugin_conv_closed,			/* convo_closed */
 	purple_normalize_nocase,		/* normalize */
 	NULL,					/* set_buddy_icon */
 	NULL,					/* remove_group */

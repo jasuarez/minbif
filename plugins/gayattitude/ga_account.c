@@ -14,6 +14,8 @@ GayAttitudeAccount* ga_account_new(PurpleAccount *account)
 	gaa->pc = purple_account_get_connection(account);
 	gaa->http_handler = http_handler_new(account, gaa);
 	gaa->latest_msg_id = 0;
+	gaa->conv_latest_msg_id = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	gaa->conv_with_buddy_count = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	account->gc->proto_data = gaa;
 
 	/* basic init */

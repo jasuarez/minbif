@@ -112,33 +112,53 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 			message_content = g_parsing_quick_xpath_node_content(xpathCtx, "./td[4]/a", NULL, message_node);
 
 			/* check if ID is valid */
-			guint64 message_id = 0;
+			guint64 *message_id = g_new(guint64, 1);
 			if (g_str_has_prefix(message_idstr, "msg"))
-				message_id = g_ascii_strtoull(message_idstr + 3, NULL, 10);
+				*message_id = g_ascii_strtoull(message_idstr + 3, NULL, 10);
+			else
+				*message_id = 0;
 			g_free(message_idstr);
 
-			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message id: %" G_GUINT64_FORMAT "\n", message_id);
+			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message id: %" G_GUINT64_FORMAT "\n", *message_id);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message date: %s\n", message_date);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message sender: %s\n", message_sender);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message content: %s\n", message_content);
 
-			if (message_id && message_date && message_sender && message_content && (message_id > gaa->latest_msg_id))
+			if (*message_id && message_date && message_sender && message_content)
 			{
-				PurpleConversation *conv;
-				gchar *conv_name;
+				if (*message_id > gaa->latest_msg_id)
+				{
+					PurpleConversation *conv;
+					guint *conv_count;
+					gchar *conv_name;
 
-				conv_name = g_strdup_printf("%s_%" G_GUINT64_FORMAT, message_sender, message_id);
-				conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, conv_name, gaa->account);
-				if (!conv)
-					conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, conv_name);
-				/* TODO: convert message_date into time_t */
-				purple_conversation_write(conv, message_sender, message_content, PURPLE_MESSAGE_RECV, 0);
+					/* Count number of conversation threads with the same user, in order ro differenciate them */
+					/* This value is not stored in the GayAttitudeBuddy, as you can talk with someone not in your buddylist */
+					conv_count = g_hash_table_lookup(gaa->conv_with_buddy_count, message_sender);
+					if (!conv_count)
+					{
+						conv_count = g_new0(guint, 1);
+						g_hash_table_insert(gaa->conv_with_buddy_count, message_sender, conv_count);
+					}
+					*conv_count += 1;
 
-				if (message_id > new_latest_msg_id)
-				new_latest_msg_id = message_id;
+					/* Create conversation if necessary and send message*/
+					conv_name = g_strdup_printf("%s@%u", message_sender, *conv_count);
+					conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, conv_name, gaa->account);
+					if (!conv)
+						conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, conv_name);
+					/* TODO: convert message_date into time_t */
+					purple_conversation_write(conv, message_sender, message_content, PURPLE_MESSAGE_RECV, 0);
+
+					/* Store conversation name<->message id association, to allow sending replies to the proper thread */
+					g_hash_table_insert(gaa->conv_latest_msg_id, conv_name, message_id);
+
+					if (*message_id > new_latest_msg_id)
+						new_latest_msg_id = *message_id;
+				}
+				else
+					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: skipped message from %s with id %" G_GUINT64_FORMAT "\n", message_sender, *message_id);
 			}
-			if (message_id <= gaa->latest_msg_id)
-				purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: skipped message from %s with id %" G_GUINT64_FORMAT "\n", message_sender, message_id);
 		}
 
 		gaa->latest_msg_id = new_latest_msg_id;

@@ -1,4 +1,5 @@
 
 - handle unexpected disconnections
 - logout
+- ensure we don't run out of conv count, as there is not reassignation mechanism
 
