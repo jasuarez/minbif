@@ -114,12 +114,13 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 			message_content = g_parsing_quick_xpath_node_content(xpathCtx, "./td[4]/a", NULL, message_node);
 
 			/* check if ID is valid */
-			guint64 *message_id = g_new(guint64, 1);
-			if (g_str_has_prefix(message_idstr, "msg"))
-				*message_id = g_ascii_strtoull(message_idstr + 3, NULL, 10);
-			else
-				*message_id = 0;
-			g_free(message_idstr);
+			guint64 *message_id = g_new0(guint64, 1);
+			if (message_idstr)
+			{
+				if (g_str_has_prefix(message_idstr, "msg"))
+					*message_id = g_ascii_strtoull(message_idstr + 3, NULL, 10);
+				g_free(message_idstr);
+			}
 
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message id: %" G_GUINT64_FORMAT "\n", *message_id);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message date: %s\n", message_date);
