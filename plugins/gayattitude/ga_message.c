@@ -41,6 +41,9 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 	else
 		g_free(url_path);
 
+	/* TODO: wait until successful HTTP reply */
+	purple_conversation_write(conv_info->conv, gabuddy->buddy->name, what, PURPLE_MESSAGE_SEND, 0);
+
 	return 0;
 }
 
