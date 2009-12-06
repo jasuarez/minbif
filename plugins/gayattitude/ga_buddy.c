@@ -55,7 +55,7 @@ void ga_gabuddy_free(GayAttitudeBuddy *gabuddy)
 	g_free(gabuddy);
 }
 
-static void ga_parse_contact_info(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)
+static void ga_gabuddy_parse_info_cb(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)
 {
 	htmlDocPtr doc;
 	xmlXPathContextPtr xpathCtx;
@@ -185,7 +185,7 @@ void ga_gabuddy_request_info(GayAttitudeAccount* gaa, const char *who, gboolean 
 	request->callback = callback;
 	request->callback_data = callback_data;
 	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME_PERSO, url_path,
-			NULL, ga_parse_contact_info, (gpointer) request, FALSE);
+			NULL, ga_gabuddy_parse_info_cb, (gpointer) request, FALSE);
 	g_free(url_path);
 }
 
