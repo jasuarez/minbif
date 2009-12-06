@@ -13,10 +13,11 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 	purple_debug_info("gayattitude", "ga_message: about to send message to '%s'.\n", gabuddy->buddy->name);
 
 	conv_info = g_hash_table_lookup(gaa->conv_info, gabuddy->buddy->name);
+	msg = http_url_encode(what, TRUE);
 	if (conv_info && conv_info->latest_msg_id)
 	{
 		url_path = conv_info->url_path;
-		postdata = g_strdup_printf("host=&id=" G_GUINT64_FORMAT "&checksum=%s&text=%s&submit=Envoyer&fond=", conv_info->checksum, msg);
+		postdata = g_strdup_printf("host=&id=%" G_GUINT64_FORMAT "&checksum=%s&text=%s&submit=Envoyer&fond=", conv_info->latest_msg_id, conv_info->checksum, msg);
 	}
 	else
 	{
@@ -29,7 +30,6 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 		url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", gabuddy->buddy->name, gabuddy->ref_id);
 		postdata = g_strdup_printf("msg=%s&sendchat=Envoyer+(Shift-Entr%%82e)&fond=&sendmail=0", msg);
 	}
-	msg = http_url_encode(what, TRUE);
 	http_post_or_get(gaa->http_handler, HTTP_METHOD_POST, GA_HOSTNAME, url_path,
 			postdata, NULL, NULL, FALSE);
 	purple_debug_info("gayattitude", "ga_message: sending message to '%s'\n", gabuddy->buddy->name);
