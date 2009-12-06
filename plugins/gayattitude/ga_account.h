@@ -15,7 +15,7 @@ struct _GayAttitudeAccount {
 	HttpHandler* http_handler;
 	guint new_messages_check_timer;
 	guint64 latest_msg_id;
-	GHashTable *conv_latest_msg_id;
+	GHashTable *conv_info;
 	GHashTable *conv_with_buddy_count;
 };
 

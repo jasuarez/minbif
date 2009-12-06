@@ -7,12 +7,18 @@
 
 
 typedef struct _GayAttitudeDelayedMessageRequest GayAttitudeDelayedMessageRequest;
+typedef struct _GayAttitudeConversationInfo GayAttitudeConversationInfo;
 
 struct _GayAttitudeDelayedMessageRequest {
 	GayAttitudeAccount	*gaa;
 	GayAttitudeBuddy	*gabuddy;
 	gchar			*what;
 	PurpleMessageFlags	flags;
+};
+
+struct _GayAttitudeConversationInfo {
+	guint64			latest_msg_id;
+	gchar			*url_path, *checksum;
 };
 
 int ga_message_send(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags);

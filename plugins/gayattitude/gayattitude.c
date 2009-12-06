@@ -102,7 +102,7 @@ static void ga_plugin_conv_closed(PurpleConnection *gc, const char *who)
 {
 	GayAttitudeAccount* gaa = gc->proto_data;
 
-	g_hash_table_remove(gaa->conv_latest_msg_id, who);
+	g_hash_table_remove(gaa->conv_info, who);
 }
 
 static PurplePluginProtocolInfo ga_plugin_prpl_info =
