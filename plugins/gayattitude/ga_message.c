@@ -40,8 +40,7 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 	if (conv_info && conv_info->latest_msg_id)
 	{
 		g_free(conv_info->checksum);
-		conv_info->url_path = NULL;
-		conv_info->checksum = NULL;
+		conv_info->replied = TRUE;
 	}
 
 	return 0;
@@ -60,7 +59,7 @@ int ga_message_send(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const ch
 	PurpleConversation *conv;
 
 	conv_info = g_hash_table_lookup(gaa->conv_info, gabuddy->buddy->name);
-	if (conv_info && conv_info->latest_msg_id && !conv_info->url_path)
+	if (conv_info && conv_info->latest_msg_id && !conv_info->replied)
 	{
 		conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, gabuddy->buddy->name, gaa->account);
 		purple_conversation_write(conv, gabuddy->buddy->name, "You cannot reply again to this thread. Wait for a reply or open a new thread.", PURPLE_MESSAGE_SYSTEM, 0);
@@ -190,6 +189,7 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 
 					/* Store conversation name<->message id association, to allow sending replies to the proper thread */
 					GayAttitudeConversationInfo *conv_info = g_new0(GayAttitudeConversationInfo, TRUE);
+					conv_info->replied = FALSE;
 					conv_info->latest_msg_id = message_id;
 					g_hash_table_insert(gaa->conv_info, conv_name, conv_info);
 

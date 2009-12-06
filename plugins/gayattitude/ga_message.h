@@ -19,6 +19,7 @@ struct _GayAttitudeDelayedMessageRequest {
 struct _GayAttitudeConversationInfo {
 	guint64			latest_msg_id;
 	gchar			*url_path, *checksum;
+	gboolean		replied;
 };
 
 int ga_message_send(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags);
