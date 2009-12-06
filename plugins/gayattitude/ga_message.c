@@ -204,8 +204,6 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message %u\n", i);
 			message_node = nodes->nodeTab[i];
 
-			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: plop: %s\n", xmlNodeGetContent(message_node));
-
 			/* Message parsing */
 			gchar *message_idstr, *message_sender, *message_content;
 			message_idstr = g_parsing_quick_xpath_node_content(xpathCtx, "./td[1]/input", "name", message_node);
