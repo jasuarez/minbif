@@ -231,7 +231,7 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 					gchar *conv_name, *extra_info_url_path;
 					GayAttitudeMessageExtraInfo *msg_extra_info;
 
-					/* Count number of conversation threads with the same user, in order ro differenciate them */
+					/* Count number of conversation threads with the same user, in order to differenciate them */
 					/* This value is not stored in the GayAttitudeBuddy, as you can talk with someone not in your buddylist */
 					conv_count = g_hash_table_lookup(gaa->conv_with_buddy_count, message_sender);
 					if (!conv_count)
