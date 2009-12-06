@@ -1,6 +1,8 @@
 
+#define _GNU_SOURCE
 #include "ga_message.h"
 #include "ga_parsing.h"
+#include <time.h>
 
 
 static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags)
@@ -131,24 +133,30 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 					PurpleConversation *conv;
 					guint *conv_count;
 					gchar *conv_name;
+					struct tm *message_tm;
+					time_t message_time_t;
 
 					/* Count number of conversation threads with the same user, in order ro differenciate them */
 					/* This value is not stored in the GayAttitudeBuddy, as you can talk with someone not in your buddylist */
 					conv_count = g_hash_table_lookup(gaa->conv_with_buddy_count, message_sender);
 					if (!conv_count)
 					{
-						conv_count = g_new0(guint, 1);
+						conv_count = g_new0(guint, TRUE);
 						g_hash_table_insert(gaa->conv_with_buddy_count, message_sender, conv_count);
 					}
 					*conv_count += 1;
 
 					/* Create conversation if necessary and send message*/
 					conv_name = g_strdup_printf("%s@%u", message_sender, *conv_count);
+					message_tm = g_new0(struct tm, TRUE);
+					strptime(message_date, "%d/%m/%y", message_tm);
+					message_time_t = mktime(message_tm);
+					g_free(message_tm);
+					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message time_t: %u\n", (guint) message_time_t);
 					conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, conv_name, gaa->account);
 					if (!conv)
 						conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, conv_name);
-					/* TODO: convert message_date into time_t */
-					purple_conversation_write(conv, message_sender, message_content, PURPLE_MESSAGE_RECV, 0);
+					purple_conversation_write(conv, message_sender, message_content, PURPLE_MESSAGE_RECV, message_time_t);
 
 					/* Store conversation name<->message id association, to allow sending replies to the proper thread */
 					g_hash_table_insert(gaa->conv_latest_msg_id, conv_name, message_id);
