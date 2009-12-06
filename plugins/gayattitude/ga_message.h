@@ -18,6 +18,7 @@ struct _GayAttitudeDelayedMessageRequest {
 };
 
 struct _GayAttitudeConversationInfo {
+	PurpleConversation	*conv;
 	GayAttitudeBuddy	*gabuddy;
 	guint64			latest_msg_id;
 	gchar			*url_path, *checksum;

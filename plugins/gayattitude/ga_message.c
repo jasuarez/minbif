@@ -54,15 +54,13 @@ static void ga_message_send_delayed_cb(GayAttitudeAccount *gaa, GayAttitudeDelay
 int ga_message_send(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const char *what, PurpleMessageFlags flags)
 {
 	GayAttitudeConversationInfo *conv_info;
-	PurpleConversation *conv;
 
 	conv_info = g_hash_table_lookup(gaa->conv_info, gabuddy->buddy->name);
 	if (conv_info)
 	{
 		if (conv_info->replied)
 		{
-			conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, gabuddy->buddy->name, gaa->account);
-			purple_conversation_write(conv, gabuddy->buddy->name, "You cannot reply again to this thread. Wait for a reply or open a new thread.", PURPLE_MESSAGE_SYSTEM, 0);
+			purple_conversation_write(conv_info->conv, gabuddy->buddy->name, "You cannot reply again to this thread. Wait for a reply or open a new thread.", PURPLE_MESSAGE_SYSTEM, 0);
 			return 1;
 		}
 	}
@@ -93,7 +91,6 @@ static void ga_message_extra_info_cb(HttpHandler* handler, gchar* response, gsiz
 	xmlXPathContextPtr xpathCtx;
 	GayAttitudeAccount* gaa = handler->data;
 	GayAttitudeMessageExtraInfo* extra_info = (GayAttitudeMessageExtraInfo*)userdata;
-	PurpleConversation *conv;
 	gchar *message_strtimestamp, *message_url_path, *message_checksum;
 	struct tm *message_tm;
 	time_t message_timestamp;
@@ -134,6 +131,7 @@ static void ga_message_extra_info_cb(HttpHandler* handler, gchar* response, gsiz
 		strptime(message_strtimestamp, "%d/%m/%y - %H:%M", message_tm);
 		message_timestamp = mktime(message_tm);
 		g_free(message_tm);
+		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message timestamp: %u\n", (guint) message_timestamp);
 
 		/* store extra message info */
 		conv_info = g_hash_table_lookup(gaa->conv_info, extra_info->conv_name);
@@ -146,11 +144,7 @@ static void ga_message_extra_info_cb(HttpHandler* handler, gchar* response, gsiz
 		conv_info->timestamp = message_timestamp;
 
 		/* Create conversation if necessary and send message*/
-		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message timestamp: %u\n", (guint) message_timestamp);
-		conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, extra_info->conv_name, gaa->account);
-		if (!conv)
-			conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, extra_info->conv_name);
-		purple_conversation_write(conv, extra_info->sender, extra_info->msg, PURPLE_MESSAGE_RECV, message_timestamp);
+		purple_conversation_write(conv_info->conv, extra_info->sender, extra_info->msg, PURPLE_MESSAGE_RECV, message_timestamp);
 	}
 	else
 		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: parsing extra message info for '%" G_GUINT64_FORMAT "' failed.\n", extra_info->id);
@@ -229,6 +223,7 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 				{
 					guint *conv_count;
 					gchar *conv_name, *extra_info_url_path;
+					PurpleConversation *conv;
 					GayAttitudeMessageExtraInfo *msg_extra_info;
 
 					/* Count number of conversation threads with the same user, in order to differenciate them */
@@ -243,9 +238,13 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 
 					/* Generate conversation name */
 					conv_name = g_strdup_printf("%s@%u", message_sender, *conv_count);
+					conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, conv_name, gaa->account);
+					if (!conv)
+						conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, conv_name);
 
 					/* Store conversation name<->message id association, to allow sending replies to the proper thread */
 					GayAttitudeConversationInfo *conv_info = g_new0(GayAttitudeConversationInfo, 1);
+					conv_info->conv = conv;
 					conv_info->replied = FALSE;
 					conv_info->latest_msg_id = message_id;
 					g_hash_table_insert(gaa->conv_info, conv_name, conv_info);
