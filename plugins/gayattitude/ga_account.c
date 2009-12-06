@@ -32,6 +32,8 @@ void ga_account_free(GayAttitudeAccount* gaa)
 	}
 
 	http_handler_free(gaa->http_handler);
+	g_hash_table_destroy(gaa->conv_latest_msg_id);
+	g_hash_table_destroy(gaa->conv_with_buddy_count);
 	g_free(gaa);
 }
 
