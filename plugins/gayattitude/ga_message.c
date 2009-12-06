@@ -10,13 +10,7 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 	gchar *url_path, *postdata, *msg;
 	GayAttitudeConversationInfo *conv_info;
 
-	purple_debug_info("gayattitude", "ga_message: about to send message to '%s' with ref_id '%s'.\n", gabuddy->buddy->name, gabuddy->ref_id);
-	gabuddy = ga_gabuddy_find(gaa, gabuddy->buddy->name);
-	if (!gabuddy->ref_id)
-	{
-		purple_debug_error("gayattitude", "ga_message: could not find ref_id for buddy '%s'\n", gabuddy->buddy->name);
-		return 1;
-	}
+	purple_debug_info("gayattitude", "ga_message: about to send message to '%s'.\n", gabuddy->buddy->name);
 
 	conv_info = g_hash_table_lookup(gaa->conv_info, gabuddy->buddy->name);
 	if (conv_info && conv_info->latest_msg_id)
@@ -26,6 +20,12 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 	}
 	else
 	{
+		if (!gabuddy->ref_id)
+		{
+			purple_debug_error("gayattitude", "ga_message: could not find ref_id for buddy '%s'\n", gabuddy->buddy->name);
+			return 1;
+		}
+
 		url_path = g_strdup_printf("/html/portrait/message?p=%s&pid=%s&host=&smallheader=&popup=0", gabuddy->buddy->name, gabuddy->ref_id);
 		postdata = g_strdup_printf("msg=%s&sendchat=Envoyer+(Shift-Entr%%82e)&fond=&sendmail=0", msg);
 	}
@@ -36,12 +36,10 @@ static int ga_message_send_real(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabud
 
 	g_free(msg);
 	g_free(postdata);
-	g_free(url_path);
 	if (conv_info && conv_info->latest_msg_id)
-	{
-		g_free(conv_info->checksum);
 		conv_info->replied = TRUE;
-	}
+	else
+		g_free(url_path);
 
 	return 0;
 }
@@ -59,29 +57,103 @@ int ga_message_send(GayAttitudeAccount *gaa, GayAttitudeBuddy *gabuddy, const ch
 	PurpleConversation *conv;
 
 	conv_info = g_hash_table_lookup(gaa->conv_info, gabuddy->buddy->name);
-	if (conv_info && conv_info->latest_msg_id && !conv_info->replied)
+	if (conv_info)
 	{
-		conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, gabuddy->buddy->name, gaa->account);
-		purple_conversation_write(conv, gabuddy->buddy->name, "You cannot reply again to this thread. Wait for a reply or open a new thread.", PURPLE_MESSAGE_SYSTEM, 0);
-		return 1;
-	}
-
-	if (!gabuddy->ref_id)
-	{
-		purple_debug_error("gayattitude", "ga_message: ref_id for buddy '%s' is unknown, starting lookup for delayed message\n", gabuddy->buddy->name);
-
-		GayAttitudeDelayedMessageRequest *delayed_msg = g_new0(GayAttitudeDelayedMessageRequest, TRUE);
-		delayed_msg->gaa = gaa;
-		delayed_msg->gabuddy = gabuddy;
-		delayed_msg->what = g_strdup(what);
-		delayed_msg->flags = flags;
-
-		ga_gabuddy_request_info(gaa, gabuddy->buddy->name, FALSE, (GayAttitudeRequestInfoCallbackFunc) ga_message_send_delayed_cb, (gpointer) delayed_msg);
+		if (conv_info->replied)
+		{
+			conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, gabuddy->buddy->name, gaa->account);
+			purple_conversation_write(conv, gabuddy->buddy->name, "You cannot reply again to this thread. Wait for a reply or open a new thread.", PURPLE_MESSAGE_SYSTEM, 0);
+			return 1;
+		}
 	}
 	else
-		ga_message_send_real(gaa, gabuddy, what, flags);
+	{
+		if (!gabuddy->ref_id)
+		{
+			purple_debug_error("gayattitude", "ga_message: ref_id for buddy '%s' is unknown, starting lookup for delayed message\n", gabuddy->buddy->name);
+
+			GayAttitudeDelayedMessageRequest *delayed_msg = g_new0(GayAttitudeDelayedMessageRequest, 1);
+			delayed_msg->gaa = gaa;
+			delayed_msg->gabuddy = gabuddy;
+			delayed_msg->what = g_strdup(what);
+			delayed_msg->flags = flags;
+
+			ga_gabuddy_request_info(gaa, gabuddy, FALSE, (GayAttitudeRequestInfoCallbackFunc) ga_message_send_delayed_cb, (gpointer) delayed_msg);
+			return 0;
+		}
+	}
+	ga_message_send_real(gaa, gabuddy, what, flags);
 
 	return 0;
+}
+
+static void ga_message_extra_info_cb(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)
+{
+	htmlDocPtr doc;
+	xmlXPathContextPtr xpathCtx;
+	GayAttitudeAccount* gaa = handler->data;
+	GayAttitudeMessageExtraInfo* extra_info = (GayAttitudeMessageExtraInfo*)userdata;
+	PurpleConversation *conv;
+	gchar *message_strtimestamp, *message_url_path, *message_checksum;
+	struct tm *message_tm;
+	time_t message_timestamp;
+	GayAttitudeConversationInfo *conv_info;
+
+	purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: looking for extra message info for '%" G_GUINT64_FORMAT "'.\n", extra_info->id);
+
+	doc = htmlReadMemory(response, len, "gayattitude.xml", NULL, 0);
+	if (doc == NULL)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_message: Unable to parse response (XML Parsing).\n");
+		return;
+	}
+
+	/* Create xpath evaluation context */
+	xpathCtx = xmlXPathNewContext(doc);
+	if(xpathCtx == NULL)
+	{
+		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_message: Unable to parse response (XPath context init).\n");
+		xmlFreeDoc(doc);
+		return;
+	}
+
+	message_strtimestamp = g_parsing_quick_xpath_node_content(xpathCtx, "//p[@id='MESSAGESTAMP']", NULL, NULL);
+	if (message_strtimestamp)
+		g_strstrip(message_strtimestamp);
+	message_url_path = g_parsing_quick_xpath_node_content(xpathCtx, "//form[@id='form_reply']", "action", NULL);
+	message_checksum = g_parsing_quick_xpath_node_content(xpathCtx, "//form[@id='form_reply']/input[@name='checksum']", "value", NULL);
+	purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message strtimestamp: %s\n", message_strtimestamp);
+	purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message url_path: %s\n", message_url_path);
+	purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message checksum: %s\n", message_checksum);
+	/* TODO: fetch history */
+
+	if (message_strtimestamp && message_url_path && message_checksum)
+	{
+		/* compute timestamp */
+		message_tm = g_new0(struct tm, 1);
+		strptime(message_strtimestamp, "%d/%m/%y - %H:%M", message_tm);
+		message_timestamp = mktime(message_tm);
+		g_free(message_tm);
+
+		/* store extra message info */
+		conv_info = g_hash_table_lookup(gaa->conv_info, extra_info->conv_name);
+		if (conv_info->url_path)
+			g_free(conv_info->url_path);
+		conv_info->url_path = message_url_path;
+		if (conv_info->checksum)
+			g_free(conv_info->checksum);
+		conv_info->checksum = message_checksum;
+		conv_info->timestamp = message_timestamp;
+
+		/* Create conversation if necessary and send message*/
+		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message timestamp: %u\n", (guint) message_timestamp);
+		conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, extra_info->conv_name, gaa->account);
+		if (!conv)
+			conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, extra_info->conv_name);
+		purple_conversation_write(conv, extra_info->sender, extra_info->msg, PURPLE_MESSAGE_RECV, message_timestamp);
+	}
+	else
+		purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: parsing extra message info for '%" G_GUINT64_FORMAT "' failed.\n", extra_info->id);
 }
 
 static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize len, gpointer userdata)
@@ -92,7 +164,7 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 	GayAttitudeAccount* gaa = handler->data;
 	int i;
 
-	purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: Looking for received messages.\n");
+	purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: looking for received messages.\n");
 
 	doc = htmlReadMemory(response, len, "gayattitude.xml", NULL, 0);
 	if (doc == NULL)
@@ -135,9 +207,8 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: plop: %s\n", xmlNodeGetContent(message_node));
 
 			/* Message parsing */
-			gchar *message_idstr, *message_date, *message_sender, *message_content;
+			gchar *message_idstr, *message_sender, *message_content;
 			message_idstr = g_parsing_quick_xpath_node_content(xpathCtx, "./td[1]/input", "name", message_node);
-			message_date = g_parsing_quick_xpath_node_content(xpathCtx, "./td[2]/nobr/a", NULL, message_node);
 			message_sender = g_parsing_quick_xpath_node_content(xpathCtx, "./td[3]/a", NULL, message_node);
 			message_content = g_parsing_quick_xpath_node_content(xpathCtx, "./td[4]/a", NULL, message_node);
 
@@ -151,47 +222,46 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 			}
 
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message id: %" G_GUINT64_FORMAT "\n", message_id);
-			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message date: %s\n", message_date);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message sender: %s\n", message_sender);
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message content: %s\n", message_content);
 
-			if (message_id && message_date && message_sender && message_content)
+			if (message_id && message_sender && message_content)
 			{
 				if (message_id > gaa->latest_msg_id)
 				{
-					PurpleConversation *conv;
 					guint *conv_count;
-					gchar *conv_name;
-					struct tm *message_tm;
-					time_t message_time_t;
+					gchar *conv_name, *extra_info_url_path;
+					GayAttitudeMessageExtraInfo *msg_extra_info;
 
 					/* Count number of conversation threads with the same user, in order ro differenciate them */
 					/* This value is not stored in the GayAttitudeBuddy, as you can talk with someone not in your buddylist */
 					conv_count = g_hash_table_lookup(gaa->conv_with_buddy_count, message_sender);
 					if (!conv_count)
 					{
-						conv_count = g_new0(guint, TRUE);
+						conv_count = g_new0(guint, 1);
 						g_hash_table_insert(gaa->conv_with_buddy_count, message_sender, conv_count);
 					}
 					*conv_count += 1;
 
-					/* Create conversation if necessary and send message*/
+					/* Generate conversation name */
 					conv_name = g_strdup_printf("%s@%u", message_sender, *conv_count);
-					message_tm = g_new0(struct tm, TRUE);
-					strptime(message_date, "%d/%m/%y", message_tm);
-					message_time_t = mktime(message_tm);
-					g_free(message_tm);
-					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: message time_t: %u\n", (guint) message_time_t);
-					conv = purple_find_conversation_with_account(PURPLE_CONV_TYPE_IM, conv_name, gaa->account);
-					if (!conv)
-						conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, gaa->account, conv_name);
-					purple_conversation_write(conv, message_sender, message_content, PURPLE_MESSAGE_RECV, message_time_t);
 
 					/* Store conversation name<->message id association, to allow sending replies to the proper thread */
-					GayAttitudeConversationInfo *conv_info = g_new0(GayAttitudeConversationInfo, TRUE);
+					GayAttitudeConversationInfo *conv_info = g_new0(GayAttitudeConversationInfo, 1);
 					conv_info->replied = FALSE;
 					conv_info->latest_msg_id = message_id;
 					g_hash_table_insert(gaa->conv_info, conv_name, conv_info);
+
+					/* Fetch extra info and then deliver the received message */
+					extra_info_url_path = g_strdup_printf("/html/perso/chat/message?id=%" G_GUINT64_FORMAT "&popup=NONLUS", message_id);
+					msg_extra_info = g_new(GayAttitudeMessageExtraInfo, 1);
+					msg_extra_info->id = message_id;
+					msg_extra_info->sender = message_sender;
+					msg_extra_info->msg = message_content;
+					msg_extra_info->conv_name = conv_name;
+					http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, extra_info_url_path,
+						NULL, ga_message_extra_info_cb, msg_extra_info, FALSE);
+					g_free(extra_info_url_path);
 
 					if (message_id > new_latest_msg_id)
 						new_latest_msg_id = message_id;
@@ -199,6 +269,8 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 				else
 					purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: skipped message from %s with id %" G_GUINT64_FORMAT "\n", message_sender, message_id);
 			}
+			else
+				purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_message: parsing message #%u from received list failed\n", i);
 		}
 
 		gaa->latest_msg_id = new_latest_msg_id;
@@ -214,5 +286,22 @@ void ga_message_check_received(GayAttitudeAccount *gaa)
 {
 	http_post_or_get(gaa->http_handler, HTTP_METHOD_GET, GA_HOSTNAME, "/html/perso/chat/nonlus/?mode=to",
 			NULL, ga_message_received_cb, NULL, FALSE);
+}
+
+void ga_message_close_conversation(GayAttitudeAccount *gaa, const gchar *conv_name)
+{
+	GayAttitudeConversationInfo *conv_info;
+
+	conv_info = g_hash_table_lookup(gaa->conv_info, conv_name);
+	if (conv_info)
+	{
+		if (conv_info->url_path)
+			g_free(conv_info->url_path);
+		if (conv_info->checksum)
+			g_free(conv_info->checksum);
+		g_hash_table_remove(gaa->conv_info, conv_name);
+	}
+	else
+		 purple_debug_error("gayattitude", "ga_message: trying to close unexisting conversation '%s'.\n", conv_name);
 }
 

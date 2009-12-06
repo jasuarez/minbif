@@ -13,6 +13,7 @@ typedef void (*GayAttitudeRequestInfoCallbackFunc)(GayAttitudeAccount* gaa, gpoi
 struct _GayAttitudeBuddy {
 	PurpleBuddy		*buddy;
 	gchar			*ref_id;
+	GayAttitudeBuddy	*real_gabuddy;
 };
 
 struct _GayAttitudeBuddyInfoRequest {
@@ -27,6 +28,6 @@ GayAttitudeBuddy *ga_gabuddy_get_from_buddy(PurpleBuddy *buddy, gboolean create)
 GayAttitudeBuddy *ga_gabuddy_find(GayAttitudeAccount *gaa, const gchar *gabuddyname);
 GayAttitudeBuddy *ga_gabuddy_new(GayAttitudeAccount *gaa, const gchar *buddyname);
 void ga_gabuddy_free(GayAttitudeBuddy *gabuddy);
-void ga_gabuddy_request_info(GayAttitudeAccount* gaa, const char *who, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data);
+void ga_gabuddy_request_info(GayAttitudeAccount* gaa, GayAttitudeBuddy *gabuddy, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data);
 
 #endif /* GA_GABUDDY_H */

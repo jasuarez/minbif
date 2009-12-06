@@ -47,7 +47,14 @@ static void ga_plugin_close(PurpleConnection *gc)
 
 static void ga_plugin_get_info(PurpleConnection *gc, const char *who)
 {
-	ga_gabuddy_request_info(gc->proto_data, who, TRUE, NULL, NULL);
+	GayAttitudeAccount* gaa = gc->proto_data;
+	GayAttitudeBuddy *gabuddy;
+
+	gabuddy = ga_gabuddy_find(gaa, who);
+	if (!gabuddy)
+		gabuddy = ga_gabuddy_new(gaa, who);
+
+	ga_gabuddy_request_info(gaa, gabuddy, TRUE, NULL, NULL);
 }
 
 static int ga_plugin_send_im(PurpleConnection *gc, const char *who, const char *what, PurpleMessageFlags flags)
@@ -102,7 +109,7 @@ static void ga_plugin_conv_closed(PurpleConnection *gc, const char *who)
 {
 	GayAttitudeAccount* gaa = gc->proto_data;
 
-	g_hash_table_remove(gaa->conv_info, who);
+	ga_message_close_conversation(gaa, who);
 }
 
 static PurplePluginProtocolInfo ga_plugin_prpl_info =

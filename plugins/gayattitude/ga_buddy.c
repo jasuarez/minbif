@@ -16,9 +16,10 @@ GayAttitudeBuddy *ga_gabuddy_get_from_buddy(PurpleBuddy *buddy, gboolean create)
 	if (!gabuddy && create)
 	{
 		purple_debug(PURPLE_DEBUG_ERROR, "gayattitude", "ga_buddy: Creating GayAttitudeBuddy for buddy '%s'.\n", buddy->name);
-		gabuddy = g_new0(GayAttitudeBuddy, TRUE);
+		gabuddy = g_new0(GayAttitudeBuddy, 1);
 		gabuddy->buddy = buddy;
 		gabuddy->ref_id = NULL;
+		gabuddy->real_gabuddy = NULL;
 		buddy->proto_data = gabuddy;
 	}
 
@@ -98,8 +99,14 @@ static void ga_gabuddy_parse_info_cb(HttpHandler* handler, gchar* response, gsiz
 		}
 		if (!xmlXPathNodeSetIsEmpty(xpathObj->nodesetval))
 		{
+			gchar *ref_id;
+
 			info_node = xpathObj->nodesetval->nodeTab[0];
-			request->gabuddy->ref_id  = (gchar*) xmlGetProp(info_node, (xmlChar*) "value");
+			ref_id  = (gchar*) xmlGetProp(info_node, (xmlChar*) "value");
+			if (request->gabuddy->real_gabuddy)
+				request->gabuddy->real_gabuddy->ref_id = ref_id;
+			else
+				request->gabuddy->ref_id = ref_id;
 			purple_debug(PURPLE_DEBUG_INFO, "gayattitude", "ga_buddy: Found ref_id for '%s': %s.\n", request->gabuddy->buddy->name, request->gabuddy->ref_id);
 		}
 		xmlXPathFreeObject(xpathObj);
@@ -169,17 +176,16 @@ static void ga_gabuddy_parse_info_cb(HttpHandler* handler, gchar* response, gsiz
 	}
 }
 
-void ga_gabuddy_request_info(GayAttitudeAccount* gaa, const char *who, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data)
+void ga_gabuddy_request_info(GayAttitudeAccount* gaa, GayAttitudeBuddy *gabuddy, gboolean advertise, GayAttitudeRequestInfoCallbackFunc callback, gpointer callback_data)
 {
-	gchar *url_path;
-	GayAttitudeBuddyInfoRequest *request = g_new0(GayAttitudeBuddyInfoRequest, TRUE);
-	GayAttitudeBuddy *gabuddy;
+	gchar *url_path, *buddy_name;
+	GayAttitudeBuddyInfoRequest *request = g_new0(GayAttitudeBuddyInfoRequest, 1);
 
-	gabuddy = ga_gabuddy_find(gaa, who);
-	if (!gabuddy)
-		return;
-
-	url_path = g_strdup_printf("/%s", who);
+	if (gabuddy->real_gabuddy)
+		buddy_name = gabuddy->real_gabuddy->buddy->name;
+	else
+		buddy_name = gabuddy->buddy->name;
+	url_path = g_strdup_printf("/%s", buddy_name);
 	request->gabuddy = gabuddy;
 	request->advertise = advertise;
 	request->callback = callback;

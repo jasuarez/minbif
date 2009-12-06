@@ -9,7 +9,7 @@ GayAttitudeAccount* ga_account_new(PurpleAccount *account)
 {
 	GayAttitudeAccount* gaa;
 
-	gaa = g_new0(GayAttitudeAccount, TRUE);
+	gaa = g_new0(GayAttitudeAccount, 1);
 	gaa->account = account;
 	gaa->pc = purple_account_get_connection(account);
 	gaa->http_handler = http_handler_new(account, gaa);
