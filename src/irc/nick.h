@@ -19,6 +19,7 @@
 #define IRC_NICK_H
 
 #include <map>
+#include <libpurple/purple.h>
 
 #include "core/entity.h"
 #include "irc/message.h"
@@ -122,13 +123,15 @@ namespace irc
 		 */
 		void privmsg(Channel* chan, string message);
 
-
 		/** User sends a privmsg to an other user.
 		 *
 		 * @param to  user target
 		 * @param message  text message
 		 */
 		void privmsg(Nick* to, string message);
+
+		/** Send a command to this user. */
+		virtual int sendCommand(const string& cmd) { return PURPLE_CMD_STATUS_WRONG_TYPE; }
 
 		/** Mode message
 		 *

@@ -52,6 +52,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_USER,    &IRC::m_user,    4, 0, 0 },
 	{ MSG_PASS,    &IRC::m_pass,    1, 0, 0 },
 	{ MSG_QUIT,    &IRC::m_quit,    0, 0, 0 },
+	{ MSG_CMD,     &IRC::m_cmd,     2, 0, Nick::REGISTERED },
 	{ MSG_PRIVMSG, &IRC::m_privmsg, 2, 0, Nick::REGISTERED },
 	{ MSG_PING,    &IRC::m_ping,    0, 0, Nick::REGISTERED },
 	{ MSG_PONG,    &IRC::m_pong,    1, 0, Nick::REGISTERED },
@@ -861,6 +862,81 @@ void IRC::m_privmsg(Message message)
 					    .addArg(n->getNickname())
 					    .addArg(n->getAwayMessage()));
 		}
+	}
+}
+
+/** CMD <target> <cmd> [args ...] */
+void IRC::m_cmd(Message message)
+{
+	string target = message.getArg(0);
+	int ret;
+	string cmd;
+	vector<string> args = message.getArgs();
+	for(vector<string>::iterator it = args.begin()+1; it != args.end(); ++it)
+	{
+		if(!cmd.empty())
+			cmd += ' ';
+		cmd += *it;
+	}
+
+	if(Channel::isChanName(target))
+	{
+		Channel* c = getChannel(target);
+		if(!c)
+		{
+			user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+							     .setReceiver(user)
+							     .addArg(target)
+							     .addArg("No suck channel"));
+			return;
+		}
+		ret = c->sendCommand(cmd);
+	}
+	else
+	{
+		Nick* n = getNick(target);
+		if(!n)
+		{
+			user->send(Message(ERR_NOSUCHNICK).setSender(this)
+							  .setReceiver(user)
+							  .addArg(target)
+							  .addArg("No suck nick"));
+			return;
+		}
+		ret = n->sendCommand(cmd);
+	}
+	switch (ret)
+	{
+		case PURPLE_CMD_STATUS_OK:
+			break;
+		case PURPLE_CMD_STATUS_NOT_FOUND:
+			user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
+							   .setReceiver(user)
+							   .addArg(message.getArg(1))
+							   .addArg("Unknown command"));
+			break;
+		case PURPLE_CMD_STATUS_WRONG_ARGS:
+			user->send(Message(ERR_NEEDMOREPARAMS).setSender(this)
+				   .setReceiver(user)
+				   .addArg(message.getArg(1))
+				   .addArg("Not enough parameters"));
+			break;
+		case PURPLE_CMD_STATUS_FAILED:
+			user->send(Message(ERR_NEEDMOREPARAMS).setSender(this)
+				   .setReceiver(user)
+				   .addArg(message.getArg(1))
+				   .addArg("Command failed."));
+			break;
+		case PURPLE_CMD_STATUS_WRONG_TYPE:
+			user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+							    .setReceiver(user)
+							    .addArg("Permission Denied: This command doesn't work on this kind of target"));
+			break;
+		case PURPLE_CMD_STATUS_WRONG_PRPL:
+			user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+							    .setReceiver(user)
+							    .addArg("Permission Denied: That command doesn't work on this protocol."));
+			break;
 	}
 }
 

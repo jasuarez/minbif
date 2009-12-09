@@ -129,6 +129,9 @@ namespace im
 		/** Leave the conversation. */
 		void leave();
 
+		/** Send a command to this conversation. */
+		int sendCommand(const string& cmd) const;
+
 		/** Send a message in this conversation.
 		 *
 		 * @param text  text to send.

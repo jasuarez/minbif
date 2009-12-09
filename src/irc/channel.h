@@ -180,6 +180,9 @@ namespace irc
 		 */
 		void sendNames(Nick* nick) const;
 
+		/** Send a command to this channel. */
+		virtual int sendCommand(const string& cmd) { return PURPLE_CMD_STATUS_WRONG_TYPE; }
+
 		/** Invite someone into that channel. */
 		virtual bool invite(Nick* from, const string& nick, const string& message) = 0;
 

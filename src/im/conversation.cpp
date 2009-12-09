@@ -337,6 +337,15 @@ PurpleConvIm* Conversation::getPurpleIm() const
 	return PURPLE_CONV_IM(conv);
 }
 
+int Conversation::sendCommand(const string& cmd) const
+{
+	char* error = NULL;
+	gchar* escape = g_markup_escape_text(cmd.c_str(), -1);
+	PurpleCmdStatus ret = purple_cmd_do_command(conv, cmd.c_str(), escape, &error);
+	g_free(escape);
+	return ret;
+}
+
 void Conversation::sendMessage(string text)
 {
 	assert(isValid());

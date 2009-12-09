@@ -61,6 +61,8 @@ namespace irc
 		im::Conversation getConversation() const { return conv; }
 		void setConversation(const im::Conversation& c) { conv = c; }
 
+		virtual int sendCommand(const string& cmd);
+
 		/** Get icon in an coloured ASCII-art form. */
 		virtual CacaImage getIcon() const;
 

@@ -204,4 +204,9 @@ bool ConversationChannel::setTopic(Entity* from, const string& topic)
 		return Channel::setTopic(from, topic);
 }
 
+int ConversationChannel::sendCommand(const string& cmd)
+{
+	return conv.sendCommand(cmd);
+}
+
 }; /* namespace irc */

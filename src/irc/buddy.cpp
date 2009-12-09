@@ -178,4 +178,9 @@ bool Buddy::retrieveInfo() const
 	return true;
 }
 
+int Buddy::sendCommand(const string& cmd)
+{
+	return conv.sendCommand(cmd);
+}
+
 }; /* namespace irc */

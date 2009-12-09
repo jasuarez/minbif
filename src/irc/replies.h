@@ -121,5 +121,6 @@
 #define MSG_REHASH           "REHASH"
 #define MSG_DIE              "DIE"
 #define MSG_OPER             "OPER"
+#define MSG_CMD              "CMD"
 
 #endif /* IRC_REPLIES_H */

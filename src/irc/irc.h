@@ -128,6 +128,7 @@ namespace irc
 		void m_wallops(Message m);  /**< Handler for the WALLOPS message */
 		void m_rehash(Message m);   /**< Handler for the REHASH message */
 		void m_die(Message m);      /**< Handler for the DIE message */
+		void m_cmd(Message m);      /**< Handler for the CMD message */
 
 	public:
 
