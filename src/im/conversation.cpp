@@ -772,14 +772,23 @@ void Conversation::buddy_typing(PurpleAccount* account, const char* who, gpointe
 		return;
 
 	PurpleConvIm *im = conv.getPurpleIm();
-	if(purple_conv_im_get_typing_state(im) == PURPLE_TYPING)
-		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
-							 .setReceiver(irc->getUser())
-							 .addArg("\1TYPING 1\1"));
-	else
-		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
-							 .setReceiver(irc->getUser())
-				                         .addArg("\1TYPING 0\1"));
+	switch(purple_conv_im_get_typing_state(im))
+	{
+		case PURPLE_TYPING:
+			irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+						.setReceiver(irc->getUser())
+						.addArg("\1TYPING 1\1"));
+
+		case PURPLE_TYPED:
+			irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+						.setReceiver(irc->getUser())
+						.addArg("\1TYPING 2\1"));
+
+		case PURPLE_NOT_TYPING:
+			irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
+						.setReceiver(irc->getUser())
+						.addArg("\1TYPING 0\1"));
+	}
 }
 
 }; /* namespace im */
