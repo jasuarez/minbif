@@ -775,7 +775,7 @@ void Conversation::buddy_typing(PurpleAccount* account, const char* who, gpointe
 	if(purple_conv_im_get_typing_state(im) == PURPLE_TYPING)
 		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 							 .setReceiver(irc->getUser())
-							 .addArg("\1TYPING 2\1"));
+							 .addArg("\1TYPING 1\1"));
 	else
 		irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 							 .setReceiver(irc->getUser())
