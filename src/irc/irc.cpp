@@ -430,9 +430,7 @@ void IRC::sendWelcome()
 
 	try
 	{
-		im = new im::IM(this, user->getNickname());
-
-		if(im->getPassword().empty())
+		if(!IM::exists(user->getNickname()))
 		{
 			/* New user. */
 
@@ -443,13 +441,16 @@ void IRC::sendWelcome()
 				return;
 			}
 
+			im = new im::IM(this, user->getNickname());
 			im->setPassword(user->getPassword());
 		}
-		else if(im->getPassword() != user->getPassword())
+		else if(im->authenticate(user->getPassword()))
 		{
 			quit("Incorrect password");
 			return;
 		}
+		else
+			im = new im::IM(this, user->getNickname());
 
 		user->setFlag(Nick::REGISTERED);
 
