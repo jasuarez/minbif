@@ -23,6 +23,12 @@
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
 
+struct _pam_conv_func_data {
+	bool update;
+	string password;
+	string new_password;
+};
+
 /** IM related classes */
 namespace im
 {
@@ -32,13 +38,18 @@ namespace im
 	{
 	public:
 		UserPAM(irc::IRC* _irc, string _username);
+		~UserPAM();
 		bool exists();
 		bool authenticate(const string password);
 		bool setPassword(const string& password);
 		string getPassword() const;
 
 	private:
+		pam_handle_t *pamh;
 		struct pam_conv pam_conversation;
+		struct _pam_conv_func_data pam_conv_func_data;
+
+		void close(int retval = PAM_SUCCESS);
 	};
 };
 

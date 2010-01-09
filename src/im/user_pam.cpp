@@ -30,6 +30,12 @@ namespace im
 UserPAM::UserPAM(irc::IRC* _irc, string _username)
 	: User(_irc, _username)
 {
+	pamh = NULL;
+}
+
+UserPAM::~UserPAM()
+{
+	close();
 }
 
 bool UserPAM::exists()
@@ -39,8 +45,11 @@ bool UserPAM::exists()
 
 static int pam_conv_func(int num_msg, const struct pam_message **msgm, struct pam_response **response, void *appdata_ptr)
 {
+	struct _pam_conv_func_data *func_data = (_pam_conv_func_data*) appdata_ptr;
+
 	int count = 0;
 	struct pam_response *reply;
+	const char *reply_msg;
 
 	reply = (struct pam_response *) calloc(num_msg, sizeof(struct pam_response));
 	if (reply == NULL)
@@ -56,7 +65,15 @@ static int pam_conv_func(int num_msg, const struct pam_message **msgm, struct pa
 			case PAM_PROMPT_ECHO_OFF:
 			case PAM_PROMPT_ECHO_ON:
 				reply[count].resp_retcode = 0;
-				reply[count].resp = strndup((const char*)appdata_ptr, PAM_MAX_MSG_SIZE);
+				/* sometimes the current password is asked first, sometimes not, how are we supposed to know ??? */
+				if (func_data->update && strstr(msgm[count]->msg, " new "))
+					reply_msg = (const char*) func_data->new_password.c_str();
+				else
+					reply_msg = (const char*) func_data->password.c_str();
+				reply[count].resp = strndup(reply_msg, PAM_MAX_MSG_SIZE);
+
+				b_log[W_DEBUG] << "PAM: msg " << count << ": " << msgm[count]->msg;
+				b_log[W_DEBUG] << "PAM: msg " << count << ": " << reply_msg;
 				break;
 			case PAM_ERROR_MSG:
 				b_log[W_ERR] << "PAM: " << msgm[count]->msg;
@@ -89,13 +106,18 @@ static int pam_conv_func(int num_msg, const struct pam_message **msgm, struct pa
 
 bool UserPAM::authenticate(const string password)
 {
-	pam_handle_t *pamh=NULL;
-	int retval, retval2;
+	int retval;
+
+	if (pamh)
+		close();
 
 	b_log[W_INFO] << "Authenticating user " << username << " using PAM mechanism";
 
 	pam_conversation.conv = pam_conv_func;
-	pam_conversation.appdata_ptr = (void*) password.c_str();
+	pam_conversation.appdata_ptr = (void*) &pam_conv_func_data;
+
+	pam_conv_func_data.update = false;
+	pam_conv_func_data.password = password;
 
 	retval = pam_start("minbif", username.c_str(), &pam_conversation, &pamh);
 	if (retval == PAM_SUCCESS)
@@ -104,22 +126,48 @@ bool UserPAM::authenticate(const string password)
 	if (retval == PAM_SUCCESS)
 		retval = pam_acct_mgmt(pamh, 0);	/* permitted access? */
 
+	if (retval == PAM_SUCCESS)
+		im = new im::IM(irc, username);
+	else
+		close(retval);
+
+	return (retval == PAM_SUCCESS);
+}
+
+void UserPAM::close(int retval)
+{
+	int retval2;
+
+	if (!pamh)
+		return;
+
 	retval2 = pam_end(pamh, retval);
 	if (retval2 != PAM_SUCCESS) {     /* close Linux-PAM */
 		b_log[W_ERR] << "PAM: Could not release authenticatori: " << pam_strerror(pamh, retval2);
 		throw IMError();
 	}
-
-	if (retval == PAM_SUCCESS)
-		im = new im::IM(irc, username);
-
-	return (retval == PAM_SUCCESS);
+	pamh = NULL;
 }
 
 bool UserPAM::setPassword(const string& password)
 {
-	b_log[W_WARNING] << "Changing password through PAM is not yet implemented";
-	return false;
+	int retval;
+
+	/* It should never happen */
+	if (!pamh)
+	{
+		b_log[W_ERR] << "Cannot change password if not authenticated";
+		throw IMError();
+	}
+
+	pam_conv_func_data.update = true;
+	pam_conv_func_data.new_password = password;
+
+	retval = pam_chauthtok(pamh, NULL);
+	if (retval != PAM_SUCCESS)
+		b_log[W_ERR] << "PAM: Password change failed: " << pam_strerror(pamh, retval);
+
+	return (retval == PAM_SUCCESS);
 }
 
 string UserPAM::getPassword() const
