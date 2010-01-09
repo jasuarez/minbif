@@ -13,6 +13,8 @@ ADD_EXECUTABLE(${BIN_NAME}
 		server_poll/daemon_fork.cpp
 		im/im.cpp
 		im/user.cpp
+		im/user_local.cpp
+		im/user_pam.cpp
 		im/protocol.cpp
 		im/account.cpp
 		im/roomlist.cpp

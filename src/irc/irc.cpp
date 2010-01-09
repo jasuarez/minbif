@@ -431,7 +431,7 @@ void IRC::sendWelcome()
 
 	try
 	{
-		im::User *im_user = new im::User(this, user->getNickname());
+		im::User *im_user = im::User::build(this, user->getNickname());
 
 		if(!im_user->exists())
 		{

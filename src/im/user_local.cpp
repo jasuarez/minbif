@@ -16,33 +16,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IM_USER_H
-#define IM_USER_H
+#include <cstring>
+#include <cerrno>
+#include "user.h"
+#include "core/log.h"
+#include "core/util.h"
+#include "core/config.h"
+#include "irc/irc.h"
+#include "user_local.h"
 
-#include <exception>
-#include <string>
-
-#include "im.h"
-
-/** IM related classes */
 namespace im
 {
-	class User
-	{
-	public:
-		static User* build(irc::IRC* _irc, string _username);
-		User(irc::IRC* _irc, string _username);
-		virtual bool exists() = 0;
-		virtual bool authenticate(const string password) = 0;
-		virtual im::IM* create(const string password);
-		virtual im::IM* getIM();
+UserLocal::UserLocal(irc::IRC* _irc, string _username)
+	: User(_irc, _username)
+{
+}
 
-	protected:
-		string username;
-		irc::IRC* irc;
+bool UserLocal::exists()
+{
+	return im::IM::exists(username);
+}
 
-		im::IM *im;
-	};
-};
+bool UserLocal::authenticate(const string password)
+{
+	if (!im::IM::exists(username))
+		return false;
 
-#endif /* IM_USER_H */
+	im = new im::IM(irc, username);
+
+	b_log[W_INFO] << "Authenticating user " << im->getUsername() << " using local database";
+	return im->getPassword() == password;
+}
+}; /* namespace im */

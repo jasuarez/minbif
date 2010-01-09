@@ -16,33 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IM_USER_H
-#define IM_USER_H
+#ifndef IM_USER_PAM_H
+#define IM_USER_PAM_H
 
-#include <exception>
-#include <string>
-
-#include "im.h"
+#include "user.h"
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
 
 /** IM related classes */
 namespace im
 {
-	class User
+	class UserPAM : public User
 	{
 	public:
-		static User* build(irc::IRC* _irc, string _username);
-		User(irc::IRC* _irc, string _username);
-		virtual bool exists() = 0;
-		virtual bool authenticate(const string password) = 0;
-		virtual im::IM* create(const string password);
-		virtual im::IM* getIM();
+		UserPAM(irc::IRC* _irc, string _username);
+		bool exists();
+		bool authenticate(const string password);
 
-	protected:
-		string username;
-		irc::IRC* irc;
-
-		im::IM *im;
+	private:
+		struct pam_conv pam_conversation;
 	};
 };
 
-#endif /* IM_USER_H */
+#endif /* IM_USER_PAM_H */
