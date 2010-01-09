@@ -24,16 +24,19 @@
 #include "core/config.h"
 #include "irc/irc.h"
 #include "user_local.h"
-#include "user_pam.h"
+#ifdef HAVE_PAM
+#  include "user_pam.h"
+#endif
 
 namespace im
 {
 User* User::build(irc::IRC* _irc, string _username)
 {
+#ifdef HAVE_PAM
 	if (conf.GetSection("aaa")->GetItem("use_pam")->Boolean())
 		return new UserPAM(_irc, _username);
-	else
-		return new UserLocal(_irc, _username);
+#endif
+	return new UserLocal(_irc, _username);
 }
 
 User::User(irc::IRC* _irc, string _username)

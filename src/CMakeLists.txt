@@ -1,4 +1,8 @@
 SET(BIN_NAME minbif)
+
+IF(PAM_FOUND)
+	SET(MINBIF_EXTRA_FILES_PAM "im/user_pam.cpp")
+ENDIF(PAM_FOUND)
 ADD_EXECUTABLE(${BIN_NAME}
 		core/minbif.cpp
 		core/sighandler.cpp
@@ -14,7 +18,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		im/im.cpp
 		im/user.cpp
 		im/user_local.cpp
-		im/user_pam.cpp
+		${MINBIF_EXTRA_FILES_PAM}
 		im/protocol.cpp
 		im/account.cpp
 		im/roomlist.cpp
@@ -40,7 +44,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		irc/conversation_channel.cpp
 	      )
 
-TARGET_LINK_LIBRARIES(${BIN_NAME} "-lpthread -lstdc++ -lpam" ${PURPLE_LDFLAGS} ${CACA_LDFLAGS} ${IMLIB_LDFLAGS} ${GSTREAMER_LDFLAGS} ${FARSIGHT_LDFLAGS})
+TARGET_LINK_LIBRARIES(${BIN_NAME} "-lpthread -lstdc++" ${PURPLE_LDFLAGS} ${CACA_LDFLAGS} ${IMLIB_LDFLAGS} ${GSTREAMER_LDFLAGS} ${FARSIGHT_LDFLAGS} ${PAM_LDFLAGS})
 
 INSTALL(TARGETS ${BIN_NAME}
         DESTINATION bin)

@@ -60,7 +60,9 @@ Minbif::Minbif()
 	sub->AddItem(new ConfigItem_string("password", "IRC operator password"));
 
 	section = conf.AddSection("aaa", "Authentication, Authorization and Accounting", false);
+#ifdef HAVE_PAM
 	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
+#endif
 
 	section = conf.AddSection("file_transfers", "File transfers parameters", false);
 	section->AddItem(new ConfigItem_bool("enabled", "Enable file transfers", "true"));
