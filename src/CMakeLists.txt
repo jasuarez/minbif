@@ -12,6 +12,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		server_poll/inetd.cpp
 		server_poll/daemon_fork.cpp
 		im/im.cpp
+		im/user.cpp
 		im/protocol.cpp
 		im/account.cpp
 		im/roomlist.cpp
@@ -37,7 +38,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		irc/conversation_channel.cpp
 	      )
 
-TARGET_LINK_LIBRARIES(${BIN_NAME} "-lpthread -lstdc++" ${PURPLE_LDFLAGS} ${CACA_LDFLAGS} ${IMLIB_LDFLAGS} ${GSTREAMER_LDFLAGS} ${FARSIGHT_LDFLAGS})
+TARGET_LINK_LIBRARIES(${BIN_NAME} "-lpthread -lstdc++ -lpam" ${PURPLE_LDFLAGS} ${CACA_LDFLAGS} ${IMLIB_LDFLAGS} ${GSTREAMER_LDFLAGS} ${FARSIGHT_LDFLAGS})
 
 INSTALL(TARGETS ${BIN_NAME}
         DESTINATION bin)

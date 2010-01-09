@@ -31,6 +31,7 @@
 #include "core/sock.h"
 #include "core/config.h"
 #include "im/im.h"
+#include "im/user.h"
 #include "server_poll/poll.h"
 #include "irc/irc.h"
 #include "irc/settings.h"
@@ -430,7 +431,9 @@ void IRC::sendWelcome()
 
 	try
 	{
-		if(!IM::exists(user->getNickname()))
+		im::User *im_user = new im::User(this, user->getNickname());
+
+		if(!im_user->exists())
 		{
 			/* New user. */
 
@@ -441,16 +444,15 @@ void IRC::sendWelcome()
 				return;
 			}
 
-			im = new im::IM(this, user->getNickname());
-			im->setPassword(user->getPassword());
+			im_user->create(user->getPassword());
 		}
-		else if(im->authenticate(user->getPassword()))
+		else if(!im_user->authenticate(user->getPassword()))
 		{
 			quit("Incorrect password");
 			return;
 		}
-		else
-			im = new im::IM(this, user->getNickname());
+
+		im = im_user->getIM();
 
 		user->setFlag(Nick::REGISTERED);
 

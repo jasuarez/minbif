@@ -59,6 +59,9 @@ Minbif::Minbif()
 	sub->AddItem(new ConfigItem_string("login", "Nickname of IRC operator"), true);
 	sub->AddItem(new ConfigItem_string("password", "IRC operator password"));
 
+	section = conf.AddSection("aaa", "Authentication, Authorization and Accounting", false);
+	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
+
 	section = conf.AddSection("file_transfers", "File transfers parameters", false);
 	section->AddItem(new ConfigItem_bool("enabled", "Enable file transfers", "true"));
 	section->AddItem(new ConfigItem_bool("dcc", "Send files to IRC user with DCC", "true"));

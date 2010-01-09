@@ -113,11 +113,6 @@ string IM::getPassword() const
 	return purple_prefs_get_string("/minbif/password");
 }
 
-bool IM::authenticate(const string password)
-{
-	return getPassword() == password
-}
-
 void IM::setTypingNotice(bool enabled)
 {
 	purple_prefs_set_int("/minbif/typing_notice", enabled ? 1 : 0);
