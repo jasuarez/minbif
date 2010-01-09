@@ -45,7 +45,7 @@ bool UserLocal::authenticate(const string password)
 
 	im = new im::IM(irc, username);
 
-	b_log[W_INFO] << "Authenticating user " << im->getUsername() << " using local database";
+	b_log[W_DEBUG] << "Authenticating user " << im->getUsername() << " using local database";
 	return im->getPassword() == password;
 }
 

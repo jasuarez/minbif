@@ -111,7 +111,7 @@ bool UserPAM::authenticate(const string password)
 	if (pamh)
 		close();
 
-	b_log[W_INFO] << "Authenticating user " << username << " using PAM mechanism";
+	b_log[W_DEBUG] << "Authenticating user " << username << " using PAM mechanism";
 
 	pam_conversation.conv = pam_conv_func;
 	pam_conversation.appdata_ptr = (void*) &pam_conv_func_data;
