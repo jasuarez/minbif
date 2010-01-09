@@ -31,7 +31,6 @@
 #include "core/sock.h"
 #include "core/config.h"
 #include "im/im.h"
-#include "im/user.h"
 #include "server_poll/poll.h"
 #include "irc/irc.h"
 #include "irc/settings.h"
@@ -138,6 +137,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	/* Create main objects and root joins command channel. */
 	user = new User(fd, this, "*", "", userhost);
 	addNick(user);
+	im_user = NULL;
 
 	/* Ping callback */
 	if(ping_freq > 0)
@@ -431,7 +431,7 @@ void IRC::sendWelcome()
 
 	try
 	{
-		im::User *im_user = im::User::build(this, user->getNickname());
+		im_user = im::User::build(this, user->getNickname());
 
 		if(!im_user->exists())
 		{

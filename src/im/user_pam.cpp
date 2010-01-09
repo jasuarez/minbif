@@ -115,4 +115,16 @@ bool UserPAM::authenticate(const string password)
 
 	return (retval == PAM_SUCCESS);
 }
+
+bool UserPAM::setPassword(const string& password)
+{
+	b_log[W_WARNING] << "Changing password through PAM is not yet implemented";
+	return false;
+}
+
+string UserPAM::getPassword() const
+{
+	b_log[W_WARNING] << "Cannot fetch current password, it is hidden";
+	return "";
+}
 }; /* namespace im */

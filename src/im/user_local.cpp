@@ -23,6 +23,7 @@
 #include "core/util.h"
 #include "core/config.h"
 #include "irc/irc.h"
+#include "irc/user.h"
 #include "user_local.h"
 
 namespace im
@@ -46,5 +47,21 @@ bool UserLocal::authenticate(const string password)
 
 	b_log[W_INFO] << "Authenticating user " << im->getUsername() << " using local database";
 	return im->getPassword() == password;
+}
+
+bool UserLocal::setPassword(const string& password)
+{
+	if(password.find(' ') != string::npos || password.size() < 8)
+	{
+		irc->notice(irc->getUser(), "Password must be at least 8 characters, and does not contain whitespaces.");
+		return false;
+	}
+	im->setPassword(password);
+	return true;
+}
+
+string UserLocal::getPassword() const
+{
+	return im->getPassword();
 }
 }; /* namespace im */

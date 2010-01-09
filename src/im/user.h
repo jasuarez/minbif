@@ -24,9 +24,16 @@
 
 #include "im.h"
 
+namespace irc
+{
+	class IRC;
+};
+
 /** IM related classes */
 namespace im
 {
+	using std::string;
+
 	class User
 	{
 	public:
@@ -36,6 +43,8 @@ namespace im
 		virtual bool authenticate(const string password) = 0;
 		virtual im::IM* create(const string password);
 		virtual im::IM* getIM();
+		virtual bool setPassword(const string& password) = 0;
+		virtual string getPassword() const = 0;
 
 	protected:
 		string username;

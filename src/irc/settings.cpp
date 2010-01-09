@@ -33,19 +33,12 @@ SettingBase::SettingBase(IRC* _irc, im::IM* _im)
 
 string SettingPassword::getValue() const
 {
-	return getIM()->getPassword();
+	return getIRC()->getIMUser()->getPassword();
 }
 
 bool SettingPassword::setValue(string v)
 {
-	if(v.find(' ') != string::npos || v.size() < 8)
-	{
-		getIRC()->notice(getIRC()->getUser(), "Password must be at least 8 characters, and does not contain whitespaces.");
-		return false;
-	}
-
-	getIM()->setPassword(v);
-	return true;
+	return getIRC()->getIMUser()->setPassword(v);
 }
 
 string SettingTypingNotice::getValue() const

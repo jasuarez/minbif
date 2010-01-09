@@ -24,12 +24,16 @@
 /** IM related classes */
 namespace im
 {
+	using std::string;
+
 	class UserLocal : public User
 	{
 	public:
 		UserLocal(irc::IRC* _irc, string _username);
 		bool exists();
 		bool authenticate(const string password);
+		bool setPassword(const string& password);
+		string getPassword() const;
 	};
 };
 

@@ -26,6 +26,7 @@
 
 #include "message.h"
 #include "server.h"
+#include "im/user.h"
 
 class _CallBack;
 class ServerPoll;
@@ -68,6 +69,7 @@ namespace irc
 		_CallBack *ping_cb;
 		User* user;
 		im::IM* im;
+		im::User *im_user;
 		map<string, Nick*> users;
 		map<string, Channel*> channels;
 		map<string, Server*> servers;
@@ -145,6 +147,7 @@ namespace irc
 		User* getUser() const { return user; }
 
 		im::IM* getIM() const { return im; }
+		im::User* getIMUser() const { return im_user; }
 
 		/** Ends the auth sequence.
 		 *
@@ -201,7 +204,6 @@ namespace irc
 		 * @param message text message sent.
 		 */
 		void privmsg(Nick* user, string message);
-
 	};
 
 }; /* namespace irc */

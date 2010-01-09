@@ -26,12 +26,16 @@
 /** IM related classes */
 namespace im
 {
+	using std::string;
+
 	class UserPAM : public User
 	{
 	public:
 		UserPAM(irc::IRC* _irc, string _username);
 		bool exists();
 		bool authenticate(const string password);
+		bool setPassword(const string& password);
+		string getPassword() const;
 
 	private:
 		struct pam_conv pam_conversation;
