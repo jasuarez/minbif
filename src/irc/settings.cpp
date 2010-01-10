@@ -33,12 +33,12 @@ SettingBase::SettingBase(IRC* _irc, im::IM* _im)
 
 string SettingPassword::getValue() const
 {
-	return getIRC()->getIMUser()->getPassword();
+	return getIRC()->getIMAuth()->getPassword();
 }
 
 bool SettingPassword::setValue(string v)
 {
-	return getIRC()->getIMUser()->setPassword(v);
+	return getIRC()->getIMAuth()->setPassword(v);
 }
 
 string SettingTypingNotice::getValue() const

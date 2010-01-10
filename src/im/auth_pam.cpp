@@ -18,27 +18,27 @@
 
 #include <cstring>
 #include <cerrno>
-#include "user.h"
+#include "auth.h"
 #include "core/log.h"
 #include "core/util.h"
 #include "core/config.h"
 #include "irc/irc.h"
-#include "user_pam.h"
+#include "auth_pam.h"
 
 namespace im
 {
-UserPAM::UserPAM(irc::IRC* _irc, string _username)
-	: User(_irc, _username)
+AuthPAM::AuthPAM(irc::IRC* _irc, string _username)
+	: Auth(_irc, _username)
 {
 	pamh = NULL;
 }
 
-UserPAM::~UserPAM()
+AuthPAM::~AuthPAM()
 {
 	close();
 }
 
-bool UserPAM::exists()
+bool AuthPAM::exists()
 {
 	return true;
 }
@@ -104,7 +104,7 @@ static int pam_conv_func(int num_msg, const struct pam_message **msgm, struct pa
 	return PAM_CONV_ERR;
 }
 
-bool UserPAM::authenticate(const string password)
+bool AuthPAM::authenticate(const string password)
 {
 	int retval;
 
@@ -134,7 +134,7 @@ bool UserPAM::authenticate(const string password)
 	return (retval == PAM_SUCCESS);
 }
 
-void UserPAM::close(int retval)
+void AuthPAM::close(int retval)
 {
 	int retval2;
 
@@ -149,7 +149,7 @@ void UserPAM::close(int retval)
 	pamh = NULL;
 }
 
-bool UserPAM::setPassword(const string& password)
+bool AuthPAM::setPassword(const string& password)
 {
 	int retval;
 
@@ -170,7 +170,7 @@ bool UserPAM::setPassword(const string& password)
 	return (retval == PAM_SUCCESS);
 }
 
-string UserPAM::getPassword() const
+string AuthPAM::getPassword() const
 {
 	b_log[W_WARNING] << "Cannot fetch current password, it is hidden";
 	return "";

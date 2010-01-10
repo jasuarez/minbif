@@ -137,7 +137,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	/* Create main objects and root joins command channel. */
 	user = new User(fd, this, "*", "", userhost);
 	addNick(user);
-	im_user = NULL;
+	im_auth = NULL;
 
 	/* Ping callback */
 	if(ping_freq > 0)
@@ -431,9 +431,9 @@ void IRC::sendWelcome()
 
 	try
 	{
-		im_user = im::User::build(this, user->getNickname());
+		im_auth = im::Auth::build(this, user->getNickname());
 
-		if(!im_user->exists())
+		if(!im_auth->exists())
 		{
 			/* New user. */
 
@@ -444,15 +444,15 @@ void IRC::sendWelcome()
 				return;
 			}
 
-			im_user->create(user->getPassword());
+			im_auth->create(user->getPassword());
 		}
-		else if(!im_user->authenticate(user->getPassword()))
+		else if(!im_auth->authenticate(user->getPassword()))
 		{
 			quit("Incorrect password");
 			return;
 		}
 
-		im = im_user->getIM();
+		im = im_auth->getIM();
 
 		user->setFlag(Nick::REGISTERED);
 

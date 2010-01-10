@@ -16,25 +16,41 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IM_USER_LOCAL_H
-#define IM_USER_LOCAL_H
+#ifndef IM_AUTH_PAM_H
+#define IM_AUTH_PAM_H
 
-#include "user.h"
+#include "auth.h"
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
+
+struct _pam_conv_func_data {
+	bool update;
+	string password;
+	string new_password;
+};
 
 /** IM related classes */
 namespace im
 {
 	using std::string;
 
-	class UserLocal : public User
+	class AuthPAM : public Auth
 	{
 	public:
-		UserLocal(irc::IRC* _irc, string _username);
+		AuthPAM(irc::IRC* _irc, string _username);
+		~AuthPAM();
 		bool exists();
 		bool authenticate(const string password);
 		bool setPassword(const string& password);
 		string getPassword() const;
+
+	private:
+		pam_handle_t *pamh;
+		struct pam_conv pam_conversation;
+		struct _pam_conv_func_data pam_conv_func_data;
+
+		void close(int retval = PAM_SUCCESS);
 	};
 };
 
-#endif /* IM_USER_LOCAL_H */
+#endif /* IM_AUTH_PAM_H */

@@ -26,7 +26,7 @@
 
 #include "message.h"
 #include "server.h"
-#include "im/user.h"
+#include "im/auth.h"
 
 class _CallBack;
 class ServerPoll;
@@ -69,7 +69,7 @@ namespace irc
 		_CallBack *ping_cb;
 		User* user;
 		im::IM* im;
-		im::User *im_user;
+		im::Auth *im_auth;
 		map<string, Nick*> users;
 		map<string, Channel*> channels;
 		map<string, Server*> servers;
@@ -147,7 +147,7 @@ namespace irc
 		User* getUser() const { return user; }
 
 		im::IM* getIM() const { return im; }
-		im::User* getIMUser() const { return im_user; }
+		im::Auth* getIMAuth() const { return im_auth; }
 
 		/** Ends the auth sequence.
 		 *

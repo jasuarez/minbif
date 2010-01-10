@@ -18,44 +18,50 @@
 
 #include <cstring>
 #include <cerrno>
-#include "user.h"
+#include "auth.h"
 #include "core/log.h"
 #include "core/util.h"
 #include "core/config.h"
 #include "irc/irc.h"
-#include "user_local.h"
-#ifdef HAVE_PAM
-#  include "user_pam.h"
-#endif
+#include "irc/user.h"
+#include "auth_local.h"
 
 namespace im
 {
-User* User::build(irc::IRC* _irc, string _username)
+AuthLocal::AuthLocal(irc::IRC* _irc, string _username)
+	: Auth(_irc, _username)
 {
-#ifdef HAVE_PAM
-	if (conf.GetSection("aaa")->GetItem("use_pam")->Boolean())
-		return new UserPAM(_irc, _username);
-#endif
-	return new UserLocal(_irc, _username);
 }
 
-User::User(irc::IRC* _irc, string _username)
-	: username(_username),
-	  irc(_irc)
+bool AuthLocal::exists()
 {
-	im = NULL;
+	return im::IM::exists(username);
 }
 
-im::IM* User::create(const string password)
+bool AuthLocal::authenticate(const string password)
 {
+	if (!im::IM::exists(username))
+		return false;
+
 	im = new im::IM(irc, username);
-	im->setPassword(password);
 
-	return im;
+	b_log[W_DEBUG] << "Authenticating user " << im->getUsername() << " using local database";
+	return im->getPassword() == password;
 }
 
-im::IM* User::getIM()
+bool AuthLocal::setPassword(const string& password)
 {
-	return im;
+	if(password.find(' ') != string::npos || password.size() < 8)
+	{
+		irc->notice(irc->getUser(), "Password must be at least 8 characters, and does not contain whitespaces.");
+		return false;
+	}
+	im->setPassword(password);
+	return true;
+}
+
+string AuthLocal::getPassword() const
+{
+	return im->getPassword();
 }
 }; /* namespace im */

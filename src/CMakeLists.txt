@@ -1,7 +1,7 @@
 SET(BIN_NAME minbif)
 
 IF(PAM_FOUND)
-	SET(MINBIF_EXTRA_FILES_PAM "im/user_pam.cpp")
+	SET(MINBIF_EXTRA_FILES_PAM "im/auth_pam.cpp")
 ENDIF(PAM_FOUND)
 ADD_EXECUTABLE(${BIN_NAME}
 		core/minbif.cpp
@@ -16,8 +16,8 @@ ADD_EXECUTABLE(${BIN_NAME}
 		server_poll/inetd.cpp
 		server_poll/daemon_fork.cpp
 		im/im.cpp
-		im/user.cpp
-		im/user_local.cpp
+		im/auth.cpp
+		im/auth_local.cpp
 		${MINBIF_EXTRA_FILES_PAM}
 		im/protocol.cpp
 		im/account.cpp
