@@ -190,6 +190,7 @@ class Instance:
                                        'dcc': 'true',
                                        'port_range': '1024-65535',
                                       },
+                    'aaa': {},
                     'logging': {'level': 'DESYNCH WARNING ERR INFO DEBUG',
                                 'to_syslog': 'false'
                                },
