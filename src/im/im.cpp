@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
+ * Copyright(C) 2009-2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
