@@ -39,37 +39,37 @@ Minbif::Minbif()
 	  server_poll(0)
 {
 	ConfigSection* section;
-	section = conf.AddSection("path", "Path information", false);
+	section = conf.AddSection("path", "Path information", MyConfig::NORMAL);
 	section->AddItem(new ConfigItem_string("users", "Users directory"));
 	section->AddItem(new ConfigItem_string("motd", "Path to motd", " "));
 
-	section = conf.AddSection("irc", "Server information", false);
+	section = conf.AddSection("irc", "Server information", MyConfig::NORMAL);
 	section->AddItem(new ConfigItem_string("hostname", "Server hostname", " "));
 	section->AddItem(new ConfigItem_string("password", "Global server password", " "));
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 	section->AddItem(new ConfigItem_string("buddy_icons_url", "URL to display in /WHOIS to get a buddy icon", " "));
 
-	ConfigSection* sub = section->AddSection("daemon", "Daemon information", true);
+	ConfigSection* sub = section->AddSection("daemon", "Daemon information", MyConfig::MULTIPLE);
 	sub->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
 	sub->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
 	sub->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
 
-	sub = section->AddSection("oper", "Define an IRC operator", true);
+	sub = section->AddSection("oper", "Define an IRC operator", MyConfig::MULTIPLE);
 	sub->AddItem(new ConfigItem_string("login", "Nickname of IRC operator"), true);
 	sub->AddItem(new ConfigItem_string("password", "IRC operator password"));
 
-	section = conf.AddSection("aaa", "Authentication, Authorization and Accounting", false);
+	section = conf.AddSection("aaa", "Authentication, Authorization and Accounting", MyConfig::OPTIONAL);
 #ifdef HAVE_PAM
 	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
 #endif
 
-	section = conf.AddSection("file_transfers", "File transfers parameters", false);
+	section = conf.AddSection("file_transfers", "File transfers parameters", MyConfig::OPTIONAL);
 	section->AddItem(new ConfigItem_bool("enabled", "Enable file transfers", "true"));
 	section->AddItem(new ConfigItem_bool("dcc", "Send files to IRC user with DCC", "true"));
 	section->AddItem(new ConfigItem_intrange("port_range", "Port range to listen on for DCC", 1024, 65535, "1024-65535"));
 
-	section = conf.AddSection("logging", "Log information", false);
+	section = conf.AddSection("logging", "Log information", MyConfig::NORMAL);
 	section->AddItem(new ConfigItem_string("level", "Logging level"));
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
 	section->AddItem(new ConfigItem_bool("conv_logs", "Enable conversation logging", "false"));
