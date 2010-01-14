@@ -87,22 +87,22 @@ typedef std::map<std::string, ConfigItem*> ItemMap;
  * try
  * {
  *    // This first section is a no-forkable section
- *    ConfigSection* section = config->AddSection("section", "this is my first section", false);
+ *    ConfigSection* section = config->AddSection("section", "this is my first section", MyConfig::NORMAL);
  *    // We add a new item. His value must be a string
  *    section->AddItem(new ConfigItem_string("str", "a string item"));
  *    // An integer item
  *    section->AddItem(new ConfigItem_int("int", "an integer item"));
  *    // We add a forkable subsection.
- *    section = section->AddSection("subsection", "a subsection of my first section", true);
+ *    section = section->AddSection("subsection", "a subsection of my first section", MyConfig::MULTIPLE);
  *    // This item has "is_name" true. So his value will be the identificator of this fork
  *    section->AddItem(new ConfigItem_string("name", "name of the subsection"), true);
  *    section->AddItem(new ConfigItem_string("description", "description of this subsection"));
  *    // We return to parent section ("section")
  *    section = section->Parent();
  *    // A new subsection, no-forkable
- *    section = section->AddSection("subsection2", "a second subsection", false);
+ *    section = section->AddSection("subsection2", "a second subsection", MyConfig::NORMAL);
  *    section->AddItem(new ConfigItem_int("something", "i don't know"));
- *    section = config->AddSection("section2", "my second head-section", false);
+ *    section = config->AddSection("section2", "my second head-section (optional)", MyConfig::OPTIONAL);
  *    // Here we suppose there is a ConfigItem_ip type. We can imagine that ConfigItem_ip::SetValue() will
  *    // check if value is a real ip.
  *    section->AddItem(new ConfigItem_ip("ip", "ip of a server"));
@@ -123,16 +123,10 @@ typedef std::map<std::string, ConfigItem*> ItemMap;
  */
 class MyConfig
 {
-	/* Constructeur */
 public:
 	MyConfig(std::string path);
-
 	MyConfig();
-
 	~MyConfig();
-
-	/* Exceptions */
-public:
 
 	/** This class is an exception class throwed when there is a problem in building of sections/items */
 	class error_exc
@@ -146,15 +140,15 @@ public:
 			std::string reason;
 	};
 
-	/* Methodes */
-public:
+	enum section_t {
+		NORMAL,
+		MULTIPLE,
+		OPTIONAL
+	};
 
 	bool Load(std::string _path = "");
 
 	bool FindEmpty();
-
-	/* Attributs */
-public:
 
 	/** Get a section from his label */
 	ConfigSection* GetSection(std::string label);
@@ -178,12 +172,11 @@ public:
 	 * @param description section's description, sended to user when this section is forgotten
 	 * @param multiple if setted, this section can have multiple definitions (see ConfigSection::AddItem)
 	 */
-	ConfigSection* AddSection(std::string label, std::string description, bool multiple) throw(error_exc);
+	ConfigSection* AddSection(std::string label, std::string description, section_t type) throw(error_exc);
 
 	unsigned NbLines() const { return line_count; }
 	std::string Path() const { return path; }
 
-	/* Variables privées */
 private:
 	ConfigSection* AddSection(ConfigSection*);
 	std::string path;
@@ -198,33 +191,24 @@ private:
 
 class ConfigSection
 {
-	/* Constructeur */
 public:
 	ConfigSection(ConfigSection&);
-
 	~ConfigSection();
 
-	typedef void (*TEndOfTab) (ConfigSection*);
-
 	friend class MyConfig;
-	/* Methodes */
-public:
-
-	/* Attributs */
-public:
 
 	/** Get a subsection from his label */
 	ConfigSection* GetSection(std::string label);
 
 	/** Get a subsection fork with his label and his name.
-	 * This function works only with a section marcked "multiple". It will return the fork of this section
+	 * This function works only with a section marked "multiple". It will return the fork of this section
 	 * whose have the searched name.
 	 * @param label this is the label of the subsection
 	 * @param name name of the subsection
 	 */
 	ConfigSection* GetSection(std::string label, std::string name);
 
-	/** Get clones of a section marcked "multiple" */
+	/** Get clones of a section marked "multiple" */
 	std::vector<ConfigSection*> GetSectionClones(std::string label);
 
 	/** Add a subsection in the configuration.
@@ -234,7 +218,7 @@ public:
 	 * @param description section's description, sended to user when this section is forgotten
 	 * @param multiple if setted, this section can have multiple definitions (see ConfigSection::AddItem)
 	 */
-	ConfigSection* AddSection(std::string label, std::string description, bool multiple) throw(MyConfig::error_exc);
+	ConfigSection* AddSection(std::string label, std::string description, MyConfig::section_t type) throw(MyConfig::error_exc);
 
 	void Clean();
 
@@ -259,7 +243,8 @@ public:
 	std::string Description() const { return description; }
 
 	/** If this is true, this section can be forked */
-	bool IsMultiple() const { return multiple; }
+	bool IsMultiple() const { return type == MyConfig::MULTIPLE; }
+	bool IsOptional() const { return type == MyConfig::OPTIONAL || type == MyConfig::MULTIPLE; }
 
 	ConfigSection* Parent() const { return parent; }
 
@@ -273,23 +258,16 @@ public:
 	bool Found() const { return found; }
 	void SetFound(bool f = true) { found = f; }
 
-	/** This function will be called when parser is at the end of the section.
-	 * @param eot_f a function in form « void Name (ConfigSection*); »
-	 */
-	void SetEndOfTab(TEndOfTab eot_f) { end_func = eot_f; }
-	TEndOfTab EndOfTab() const { return end_func; }
-
-	/* Variables privées */
 private:
 	/** This constructor is privated because only AddSection must call him. */
-	ConfigSection(std::string name, std::string description, bool multiple, MyConfig* config, ConfigSection* parent);
+	ConfigSection(std::string name, std::string description, MyConfig::section_t type, MyConfig* config, ConfigSection* parent);
 
 	bool FindEmpty();
 	ConfigSection* AddSection(ConfigSection*);
 	std::string name;
 	std::string label;
 	std::string description;
-	bool multiple;
+	MyConfig::section_t type;
 	ItemMap items;
 	SectionMap sections;
 	MyConfig* config;
@@ -297,7 +275,6 @@ private:
 	bool copy;
 	ConfigItem* name_item;
 	bool found;
-	TEndOfTab end_func;
 };
 
 /********************************************************************************************
@@ -333,14 +310,8 @@ public:
 
 	friend class ConfigSection;
 
-	/* Methodes */
-public:
-
 	/** Give a clone of this Item (you couldn't be allowed to call this) */
 	virtual ConfigItem* Clone() const = 0;
-
-	/* Attributs */
-public:
 
 	std::string Label() const { return label; }
 	std::string Description() const { return description; }
@@ -382,7 +353,6 @@ public:
 
 	std::string DefValue() const { return def_value; }
 
-	/* Variables privées */
 private:
 	std::string label;
 	std::string description;

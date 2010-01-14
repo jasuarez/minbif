@@ -163,8 +163,6 @@ bool MyConfig::Load(std::string _path)
 			 */
 			if(section->FindEmpty())
 				error = true;
-			else if(section->EndOfTab())
-				section->EndOfTab() (section);
 			section = section->Parent();
 		}
 		else
@@ -238,7 +236,7 @@ ConfigSection* MyConfig::AddSection(ConfigSection* section)
 	return section;
 }
 
-ConfigSection* MyConfig::AddSection(std::string label, std::string description, bool multiple) throw(MyConfig::error_exc)
+ConfigSection* MyConfig::AddSection(std::string label, std::string description, MyConfig::section_t type) throw(MyConfig::error_exc)
 {
 	if(loaded) throw error_exc("Configuration is already loaded !");
 
@@ -246,7 +244,7 @@ ConfigSection* MyConfig::AddSection(std::string label, std::string description, 
 		if(it->second->Label() == label)
 		throw error_exc("Section " + label + " has a name already used");
 
-	return AddSection(new ConfigSection(label, description, multiple, this, 0));
+	return AddSection(new ConfigSection(label, description, type, this, 0));
 }
 
 void MyConfig::Clean()
@@ -277,7 +275,7 @@ bool MyConfig::FindEmpty()
 		if(!it->second->Found())
 		{
 			ConfigSection* s = it->second;
-			if(s->IsMultiple() == false)
+			if(s->IsOptional() == false)
 				Error(begin << "missing section '" << s->Label() << "' (" << s->Description() << ")");
 		}
 
@@ -288,17 +286,17 @@ bool MyConfig::FindEmpty()
  *                                ConfigSection                                             *
  ********************************************************************************************/
 
-ConfigSection::ConfigSection(std::string _label, std::string _description, bool _multiple,
+ConfigSection::ConfigSection(std::string _label, std::string _description, MyConfig::section_t _type,
 			MyConfig* _config, ConfigSection* _parent)
-			: label(_label), description(_description), multiple(_multiple), config(_config), parent(_parent), copy(false),
-			name_item(0), found(false), end_func(0)
+			: label(_label), description(_description), type(_type), config(_config), parent(_parent), copy(false),
+			name_item(0), found(false)
 {
 	items.clear();
 }
 
 ConfigSection::ConfigSection(ConfigSection& cs)
-			: label(cs.label), description(cs.description), multiple(cs.multiple), config(cs.config), parent(cs.parent),
-			copy(cs.copy), name_item(0), found(cs.found), end_func(cs.end_func)
+			: label(cs.label), description(cs.description), type(cs.type), config(cs.config), parent(cs.parent),
+			copy(cs.copy), name_item(0), found(cs.found)
 {
 	FORit(SectionMap, cs.sections, it)
 		sections.insert(std::make_pair(it->second->label, new ConfigSection(*it->second)));
@@ -325,7 +323,7 @@ ConfigSection* ConfigSection::GetSection(std::string label)
 {
 	FORmm(SectionMap, sections, label, it)
 		if(it->second->IsCopy() == false)
-		return it->second;
+			return it->second;
 	return 0;
 }
 
@@ -333,7 +331,7 @@ ConfigSection* ConfigSection::GetSection(std::string label, std::string name)
 {
 	FORmm(SectionMap, sections, label, it)
 		if(it->second->Label() == label && it->second->IsMultiple() && it->second->Name() == name)
-		return it->second;
+			return it->second;
 
 	return 0;
 }
@@ -343,7 +341,7 @@ std::vector<ConfigSection*> ConfigSection::GetSectionClones(std::string label)
 	std::vector<ConfigSection*> s;
 	FORmm(SectionMap, sections, label, it)
 		if(it->second->Label() == label && it->second->IsMultiple() && it->second->IsCopy())
-		s.push_back(it->second);
+			s.push_back(it->second);
 
 	return s;
 }
@@ -384,7 +382,7 @@ bool ConfigSection::FindEmpty()
 	}
 
 	FORit(SectionMap, sections, it)
-		if(!it->second->Found() && it->second->IsMultiple() == false)
+		if(!it->second->Found() && it->second->IsOptional() == false)
 	{
 		ConfigSection* s = it->second;
 		Error(begin << "missing section '" << s->Label() << "' (" << s->Description() << ")");
@@ -399,13 +397,13 @@ ConfigSection* ConfigSection::AddSection(ConfigSection* section)
 	return section;
 }
 
-ConfigSection* ConfigSection::AddSection(std::string label, std::string description, bool multiple) throw(MyConfig::error_exc)
+ConfigSection* ConfigSection::AddSection(std::string label, std::string description, MyConfig::section_t type) throw(MyConfig::error_exc)
 {
 	FORit(SectionMap, sections, it)
 		if(it->second->Label() == label)
-		throw MyConfig::error_exc("Section " + label + " has a name already used in section \"" + Label() + "\"");
+			throw MyConfig::error_exc("Section " + label + " has a name already used in section \"" + Label() + "\"");
 
-	return AddSection(new ConfigSection(label, description, multiple, config, this));
+	return AddSection(new ConfigSection(label, description, type, config, this));
 }
 
 ConfigItem* ConfigSection::GetItem(std::string label)
