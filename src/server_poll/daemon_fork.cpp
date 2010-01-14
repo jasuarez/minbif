@@ -57,7 +57,7 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 		if(r < 0)
 		{
 			b_log[W_ERR] << "Unable to start in background: " << strerror(errno);
-			exit(EXIT_FAILURE);
+			throw ServerPollError();
 		}
 		else if(r > 0)
 			exit(EXIT_SUCCESS);
