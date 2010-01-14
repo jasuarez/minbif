@@ -154,6 +154,8 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 IRC::~IRC()
 {
 	delete im;
+	if (im_auth)
+		delete im_auth;
 
 	if(read_id >= 0)
 		g_source_remove(read_id);
