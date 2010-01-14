@@ -2,41 +2,69 @@
         **************************************
 
 1. Abstract
+===========
 
 Minbif aims to use the libpurple library from the Pidgin project to provide an
 IRC-friendly instant messaging client.
 
 2. Installation
+===============
 
 You can provide several configuration options to make:
 * PREFIX=path — Installation prefix (default=/usr/local)
 * MAN_PREFIX=path — Manpages installation prefix (default=$PREFIX/share/man/man8)
 * CONF_PREFIX=path — Configuration files installation prefix (default=$PREFIX/etc/minbif)
 * DOC_PREFIX=path — Documentation files installation prefix (default=$PREFIX/share/doc/minbif)
-* ENABLE_MINBIF=(0|1) — Compile minbif (default=1).
-* ENABLE_CACA=(0|1) — Do not use libcaca features to display icons (default=1).
-* ENABLE_VIDEO=(0|1) — Enable the video viewer (default=0). Depends on ENABLE_CACA.
-* ENABLE_PLUGIN=(0|1) — Compile libpurple's plugins (default=0).
+* ENABLE_MINBIF=(ON|OFF) — Compile minbif (default=ON).
+* ENABLE_CACA=(ON|OFF) — Do not use libcaca features to display icons (default=ON).
+* ENABLE_VIDEO=(ON|OFF) — Enable the video viewer (default=OFF). Depends on ENABLE_CACA.
+* ENABLE_PLUGIN=(ON|OFF) — Compile libpurple's plugins (default=OFF).
+* ENABLE_PAM=(ON|OFF) — Compile with PAM support (default=OFF).
 
 Run:
 $ make [PREFIX=path] [MAN_PREFIX=path] [CONF_PREFIX=path] [DOC_PREFIX=path]
-       [ENABLE_MINBIF=value] [ENABLE_CACA=value] [ENABLE_VIDEO=value] [ENABLE_PLUGIN=value]
+       [ENABLE_MINBIF=ON|OFF] [ENABLE_CACA=ON|OFF] [ENABLE_VIDEO=ON|OFF]
+       [ENABLE_PLUGIN=ON|OFF] [ENABLE_PAM=ON|OFF]
 
 To install it use:
 $ make install
 
 3. Configuration
+================
 
 Copy the minbif.conf file and edit it.
 
-In inetd mode, execute this command:
+3.1 Inetd
+---------
+
+Run:
 # update-inetd --add '6667 stream tcp nowait username /usr/sbin/tcpd /usr/bin/minbif /etc/minbif/minbif.conf'
+
 Then, restart inetd, and use an IRC client to connect to minbif.
 
-In daemon fork mode, run minbif:
+3.2 Daemon Fork
+---------------
+
+Set the irc/type parameter in configuration to 2 (as daemon fork) and write a
+irc/daemon block to set the address and port to bind.
+
+Now, run the minbif daemon:
 # minbif /path/to/minbif.conf
 
+A new forked process will be created every time a new connection is established.
+Note: there isn't (yet?) any fork limit. Your system is vulnerable to a fork
+bomb, so set the RLIMIT_NPROC ulimit parameter to prevent that way.
+
 4. Documentation
+================
 
 You can see an online documentation on the Minbif website at
 http://symlink.me/wiki/minbif
+
+5. Support
+==========
+
+A problem? A suggestion?
+- Ask your question on the #minbif channel on the FreeNode IRC network.
+- Subscribe to the mailing list at http://lists.symlink.me/mailman/listinfo/minbif
+- Send an email to a developer (see the AUTHORS file).
