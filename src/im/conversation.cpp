@@ -639,13 +639,27 @@ void Conversation::write_conv(PurpleConversation *c, const char *who, const char
 		if(flags & PURPLE_MESSAGE_DELAYED)
 		{
 			struct tm lt;
+			struct tm today;
+			time_t now = time(NULL);
 			char* msg;
 
 			localtime_r(&mtime, &lt);
-			msg = g_strdup_printf("[\002%02d:%02d:%02d\002] %s", lt.tm_hour,
-					                                     lt.tm_min,
-							                     lt.tm_sec,
-							                     strip);
+			localtime_r(&now, &today);
+			if (lt.tm_mday != today.tm_mday ||
+			    lt.tm_mon  != today.tm_mon ||
+			    lt.tm_year != today.tm_year)
+				msg = g_strdup_printf("[\002%04d-%02d-%02d@%02d:%02d:%02d\002] %s", lt.tm_year + 1900,
+				                                                                    lt.tm_mon + 1,
+				                                                                    lt.tm_mday,
+				                                                                    lt.tm_hour,
+				                                                                    lt.tm_min,
+				                                                                    lt.tm_sec,
+				                                                                    strip);
+			else
+				msg = g_strdup_printf("[\002%02d:%02d:%02d\002] %s", lt.tm_hour,
+				                                                     lt.tm_min,
+				                                                     lt.tm_sec,
+				                                                     strip);
 			conv.recvMessage(from, msg, action);
 			g_free(msg);
 		}
