@@ -147,7 +147,11 @@ CoinCoinMessage* coincoin_message_new(gint64 id, xmlnode* post)
 
 	/* Parse time */
 	if (sscanf(xmlnode_get_attrib(post, "time"), "%4d%2d%2d%2d%2d%2d", &t.tm_year,&t.tm_mon,&t.tm_mday,&t.tm_hour,&t.tm_min,&t.tm_sec) == 6)
+	{
+		t.tm_year -= 1900;
+		t.tm_mon -= 1;
 		tt = mktime(&t);
+	}
 
 	/* Skip chars before message. */
 	ptr = data = xmlnode_get_data(message);
