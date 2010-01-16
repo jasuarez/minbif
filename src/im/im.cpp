@@ -172,9 +172,9 @@ Account IM::getAccountFromChannel(string name) const
 }
 
 
-Account IM::addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options)
+Account IM::addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options, bool register_account)
 {
-	return Purple::addAccount(proto, username, password, options);
+	return Purple::addAccount(proto, username, password, options, register_account);
 
 }
 

@@ -115,6 +115,9 @@ namespace im
 		string getPassword() const;
 		void setPassword(string password);
 
+		/** Register account on server. */
+		void registerAccount() const;
+
 		vector<Protocol::Option> getOptions() const;
 		void setOptions(vector<Protocol::Option>& options);
 

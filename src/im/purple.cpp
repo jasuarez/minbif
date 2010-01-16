@@ -247,7 +247,7 @@ string Purple::getNewAccountName(Protocol proto)
 	return proto.getID() + t2s(i);
 }
 
-Account Purple::addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options)
+Account Purple::addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options, bool register_account)
 {
 	string id = getNewAccountName(proto);
 	PurpleAccount *account = purple_account_new(username.c_str(), proto.getPurpleID().c_str());
@@ -259,6 +259,9 @@ Account Purple::addAccount(Protocol proto, string username, string password, vec
 	a.setID(id);
 	a.setPassword(password);
 	a.setOptions(options);
+
+	if (register_account)
+		a.registerAccount();
 
 	const PurpleSavedStatus *saved_status;
 	saved_status = purple_savedstatus_get_current();

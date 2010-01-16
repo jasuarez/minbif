@@ -78,6 +78,12 @@ void Account::setPassword(string password)
 	purple_account_set_password(account, password.c_str());
 }
 
+void Account::registerAccount() const
+{
+	assert(isValid());
+	purple_account_register(account);
+}
+
 vector<Protocol::Option> Account::getOptions() const
 {
 	assert(isValid());

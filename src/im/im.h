@@ -126,9 +126,10 @@ namespace im
 		 * @param username  username of this account
 		 * @param password  password of this account
 		 * @param options  list of specific options of this protocol
+		 * @param register_account  register this account on server
 		 * @return  an Account instance.
 		 */
-		Account addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options);
+		Account addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options, bool register_account = false);
 
 		/** Remove an account.
 		 *

@@ -1063,11 +1063,15 @@ void IRC::m_squit(Message message)
 void IRC::m_map(Message message)
 {
 	im::Account added_account;
+	bool register_account = false;
 	if(message.countArgs() > 0)
 	{
 		string arg = message.getArg(0);
 		switch(arg[0])
 		{
+			case 'r':
+			case 'R':
+				register_account = true;
 			case 'A':
 			case 'a':
 			{
@@ -1166,7 +1170,7 @@ void IRC::m_map(Message message)
 					}
 				}
 
-				added_account = im->addAccount(proto, username, password, options);
+				added_account = im->addAccount(proto, username, password, options, register_account);
 				if(channel.empty())
 					channel = "&minbif";
 				added_account.setStatusChannel(channel);
@@ -1239,12 +1243,10 @@ void IRC::m_map(Message message)
 			}
 			case 'D':
 			case 'd':
-			case 'R':
-			case 'r':
 			{
 				if(message.countArgs() != 2)
 				{
-					notice(user, "Usage: /MAP rem ACCOUNT");
+					notice(user, "Usage: /MAP delete ACCOUNT");
 					return;
 				}
 				im::Account account = im->getAccount(message.getArg(1));
@@ -1259,11 +1261,13 @@ void IRC::m_map(Message message)
 			}
 			case 'H':
 			case 'h':
-				notice(user,"add: add an account");
-				notice(user,"edit: edit an account");
-				notice(user,"rem: remove ACCOUNT from your accounts");
+				notice(user,"add PROTO USERNAME PASSWD [CHANNEL] [options]   add an account");
+				notice(user,"reg PROTO USERNAME PASSWD [CHANNEL] [options]   add an account and register it on server");
+				notice(user,"edit ACCOUNT [KEY [VALUE]]                      edit an account");
+				notice(user,"delete ACCOUNT                                  remove ACCOUNT from your accounts");
+				notice(user,"help                                            display this message");
 			default:
-				notice(user,"Usage: /MAP [add PROTO USERNAME PASSWD [CHANNEL] [options] ] | [edit ACCOUNT [KEY [VALUE]]] | [rem ACCOUNT] | [help]");
+				notice(user,"Usage: /MAP add|register|edit|delete|help [...]");
 				break;
 		}
 	}
