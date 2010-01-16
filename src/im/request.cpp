@@ -74,10 +74,50 @@ public:
 	}
 };
 
-void RequestFieldAction::runCallback()
+template<typename _CbT, typename _CbData2T>
+class RequestFieldTmplt : public RequestField
 {
-	callback(data, id);
-}
+	int id;
+	string label;
+	string text;
+	_CbT callback;
+	void* data;
+	_CbData2T data2;
+
+public:
+
+	RequestFieldTmplt() : id(-1), callback(NULL), data(NULL) {}
+
+	RequestFieldTmplt(int _id, string _label, string _text, _CbT _callback, void* _data, _CbData2T _data2)
+		: id(_id),
+		  label(_label),
+		  text(_text),
+		  callback(_callback),
+		  data(_data),
+		  data2(_data2)
+	{}
+
+	virtual ~RequestFieldTmplt() {}
+
+	int getID() const { return id; }
+	void setLabel(const string& l) { label = l; }
+	string getLabel() const { return label; }
+	string getText() const { return text; }
+	void runCallback()
+	{
+		if (callback)
+			callback(data, data2);
+	}
+};
+
+template<typename _CbT>
+class RequestFieldAction : public RequestFieldTmplt<_CbT, int>
+{
+public:
+	RequestFieldAction(int id, string label, string txt, _CbT callback, void* data)
+		: RequestFieldTmplt<_CbT, int>(id, label, txt, callback, data, id)
+	{}
+};
 
 Request::Request(PurpleRequestType _type, const string& _title, const string& _question)
 	: title(_title),
@@ -368,7 +408,7 @@ void* Request::request_action(const char *title, const char *primary,
 		string tmp = text;
 		PurpleRequestActionCb callback = va_arg(actions, PurpleRequestActionCb);
 
-		request->addField(new RequestFieldAction((int)i, strlower(stringtok(tmp, "_ ")), text, callback, user_data));
+		request->addField(new RequestFieldAction<PurpleRequestActionCb>((int)i, strlower(stringtok(tmp, "_ ")), text, callback, user_data));
 	}
 	requests.push_back(request);
 	if(requests.size() == 1)
@@ -392,9 +432,9 @@ void* Request::request_choice(const char *title, const char *primary,
 		int val = va_arg(choices, int);
 		string tmp;
 
-		request->addField(new RequestFieldAction(val, strlower(stringtok(tmp, "_ ")), text, (PurpleRequestChoiceCb)ok_cb, user_data));
+		request->addField(new RequestFieldAction<PurpleRequestChoiceCb>(val, strlower(stringtok(tmp, "_ ")), text, (PurpleRequestChoiceCb)ok_cb, user_data));
 	}
-	request->addField(new RequestFieldAction(0, "cancel", "Cancel", (PurpleRequestChoiceCb)cancel_cb, user_data));
+	request->addField(new RequestFieldAction<PurpleRequestChoiceCb>(0, "cancel", "Cancel", (PurpleRequestChoiceCb)cancel_cb, user_data));
 
 	requests.push_back(request);
 	if(requests.size() == 1)
@@ -404,15 +444,15 @@ void* Request::request_choice(const char *title, const char *primary,
 }
 
 void* Request::request_fields(const char *title, const char *primary,
-		const char *secondary, PurpleRequestFields *allfields,
+		const char *secondary, PurpleRequestFields *fields,
 		const char *ok, GCallback ok_cb,
 		const char *cancel, GCallback cancel_cb,
 		PurpleAccount *account, const char *who, PurpleConversation *conv,
 		void *userdata)
 {
 	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, title ? title : "", primary ? primary : "");
-	request->addField(new RequestFieldAction(0, "ok", ok, (PurpleRequestChoiceCb)ok_cb, userdata));
-	request->addField(new RequestFieldAction(1, "cancel", cancel, (PurpleRequestChoiceCb)ok_cb, userdata));
+	request->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(0, "ok", ok, (PurpleRequestFieldsCb)ok_cb, userdata, fields));
+	request->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(1, "cancel", cancel, (PurpleRequestFieldsCb)cancel_cb, userdata, fields));
 
 	requests.push_back(request);
 	if(requests.size() == 1)

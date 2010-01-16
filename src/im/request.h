@@ -48,35 +48,6 @@ namespace im
 		virtual void runCallback() = 0;
 	};
 
-	class RequestFieldAction : public RequestField
-	{
-		int id;
-		string label;
-		string text;
-		PurpleRequestChoiceCb callback;
-		void* data;
-
-	public:
-
-		RequestFieldAction() : id(-1) {}
-
-		RequestFieldAction(int _id, string _label, string _text, PurpleRequestChoiceCb _callback, void* _data)
-			: id(_id),
-			  label(_label),
-			  text(_text),
-			  callback(_callback),
-			  data(_data)
-		{}
-
-		virtual ~RequestFieldAction() {}
-
-		int getID() const { return id; }
-		void setLabel(const string& l) { label = l; }
-		string getLabel() const { return label; }
-		string getText() const { return text; }
-		void runCallback();
-	};
-
 	class Request
 	{
 	protected:
