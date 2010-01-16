@@ -41,7 +41,6 @@ namespace im
 	public:
 
 		virtual ~RequestField() {}
-		virtual int getID() const = 0;
 		virtual void setLabel(const string& label) = 0;
 		virtual string getLabel() const = 0;
 		virtual string getText() const = 0;
@@ -64,7 +63,8 @@ namespace im
 
 		static PurpleRequestUiOps uiops;
 		static RequestNick* nick;
-		static void displayRequest(const Request& request);
+		static void addRequest(Request* request);
+		static void closeRequest(const Request* request);
 		static void * request_input(const char *title, const char *primary,
 			const char *secondary, const char *default_value,
 			gboolean multiline, gboolean masked, gchar *hint,

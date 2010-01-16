@@ -99,7 +99,6 @@ public:
 
 	virtual ~RequestFieldTmplt() {}
 
-	int getID() const { return id; }
 	void setLabel(const string& l) { label = l; }
 	string getLabel() const { return label; }
 	string getText() const { return text; }
@@ -249,6 +248,13 @@ Request* Request::getFirstRequest()
 	return requests.empty() ? NULL : requests.front();
 }
 
+void Request::addRequest(Request* request)
+{
+	requests.push_back(request);
+	if(requests.size() == 1)
+		request->display();
+}
+
 void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
 				const char *primary, const char *secondary)
 {
@@ -357,12 +363,12 @@ void* Request::notify_userinfo(PurpleConnection *gc, const char *who, PurpleNoti
 	return NULL;
 }
 
-void Request::request_close(PurpleRequestType type, void *ui_handle)
+void Request::closeRequest(const Request* request)
 {
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	for(vector<Request*>::iterator it = requests.begin(); it != requests.end(); ++it)
 	{
-		if(*it != ui_handle)
+		if(*it != request)
 			continue;
 
 		bool first = (it == requests.begin());
@@ -379,6 +385,11 @@ void Request::request_close(PurpleRequestType type, void *ui_handle)
 	}
 }
 
+void Request::request_close(PurpleRequestType type, void *ui_handle)
+{
+	closeRequest((Request*)ui_handle);
+}
+
 void* Request::request_input(const char *title, const char *primary,
 			const char *secondary, const char *default_value,
 			gboolean multiline, gboolean masked, gchar *hint,
@@ -388,9 +399,7 @@ void* Request::request_input(const char *title, const char *primary,
 			void *user_data)
 {
 	RequestInput* request = new RequestInput(PURPLE_REQUEST_INPUT, title ? title : "", primary ? primary : "", default_value ? default_value : "", (PurpleRequestInputCb)ok_cb, user_data);
-	requests.push_back(request);
-	if(requests.size() == 1)
-		request->display();
+	addRequest(request);
 
 	return requests.back();
 }
@@ -410,9 +419,7 @@ void* Request::request_action(const char *title, const char *primary,
 
 		request->addField(new RequestFieldAction<PurpleRequestActionCb>((int)i, strlower(stringtok(tmp, "_ ")), text, callback, user_data));
 	}
-	requests.push_back(request);
-	if(requests.size() == 1)
-		request->display();
+	addRequest(request);
 
 	return requests.back();
 }
@@ -436,12 +443,131 @@ void* Request::request_choice(const char *title, const char *primary,
 	}
 	request->addField(new RequestFieldAction<PurpleRequestChoiceCb>(0, "cancel", "Cancel", (PurpleRequestChoiceCb)cancel_cb, user_data));
 
-	requests.push_back(request);
-	if(requests.size() == 1)
-		request->display();
+	addRequest(request);
 
 	return requests.back();
 }
+
+class RequestFieldsString : public RequestInput
+{
+	PurpleRequestField* field;
+public:
+
+	RequestFieldsString(PurpleRequestField* _field, const string& title, const string& question, const string& _default_value)
+		: RequestInput(PURPLE_REQUEST_FIELDS, title, question, _default_value, NULL, NULL),
+		  field(_field)
+	{}
+
+	virtual void process(const string& answer) const
+	{
+		purple_request_field_string_set_value(field, answer.c_str());
+	}
+
+	virtual void close() {
+		Request::closeRequest(this);
+	}
+};
+
+class RequestFieldsInteger : public RequestInput
+{
+	PurpleRequestField* field;
+public:
+
+	RequestFieldsInteger(PurpleRequestField* _field, const string& title, const string& question, const string& _default_value)
+		: RequestInput(PURPLE_REQUEST_FIELDS, title, question, _default_value, NULL, NULL),
+		  field(_field)
+	{}
+
+	virtual void process(const string& answer) const
+	{
+		purple_request_field_int_set_value(field, s2t<int>(answer));
+	}
+
+	virtual void close() {
+		Request::closeRequest(this);
+	}
+};
+
+class RequestFieldsList : public RequestFieldList
+{
+public:
+	RequestFieldsList(const string& title, const string& question)
+		: RequestFieldList(PURPLE_REQUEST_FIELDS, title, question)
+	{}
+
+	virtual void close() {
+		Request::closeRequest(this);
+	}
+
+};
+
+class RequestFieldFieldsBoolean : public RequestField
+{
+	PurpleRequestField* field;
+	bool value;
+	string text;
+public:
+
+	RequestFieldFieldsBoolean(PurpleRequestField* _field, bool _value, string _text)
+		: field(_field),
+		  value(_value),
+		  text(_text)
+	{}
+	virtual ~RequestFieldFieldsBoolean() {}
+	virtual void setLabel(const string& label) { text = label; }
+	virtual string getLabel() const { return text; }
+	virtual string getText() const { return text; }
+	virtual void runCallback()
+	{
+		purple_request_field_bool_set_value(field, value);
+	}
+};
+
+class RequestFieldFieldsChoice : public RequestField
+{
+	PurpleRequestField* field;
+	int value;
+	string text;
+public:
+
+	RequestFieldFieldsChoice(PurpleRequestField* _field, int _value, string _text)
+		: field(_field),
+		  value(_value),
+		  text(_text)
+	{}
+	virtual ~RequestFieldFieldsChoice() {}
+	virtual void setLabel(const string& label) { text = label; }
+	virtual string getLabel() const { return text; }
+	virtual string getText() const { return text; }
+	virtual void runCallback()
+	{
+		purple_request_field_choice_set_value(field, value);
+	}
+};
+
+class RequestFieldFieldsList : public RequestField
+{
+	PurpleRequestField* field;
+	int value;
+	string text;
+public:
+
+	RequestFieldFieldsList(PurpleRequestField* _field, int _value, string _text)
+		: field(_field),
+		  value(_value),
+		  text(_text)
+	{}
+	virtual ~RequestFieldFieldsList() {}
+	virtual void setLabel(const string& label) { text = label; }
+	virtual string getLabel() const { return text; }
+	virtual string getText() const { return text; }
+	virtual void runCallback()
+	{
+		purple_request_field_list_clear_selected(field);
+		purple_request_field_list_add_selected(field, text.c_str());
+	}
+};
+
 
 void* Request::request_fields(const char *title, const char *primary,
 		const char *secondary, PurpleRequestFields *fields,
@@ -450,13 +576,75 @@ void* Request::request_fields(const char *title, const char *primary,
 		PurpleAccount *account, const char *who, PurpleConversation *conv,
 		void *userdata)
 {
-	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, title ? title : "", primary ? primary : "");
+	GList *gl, *fl;
+
+	for(gl = purple_request_fields_get_groups(fields);
+	    gl != NULL;
+	    gl = gl->next)
+	{
+		PurpleRequestFieldGroup *group = (PurpleRequestFieldGroup*)gl->data;
+		GList* field_list = purple_request_field_group_get_fields(group);
+
+		for (fl = field_list; fl != NULL; fl = fl->next)
+		{
+			PurpleRequestField *field = (PurpleRequestField *)fl->data;
+			PurpleRequestFieldType type = purple_request_field_get_type(field);
+
+			if(!purple_request_field_is_visible(field))
+				continue;
+
+			const char *field_label = purple_request_field_get_label(field);
+
+			if(type == PURPLE_REQUEST_FIELD_STRING)
+			{
+				const char* defval = purple_request_field_string_get_default_value(field);
+				addRequest(new RequestFieldsString(field, title ? title : primary ? primary : "", field_label ? field_label : "", defval ? defval : ""));
+			}
+			else if(type == PURPLE_REQUEST_FIELD_INTEGER)
+			{
+				string defval = t2s(purple_request_field_int_get_default_value(field));
+				addRequest(new RequestFieldsInteger(field, title ? title : primary ? primary : "", field_label ? field_label : "", defval));
+			}
+			else
+			{
+				RequestFieldsList* request = new RequestFieldsList(title ? title : primary ? primary : "", field_label ? field_label : "");
+				switch(type)
+				{
+					case PURPLE_REQUEST_FIELD_BOOLEAN:
+						request->addField(new RequestFieldFieldsBoolean(field, true, "true"));
+						request->addField(new RequestFieldFieldsBoolean(field, false, "false"));
+						break;
+					case PURPLE_REQUEST_FIELD_CHOICE:
+					{
+						GList *labels = purple_request_field_choice_get_labels(field);
+						GList *l;
+						int i = 0;
+						for (l = labels; l != NULL; l = l->next, ++i)
+							request->addField(new RequestFieldFieldsChoice(field, i, (const char*)l->data));
+						break;
+					}
+					case PURPLE_REQUEST_FIELD_LIST:
+					{
+						GList *l;
+						int i = 0;
+						for (l = purple_request_field_list_get_items(field); l != NULL; l = l->next, ++i)
+							request->addField(new RequestFieldFieldsList(field, i, (const char*)l->data));
+						break;
+					}
+					default:
+						 delete request;
+						 continue;
+				}
+				addRequest(request);
+			}
+		}
+	}
+
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, title ? title : primary ? primary : "", "Do you confirm?");
 	request->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(0, "ok", ok, (PurpleRequestFieldsCb)ok_cb, userdata, fields));
 	request->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(1, "cancel", cancel, (PurpleRequestFieldsCb)cancel_cb, userdata, fields));
 
-	requests.push_back(request);
-	if(requests.size() == 1)
-		request->display();
+	addRequest(request);
 
 	return requests.back();
 }
