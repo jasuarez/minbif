@@ -59,12 +59,18 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 			throw ServerPollError();
 		}
 		else if(r > 0)
-			exit(EXIT_SUCCESS);
+			exit(EXIT_SUCCESS); /* parent exits. */
+
+		setsid();
+
+		for (r=getdtablesize();r>=0;--r) close(r);
+		r=open("/dev/null",O_RDWR); /* open stdin */
+		dup(r); /* stdout */
+		dup(r); /* stderr */
+
+		umask(027);
 		string path = conf.GetSection("path")->GetItem("users")->String();
 		chdir(path.c_str());
-		if(isatty(0)) close(0);
-		if(isatty(1)) close(1);
-		if(isatty(2)) close(2);
 	}
 
 	struct addrinfo *addrinfo_bind, *res, hints;
