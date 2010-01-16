@@ -22,6 +22,7 @@
 #include <cerrno>
 #include <glib/gmain.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <arpa/inet.h>
 
 #include "daemon_fork.h"
