@@ -162,6 +162,12 @@ namespace im
 		/** Abort the auto-reconnection. */
 		void removeReconnection(bool verbose = false) const;
 
+		/** Get list of available commands. */
+		vector<string> getCommandsList() const;
+
+		/** Call a command. */
+		bool callCommand(const string& command) const;
+
 		/** \todo TODO implement it */
 		vector<Buddy> getBuddies() const;
 

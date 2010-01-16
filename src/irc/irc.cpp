@@ -1259,15 +1259,46 @@ void IRC::m_map(Message message)
 				im->delAccount(account);
 				break;
 			}
+			case 'c':
+			case 'C':
+			{
+				if(message.countArgs() < 2)
+				{
+					notice(user, "Usage: /MAP cmd ACCOUNT [command]");
+					return;
+				}
+				im::Account account = im->getAccount(message.getArg(1));
+				if(!account.isValid())
+				{
+					notice(user, "Error: Account " + message.getArg(1) + " is unknown");
+					return;
+				}
+				if(!account.isConnected())
+				{
+					notice(user, "Error: Account " + message.getArg(1) + " is not connected");
+					return;
+				}
+				if(message.countArgs() < 3)
+				{
+					vector<string> cmds = account.getCommandsList();
+					notice(user, "Commands available for " + message.getArg(1) + ":");
+					for(vector<string>::iterator it = cmds.begin(); it != cmds.end(); ++it)
+						notice(user, "  " + *it);
+				}
+				else if (!account.callCommand(message.getArg(2)))
+					notice(user, "Command " + message.getArg(2) + " is unknown");
+				return;
+			}
 			case 'H':
 			case 'h':
 				notice(user,"add PROTO USERNAME PASSWD [CHANNEL] [options]   add an account");
 				notice(user,"reg PROTO USERNAME PASSWD [CHANNEL] [options]   add an account and register it on server");
 				notice(user,"edit ACCOUNT [KEY [VALUE]]                      edit an account");
+				notice(user,"cmd ACCOUNT [COMMAND]                           run a command on an account");
 				notice(user,"delete ACCOUNT                                  remove ACCOUNT from your accounts");
 				notice(user,"help                                            display this message");
 			default:
-				notice(user,"Usage: /MAP add|register|edit|delete|help [...]");
+				notice(user,"Usage: /MAP add|register|edit|command|delete|help [...]");
 				break;
 		}
 	}

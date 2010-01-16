@@ -84,6 +84,53 @@ void Account::registerAccount() const
 	purple_account_register(account);
 }
 
+vector<string> Account::getCommandsList() const
+{
+	assert(isValid());
+	GList *actions, *l;
+	vector<string> cmds;
+	PurpleConnection *gc = purple_account_get_connection(account);
+	PurplePlugin *plugin = (gc && PURPLE_CONNECTION_IS_CONNECTED(gc)) ? gc->prpl : NULL;
+
+	if(!plugin || !PURPLE_PLUGIN_HAS_ACTIONS(plugin))
+		return cmds;
+
+	actions = PURPLE_PLUGIN_ACTIONS(plugin, gc);
+
+	for (l = actions; l != NULL; l = l->next)
+		if (l->data)
+			cmds.push_back(irc::Nick::nickize(((PurplePluginAction *) l->data)->label));
+
+	return cmds;
+}
+
+bool Account::callCommand(const string& cmd) const
+{
+	assert(isValid());
+	GList *actions, *l;
+	PurpleConnection *gc = purple_account_get_connection(account);
+	PurplePlugin *plugin = (gc && PURPLE_CONNECTION_IS_CONNECTED(gc)) ? gc->prpl : NULL;
+
+	if(!plugin || !PURPLE_PLUGIN_HAS_ACTIONS(plugin))
+		return false;
+
+	actions = PURPLE_PLUGIN_ACTIONS(plugin, gc);
+
+	for (l = actions; l != NULL; l = l->next)
+	{
+		PurplePluginAction* action = (PurplePluginAction*)l->data;
+		if (l->data && irc::Nick::nickize(action->label) == cmd)
+		{
+			action->plugin = plugin;
+			action->context = gc;
+			action->callback(action);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 vector<Protocol::Option> Account::getOptions() const
 {
 	assert(isValid());
