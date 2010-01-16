@@ -13,7 +13,8 @@ service ircd
 
     # You might want to change these two
     user            = minbif
-    server          = /usr/bin/minbif /etc/minbif/minbif.conf
+    server          = /usr/bin/minbif
+    server_args     = /etc/minbif/minbif.conf
 
     # uncomment this to change the port and avoid editing /etc/services
     #type            = UNLISTED
