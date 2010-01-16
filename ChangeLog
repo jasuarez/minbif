@@ -1,3 +1,25 @@
+Minbif 1.0.1 (2010-01-16)
+	* PAM authentication.
+	* /MAP CMD command to run a specific command on an account, which
+	allow you to change nickname, mood messages, etc.
+	* Support fields requests.
+	* Display group name in IRC user realname.
+	* The /MAP REGISTER command registers account on server before adding
+	  it.
+	* Conf option to enable the purple conv logging.
+	* /CMD command to send commands in a conversation
+	* Display date before delayed messages if they hasn't been sent today.
+	* Fix: daemonize correctly.
+	* Fix: security issue when a global password is set on the minbif
+	  server, it creates the userdir before checking if the password is
+	  correct.
+	* Fix: buddy's realnames wasn't updated in realtime.
+	* Fix: the PONG reply wasn't RFC compliant.
+	* Fix: crash in NAMES and TOPIC commands when giving an invalid chan
+	  name.
+	* Fix: don't typing notice unless either bitlbee_send_typing or
+	  typing_notice is true.
+
 Minbif 1.0 (2009-11-18)
 	* Global proxy settings with the /ADMIN command.
 	* Ability to set parameters when joining a conversation channel.
