@@ -1,7 +1,7 @@
 Minbif 1.0.1 (2010-01-16)
 	* PAM authentication.
 	* /MAP CMD command to run a specific command on an account, which
-	allow you to change nickname, mood messages, etc.
+	  allow you to change nickname, mood messages, etc.
 	* Support fields requests.
 	* Display group name in IRC user realname.
 	* The /MAP REGISTER command registers account on server before adding
