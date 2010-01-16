@@ -339,7 +339,7 @@ class Instance:
         return self.readmsg("017", 1) != None
 
     def remove_account(self, name):
-        self.write("MAP remove %s" % name)
+        self.write("MAP delete %s" % name)
         return self.readmsg("017", 1) != None
 
     def wait_connected(self, name):
