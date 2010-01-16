@@ -43,14 +43,13 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	  sock(-1),
 	  read_cb(NULL)
 {
-	std::vector<ConfigSection*> sections = conf.GetSection("irc")->GetSectionClones("daemon");
-	if(sections.empty())
+	ConfigSection* section = conf.GetSection("irc")->GetSection("daemon");
+	if(section->Found() == false)
 	{
 		b_log[W_ERR] << "Missing section irc/daemon";
 		throw ServerPollError();
 	}
 
-	ConfigSection* section = sections[0];
 	if(section->GetItem("background")->Boolean())
 	{
 		int r = fork();
