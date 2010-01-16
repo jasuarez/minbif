@@ -197,16 +197,16 @@ string IM::getBuddyIconPath() const
 
 bool IM::setStatus(string away)
 {
-	away = strlower(away);
 	PurpleStatusPrimitive prim = PURPLE_STATUS_AVAILABLE;
 	if(away.empty() == false)
 	{
+		string s = strlower(away);
 		unsigned i;
 		string status_list;
 		/* Looking for an existant status equivalent to the away message. */
 		for(i = 0; i < (unsigned)PURPLE_STATUS_NUM_PRIMITIVES &&
-		           strlower(purple_primitive_get_name_from_type((PurpleStatusPrimitive)i)) != away &&
-			   purple_primitive_get_id_from_type((PurpleStatusPrimitive)i) != away;
+		           strlower(purple_primitive_get_name_from_type((PurpleStatusPrimitive)i)) != s &&
+			   purple_primitive_get_id_from_type((PurpleStatusPrimitive)i) != s;
 		    ++i)
 			status_list += string(" ") + purple_primitive_get_id_from_type((PurpleStatusPrimitive)i);
 
