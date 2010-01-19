@@ -208,7 +208,7 @@ static void ga_message_received_cb(HttpHandler* handler, gchar* response, gsize 
 			message_content = g_parsing_quick_xpath_node_content(xpathCtx, "./td[4]/a", NULL, message_node);
 
 			/* check if ID is valid */
-			guint64 message_id;
+			guint64 message_id = 0;
 			if (message_idstr)
 			{
 				if (g_str_has_prefix(message_idstr, "msg"))
