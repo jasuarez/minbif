@@ -66,6 +66,7 @@ namespace irc
 		_CallBack *read_cb;
 		int ping_id;
 		time_t ping_freq;
+		time_t uptime;
 		_CallBack *ping_cb;
 		User* user;
 		im::IM* im;

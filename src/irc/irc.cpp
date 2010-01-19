@@ -92,6 +92,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	  read_cb(NULL),
 	  ping_id(-1),
 	  ping_freq(_ping_freq),
+	  uptime(time(NULL)),
 	  ping_cb(NULL),
 	  user(NULL),
 	  im(NULL)
@@ -997,12 +998,23 @@ void IRC::m_stats(Message message)
 			}
 			break;
 		}
+		case 'u':
+		{
+			unsigned now = time(NULL) - uptime;
+			gchar *msg = g_strdup_printf("Server Up %d days, %d:%02d:%02d", now / 86400, (now / 3600) % 24, (now / 60) % 60, now % 60);
+			user->send(Message(RPL_STATSUPTIME).setSender(this)
+			                                   .setReceiver(user)
+							   .addArg(msg));
+			g_free(msg);
+			break;
+		}
 		default:
 			arg = "*";
 			notice(user, "a (aways) - List all away messages availables");
 			notice(user, "c (chat params) - List all chat parameters for a specific account");
 			notice(user, "m (commands) - List all IRC commands");
 			notice(user, "p (protocols) - List all protocols");
+			notice(user, "u (uptime) - Display the server uptime");
 			break;
 	}
 	user->send(Message(RPL_ENDOFSTATS).setSender(this)
