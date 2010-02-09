@@ -1,6 +1,8 @@
 # SETTINGS & INSTALLATION
 # [minbif]
 # /admin typing_notice true
+# /set typing_notice = ON
+#   -> use typing notices
 # /statusbar window add typing_notice
 #
 # [bitlbee]
@@ -294,6 +296,7 @@ sub send_typing {
 
 Irssi::settings_add_bool("bitlbee","bitlbee_send_typing",1);
 Irssi::settings_add_bool("bitlbee","bitlbee_typing_allwin",0);
+Irssi::settings_add_bool("bitlbee","typing_notice",0);
 
 Irssi::signal_add("ctcp msg", "event_ctcp_msg");
 Irssi::signal_add("message private", "event_msg");
