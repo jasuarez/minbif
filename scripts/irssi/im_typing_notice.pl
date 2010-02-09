@@ -14,6 +14,9 @@
 #
 # Changelog:
 #
+# 2010-02-09 (version 2.1.2)
+# * initialize typing_notice to true.
+#
 # 2009-12-20 (version 2.1.1)
 # * reformat installation instructions.
 # * don't send typing notice unless either bitlbee_send_typing or
