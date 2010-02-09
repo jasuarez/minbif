@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
 	string identname = stringtok(hostname, "@");
 	string nickname = im_cbuddy.getName();
 	if(nickname.find('@') != string::npos || nickname.find(' ') != string::npos)
-		nickname = nickize(identname);
+		nickname = nickize(stringtok(nickname, " @"));
 	else
 		nickname = nickize(nickname);
 	if(hostname.empty())
