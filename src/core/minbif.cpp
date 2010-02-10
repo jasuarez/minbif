@@ -34,6 +34,18 @@
 #include "im/im.h"
 #include "server_poll/poll.h"
 
+const char* infotxt[] = {
+	MINBIF_VERSION,
+	strdup(MINBIF_BUILD.c_str()), /* don't care if we don't free it as it can be used until exit. */
+	"",
+	"Copyright(C) 2009-2010 Romain Bignon",
+	"This program is free software; you can redistribute it and/or modify",
+	"it under the terms of the GNU General Public License as published by",
+	"the Free Software Foundation; either version 4 of the License , or",
+	"(at your option) any later version.",
+	NULL
+};
+
 Minbif::Minbif()
 	: loop(NULL),
 	  server_poll(0)
@@ -109,7 +121,8 @@ void Minbif::usage(int argc, char** argv)
 
 void Minbif::version(void)
 {
-	std::cout << MINBIF_VERSION << " © 2009-2010 Romain Bignon " << MINBIF_BUILD << std::endl;
+	for(size_t i = 0; infotxt[i] != NULL; ++i)
+		std::cout << infotxt[i] << std::endl;
 }
 
 int Minbif::main(int argc, char** argv)

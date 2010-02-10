@@ -108,6 +108,7 @@ namespace irc
 		void m_whois(Message m);    /**< Handler for the WHOIS message */
 		void m_whowas(Message m);   /**< Handler for the WHOWAS message */
 		void m_version(Message m);  /**< Handler for the VERSION message */
+		void m_info(Message m);     /**< Handler for the INFO message */
 		void m_privmsg(Message m);  /**< Handler for the PRIVMSG message */
 		void m_stats(Message m);    /**< Handler for the STATS message */
 		void m_connect(Message m);  /**< Handler for the CONNECT message */

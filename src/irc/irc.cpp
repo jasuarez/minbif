@@ -57,6 +57,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_PING,    &IRC::m_ping,    0, 0, Nick::REGISTERED },
 	{ MSG_PONG,    &IRC::m_pong,    1, 0, Nick::REGISTERED },
 	{ MSG_VERSION, &IRC::m_version, 0, 0, Nick::REGISTERED },
+	{ MSG_INFO,    &IRC::m_info,    0, 0, Nick::REGISTERED },
 	{ MSG_WHO,     &IRC::m_who,     0, 0, Nick::REGISTERED },
 	{ MSG_WHOIS,   &IRC::m_whois,   1, 0, Nick::REGISTERED },
 	{ MSG_WHOWAS,  &IRC::m_whowas,  1, 0, Nick::REGISTERED },
@@ -656,6 +657,19 @@ void IRC::m_version(Message message)
 				       .addArg(MINBIF_VERSION)
 				       .addArg(getServerName())
 				       .addArg(MINBIF_BUILD));
+}
+
+/** INFO */
+void IRC::m_info(Message message)
+{
+	for(size_t i = 0; infotxt[i] != NULL; ++i)
+		user->send(Message(RPL_INFO).setSender(this)
+				            .setReceiver(user)
+					    .addArg(infotxt[i]));
+
+	user->send(Message(RPL_ENDOFINFO).setSender(this)
+			                 .setReceiver(user)
+					 .addArg("End of /INFO list."));
 }
 
 /** WHO */

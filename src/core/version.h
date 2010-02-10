@@ -43,7 +43,10 @@
 #define MINBIF_SUPPORTS      MINBIF_SUPPORTS_CACA \
 	                     MINBIF_SUPPORTS_VIDEO
 
-#define MINBIF_BUILD         "(Build " __DATE__ " " __TIME__ ") libpurple-" + t2s(PURPLE_MAJOR_VERSION) + "." + t2s(PURPLE_MINOR_VERSION) + "." + t2s(PURPLE_MICRO_VERSION)
+#define MINBIF_BUILD         ("(Build at " __DATE__ " " __TIME__ " with libpurple-" \
+                              + t2s(PURPLE_MAJOR_VERSION) + "." \
+                              + t2s(PURPLE_MINOR_VERSION) + "." \
+                              + t2s(PURPLE_MICRO_VERSION) + ")")
 
 #define MINBIF_VERSION       MINBIF_VERSION_NAME "-" \
 			     MINBIF_VERSION_MAJOR "." \
@@ -51,5 +54,8 @@
 			     MINBIF_VERSION_PATCH \
 			     MINBIF_VERSION_EXTRA \
 			     MINBIF_SUPPORTS
+
+/** NULL terminated array. */
+extern const char* infotxt[];
 
 #endif /* VERSION_H */
