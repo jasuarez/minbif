@@ -109,7 +109,7 @@ void Minbif::usage(int argc, char** argv)
 
 void Minbif::version(void)
 {
-	std::cout << MINBIF_VERSION << " © 2009 Romain Bignon " << MINBIF_BUILD << std::endl;
+	std::cout << MINBIF_VERSION << " © 2009-2010 Romain Bignon " << MINBIF_BUILD << std::endl;
 }
 
 int Minbif::main(int argc, char** argv)
