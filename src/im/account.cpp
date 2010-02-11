@@ -235,6 +235,14 @@ void Account::setBuddyIcon(const string& filename)
 
 }
 
+void Account::setStatusMessage(const string& message)
+{
+	assert(isValid());
+
+	purple_account_set_status(account, purple_primitive_get_id_from_type(PURPLE_STATUS_AVAILABLE),
+			                   TRUE, "message", message.c_str(), NULL);
+}
+
 void Account::setID(string id) const
 {
 	assert(isValid());

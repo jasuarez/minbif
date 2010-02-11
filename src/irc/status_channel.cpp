@@ -254,7 +254,9 @@ bool StatusChannel::kick(ChanUser* from, ChanUser* victim, const string& message
 
 bool StatusChannel::setTopic(Entity* from, const string& message)
 {
-	return false;
+	for(vector<im::Account>::iterator acc = accounts.begin(); acc != accounts.end(); ++acc)
+		acc->setStatusMessage(message);
+	return Channel::setTopic(from, message);
 }
 
 }; /* ns irc */

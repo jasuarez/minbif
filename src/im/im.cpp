@@ -219,14 +219,15 @@ bool IM::setStatus(string away)
 		else
 		{
 			prim = (PurpleStatusPrimitive)i;
-			away = purple_primitive_get_name_from_type(prim);
+			away.clear(); /* do not change the saved status message. */
 		}
 	}
 
 	PurpleSavedStatus* status = purple_savedstatus_find_transient_by_type_and_message(prim, purple_primitive_get_name_from_type(prim));
 	if(!status)
 		status = purple_savedstatus_new(NULL, prim);
-	purple_savedstatus_set_message(status, away.c_str());
+	if(away.empty() == false)
+		purple_savedstatus_set_message(status, away.c_str());
 	purple_savedstatus_activate(status);
 
 	return true;

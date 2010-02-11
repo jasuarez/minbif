@@ -124,6 +124,12 @@ namespace im
 		/** Set path to the buddy icon to use for this account. */
 		void setBuddyIcon(const string& filename);
 
+		/** Set status */
+		void setStatusMessage(const string& message);
+
+		/** Get status message */
+		string getStatusMessage() const;
+
 		/** Get room list from this account.
 		 * The roomlist callbacks will be called.
 		 */
