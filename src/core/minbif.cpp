@@ -22,7 +22,7 @@
 #include <fstream>
 #include <cstring>
 #include <sys/resource.h>
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <getopt.h>
 
 #include "minbif.h"

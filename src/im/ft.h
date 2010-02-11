@@ -19,7 +19,7 @@
 #ifndef IM_FT_H
 #define IM_FT_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <string>
 
 namespace im {

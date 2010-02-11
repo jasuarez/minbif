@@ -19,14 +19,14 @@
 #ifndef IM_MEDIA_H
 #define IM_MEDIA_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <vector>
 #include <string>
 
 #include "core/mutex.h"
 
 #ifdef HAVE_VIDEO
-#include <libpurple/media-gst.h>
+#include <media-gst.h>
 #include "im/buddy.h"
 #include "core/caca_image.h"
 #endif

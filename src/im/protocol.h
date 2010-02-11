@@ -19,7 +19,7 @@
 #ifndef IM_PROTOCOL_H
 #define IM_PROTOCOL_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <string>
 #include <vector>
 

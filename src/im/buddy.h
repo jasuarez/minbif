@@ -19,7 +19,7 @@
 #ifndef IM_BUDDY_H
 #define IM_BUDDY_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <string>
 
 #include "core/caca_image.h"

@@ -19,7 +19,7 @@
 #define IRC_NICK_H
 
 #include <map>
-#include <libpurple/purple.h>
+#include <purple.h>
 
 #include "core/entity.h"
 #include "irc/message.h"

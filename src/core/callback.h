@@ -18,7 +18,7 @@
 #ifndef CALLBACK_H
 #define CALLBACK_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 
 class _CallBack
 {

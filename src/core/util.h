@@ -18,7 +18,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <string>
 #include <sstream>
 using std::string;

@@ -19,7 +19,7 @@
 #ifndef IM_ROOMLIST_H
 #define IM_ROOMLIST_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <string>
 
 namespace im {

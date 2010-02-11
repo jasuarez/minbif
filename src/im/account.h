@@ -19,7 +19,7 @@
 #ifndef IM_ACCOUNT_H
 #define IM_ACCOUNT_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <string>
 #include <map>
 #include <vector>

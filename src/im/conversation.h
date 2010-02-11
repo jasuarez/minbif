@@ -19,7 +19,7 @@
 #ifndef IM_CONVERSATION_H
 #define IM_CONVERSATION_H
 
-#include <libpurple/purple.h>
+#include <purple.h>
 #include <string>
 
 namespace irc

@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 #include <exception>
-#include <libpurple/purple.h>
+#include <purple.h>
 
 #include "account.h"
 
