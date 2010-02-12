@@ -61,9 +61,9 @@ sub whois_data {
            || !exists $attempted_to_rename{ $nick };
 
     if (my ($actual_name) = $real_name =~ m{:(.+)(?=\s+\[)}) {
-        return if $actual_name =~ $unnamed_pattern || $actual_name eq q{};
-
-        _change_nickname( $server, $nick, $actual_name );
+        if ($actual_name !~ $unnamed_pattern && $actual_name ne q{}) {
+           _change_nickname( $server, $nick, $actual_name );
+       }
     }
 
     Irssi::signal_stop();
@@ -79,6 +79,9 @@ sub _change_nickname {
     foreach my $changed_nick ( keys %changed_nicks ) {
         delete $changed_nicks{ $changed_nick }
             if (time - $changed_nicks{ $changed_nick }) > 10;
+
+        delete $changed_nicks{ $changed_nick }
+            if $attempted_to_rename{ $changed_nick } ne $new_nick;
     }
 
     return if exists $changed_nicks{ $old_nick };
@@ -86,7 +89,7 @@ sub _change_nickname {
     $changed_nicks{ $old_nick } = time;
 
     $attempted_to_rename{ $old_nick } = $new_nick;
- 
+
     Irssi::print("Renaming $old_nick to $new_nick");
 
     $server->command("SVSNICK $old_nick $new_nick");
