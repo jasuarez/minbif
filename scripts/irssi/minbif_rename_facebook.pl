@@ -81,7 +81,7 @@ sub _change_nickname {
             if (time - $changed_nicks{ $changed_nick }) > 10;
 
         delete $changed_nicks{ $changed_nick }
-            if $attempted_to_rename{ $changed_nick } ne $new_nick;
+               if $attempted_to_rename{ $changed_nick } ne $new_nick;
     }
 
     return if exists $changed_nicks{ $old_nick };
@@ -109,7 +109,7 @@ sub nick_used {
 
     return if !$old_nick;
 
-    if ($new_nick =~ m{_Facebook$}) {
+    if ($new_nick eq substr( "${old_nick}_Facebook", 0, 29 )) {
         Irssi::print(
             qq{I tried renaming $old_nick to $new_nick with and without a }
           .  q{facebook suffix, but was unsuccessful.  You'll need to rename }
@@ -152,7 +152,8 @@ sub _clean_nick {
     $name =~ s/[^\w\d_-]+/_/g;
     $name =~ s/_{2,}/_/g;
 
-    return $name;
+    # Minbif's nick length limit.
+    return substr( $name, 0, 29 );
 }
 
 sub nick_change {
@@ -189,4 +190,3 @@ Irssi::signal_add_first('event 311'     => 'whois_data'   );
 Irssi::signal_add_first('event 312'     => 'ignore_it'    );
 Irssi::signal_add_first('event 319'     => 'ignore_it'    );
 Irssi::signal_add_first('event 320'     => 'extended_data');
-
