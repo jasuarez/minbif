@@ -380,10 +380,10 @@ class Instance:
 
             line = msg.args[0]
             # me
-            if not line.startswith('|-') and not line.startswith('`-'):
+            if not line.startswith('|') and not line.startswith('`'):
                 continue
 
-            m = re.match(".-(.+):([[a-zA-Z]+)([0-9]+)(\s*)(.*)", line)
+            m = re.match(".[- ][\*\+]*(.+):([[a-zA-Z]+)([0-9]+)(\s*)(.*)", line)
             if m:
                 acc = Account(proto=m.group(2), username=m.group(1))
                 acc.state = m.group(5)
