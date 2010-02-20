@@ -16,6 +16,7 @@
  */
 
 #include "server.h"
+#include "nick.h"
 
 namespace irc {
 
@@ -24,6 +25,34 @@ Server::Server(string name, string _info)
 	  info(_info)
 {}
 
+void Server::addNick(Nick* n)
+{
+	users.push_back(n);
+}
+
+void Server::removeNick(Nick* n)
+{
+	for(vector<Nick*>::iterator it = users.begin(); it != users.end(); ++it)
+		if (*it == n)
+		{
+			users.erase(it);
+			return;
+		}
+}
+
+unsigned Server::countNicks() const
+{
+	return users.size();
+}
+
+unsigned Server::countOnlineNicks() const
+{
+	unsigned i = 0;
+	for(vector<Nick*>::const_iterator it = users.begin(); it != users.end(); ++it)
+		if((*it)->isOnline())
+			i++;
+	return i;
+}
 
 RemoteServer::RemoteServer(IRC* _irc, im::Account _account)
 	: Server(_account.getServername(),

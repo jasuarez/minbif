@@ -24,11 +24,13 @@
 namespace irc
 {
 	class IRC;
+	class Nick;
 
 	/** This class represents an IRC server */
 	class Server : public Entity
 	{
 		string info;
+		vector<Nick*> users;
 
 	public:
 
@@ -41,6 +43,12 @@ namespace irc
 
 		string getServerName() const { return getName(); }
 		string getServerInfo() const { return info; }
+
+		void addNick(Nick* n);
+		void removeNick(Nick* n);
+
+		unsigned countNicks() const;
+		unsigned countOnlineNicks() const;
 	};
 
 	/** This class represents a remote IRC server.

@@ -254,6 +254,7 @@ void IRC::addNick(Nick* nick)
 	if(users.find(nick->getNickname()) != users.end())
 		b_log[W_DESYNCH] << "/!\\ User " << nick->getNickname() << " already exists!";
 	users[nick->getNickname()] = nick;
+	nick->getServer()->addNick(nick);
 }
 
 void IRC::renameNick(Nick* nick, string newnick)
@@ -324,6 +325,7 @@ void IRC::removeNick(string nickname)
 					(*dcc)->setPeer(NULL);
 				++dcc;
 			}
+		it->second->getServer()->removeNick(it->second);
 		delete it->second;
 		users.erase(it);
 	}
@@ -333,7 +335,10 @@ void IRC::cleanUpNicks()
 {
 	map<string, Nick*>::iterator it;
 	for(it = users.begin(); it != users.end(); ++it)
+	{
+		it->second->getServer()->removeNick(it->second);
 		delete it->second;
+	}
 	users.clear();
 }
 
@@ -1338,20 +1343,27 @@ void IRC::m_map(Message message)
 	    it != accounts.end(); ++it)
 	{
 		map<string, im::Account>::iterator next = it;
+		Server* server = getServer(it->second.getServername());
 		string name;
 
 		if(++next == accounts.end())
-			name = "`-";
+			name = "`";
 		else
-			name = "|-";
+			name = "|";
+
+		if(it->second == added_account)
+			name += "-+";
+		else if(it->second.isConnecting())
+			name += "-*";
+		else if(it->second.isConnected())
+			name += "-";
+		else
+			name += " ";
 
 		name += it->second.getServername();
-		if(it->second == added_account)
-			name += " (added)";
-		else if(it->second.isConnecting())
-			name += " (connecting)";
-		else if(!it->second.isConnected())
-			name += " (disconnected)";
+
+		if(it->second.isConnected())
+			name += "  [" + t2s(server->countOnlineNicks()) + "/" + t2s(server->countNicks()) + "]";
 
 		user->send(Message(RPL_MAP).setSender(this)
 					   .setReceiver(user)
