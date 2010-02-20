@@ -59,7 +59,7 @@ class TestAccounts(Test):
     def test_disconnect(self):
         self['minbif1'].write('SQUIT jabber0')
         accounts = self['minbif1'].get_accounts()
-        return accounts.popitem()[1].state == '(disconnected)'
+        return accounts.popitem()[1].state == 'disconnected'
 
     def test_removeaccount(self):
         self['minbif1'].remove_account('jabber0')

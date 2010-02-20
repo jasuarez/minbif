@@ -348,9 +348,9 @@ class Instance:
             return False
 
         acc = accounts[name]
-        if acc.state == '(connected)':
+        if acc.state == 'connected':
             return True
-        if acc.state != '(connecting)':
+        if acc.state != 'connecting':
             return False
 
         while 1:
@@ -383,11 +383,16 @@ class Instance:
             if not line.startswith('|') and not line.startswith('`'):
                 continue
 
-            m = re.match(".[- ][\*\+]*(.+):([[a-zA-Z]+)([0-9]+)(\s*)(.*)", line)
+            m = re.match(".([- ][\*\+]*)(.+):([[a-zA-Z]+)([0-9]+)", line)
             if m:
-                acc = Account(proto=m.group(2), username=m.group(1))
-                acc.state = m.group(5)
-                accounts['%s%s' % (m.group(2), m.group(3))] = acc
+                acc = Account(proto=m.group(3), username=m.group(2))
+                prompt2state = {'-':  'connected',
+                                ' ':  'disconnected',
+                                '-*': 'connecting',
+                                '-+': 'added'
+                               }
+                acc.state = prompt2state[m.group(1)]
+                accounts['%s%s' % (m.group(3), m.group(4))] = acc
 
         return accounts
 
