@@ -42,7 +42,7 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 			close(fileno(stderr));
 #endif /* DEBUG */
 	}
-	catch(irc::AuthError &e)
+	catch(irc::IRCError &e)
 	{
 		b_log[W_ERR] << "Unable to start the IRC daemon";
 		throw ServerPollError();

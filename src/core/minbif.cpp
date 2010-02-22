@@ -65,6 +65,9 @@ Minbif::Minbif()
 	sub->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
 	sub->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
 	sub->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
+#ifdef HAVE_TLS
+	sub->AddItem(new ConfigItem_string("security", "none/ssl/tls"));
+#endif
 
 	sub = section->AddSection("oper", "Define an IRC operator", MyConfig::MULTIPLE);
 	sub->AddItem(new ConfigItem_string("login", "Nickname of IRC operator"), true);
@@ -73,6 +76,11 @@ Minbif::Minbif()
 	section = conf.AddSection("aaa", "Authentication, Authorization and Accounting", MyConfig::OPTIONAL);
 #ifdef HAVE_PAM
 	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
+#endif
+#ifdef HAVE_TLS
+	sub->AddItem(new ConfigItem_string("tls_ca_file", "CA certificate file for TLS"));
+	sub->AddItem(new ConfigItem_string("tls_cert_file", "Server certificate file for TLS"));
+	sub->AddItem(new ConfigItem_string("tls_key_file", "Server key file for TLS"));
 #endif
 
 	section = conf.AddSection("file_transfers", "File transfers parameters", MyConfig::OPTIONAL);
