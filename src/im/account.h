@@ -177,6 +177,9 @@ namespace im
 		/** \todo TODO implement it */
 		vector<Buddy> getBuddies() const;
 
+		/** All buddiers are updated */
+		void updatedAllBuddies() const;
+
 		/** Connect account */
 		void connect() const;
 

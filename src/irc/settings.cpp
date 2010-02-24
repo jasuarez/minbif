@@ -60,6 +60,25 @@ bool SettingTypingNotice::setValue(string v)
 	return true;
 }
 
+string SettingVoicedBuddies::getValue() const
+{
+	return getIM()->hasVoicedBuddies() ? "true" : "false";
+}
+
+bool SettingVoicedBuddies::setValue(string v)
+{
+	if(v == "1" || v == "true")
+		getIM()->setVoicedBuddies(true);
+	else if(v == "0" || v == "false")
+		getIM()->setVoicedBuddies(false);
+	else
+	{
+		getIRC()->notice(getIRC()->getUser(), "Value must be 'true' or 'false'");
+		return false;
+	}
+	return true;
+}
+
 string SettingAwayIdle::getValue() const
 {
 	return getIM()->hasAwayIdle() ? "true" : "false";

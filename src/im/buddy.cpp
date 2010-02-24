@@ -146,12 +146,14 @@ void Buddy::updated() const
 		return;
 	if(isOnline())
 	{
+		bool available = isAvailable() && Purple::getIM()->hasVoicedBuddies();
 		irc::ChanUser* chanuser = n->getChanUser(chan);
+
 		if(!chanuser)
-			n->join(chan, isAvailable() ? irc::ChanUser::VOICE : 0);
-		else if(isAvailable() ^ chanuser->hasStatus(irc::ChanUser::VOICE))
+			n->join(chan, available ? irc::ChanUser::VOICE : 0);
+		else if(available ^ chanuser->hasStatus(irc::ChanUser::VOICE))
 		{
-			if(isAvailable())
+			if(available)
 				chan->setMode(Purple::getIM()->getIRC(), irc::ChanUser::VOICE, chanuser);
 			else
 				chan->delMode(Purple::getIM()->getIRC(), irc::ChanUser::VOICE, chanuser);

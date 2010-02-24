@@ -361,6 +361,14 @@ vector<Buddy> Account::getBuddies() const
 	return buddies;
 }
 
+void Account::updatedAllBuddies() const
+{
+	assert(isValid());
+	vector<Buddy> buddies = getBuddies();
+	for(vector<Buddy>::iterator it = buddies.begin(); it != buddies.end(); ++it)
+		it->updated();
+}
+
 void Account::displayRoomList() const
 {
 	assert(isValid());

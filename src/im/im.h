@@ -86,6 +86,10 @@ namespace im
 		void setTypingNotice(bool enabled);
 		bool hasTypingNotice() const;
 
+		/** Set voiced buddies */
+		void setVoicedBuddies(bool enabled);
+		bool hasVoicedBuddies() const;
+
 		/** Set away idle */
 		void setAwayIdle(bool enabled);
 		bool hasAwayIdle() const;

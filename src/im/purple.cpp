@@ -90,6 +90,7 @@ void Purple::minbif_prefs_init()
 
 	purple_prefs_add_string("/minbif/password", "");
 	purple_prefs_add_int("/minbif/typing_notice", 0);
+	purple_prefs_add_bool("/minbif/voiced_buddies", true);
 }
 
 GHashTable *Purple::ui_info = NULL;

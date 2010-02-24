@@ -123,6 +123,24 @@ bool IM::hasTypingNotice() const
 	return purple_prefs_get_int("/minbif/typing_notice");
 }
 
+void IM::setVoicedBuddies(bool enabled)
+{
+	if(hasVoicedBuddies() != enabled)
+	{
+		map<string, Account> accs = getAccountsList();
+
+		purple_prefs_set_bool("/minbif/voiced_buddies", enabled);
+		for(map<string, Account>::iterator it = accs.begin(); it != accs.end(); ++it)
+			it->second.updatedAllBuddies();
+
+	}
+}
+
+bool IM::hasVoicedBuddies() const
+{
+	return purple_prefs_get_bool("/minbif/voiced_buddies");
+}
+
 void IM::setAwayIdle(bool enabled)
 {
 	purple_prefs_set_bool("/purple/away/away_when_idle", enabled);

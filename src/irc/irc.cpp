@@ -1389,6 +1389,7 @@ void IRC::m_admin(Message message)
 	} settings[] = {
 		{ "password",      true,  new SettingPassword(this, im) },
 		{ "typing_notice", true,  new SettingTypingNotice(this, im) },
+		{ "voiced_buddies",true,  new SettingVoicedBuddies(this, im) },
 		{ "away_idle",     true,  new SettingAwayIdle(this, im) },
 		{ "log_level",     true,  new SettingLogLevel(this, im) },
 		{ "proxy",         true,  new SettingProxy(this, im) },
