@@ -1387,17 +1387,18 @@ void IRC::m_admin(Message message)
 		bool display;
 		SettingBase* setting;
 	} settings[] = {
-		{ "password",      true,  new SettingPassword(this, im) },
-		{ "typing_notice", true,  new SettingTypingNotice(this, im) },
-		{ "voiced_buddies",true,  new SettingVoicedBuddies(this, im) },
-		{ "away_idle",     true,  new SettingAwayIdle(this, im) },
-		{ "log_level",     true,  new SettingLogLevel(this, im) },
-		{ "proxy",         true,  new SettingProxy(this, im) },
-		{ "proxy_host",    true,  new SettingProxyHost(this, im) },
-		{ "proxy_port",    true,  new SettingProxyPort(this, im) },
-		{ "proxy_user",    true,  new SettingProxyUsername(this, im) },
-		{ "proxy_pass",    true,  new SettingProxyPassword(this, im) },
-		{ "minbif",        false, new SettingMinbif(this, im) },
+		{ "password",                  true,  new SettingPassword(this, im) },
+		{ "typing_notice",             true,  new SettingTypingNotice(this, im) },
+		{ "accept_nobuddies_messages", true,  new SettingAcceptNoBuddiesMessages(this, im) },
+		{ "voiced_buddies",            true,  new SettingVoicedBuddies(this, im) },
+		{ "away_idle",                 true,  new SettingAwayIdle(this, im) },
+		{ "log_level",                 true,  new SettingLogLevel(this, im) },
+		{ "proxy",                     true,  new SettingProxy(this, im) },
+		{ "proxy_host",                true,  new SettingProxyHost(this, im) },
+		{ "proxy_port",                true,  new SettingProxyPort(this, im) },
+		{ "proxy_user",                true,  new SettingProxyUsername(this, im) },
+		{ "proxy_pass",                true,  new SettingProxyPassword(this, im) },
+		{ "minbif",                    false, new SettingMinbif(this, im) },
 	};
 
 	if(message.countArgs() == 0)

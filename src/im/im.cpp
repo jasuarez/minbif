@@ -123,6 +123,16 @@ bool IM::hasTypingNotice() const
 	return purple_prefs_get_int("/minbif/typing_notice");
 }
 
+void IM::setAcceptNoBuddiesMessages(bool enabled)
+{
+	purple_prefs_set_bool("/minbif/accept_nobuddies_messages", enabled);
+}
+
+bool IM::hasAcceptNoBuddiesMessages() const
+{
+	return purple_prefs_get_bool("/minbif/accept_nobuddies_messages");
+}
+
 void IM::setVoicedBuddies(bool enabled)
 {
 	if(hasVoicedBuddies() != enabled)

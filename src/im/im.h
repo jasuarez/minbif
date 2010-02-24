@@ -86,6 +86,10 @@ namespace im
 		void setTypingNotice(bool enabled);
 		bool hasTypingNotice() const;
 
+		/** Accept messages from people who are not in buddy list */
+		void setAcceptNoBuddiesMessages(bool enabled);
+		bool hasAcceptNoBuddiesMessages() const;
+
 		/** Set voiced buddies */
 		void setVoicedBuddies(bool enabled);
 		bool hasVoicedBuddies() const;

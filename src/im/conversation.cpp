@@ -434,6 +434,9 @@ void Conversation::recvMessage(string from, string text, bool action)
 
 					if(!n || !dynamic_cast<irc::Buddy*>(n))
 					{
+						if (!Purple::getIM()->hasAcceptNoBuddiesMessages())
+							return;
+
 						/* Ok, there isn't any buddy, so I create an unknown buddy to chat with him. */
 						n = new irc::UnknownBuddy(irc->getServer(getAccount().getServername()), *this);
 						while((irc->getNick(n->getNickname())))

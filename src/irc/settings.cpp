@@ -60,6 +60,25 @@ bool SettingTypingNotice::setValue(string v)
 	return true;
 }
 
+string SettingAcceptNoBuddiesMessages::getValue() const
+{
+	return getIM()->hasAcceptNoBuddiesMessages() ? "true" : "false";
+}
+
+bool SettingAcceptNoBuddiesMessages::setValue(string v)
+{
+	if(v == "1" || v == "true")
+		getIM()->setAcceptNoBuddiesMessages(true);
+	else if(v == "0" || v == "false")
+		getIM()->setAcceptNoBuddiesMessages(false);
+	else
+	{
+		getIRC()->notice(getIRC()->getUser(), "Value must be 'true' or 'false'");
+		return false;
+	}
+	return true;
+}
+
 string SettingVoicedBuddies::getValue() const
 {
 	return getIM()->hasVoicedBuddies() ? "true" : "false";

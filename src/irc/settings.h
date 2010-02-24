@@ -60,6 +60,7 @@ namespace irc
 
 SETTING(Password);
 SETTING(TypingNotice);
+SETTING(AcceptNoBuddiesMessages);
 SETTING(VoicedBuddies);
 SETTING(AwayIdle);
 SETTING(Minbif);
