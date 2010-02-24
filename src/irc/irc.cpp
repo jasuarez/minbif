@@ -1508,7 +1508,8 @@ void IRC::m_join(Message message)
 					continue;
 				}
 
-				if(!account.joinChat(convname, param))
+				/* purple_url_decode() returns a static buffer, no free needed. */
+				if(!account.joinChat(purple_url_decode(convname.c_str()), param))
 				{
 					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 									     .setReceiver(user)
