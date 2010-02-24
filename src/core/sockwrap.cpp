@@ -22,6 +22,7 @@
 #  include "sockwrap_tls.h"
 #endif
 #include "config.h"
+#include "core/util.h"
 
 SockWrapper::SockWrapper(int _fd) : fd(_fd)
 {
@@ -74,5 +75,10 @@ string SockWrapper::GetServerHostname()
 	}
 
 	return serverhost;
+}
+
+int SockWrapper::AttachCallback(PurpleInputCondition cond, _CallBack* cb)
+{
+	return glib_input_add(fd, cond, g_callback_input, cb);
 }
 

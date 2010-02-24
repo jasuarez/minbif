@@ -113,7 +113,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	/* create a callback on the sock. */
 	read_cb = new CallBack<IRC>(this, &IRC::readIO);
 	/* XXX it appears that it is not free'd */
-	read_id = glib_input_add(fd, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback_input, read_cb);
+	read_id = sockw->AttachCallback(PURPLE_INPUT_READ, read_cb);
 
 	/* Create main objects and root joins command channel. */
 	user = new User(fd, this, "*", "", sockw->GetClientHostname());

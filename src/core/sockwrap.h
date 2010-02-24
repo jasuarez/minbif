@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <string>
+#include "core/callback.h"
 
 #ifndef PF_SOCKWRAP_H
 #define PF_SOCKWRAP_H
@@ -53,6 +54,7 @@ public:
 	virtual string Read() = 0;
 	virtual string GetClientHostname();
 	virtual string GetServerHostname();
+	virtual int AttachCallback(PurpleInputCondition cond, _CallBack* cb);
 
 protected:
 	int fd;
