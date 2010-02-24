@@ -17,8 +17,6 @@
  */
 
 #include <sys/socket.h>
-#include <fcntl.h>
-#include <netdb.h>
 #include <cstring>
 #include <algorithm>
 #include <cassert>
@@ -85,13 +83,6 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_DIE,     &IRC::m_die,     1, 0, Nick::OPER },
 };
 
-#ifdef HAVE_TLS
-static void tls_debug_message(int level, const char* message)
-{
-	b_log[W_DEBUG] << "TLS debug: " << message;
-}
-#endif
-
 IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	: Server("localhost.localdomain", MINBIF_VERSION),
 	  poll(_poll),
@@ -105,42 +96,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	  user(NULL),
 	  im(NULL)
 {
-#ifdef HAVE_TLS
-	/* TODO: check conf.GetSection("daemon")->GetItem("security")->String(); */
-	if (1)
-	{
-		/* GNUTLS init */
-		int tls_err = gnutls_global_init();
-		if (tls_err != GNUTLS_E_SUCCESS)
-		{
-			b_log[W_ERR] << "Cannot initialize the GNUTLS library: " << gnutls_strerror(tls_err);
-			throw TLSError();
-		}
-
-		/* GNUTLS logging */
-		gnutls_global_set_log_function(tls_debug_message);
-		gnutls_global_set_log_level(10);
-
-		gnutls_certificate_allocate_credentials(&x509_cred);
-		gnutls_certificate_set_x509_trust_file(x509_cred,
-			conf.GetSection("aaa")->GetItem("tls_ca_file")->String().c_str(),
-			GNUTLS_X509_FMT_PEM);
-		gnutls_certificate_set_x509_key_file(x509_cred,
-			conf.GetSection("aaa")->GetItem("tls_cert_file")->String().c_str(),
-			conf.GetSection("aaa")->GetItem("tls_key_file")->String().c_str(),
-			GNUTLS_X509_FMT_PEM);
-
-		gnutls_dh_params_init(&dh_params);
-		gnutls_dh_params_generate2(dh_params, 1024);
-		gnutls_certificate_set_dh_params(x509_cred, dh_params);
-
-		gnutls_priority_init(&priority_cache, "NORMAL", NULL);
-
-		gnutls_init(&tls_session, GNUTLS_SERVER);
-		gnutls_priority_set(tls_session, priority_cache);
-		gnutls_credentials_set(tls_session, GNUTLS_CRD_CERTIFICATE, x509_cred);
-	}
-#endif
+	sockw = SockWrapper::Builder(fd);
 
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
@@ -170,7 +126,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	{
 		/* An hostname can't contain any space. */
 		b_log[W_ERR] << "'" << _hostname << "' is not a valid server hostname";
-		throw SockError();
+		throw SockError::SockError("Wrong server hostname");
 	}
 	else
 		setName(_hostname);
@@ -209,22 +165,12 @@ IRC::~IRC()
 		g_source_remove(ping_id);
 	delete read_cb;
 	delete ping_cb;
-	if(fd >= 0)
-		close(fd);
+	if(sockw)
+		delete sockw;
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
 	cleanUpDCC();
-
-#ifdef HAVE_TLS
-	if (1)
-	{
-		gnutls_deinit(tls_session);
-		gnutls_certificate_free_credentials(x509_cred);
-		gnutls_priority_deinit(priority_cache);
-		gnutls_global_deinit();
-	}
-#endif
 }
 
 DCC* IRC::createDCCSend(const im::FileTransfert& ft, Nick* n)
@@ -474,8 +420,8 @@ void IRC::quit(string reason)
 	read_id = -1;
 
 	user->close();
-	close(fd);
-	fd = -1;
+	delete sockw;
+	sockw = NULL;
 
 	poll->kill(this);
 }
@@ -567,22 +513,16 @@ void IRC::privmsg(Nick* nick, string msg)
 
 bool IRC::readIO(void*)
 {
-	static char buf[1024];
 	string sbuf, line;
-	ssize_t r;
 
-	if((r = read(fd, buf, sizeof buf - 1)) <= 0)
+	try
 	{
-		if(r == 0)
-			this->quit("Connection reset by peer...");
-		else if(!sockerr_again())
-			this->quit(string("Read error: ") + strerror(errno));
-		else
-			return true; // continue...
-		return false;
+		sbuf = sockw->Read();
 	}
-	buf[r] = 0;
-	sbuf = buf;
+	catch (IRCError &e)
+	{
+		quit(e.Reason());
+	}
 
 	while((line = stringtok(sbuf, "\r\n")).empty() == false)
 	{

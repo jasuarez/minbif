@@ -27,9 +27,7 @@
 #include "message.h"
 #include "server.h"
 #include "im/auth.h"
-#ifdef HAVE_TLS
-#  include "gnutls/gnutls.h"
-#endif
+#include "core/sockwrap.h"
 
 class _CallBack;
 class ServerPoll;
@@ -48,12 +46,6 @@ namespace irc
 	using std::string;
 	using std::map;
 
-	class IRCError : public std::exception {};
-	class SockError : public IRCError {};
-#ifdef HAVE_TLS
-	class TLSError : public IRCError {};
-#endif
-
 	class User;
 	class Nick;
 	class Channel;
@@ -67,6 +59,7 @@ namespace irc
 	class IRC : public Server
 	{
 		ServerPoll* poll;
+		SockWrapper* sockw;
 		int fd;
 		int read_id;
 		_CallBack *read_cb;
@@ -92,13 +85,6 @@ namespace irc
 			unsigned flags;
 		};
 		static command_t commands[];
-
-#ifdef HAVE_TLS
-		gnutls_certificate_credentials_t x509_cred;
-		gnutls_priority_t priority_cache;
-		gnutls_dh_params_t dh_params;
-		gnutls_session_t tls_session;
-#endif
 
 		void cleanUpNicks();
 		void cleanUpChannels();

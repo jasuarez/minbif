@@ -3,6 +3,9 @@ SET(BIN_NAME minbif)
 IF(PAM_FOUND)
 	SET(MINBIF_EXTRA_FILES_PAM "im/auth_pam.cpp")
 ENDIF(PAM_FOUND)
+IF(GNUTLS_FOUND)
+	SET(MINBIF_EXTRA_FILES_TLS "core/sockwrap_tls.cpp")
+ENDIF(GNUTLS_FOUND)
 ADD_EXECUTABLE(${BIN_NAME}
 		core/minbif.cpp
 		core/sighandler.cpp
@@ -12,6 +15,9 @@ ADD_EXECUTABLE(${BIN_NAME}
 		core/callback.cpp
 		core/config.cpp
 		core/caca_image.cpp
+		core/sockwrap.cpp
+		core/sockwrap_plain.cpp
+		${MINBIF_EXTRA_FILES_TLS}
 		server_poll/poll.cpp
 		server_poll/inetd.cpp
 		server_poll/daemon_fork.cpp

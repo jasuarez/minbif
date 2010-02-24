@@ -219,7 +219,7 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 				      conf.GetSection("irc")->GetItem("hostname")->String(),
 				      conf.GetSection("irc")->GetItem("ping")->Integer());
 		}
-		catch(irc::IRCError &e)
+		catch(IRCError &e)
 		{
 			b_log[W_ERR] << "Unable to start the IRC daemon";
 			getApplication()->quit();
