@@ -40,3 +40,39 @@ SockWrapper* SockWrapper::Builder(int _fd)
 	return new SockWrapperPlain(_fd);
 }
 
+string SockWrapper::GetClientHostname()
+{
+	struct sockaddr_storage sock;
+	socklen_t socklen = sizeof(sock);
+
+	/* Get the client's hostname. */
+	string clienthost = "localhost.localdomain";
+	if(getpeername(fd, (struct sockaddr*) &sock, &socklen) == 0)
+	{
+		char buf[NI_MAXHOST+1];
+
+		if(getnameinfo((struct sockaddr *)&sock, socklen, buf, NI_MAXHOST, NULL, 0, 0) == 0)
+			clienthost = buf;
+	}
+
+	return clienthost;
+}
+
+string SockWrapper::GetServerHostname()
+{
+	struct sockaddr_storage sock;
+	socklen_t socklen = sizeof(sock);
+
+	/* Get the server's hostname. */
+	string serverhost = "localhost.localdomain";
+	if(getsockname(fd, (struct sockaddr*) &sock, &socklen) == 0)
+	{
+		char buf[NI_MAXHOST+1];
+
+		if(getnameinfo((struct sockaddr *) &sock, socklen, buf, NI_MAXHOST, NULL, 0, 0 ) == 0)
+			serverhost = buf;
+	}
+
+	return serverhost;
+}
+

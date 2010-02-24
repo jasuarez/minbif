@@ -51,6 +51,8 @@ public:
 	virtual ~SockWrapper();
 
 	virtual string Read() = 0;
+	virtual string GetClientHostname();
+	virtual string GetServerHostname();
 
 protected:
 	int fd;

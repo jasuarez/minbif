@@ -98,30 +98,9 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 {
 	sockw = SockWrapper::Builder(fd);
 
-	struct sockaddr_storage sock;
-	socklen_t socklen = sizeof(sock);
-
-	/* Get the user's hostname. */
-	string userhost = "localhost.localdomain";
-	if(getpeername(fd, (struct sockaddr*) &sock, &socklen) == 0)
-	{
-		char buf[NI_MAXHOST+1];
-
-		if(getnameinfo((struct sockaddr *)&sock, socklen, buf, NI_MAXHOST, NULL, 0, 0) == 0)
-			userhost = buf;
-	}
-
 	/* Get my own hostname (if not given in arguments) */
 	if(_hostname.empty() || _hostname == " ")
-	{
-		if(getsockname(fd, (struct sockaddr*) &sock, &socklen) == 0)
-		{
-			char buf[NI_MAXHOST+1];
-
-			if(getnameinfo((struct sockaddr *) &sock, socklen, buf, NI_MAXHOST, NULL, 0, 0 ) == 0)
-				setName(buf);
-		}
-	}
+		setName(sockw->GetServerHostname());
 	else if(_hostname.find(" ") != string::npos)
 	{
 		/* An hostname can't contain any space. */
@@ -137,7 +116,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	read_id = glib_input_add(fd, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback_input, read_cb);
 
 	/* Create main objects and root joins command channel. */
-	user = new User(fd, this, "*", "", userhost);
+	user = new User(fd, this, "*", "", sockw->GetClientHostname());
 	addNick(user);
 	im_auth = NULL;
 
