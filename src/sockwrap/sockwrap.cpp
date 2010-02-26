@@ -21,7 +21,7 @@
 #ifdef HAVE_TLS
 #  include "sockwrap_tls.h"
 #endif
-#include "config.h"
+#include "core/config.h"
 #include "core/util.h"
 
 SockWrapper::SockWrapper(int _fd) : fd(_fd)

@@ -27,7 +27,7 @@
 #include "message.h"
 #include "server.h"
 #include "im/auth.h"
-#include "core/sockwrap.h"
+#include "sockwrap/sockwrap.h"
 
 class _CallBack;
 class ServerPoll;

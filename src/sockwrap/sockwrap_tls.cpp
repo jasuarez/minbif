@@ -17,9 +17,9 @@
  */
 
 #include "sockwrap_tls.h"
-#include "core/sock.h"
-#include "config.h"
-#include "log.h"
+#include "sock.h"
+#include "core/config.h"
+#include "core/log.h"
 #include <sys/socket.h>
 #include <cstring>
 

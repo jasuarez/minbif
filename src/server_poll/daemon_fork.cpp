@@ -36,7 +36,7 @@
 #include "core/log.h"
 #include "core/minbif.h"
 #include "core/util.h"
-#include "core/sock.h"
+#include "sockwrap/sock.h"
 
 DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	: ServerPoll(application),

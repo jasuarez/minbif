@@ -26,7 +26,6 @@
 #include "core/util.h"
 #include "core/callback.h"
 #include "core/version.h"
-#include "core/sock.h"
 #include "core/config.h"
 #include "im/im.h"
 #include "server_poll/poll.h"

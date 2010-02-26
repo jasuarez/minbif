@@ -17,8 +17,7 @@
  */
 
 #include "sockwrap_plain.h"
-#include "core/sock.h"
-#include "config.h"
+#include "sock.h"
 #include "log.h"
 #include <sys/socket.h>
 #include <cstring>
