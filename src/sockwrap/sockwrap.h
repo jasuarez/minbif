@@ -31,8 +31,6 @@ class IRCError
 	string reason;
 
 public:
-	/* temporary silly method with a silly reason */
-	IRCError() : reason("unknown error") {}
 	IRCError(string _reason) : reason(_reason) {}
 
 	const string Reason() { return reason; }
