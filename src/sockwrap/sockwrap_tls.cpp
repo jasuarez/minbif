@@ -60,7 +60,7 @@ SockWrapperTLS::SockWrapperTLS(int _fd) : SockWrapper(_fd)
 	gnutls_init(&tls_session, GNUTLS_SERVER);
 	gnutls_priority_set(tls_session, priority_cache);
 	gnutls_credentials_set(tls_session, GNUTLS_CRD_CERTIFICATE, x509_cred);
-	gnutls_transport_set_ptr (tls_session, (gnutls_transport_ptr_t) fd);
+	gnutls_transport_set_ptr2(tls_session, (gnutls_transport_ptr_t) recv_fd, (gnutls_transport_ptr_t) send_fd);
 
 	tls_err = gnutls_handshake (tls_session);
 	if (tls_err < 0)
@@ -75,13 +75,12 @@ SockWrapperTLS::SockWrapperTLS(int _fd) : SockWrapper(_fd)
 SockWrapperTLS::~SockWrapperTLS()
 {
 	gnutls_bye (tls_session, GNUTLS_SHUT_WR);
-
-	EndSessionCleanup();
 }
 
 void SockWrapperTLS::EndSessionCleanup()
 {
-	close(fd);
+	SockWrapper::EndSessionCleanup();
+
 	gnutls_deinit(tls_session);
 
 	gnutls_certificate_free_credentials(x509_cred);
@@ -95,14 +94,25 @@ string SockWrapperTLS::Read()
 	string sbuf;
 	ssize_t r;
 
-	r = gnutls_record_recv (tls_session, buf, sizeof buf - 1);
+	r = gnutls_record_recv(tls_session, buf, sizeof buf - 1);
 	if (r == 0)
 		throw SockError::SockError("Connection reset by peer...");
 	else if (r < 0)
-		throw SockError::SockError("Received corrupte data, closing the connection.");
+		throw TLSError::TLSError("Received corrupted data, closing the connection.");
 	buf[r] = 0;
 	sbuf = buf;
 
 	return sbuf;
+}
+
+void SockWrapperTLS::Write(string s)
+{
+	ssize_t r;
+
+	r = gnutls_record_send(tls_session, s.c_str(), s.size());
+	if (r == 0)
+		throw SockError::SockError("Connection reset by peer...");
+	else if (r < 0)
+		throw TLSError::TLSError("Problem while sending data, closing the connection.");
 }
 

@@ -52,12 +52,15 @@ public:
 	virtual ~SockWrapper();
 
 	virtual string Read() = 0;
+	virtual void Write(string s) = 0;
 	virtual string GetClientHostname();
 	virtual string GetServerHostname();
 	virtual int AttachCallback(PurpleInputCondition cond, _CallBack* cb);
 
 protected:
-	int fd;
+	int recv_fd, send_fd;
+
+	virtual void EndSessionCleanup();
 };
 
 #endif /* PF_SOCKWRAP_H */

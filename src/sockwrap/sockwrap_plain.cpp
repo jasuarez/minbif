@@ -36,9 +36,9 @@ string SockWrapperPlain::Read()
 	string sbuf;
 	ssize_t r;
 
-	if((r = read(fd, buf, sizeof buf - 1)) <= 0)
+	if ((r = read(recv_fd, buf, sizeof buf - 1)) <= 0)
 	{
-		if(r == 0)
+		if (r == 0)
 			throw SockError::SockError("Connection reset by peer...");
 		else if(!sockerr_again())
 			throw SockError::SockError(string("Read error: ") + strerror(errno));
@@ -52,5 +52,18 @@ string SockWrapperPlain::Read()
 	}
 
 	return sbuf;
+}
+
+void SockWrapperPlain::Write(string s)
+{
+	ssize_t r;
+
+	if ((r = write(send_fd, s.c_str(), s.size())) <= 0)
+	{
+		if (r == 0)
+			throw SockError::SockError("Connection reset by peer...");
+		else if(!sockerr_again())
+			throw SockError::SockError(string("Read error: ") + strerror(errno));
+	}
 }
 

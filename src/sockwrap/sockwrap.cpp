@@ -24,12 +24,22 @@
 #include "core/config.h"
 #include "core/util.h"
 
-SockWrapper::SockWrapper(int _fd) : fd(_fd)
+SockWrapper::SockWrapper(int _fd) : recv_fd(_fd)
 {
+	if (recv_fd < 0)
+		throw SockError::SockError("Wrong input file descriptor");
+
+	if (recv_fd == fileno(stdin))
+		send_fd = fileno(stdout);
+	else
+		send_fd = recv_fd;
+	if (send_fd < 0)
+		throw SockError::SockError("Wrong output file descriptor");
 }
 
 SockWrapper::~SockWrapper()
 {
+	EndSessionCleanup();
 }
 
 SockWrapper* SockWrapper::Builder(int _fd)
@@ -48,7 +58,7 @@ string SockWrapper::GetClientHostname()
 
 	/* Get the client's hostname. */
 	string clienthost = "localhost.localdomain";
-	if(getpeername(fd, (struct sockaddr*) &sock, &socklen) == 0)
+	if(getpeername(recv_fd, (struct sockaddr*) &sock, &socklen) == 0)
 	{
 		char buf[NI_MAXHOST+1];
 
@@ -66,7 +76,7 @@ string SockWrapper::GetServerHostname()
 
 	/* Get the server's hostname. */
 	string serverhost = "localhost.localdomain";
-	if(getsockname(fd, (struct sockaddr*) &sock, &socklen) == 0)
+	if(getsockname(recv_fd, (struct sockaddr*) &sock, &socklen) == 0)
 	{
 		char buf[NI_MAXHOST+1];
 
@@ -79,6 +89,13 @@ string SockWrapper::GetServerHostname()
 
 int SockWrapper::AttachCallback(PurpleInputCondition cond, _CallBack* cb)
 {
-	return glib_input_add(fd, cond, g_callback_input, cb);
+	return glib_input_add(recv_fd, cond, g_callback_input, cb);
+}
+
+void SockWrapper::EndSessionCleanup()
+{
+	close(recv_fd);
+	if (send_fd != recv_fd)
+		close(send_fd);
 }
 

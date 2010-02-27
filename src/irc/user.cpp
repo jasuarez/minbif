@@ -22,12 +22,10 @@
 
 namespace irc {
 
-User::User(int _fd, Server* server, string nickname, string identname, string hostname, string realname)
+User::User(SockWrapper* _sockw, Server* server, string nickname, string identname, string hostname, string realname)
 	: Nick(server, nickname, identname, hostname, realname),
-	  fd(_fd)
+	  sockw(_sockw)
 {
-	if(fileno(stdin) == fd)
-		fd = fileno(stdout);
 }
 
 User::~User()
@@ -36,11 +34,8 @@ User::~User()
 
 void User::send(Message msg)
 {
-	if(fd >= 0)
-	{
-		string s = msg.format();
-		write(fd, s.c_str(), s.size());
-	}
+	if (sockw)
+		sockw->Write(msg.format());
 }
 
 void User::setLastReadNow()

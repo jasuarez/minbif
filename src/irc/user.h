@@ -20,13 +20,14 @@
 #define IRC_USER_H
 
 #include "nick.h"
+#include "sockwrap/sockwrap.h"
 
 namespace irc
 {
 	/** This class represents user connected to minbif */
 	class User : public Nick
 	{
-		int fd;
+		SockWrapper* sockw;
 		string password;
 		time_t last_read;
 
@@ -34,20 +35,20 @@ namespace irc
 
 		/** Build the User object.
 		 *
-		 * @param fd  file descriptor used to write messages to user.
+		 * @param _sockw  socket wrapper used to write messages to user
 		 * @param server  up-server (probably an IRC instance)
 		 * @param nickname  nickname of user
 		 * @param identname  identname of user
 		 * @param hostname  hostname of user
 		 * @param realname  realname of user
 		 */
-		User(int fd, Server* server, string nickname, string identname, string hostname, string realname="");
+		User(SockWrapper* _sockw, Server* server, string nickname, string identname, string hostname, string realname="");
 		~User();
 
 		void setPassword(string p) { password = p; }
 		string getPassword() const { return password; }
 
-		void close() { fd = -1; }
+		void close() { sockw = NULL; }
 
 		string getModes() const;
 

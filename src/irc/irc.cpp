@@ -115,7 +115,7 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	read_id = sockw->AttachCallback(PURPLE_INPUT_READ, read_cb);
 
 	/* Create main objects and root joins command channel. */
-	user = new User(fd, this, "*", "", sockw->GetClientHostname());
+	user = new User(sockw, this, "*", "", sockw->GetClientHostname());
 	addNick(user);
 	im_auth = NULL;
 

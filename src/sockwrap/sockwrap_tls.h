@@ -42,6 +42,7 @@ public:
 	~SockWrapperTLS();
 
 	string Read();
+	void Write(string s);
 };
 
 #endif /* PF_SOCKWRAP_TLS_H */

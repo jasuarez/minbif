@@ -28,6 +28,7 @@ public:
 	~SockWrapperPlain();
 
 	string Read();
+	void Write(string s);
 };
 
 #endif /* PF_SOCKWRAP_PLAIN_H */
