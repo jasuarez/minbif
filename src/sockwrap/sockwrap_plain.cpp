@@ -22,7 +22,7 @@
 #include <sys/socket.h>
 #include <cstring>
 
-SockWrapperPlain::SockWrapperPlain(int _fd) : SockWrapper(_fd)
+SockWrapperPlain::SockWrapperPlain(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
 }
 

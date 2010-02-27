@@ -28,7 +28,7 @@ static void tls_debug_message(int level, const char* message)
 	b_log[W_DEBUG] << "TLS debug: " << message;
 }
 
-SockWrapperTLS::SockWrapperTLS(int _fd) : SockWrapper(_fd)
+SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
 	/* GNUTLS init */
 	int tls_err = gnutls_global_init();

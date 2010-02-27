@@ -47,8 +47,8 @@ public:
 class SockWrapper
 {
 public:
-	static SockWrapper* Builder(int _fd);
-	SockWrapper(int _fd);
+	static SockWrapper* Builder(int _recv_fd, int _send_fd);
+	SockWrapper(int _recv_fd, int _send_fd);
 	virtual ~SockWrapper();
 
 	virtual string Read() = 0;

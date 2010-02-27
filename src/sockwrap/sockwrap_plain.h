@@ -24,7 +24,7 @@
 class SockWrapperPlain : public SockWrapper
 {
 public:
-	SockWrapperPlain(int _fd);
+	SockWrapperPlain(int _recv_fd, int _send_fd);
 	~SockWrapperPlain();
 
 	string Read();

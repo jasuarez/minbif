@@ -38,7 +38,7 @@ class SockWrapperTLS : public SockWrapper
 	void EndSessionCleanup();
 
 public:
-	SockWrapperTLS(int _fd);
+	SockWrapperTLS(int _recv_fd, int _send_fd);
 	~SockWrapperTLS();
 
 	string Read();

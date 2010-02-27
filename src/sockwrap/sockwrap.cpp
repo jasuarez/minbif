@@ -24,15 +24,10 @@
 #include "core/config.h"
 #include "core/util.h"
 
-SockWrapper::SockWrapper(int _fd) : recv_fd(_fd)
+SockWrapper::SockWrapper(int _recv_fd, int _send_fd) : recv_fd(_recv_fd), send_fd(_send_fd)
 {
 	if (recv_fd < 0)
 		throw SockError::SockError("Wrong input file descriptor");
-
-	if (recv_fd == fileno(stdin))
-		send_fd = fileno(stdout);
-	else
-		send_fd = recv_fd;
 	if (send_fd < 0)
 		throw SockError::SockError("Wrong output file descriptor");
 }
@@ -42,13 +37,13 @@ SockWrapper::~SockWrapper()
 	EndSessionCleanup();
 }
 
-SockWrapper* SockWrapper::Builder(int _fd)
+SockWrapper* SockWrapper::Builder(int _recv_fd, int _send_fd)
 {
 #ifdef HAVE_TLS
 	if (conf.GetSection("daemon")->GetItem("security")->String().compare("ssl") == 0)
-		return new SockWrapperTLS(_fd);
+		return new SockWrapperTLS(_recv_fd, _send_fd);
 #endif
-	return new SockWrapperPlain(_fd);
+	return new SockWrapperPlain(_recv_fd, _send_fd);
 }
 
 string SockWrapper::GetClientHostname()
