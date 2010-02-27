@@ -26,6 +26,7 @@
 #include "core/callback.h"
 #include "core/log.h"
 #include "core/minbif.h"
+#include "sockwrap/sockwrap.h"
 
 InetdServerPoll::InetdServerPoll(Minbif* application)
 	: ServerPoll(application),
@@ -33,7 +34,7 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 {
 	try
 	{
-		irc = new irc::IRC(this, 0,
+		irc = new irc::IRC(this, SockWrapper::Builder(0),
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
 		              conf.GetSection("irc")->GetItem("ping")->Integer());
 #ifndef DEBUG

@@ -60,7 +60,6 @@ namespace irc
 	{
 		ServerPoll* poll;
 		SockWrapper* sockw;
-		int fd;
 		int read_id;
 		_CallBack *read_cb;
 		int ping_id;
@@ -138,11 +137,11 @@ namespace irc
 		/** Create an instance of the IRC class
 		 *
 		 * @param poll  the server poll used by minbif
-		 * @param fd  file descriptor where read and write to user
+		 * @param _sockw  socket wrapper where read and write to user
 		 * @param hostname  server's hostname
 		 * @param ping_freq  frequence of pings
 		 */
-		IRC(ServerPoll* poll, int fd, string hostname, unsigned ping_freq);
+		IRC(ServerPoll* poll, SockWrapper* _sockw, string hostname, unsigned ping_freq);
 		~IRC();
 
 		User* getUser() const { return user; }

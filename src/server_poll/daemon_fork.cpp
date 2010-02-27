@@ -37,6 +37,7 @@
 #include "core/minbif.h"
 #include "core/util.h"
 #include "sockwrap/sock.h"
+#include "sockwrap/sockwrap.h"
 
 DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	: ServerPoll(application),
@@ -215,7 +216,7 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 
 		try
 		{
-			irc = new irc::IRC(this, new_socket,
+			irc = new irc::IRC(this, SockWrapper::Builder(new_socket),
 				      conf.GetSection("irc")->GetItem("hostname")->String(),
 				      conf.GetSection("irc")->GetItem("ping")->Integer());
 		}

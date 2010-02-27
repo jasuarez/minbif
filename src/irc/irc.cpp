@@ -82,10 +82,10 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_DIE,     &IRC::m_die,     1, 0, Nick::OPER },
 };
 
-IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
+IRC::IRC(ServerPoll* _poll, SockWrapper* _sockw, string _hostname, unsigned _ping_freq)
 	: Server("localhost.localdomain", MINBIF_VERSION),
 	  poll(_poll),
-	  fd(_fd),
+	  sockw(_sockw),
 	  read_id(-1),
 	  read_cb(NULL),
 	  ping_id(-1),
@@ -95,8 +95,6 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	  user(NULL),
 	  im(NULL)
 {
-	sockw = SockWrapper::Builder(fd);
-
 	/* Get my own hostname (if not given in arguments) */
 	if(_hostname.empty() || _hostname == " ")
 		setName(sockw->GetServerHostname());
