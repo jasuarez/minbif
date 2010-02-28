@@ -18,12 +18,13 @@
 
 #include "sockwrap_plain.h"
 #include "sock.h"
-#include "log.h"
+#include "core/log.h"
 #include <sys/socket.h>
 #include <cstring>
 
 SockWrapperPlain::SockWrapperPlain(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
+	b_log[W_DEBUG] << "Plain connection initialized";
 }
 
 SockWrapperPlain::~SockWrapperPlain()

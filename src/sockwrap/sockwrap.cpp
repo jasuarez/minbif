@@ -22,6 +22,7 @@
 #  include "sockwrap_tls.h"
 #endif
 #include "core/config.h"
+#include "core/log.h"
 #include "core/util.h"
 
 SockWrapper::SockWrapper(int _recv_fd, int _send_fd) : recv_fd(_recv_fd), send_fd(_send_fd)
@@ -51,6 +52,8 @@ string SockWrapper::GetClientHostname()
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
 
+	b_log[W_DEBUG] << "Fetching client hostname";
+
 	/* Get the client's hostname. */
 	string clienthost = "localhost.localdomain";
 	if(getpeername(recv_fd, (struct sockaddr*) &sock, &socklen) == 0)
@@ -68,6 +71,8 @@ string SockWrapper::GetServerHostname()
 {
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
+
+	b_log[W_DEBUG] << "Fetching server hostname";
 
 	/* Get the server's hostname. */
 	string serverhost = "localhost.localdomain";
@@ -89,6 +94,7 @@ int SockWrapper::AttachCallback(PurpleInputCondition cond, _CallBack* cb)
 
 void SockWrapper::EndSessionCleanup()
 {
+	b_log[W_DEBUG] << "Closing sockets";
 	close(recv_fd);
 	if (send_fd != recv_fd)
 		close(send_fd);

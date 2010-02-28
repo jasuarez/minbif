@@ -31,6 +31,7 @@ static void tls_debug_message(int level, const char* message)
 SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
 	/* GNUTLS init */
+	b_log[W_DEBUG] << "Initializing GNUTLS";
 	int tls_err = gnutls_global_init();
 	if (tls_err != GNUTLS_E_SUCCESS)
 	{
@@ -39,9 +40,11 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	}
 
 	/* GNUTLS logging */
+	b_log[W_DEBUG] << "Setting up GNUTLS logging";
 	gnutls_global_set_log_function(tls_debug_message);
 	gnutls_global_set_log_level(10);
 
+	b_log[W_DEBUG] << "Setting up GNUTLS certificates";
 	gnutls_certificate_allocate_credentials(&x509_cred);
 	gnutls_certificate_set_x509_trust_file(x509_cred,
 		conf.GetSection("aaa")->GetItem("tls_ca_file")->String().c_str(),
@@ -51,17 +54,21 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 		conf.GetSection("aaa")->GetItem("tls_key_file")->String().c_str(),
 		GNUTLS_X509_FMT_PEM);
 
+	b_log[W_DEBUG] << "Setting up GNUTLS DH params";
 	gnutls_dh_params_init(&dh_params);
 	gnutls_dh_params_generate2(dh_params, 1024);
 	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
+	b_log[W_DEBUG] << "Setting up GNUTLS cache";
 	gnutls_priority_init(&priority_cache, "NORMAL", NULL);
 
+	b_log[W_DEBUG] << "Setting up GNUTLS session";
 	gnutls_init(&tls_session, GNUTLS_SERVER);
 	gnutls_priority_set(tls_session, priority_cache);
 	gnutls_credentials_set(tls_session, GNUTLS_CRD_CERTIFICATE, x509_cred);
 	gnutls_transport_set_ptr2(tls_session, (gnutls_transport_ptr_t) recv_fd, (gnutls_transport_ptr_t) send_fd);
 
+	b_log[W_DEBUG] << "Starting GNUTLS handshake";
 	tls_err = gnutls_handshake (tls_session);
 	if (tls_err < 0)
 	{
@@ -70,6 +77,8 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 		b_log[W_ERR] << "TLS handshake failed: " << gnutls_strerror(tls_err);
 		throw TLSError::TLSError("TLS initialization failed");
 	}
+
+	b_log[W_DEBUG] << "SSL connection initialized";
 }
 
 SockWrapperTLS::~SockWrapperTLS()
