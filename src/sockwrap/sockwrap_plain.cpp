@@ -18,7 +18,6 @@
 
 #include "sockwrap_plain.h"
 #include "sock.h"
-#include "core/log.h"
 #include <sys/socket.h>
 #include <cstring>
 
@@ -36,6 +35,9 @@ string SockWrapperPlain::Read()
 	static char buf[1024];
 	string sbuf;
 	ssize_t r;
+
+	if (!sock_ok)
+		return "";
 
 	if ((r = read(recv_fd, buf, sizeof buf - 1)) <= 0)
 	{
@@ -59,12 +61,21 @@ void SockWrapperPlain::Write(string s)
 {
 	ssize_t r;
 
+	if (!sock_ok)
+		return;
+
 	if ((r = write(send_fd, s.c_str(), s.size())) <= 0)
 	{
 		if (r == 0)
+		{
+			sock_ok = false;
 			throw SockError::SockError("Connection reset by peer...");
+		}
 		else if(!sockerr_again())
+		{
+			sock_ok = false;
 			throw SockError::SockError(string("Read error: ") + strerror(errno));
+		}
 	}
 }
 

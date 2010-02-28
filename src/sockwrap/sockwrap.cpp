@@ -22,17 +22,11 @@
 #  include "sockwrap_tls.h"
 #endif
 #include "core/config.h"
-#include "core/log.h"
 #include "core/util.h"
 
-IRCError::IRCError(string _reason) : reason(_reason)
+IRCError::IRCError(string _reason, uint32_t _log_level = W_ERR) : reason(_reason), log_level(_log_level)
 {
-	b_log[W_ERR] << Reason();
-}
-
-SockError::SockError(string _reason) : IRCError(_reason)
-{
-	b_log[W_SOCK] << Reason();
+	b_log[log_level] << Reason();
 }
 
 SockWrapper::SockWrapper(int _recv_fd, int _send_fd) : recv_fd(_recv_fd), send_fd(_send_fd)
@@ -41,11 +35,20 @@ SockWrapper::SockWrapper(int _recv_fd, int _send_fd) : recv_fd(_recv_fd), send_f
 		throw SockError::SockError("Wrong input file descriptor");
 	if (send_fd < 0)
 		throw SockError::SockError("Wrong output file descriptor");
+
+	sock_ok = true;
 }
 
 SockWrapper::~SockWrapper()
 {
 	EndSessionCleanup();
+
+	sock_ok = false;
+
+	b_log[W_SOCK] << "Closing sockets";
+	close(recv_fd);
+	if (send_fd != recv_fd)
+		close(send_fd);
 }
 
 SockWrapper* SockWrapper::Builder(int _recv_fd, int _send_fd)
@@ -99,14 +102,16 @@ string SockWrapper::GetServerHostname()
 
 int SockWrapper::AttachCallback(PurpleInputCondition cond, _CallBack* cb)
 {
-	return glib_input_add(recv_fd, cond, g_callback_input, cb);
+	int id = glib_input_add(recv_fd, cond, g_callback_input, cb);
+	if (id > 0)
+		callback_ids.push_back(id);
+	return id;
 }
 
 void SockWrapper::EndSessionCleanup()
 {
-	b_log[W_SOCK] << "Closing sockets";
-	close(recv_fd);
-	if (send_fd != recv_fd)
-		close(send_fd);
+	b_log[W_SOCK] << "Removing callbacks";
+	for(vector<int>::iterator id = callback_ids.begin(); id != callback_ids.end(); ++id)
+		g_source_remove(*id);
 }
 

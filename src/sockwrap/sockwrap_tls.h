@@ -22,10 +22,10 @@
 #ifndef PF_SOCKWRAP_TLS_H
 #define PF_SOCKWRAP_TLS_H
 
-class TLSError : public IRCError
+class TLSError : public SockError
 {
 public:
-	TLSError(string _reason) : IRCError("[TLS] " + _reason) {}
+	TLSError(string _reason) : SockError("[TLS] " + _reason) {}
 };
 
 class SockWrapperTLS : public SockWrapper
@@ -33,6 +33,8 @@ class SockWrapperTLS : public SockWrapper
 	gnutls_certificate_credentials_t x509_cred;
 	gnutls_dh_params_t dh_params;
 	gnutls_session_t tls_session;
+	bool tls_handshake;
+	bool tls_ok;
 
 	int tls_err;
 
@@ -41,7 +43,6 @@ class SockWrapperTLS : public SockWrapper
 
 public:
 	SockWrapperTLS(int _recv_fd, int _send_fd);
-	~SockWrapperTLS();
 
 	string Read();
 	void Write(string s);

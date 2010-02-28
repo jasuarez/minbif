@@ -86,7 +86,6 @@ IRC::IRC(ServerPoll* _poll, SockWrapper* _sockw, string _hostname, unsigned _pin
 	: Server("localhost.localdomain", MINBIF_VERSION),
 	  poll(_poll),
 	  sockw(_sockw),
-	  read_id(-1),
 	  read_cb(NULL),
 	  ping_id(-1),
 	  ping_freq(_ping_freq),
@@ -109,8 +108,7 @@ IRC::IRC(ServerPoll* _poll, SockWrapper* _sockw, string _hostname, unsigned _pin
 
 	/* create a callback on the sock. */
 	read_cb = new CallBack<IRC>(this, &IRC::readIO);
-	/* XXX it appears that it is not free'd */
-	read_id = sockw->AttachCallback(PURPLE_INPUT_READ, read_cb);
+	sockw->AttachCallback(PURPLE_INPUT_READ, read_cb);
 
 	/* Create main objects and root joins command channel. */
 	user = new User(sockw, this, "*", "", sockw->GetClientHostname());
@@ -135,14 +133,12 @@ IRC::~IRC()
 	if (im_auth)
 		delete im_auth;
 
-	if(read_id >= 0)
-		g_source_remove(read_id);
 	if(ping_id >= 0)
 		g_source_remove(ping_id);
-	delete read_cb;
 	delete ping_cb;
 	if(sockw)
 		delete sockw;
+	delete read_cb;
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
@@ -390,12 +386,8 @@ void IRC::setMotd(const string& path)
 void IRC::quit(string reason)
 {
 	user->send(Message(MSG_ERROR).addArg("Closing Link: " + reason));
-
-	if(read_id >= 0)
-		g_source_remove(read_id);
-	read_id = -1;
-
 	user->close();
+
 	delete sockw;
 	sockw = NULL;
 

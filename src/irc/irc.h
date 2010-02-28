@@ -60,7 +60,6 @@ namespace irc
 	{
 		ServerPoll* poll;
 		SockWrapper* sockw;
-		int read_id;
 		_CallBack *read_cb;
 		int ping_id;
 		time_t ping_freq;

@@ -19,19 +19,23 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <string>
+#include <vector>
+#include "core/log.h"
 #include "core/callback.h"
 
 #ifndef PF_SOCKWRAP_H
 #define PF_SOCKWRAP_H
 
 using std::string;
+using std::vector;
 
 class IRCError
 {
 	string reason;
+	uint32_t log_level;
 
 public:
-	IRCError(string _reason);
+	IRCError(string _reason, uint32_t _log_level);
 
 	const string Reason() { return reason; }
 };
@@ -39,11 +43,13 @@ public:
 class SockError : public IRCError
 {
 public:
-	SockError(string _reason);
+	SockError(string _reason, uint32_t _log_level = W_SOCK) : IRCError(_reason, _log_level) {};
 };
 
 class SockWrapper
 {
+	vector<int> callback_ids;
+
 public:
 	static SockWrapper* Builder(int _recv_fd, int _send_fd);
 	SockWrapper(int _recv_fd, int _send_fd);
@@ -57,6 +63,7 @@ public:
 
 protected:
 	int recv_fd, send_fd;
+	bool sock_ok;
 
 	virtual void EndSessionCleanup();
 };

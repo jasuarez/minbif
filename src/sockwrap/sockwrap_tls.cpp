@@ -19,7 +19,6 @@
 #include "sockwrap_tls.h"
 #include "sock.h"
 #include "core/config.h"
-#include "core/log.h"
 #include <sys/socket.h>
 #include <cstring>
 
@@ -30,6 +29,9 @@ static void tls_debug_message(int level, const char* message)
 
 SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
+	tls_ok = false;
+	tls_handshake = false;
+
 	ConfigSection* c_section = conf.GetSection("aaa");
 	if (!c_section->Found())
 		throw TLSError::TLSError("Missing section aaa");
@@ -85,13 +87,13 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	tls_err = gnutls_handshake (tls_session);
 	if (tls_err < 0)
 	{
-		EndSessionCleanup();
-
 		b_log[W_SOCK] << "TLS handshake failed: " << gnutls_strerror(tls_err);
 		throw TLSError::TLSError("TLS initialization failed");
 	}
+	tls_handshake = true;
 
 	b_log[W_SOCK] << "SSL connection initialized";
+	tls_ok = true;
 }
 
 void SockWrapperTLS::CheckTLSError()
@@ -100,14 +102,15 @@ void SockWrapperTLS::CheckTLSError()
 		throw TLSError::TLSError(gnutls_strerror(tls_err));
 }
 
-SockWrapperTLS::~SockWrapperTLS()
-{
-	gnutls_bye (tls_session, GNUTLS_SHUT_WR);
-}
-
 void SockWrapperTLS::EndSessionCleanup()
 {
+	sock_ok = false;
+
 	SockWrapper::EndSessionCleanup();
+
+	if (tls_handshake && tls_ok)
+		gnutls_bye (tls_session, GNUTLS_SHUT_WR);
+	tls_ok = false;
 
 	gnutls_deinit(tls_session);
 
@@ -121,11 +124,21 @@ string SockWrapperTLS::Read()
 	string sbuf;
 	ssize_t r;
 
+	if (!sock_ok || !tls_ok)
+		return "";
+
 	r = gnutls_record_recv(tls_session, buf, sizeof buf - 1);
-	if (r == 0)
-		throw SockError::SockError("Connection reset by peer...");
-	else if (r < 0)
-		throw TLSError::TLSError("Received corrupted data, closing the connection.");
+	if (r <= 0)
+	{
+		sock_ok = false;
+		if (r == 0)
+		{
+			tls_ok = false;
+			throw SockError::SockError("Connection reset by peer...");
+		}
+		else
+			throw TLSError::TLSError("Received corrupted data, closing the connection.");
+	}
 	buf[r] = 0;
 	sbuf = buf;
 
@@ -136,10 +149,20 @@ void SockWrapperTLS::Write(string s)
 {
 	ssize_t r;
 
+	if (!sock_ok || !tls_ok)
+		return;
+
 	r = gnutls_record_send(tls_session, s.c_str(), s.size());
-	if (r == 0)
-		throw SockError::SockError("Connection reset by peer...");
-	else if (r < 0)
-		throw TLSError::TLSError("Problem while sending data, closing the connection.");
+	if (r <= 0)
+	{
+		sock_ok = false;
+		if (r == 0)
+		{
+			tls_ok = false;
+			throw SockError::SockError("Connection reset by peer...");
+		}
+		else
+			throw TLSError::TLSError("Problem while sending data, closing the connection.");
+	}
 }
 
