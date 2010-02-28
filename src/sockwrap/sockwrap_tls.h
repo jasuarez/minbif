@@ -31,7 +31,6 @@ public:
 class SockWrapperTLS : public SockWrapper
 {
 	gnutls_certificate_credentials_t x509_cred;
-	gnutls_priority_t priority_cache;
 	gnutls_dh_params_t dh_params;
 	gnutls_session_t tls_session;
 

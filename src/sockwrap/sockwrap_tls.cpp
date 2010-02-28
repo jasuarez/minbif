@@ -60,19 +60,16 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	CheckTLSError();
 	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
-	b_log[W_DEBUG] << "Setting up GNUTLS cache";
-	gnutls_priority_init(&priority_cache, "NORMAL", NULL);
-
 	b_log[W_DEBUG] << "Setting up GNUTLS session";
 	tls_err = gnutls_init(&tls_session, GNUTLS_SERVER);
 	CheckTLSError();
-	gnutls_priority_set(tls_session, priority_cache);
+	tls_err = gnutls_priority_set_direct(tls_session, conf.GetSection("aaa")->GetItem("tls_priority")->String().c_str(), NULL);
+	if (tls_err == GNUTLS_E_INVALID_REQUEST)
+		throw TLSError::TLSError("syntax error in tls_priority parameter");
 	CheckTLSError();
 	tls_err = gnutls_credentials_set(tls_session, GNUTLS_CRD_CERTIFICATE, x509_cred);
 	CheckTLSError();
 	gnutls_transport_set_ptr2(tls_session, (gnutls_transport_ptr_t) recv_fd, (gnutls_transport_ptr_t) send_fd);
-
-	b_log[W_ERR] << "coin";
 
 	b_log[W_DEBUG] << "Starting GNUTLS handshake";
 	tls_err = gnutls_handshake (tls_session);
@@ -107,7 +104,6 @@ void SockWrapperTLS::EndSessionCleanup()
 	gnutls_deinit(tls_session);
 
 	gnutls_certificate_free_credentials(x509_cred);
-	gnutls_priority_deinit(priority_cache);
 	gnutls_global_deinit();
 }
 
