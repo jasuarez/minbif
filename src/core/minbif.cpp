@@ -78,9 +78,9 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
 #endif
 #ifdef HAVE_TLS
-	sub->AddItem(new ConfigItem_string("tls_ca_file", "CA certificate file for TLS"));
-	sub->AddItem(new ConfigItem_string("tls_cert_file", "Server certificate file for TLS"));
-	sub->AddItem(new ConfigItem_string("tls_key_file", "Server key file for TLS"));
+	section->AddItem(new ConfigItem_string("tls_ca_file", "CA certificate file for TLS"));
+	section->AddItem(new ConfigItem_string("tls_cert_file", "Server certificate file for TLS"));
+	section->AddItem(new ConfigItem_string("tls_key_file", "Server key file for TLS"));
 #endif
 
 	section = conf.AddSection("file_transfers", "File transfers parameters", MyConfig::OPTIONAL);
