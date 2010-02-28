@@ -44,7 +44,7 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	tls_err = gnutls_certificate_allocate_credentials(&x509_cred);
 	CheckTLSError();
 	tls_err = gnutls_certificate_set_x509_trust_file(x509_cred,
-		conf.GetSection("aaa")->GetItem("tls_ca_file")->String().c_str(),
+		conf.GetSection("aaa")->GetItem("tls_trust_file")->String().c_str(),
 		GNUTLS_X509_FMT_PEM);
 	if (tls_err == 0)
 		throw TLSError::TLSError("trust file is empty or does not contain any valid CA certificate");

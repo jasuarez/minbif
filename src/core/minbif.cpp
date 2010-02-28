@@ -78,7 +78,7 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
 #endif
 #ifdef HAVE_TLS
-	section->AddItem(new ConfigItem_string("tls_ca_file", "CA certificate file for TLS"));
+	section->AddItem(new ConfigItem_string("tls_trust_file", "CA certificate file for TLS"));
 	section->AddItem(new ConfigItem_string("tls_cert_file", "Server certificate file for TLS"));
 	section->AddItem(new ConfigItem_string("tls_key_file", "Server key file for TLS"));
 	section->AddItem(new ConfigItem_string("tls_priority", "Priority list for ciphers, exchange methods, macs and compression methods", "NORMAL"));
