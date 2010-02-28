@@ -489,57 +489,57 @@ void IRC::privmsg(Nick* nick, string msg)
 
 bool IRC::readIO(void*)
 {
-	string sbuf, line;
-
 	try
 	{
+		string sbuf, line;
+
 		sbuf = sockw->Read();
+
+		while((line = stringtok(sbuf, "\r\n")).empty() == false)
+		{
+			Message m = Message::parse(line);
+			b_log[W_PARSE] << "<< " << line;
+			size_t i;
+			for(i = 0;
+			    i < (sizeof commands / sizeof *commands) &&
+			    strcmp(commands[i].cmd, m.getCommand().c_str());
+			    ++i)
+				;
+
+			user->setLastReadNow();
+
+			if(i >= (sizeof commands / sizeof *commands))
+				user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
+								   .setReceiver(user)
+								   .addArg(m.getCommand())
+								   .addArg("Unknown command"));
+			else if(m.countArgs() < commands[i].minargs)
+				user->send(Message(ERR_NEEDMOREPARAMS).setSender(this)
+								   .setReceiver(user)
+								   .addArg(m.getCommand())
+								   .addArg("Not enough parameters"));
+			else if(commands[i].flags && !user->hasFlag(commands[i].flags))
+			{
+				if(!user->hasFlag(Nick::REGISTERED))
+					user->send(Message(ERR_NOTREGISTERED).setSender(this)
+									     .setReceiver(user)
+									     .addArg("Register first"));
+				else
+					user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+									    .setReceiver(user)
+									    .addArg("Permission Denied: Insufficient privileges"));
+			}
+			else
+			{
+				commands[i].count++;
+				(this->*commands[i].func)(m);
+			}
+		}
 	}
 	catch (IRCError &e)
 	{
 		b_log[W_ERR] << e.Reason();
 		quit(e.Reason());
-	}
-
-	while((line = stringtok(sbuf, "\r\n")).empty() == false)
-	{
-		Message m = Message::parse(line);
-		b_log[W_PARSE] << "<< " << line;
-		size_t i;
-		for(i = 0;
-		    i < (sizeof commands / sizeof *commands) &&
-		    strcmp(commands[i].cmd, m.getCommand().c_str());
-		    ++i)
-			;
-
-		user->setLastReadNow();
-
-		if(i >= (sizeof commands / sizeof *commands))
-			user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
-							   .setReceiver(user)
-							   .addArg(m.getCommand())
-							   .addArg("Unknown command"));
-		else if(m.countArgs() < commands[i].minargs)
-			user->send(Message(ERR_NEEDMOREPARAMS).setSender(this)
-							   .setReceiver(user)
-							   .addArg(m.getCommand())
-							   .addArg("Not enough parameters"));
-		else if(commands[i].flags && !user->hasFlag(commands[i].flags))
-		{
-			if(!user->hasFlag(Nick::REGISTERED))
-				user->send(Message(ERR_NOTREGISTERED).setSender(this)
-								     .setReceiver(user)
-								     .addArg("Register first"));
-			else
-				user->send(Message(ERR_NOPRIVILEGES).setSender(this)
-						                    .setReceiver(user)
-								    .addArg("Permission Denied: Insufficient privileges"));
-		}
-		else
-		{
-			commands[i].count++;
-			(this->*commands[i].func)(m);
-		}
 	}
 
 	return true;
