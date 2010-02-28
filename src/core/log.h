@@ -31,7 +31,8 @@ enum
 	W_WARNING    = 1 << 4,			  /* Warnings */
 	W_ERR        = 1 << 5,			  /* Errors */
 	W_INFO       = 1 << 6,			  /* Info */
-	W_SNO        = 1 << 7                     /* Server notice */
+	W_SNO        = 1 << 7,                    /* Server notice */
+	W_SOCK       = 1 << 8                     /* Socket error */
 };
 
 #define DEFAULT_LOGGED_FLAGS (W_DESYNCH|W_WARNING|W_ERR|W_INFO|W_SNO)

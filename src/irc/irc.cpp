@@ -538,7 +538,6 @@ bool IRC::readIO(void*)
 	}
 	catch (IRCError &e)
 	{
-		b_log[W_ERR] << e.Reason();
 		quit(e.Reason());
 	}
 

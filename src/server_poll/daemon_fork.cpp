@@ -222,7 +222,7 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 		}
 		catch(IRCError &e)
 		{
-			b_log[W_ERR] << "Unable to start the IRC daemon: " + e.Reason();
+			b_log[W_ERR] << "Unable to start the IRC daemon";
 			getApplication()->quit();
 		}
 	}

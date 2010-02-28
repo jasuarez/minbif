@@ -24,7 +24,7 @@
 
 SockWrapperPlain::SockWrapperPlain(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
-	b_log[W_DEBUG] << "Plain connection initialized";
+	b_log[W_SOCK] << "Plain connection initialized";
 }
 
 SockWrapperPlain::~SockWrapperPlain()

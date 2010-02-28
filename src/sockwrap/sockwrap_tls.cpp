@@ -25,7 +25,7 @@
 
 static void tls_debug_message(int level, const char* message)
 {
-	b_log[W_DEBUG] << "TLS debug: " << message;
+	b_log[W_SOCK] << "TLS debug: " << message;
 }
 
 SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
@@ -38,16 +38,16 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 		throw TLSError::TLSError("Missing section aaa/tls");
 
 	/* GNUTLS init */
-	b_log[W_DEBUG] << "Initializing GNUTLS";
+	b_log[W_SOCK] << "Initializing GNUTLS";
 	tls_err = gnutls_global_init();
 	CheckTLSError();
 
 	/* GNUTLS logging */
-	b_log[W_DEBUG] << "Setting up GNUTLS logging";
+	b_log[W_SOCK] << "Setting up GNUTLS logging";
 	gnutls_global_set_log_function(tls_debug_message);
 	gnutls_global_set_log_level(10);
 
-	b_log[W_DEBUG] << "Setting up GNUTLS certificates";
+	b_log[W_SOCK] << "Setting up GNUTLS certificates";
 	tls_err = gnutls_certificate_allocate_credentials(&x509_cred);
 	CheckTLSError();
 	tls_err = gnutls_certificate_set_x509_trust_file(x509_cred,
@@ -63,14 +63,14 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 		GNUTLS_X509_FMT_PEM);
 	CheckTLSError();
 
-	b_log[W_DEBUG] << "Setting up GNUTLS DH params";
+	b_log[W_SOCK] << "Setting up GNUTLS DH params";
 	tls_err = gnutls_dh_params_init(&dh_params);
 	CheckTLSError();
 	tls_err = gnutls_dh_params_generate2(dh_params, 1024);
 	CheckTLSError();
 	gnutls_certificate_set_dh_params(x509_cred, dh_params);
 
-	b_log[W_DEBUG] << "Setting up GNUTLS session";
+	b_log[W_SOCK] << "Setting up GNUTLS session";
 	tls_err = gnutls_init(&tls_session, GNUTLS_SERVER);
 	CheckTLSError();
 	tls_err = gnutls_priority_set_direct(tls_session, c_section->GetItem("priority")->String().c_str(), NULL);
@@ -81,17 +81,17 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	CheckTLSError();
 	gnutls_transport_set_ptr2(tls_session, (gnutls_transport_ptr_t) recv_fd, (gnutls_transport_ptr_t) send_fd);
 
-	b_log[W_DEBUG] << "Starting GNUTLS handshake";
+	b_log[W_SOCK] << "Starting GNUTLS handshake";
 	tls_err = gnutls_handshake (tls_session);
 	if (tls_err < 0)
 	{
 		EndSessionCleanup();
 
-		b_log[W_ERR] << "TLS handshake failed: " << gnutls_strerror(tls_err);
+		b_log[W_SOCK] << "TLS handshake failed: " << gnutls_strerror(tls_err);
 		throw TLSError::TLSError("TLS initialization failed");
 	}
 
-	b_log[W_DEBUG] << "SSL connection initialized";
+	b_log[W_SOCK] << "SSL connection initialized";
 }
 
 void SockWrapperTLS::CheckTLSError()

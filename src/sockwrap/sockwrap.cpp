@@ -25,6 +25,16 @@
 #include "core/log.h"
 #include "core/util.h"
 
+IRCError::IRCError(string _reason) : reason(_reason)
+{
+	b_log[W_ERR] << Reason();
+}
+
+SockError::SockError(string _reason) : IRCError(_reason)
+{
+	b_log[W_SOCK] << Reason();
+}
+
 SockWrapper::SockWrapper(int _recv_fd, int _send_fd) : recv_fd(_recv_fd), send_fd(_send_fd)
 {
 	if (recv_fd < 0)
@@ -52,7 +62,7 @@ string SockWrapper::GetClientHostname()
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
 
-	b_log[W_DEBUG] << "Fetching client hostname";
+	b_log[W_SOCK] << "Fetching client hostname";
 
 	/* Get the client's hostname. */
 	string clienthost = "localhost.localdomain";
@@ -72,7 +82,7 @@ string SockWrapper::GetServerHostname()
 	struct sockaddr_storage sock;
 	socklen_t socklen = sizeof(sock);
 
-	b_log[W_DEBUG] << "Fetching server hostname";
+	b_log[W_SOCK] << "Fetching server hostname";
 
 	/* Get the server's hostname. */
 	string serverhost = "localhost.localdomain";
@@ -94,7 +104,7 @@ int SockWrapper::AttachCallback(PurpleInputCondition cond, _CallBack* cb)
 
 void SockWrapper::EndSessionCleanup()
 {
-	b_log[W_DEBUG] << "Closing sockets";
+	b_log[W_SOCK] << "Closing sockets";
 	close(recv_fd);
 	if (send_fd != recv_fd)
 		close(send_fd);

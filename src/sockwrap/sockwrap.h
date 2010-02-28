@@ -31,7 +31,7 @@ class IRCError
 	string reason;
 
 public:
-	IRCError(string _reason) : reason(_reason) {}
+	IRCError(string _reason);
 
 	const string Reason() { return reason; }
 };
@@ -39,7 +39,7 @@ public:
 class SockError : public IRCError
 {
 public:
-	SockError(string _reason) : IRCError("[Socket] " + _reason) {}
+	SockError(string _reason);
 };
 
 class SockWrapper

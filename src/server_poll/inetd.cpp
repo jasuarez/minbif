@@ -45,7 +45,7 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 	}
 	catch(IRCError &e)
 	{
-		b_log[W_ERR] << "Unable to start the IRC daemon: " + e.Reason();
+		b_log[W_ERR] << "Unable to start the IRC daemon";
 		throw ServerPollError();
 	}
 }
@@ -63,6 +63,7 @@ void InetdServerPoll::log(size_t level, string msg) const
 	string cmd = MSG_NOTICE;
 	if(level & W_DEBUG)
 		cmd = MSG_PRIVMSG;
+
 	irc->getUser()->send(irc::Message(cmd).setSender(irc)
 					 	     .setReceiver(irc->getUser())
 					 	     .addArg(msg));
