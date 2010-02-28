@@ -40,7 +40,7 @@ SockWrapper::~SockWrapper()
 SockWrapper* SockWrapper::Builder(int _recv_fd, int _send_fd)
 {
 #ifdef HAVE_TLS
-	if (conf.GetSection("daemon")->GetItem("security")->String().compare("ssl") == 0)
+	if (conf.GetSection("irc")->GetSection("daemon")->GetItem("security")->String().compare("ssl") == 0)
 		return new SockWrapperTLS(_recv_fd, _send_fd);
 #endif
 	return new SockWrapperPlain(_recv_fd, _send_fd);
