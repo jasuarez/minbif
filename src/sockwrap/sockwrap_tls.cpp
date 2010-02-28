@@ -30,6 +30,13 @@ static void tls_debug_message(int level, const char* message)
 
 SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
+	ConfigSection* c_section = conf.GetSection("aaa");
+	if (!c_section->Found())
+		throw TLSError::TLSError("Missing section aaa");
+	c_section = c_section->GetSection("tls");
+	if (!c_section->Found())
+		throw TLSError::TLSError("Missing section aaa/tls");
+
 	/* GNUTLS init */
 	b_log[W_DEBUG] << "Initializing GNUTLS";
 	tls_err = gnutls_global_init();
@@ -44,15 +51,15 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	tls_err = gnutls_certificate_allocate_credentials(&x509_cred);
 	CheckTLSError();
 	tls_err = gnutls_certificate_set_x509_trust_file(x509_cred,
-		conf.GetSection("aaa")->GetItem("tls_trust_file")->String().c_str(),
+		c_section->GetItem("trust_file")->String().c_str(),
 		GNUTLS_X509_FMT_PEM);
 	if (tls_err == 0)
 		throw TLSError::TLSError("trust file is empty or does not contain any valid CA certificate");
 	else if (tls_err < 0)
 		CheckTLSError();
 	tls_err = gnutls_certificate_set_x509_key_file(x509_cred,
-		conf.GetSection("aaa")->GetItem("tls_cert_file")->String().c_str(),
-		conf.GetSection("aaa")->GetItem("tls_key_file")->String().c_str(),
+		c_section->GetItem("cert_file")->String().c_str(),
+		c_section->GetItem("key_file")->String().c_str(),
 		GNUTLS_X509_FMT_PEM);
 	CheckTLSError();
 
@@ -66,7 +73,7 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	b_log[W_DEBUG] << "Setting up GNUTLS session";
 	tls_err = gnutls_init(&tls_session, GNUTLS_SERVER);
 	CheckTLSError();
-	tls_err = gnutls_priority_set_direct(tls_session, conf.GetSection("aaa")->GetItem("tls_priority")->String().c_str(), NULL);
+	tls_err = gnutls_priority_set_direct(tls_session, c_section->GetItem("priority")->String().c_str(), NULL);
 	if (tls_err == GNUTLS_E_INVALID_REQUEST)
 		throw TLSError::TLSError("syntax error in tls_priority parameter");
 	CheckTLSError();
@@ -76,8 +83,6 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 
 	b_log[W_DEBUG] << "Starting GNUTLS handshake";
 	tls_err = gnutls_handshake (tls_session);
-
-	b_log[W_ERR] << "coin 2";
 	if (tls_err < 0)
 	{
 		EndSessionCleanup();
