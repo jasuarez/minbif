@@ -39,7 +39,7 @@ public:
 class SockError : public IRCError
 {
 public:
-	SockError(string _reason) : IRCError(_reason) {}
+	SockError(string _reason) : IRCError("[Socket] " + _reason) {}
 };
 
 class SockWrapper

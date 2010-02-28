@@ -25,7 +25,7 @@
 class TLSError : public IRCError
 {
 public:
-	TLSError(string _reason) : IRCError(_reason) {}
+	TLSError(string _reason) : IRCError("[TLS] " + _reason) {}
 };
 
 class SockWrapperTLS : public SockWrapper
@@ -35,7 +35,10 @@ class SockWrapperTLS : public SockWrapper
 	gnutls_dh_params_t dh_params;
 	gnutls_session_t tls_session;
 
+	int tls_err;
+
 	void EndSessionCleanup();
+	void CheckTLSError();
 
 public:
 	SockWrapperTLS(int _recv_fd, int _send_fd);

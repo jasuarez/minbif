@@ -45,7 +45,7 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 	}
 	catch(IRCError &e)
 	{
-		b_log[W_ERR] << "Unable to start the IRC daemon";
+		b_log[W_ERR] << "Unable to start the IRC daemon: " + e.Reason();
 		throw ServerPollError();
 	}
 }
