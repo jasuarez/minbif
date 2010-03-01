@@ -35,6 +35,7 @@ class SockWrapperTLS : public SockWrapper
 	gnutls_session_t tls_session;
 	bool tls_handshake;
 	bool tls_ok;
+	bool trust_check;
 
 	int tls_err;
 
@@ -46,6 +47,7 @@ public:
 
 	string Read();
 	void Write(string s);
+	virtual string GetClientUsername();
 };
 
 #endif /* PF_SOCKWRAP_TLS_H */

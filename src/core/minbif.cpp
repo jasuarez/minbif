@@ -79,7 +79,8 @@ Minbif::Minbif()
 #endif
 #ifdef HAVE_TLS
 	sub = section->AddSection("tls", "TLS information", MyConfig::OPTIONAL);
-	sub->AddItem(new ConfigItem_string("trust_file", "CA certificate file for TLS"));
+	sub->AddItem(new ConfigItem_string("trust_file", "CA certificate file for TLS", " "));
+	sub->AddItem(new ConfigItem_string("crl_file", "CA certificate file for TLS", " "));
 	sub->AddItem(new ConfigItem_string("cert_file", "Server certificate file for TLS"));
 	sub->AddItem(new ConfigItem_string("key_file", "Server key file for TLS"));
 	sub->AddItem(new ConfigItem_string("priority", "Priority list for ciphers, exchange methods, macs and compression methods", "NORMAL"));

@@ -437,6 +437,9 @@ void IRC::sendWelcome()
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Your host is " + getServerName() + ", running " MINBIF_VERSION));
 		user->send(Message(RPL_CREATED).setSender(this).setReceiver(user).addArg("This server was created " __DATE__ " " __TIME__));
 
+		/* test */
+		b_log[W_INFO] << "Detected Client Username: " << sockw->GetClientUsername();
+
 		m_motd(Message());
 
 		im->restore();

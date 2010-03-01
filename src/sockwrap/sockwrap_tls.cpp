@@ -21,16 +21,18 @@
 #include "core/config.h"
 #include <sys/socket.h>
 #include <cstring>
+#include "gnutls/x509.h"
 
 static void tls_debug_message(int level, const char* message)
 {
-	b_log[W_SOCK] << "TLS debug: " << message;
+	//b_log[W_SOCK] << "TLS debug: " << message;
 }
 
 SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
 	tls_ok = false;
 	tls_handshake = false;
+	trust_check = false;
 
 	ConfigSection* c_section = conf.GetSection("aaa");
 	if (!c_section->Found())
@@ -52,13 +54,27 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	b_log[W_SOCK] << "Setting up GNUTLS certificates";
 	tls_err = gnutls_certificate_allocate_credentials(&x509_cred);
 	CheckTLSError();
-	tls_err = gnutls_certificate_set_x509_trust_file(x509_cred,
-		c_section->GetItem("trust_file")->String().c_str(),
-		GNUTLS_X509_FMT_PEM);
-	if (tls_err == 0)
-		throw TLSError::TLSError("trust file is empty or does not contain any valid CA certificate");
-	else if (tls_err < 0)
-		CheckTLSError();
+	string trust_file = c_section->GetItem("trust_file")->String();
+	if (trust_file != " ")
+	{
+		tls_err = gnutls_certificate_set_x509_trust_file(x509_cred,
+			trust_file.c_str(), GNUTLS_X509_FMT_PEM);
+		if (tls_err == GNUTLS_E_SUCCESS)
+			throw TLSError::TLSError("trust file is empty or does not contain any valid CA certificate");
+		else if (tls_err < 0)
+			CheckTLSError();
+		trust_check = true;
+	}
+	string crl_file = c_section->GetItem("crl_file")->String();
+	if (trust_check && crl_file != " ")
+	{
+		tls_err = gnutls_certificate_set_x509_crl_file(x509_cred,
+			crl_file.c_str(), GNUTLS_X509_FMT_PEM);
+		if (tls_err == GNUTLS_E_SUCCESS)
+			b_log[W_WARNING] << "trust file is empty or does not contain any valid CA certificate";
+		else if (tls_err < 0)
+			CheckTLSError();
+	}
 	tls_err = gnutls_certificate_set_x509_key_file(x509_cred,
 		c_section->GetItem("cert_file")->String().c_str(),
 		c_section->GetItem("key_file")->String().c_str(),
@@ -82,6 +98,11 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 	tls_err = gnutls_credentials_set(tls_session, GNUTLS_CRD_CERTIFICATE, x509_cred);
 	CheckTLSError();
 	gnutls_transport_set_ptr2(tls_session, (gnutls_transport_ptr_t) recv_fd, (gnutls_transport_ptr_t) send_fd);
+	if (trust_check)
+	{
+		/* client auth would need GNUTLS_CERT_REQUIRE but check is enforced in GetClientUsername() instead */
+		gnutls_certificate_server_set_request(tls_session, GNUTLS_CERT_REQUEST);
+	}
 
 	b_log[W_SOCK] << "Starting GNUTLS handshake";
 	tls_err = gnutls_handshake (tls_session);
@@ -164,5 +185,71 @@ void SockWrapperTLS::Write(string s)
 		else
 			throw TLSError::TLSError("Problem while sending data, closing the connection.");
 	}
+}
+
+string SockWrapperTLS::GetClientUsername()
+{
+	const gnutls_datum_t *cert_list;
+	unsigned int cert_list_size = 0;
+	gnutls_x509_crt_t cert;
+	unsigned int status;
+	static char buf[4096];
+	size_t size;
+	string dn, username = "";
+
+	if (!trust_check || !tls_ok)
+		return "";
+
+	b_log[W_INFO] << "Looking for Client Username";
+
+	/* accept X.509 certificates only */
+	if (gnutls_certificate_type_get(tls_session) != GNUTLS_CRT_X509)
+	{
+		b_log[W_INFO] << "TLS Client Certificate is not of X.509 type";
+		return "";
+	}
+
+	cert_list = gnutls_certificate_get_peers(tls_session, &cert_list_size);
+	if (cert_list_size <= 0)
+	{
+		b_log[W_INFO] << "No TLS Client Certificate provided";
+		return "";
+	}
+
+	tls_err = gnutls_certificate_verify_peers2(tls_session, &status);
+	CheckTLSError();
+	if (status != 0)
+	{
+		b_log[W_INFO] << "TLS Client Certificate not valid";
+		return "";
+	}
+
+	tls_err = gnutls_x509_crt_init(&cert);
+	CheckTLSError();
+
+	tls_err = gnutls_x509_crt_import(cert, &cert_list[0], GNUTLS_X509_FMT_DER);
+	if (tls_err == GNUTLS_E_SUCCESS)
+	{
+		size = sizeof(buf);
+		tls_err = gnutls_x509_crt_get_dn(cert, buf, &size);
+		dn = buf;
+
+		size_t pos1, pos2;
+		pos1 = dn.find("CN=");
+		if (pos1 != string::npos)
+		{
+			pos2 = dn.find(",", pos1);
+			if (pos2 != string::npos)
+				username = dn.substr(pos1 + 3, pos2 - pos1 - 3);
+		}
+	}
+	gnutls_x509_crt_deinit(cert);
+	CheckTLSError();
+
+	if (username.empty())
+		b_log[W_INFO] << "Client Username not found";
+	else
+		b_log[W_INFO] << "Client Username: " << username;
+	return username;
 }
 

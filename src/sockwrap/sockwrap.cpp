@@ -115,3 +115,9 @@ void SockWrapper::EndSessionCleanup()
 		g_source_remove(*id);
 }
 
+string SockWrapper::GetClientUsername()
+{
+	b_log[W_INFO] << "Client Username not found";
+	return "";
+}
+

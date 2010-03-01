@@ -60,6 +60,7 @@ public:
 	virtual string GetClientHostname();
 	virtual string GetServerHostname();
 	virtual int AttachCallback(PurpleInputCondition cond, _CallBack* cb);
+	virtual string GetClientUsername();
 
 protected:
 	int recv_fd, send_fd;
