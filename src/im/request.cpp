@@ -118,9 +118,11 @@ public:
 	{}
 };
 
-Request::Request(PurpleRequestType _type, const string& _title, const string& _question)
-	: title(_title),
-	  question(_question),
+Request::Request(PurpleRequestType _type, const Account& _account, const string& _title, const string& _primary, const string& _secondary)
+	: account(_account),
+	  title(_title),
+	  primary(_primary),
+	  secondary(_secondary),
 	  type(_type)
 {
 
@@ -159,8 +161,14 @@ void RequestFieldList::process(const string& answer) const
 void RequestFieldList::display() const
 {
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	nick->privmsg(irc->getUser(), "New request: " + title);
-	nick->privmsg(irc->getUser(), question);
+	if(account.isValid())
+		nick->privmsg(irc->getUser(), "[" + account.getID() + "] New request: " + title);
+	else
+		nick->privmsg(irc->getUser(), "New request: " + title);
+	if(primary.empty() == false)
+		nick->privmsg(irc->getUser(), primary);
+	if(secondary.empty() == false)
+		nick->privmsg(irc->getUser(), secondary);
 	for(map<string, RequestField*>::const_iterator it = fields.begin();
 	    it != fields.end();
 	    ++it)
@@ -177,8 +185,15 @@ void RequestInput::process(const string& answer) const
 void RequestInput::display() const
 {
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	nick->privmsg(irc->getUser(), "New request: " + title);
-	nick->privmsg(irc->getUser(), question);
+	if(account.isValid())
+		nick->privmsg(irc->getUser(), "[" + account.getID() + "] New request: " + title);
+	else
+		nick->privmsg(irc->getUser(), "New request: " + title);
+	if(primary.empty() == false)
+		nick->privmsg(irc->getUser(), primary);
+	if(secondary.empty() == false)
+		nick->privmsg(irc->getUser(), secondary);
+
 	nick->privmsg(irc->getUser(), "Default value is: " + default_value);
 	nick->privmsg(irc->getUser(), "Type answer:");
 }
@@ -398,7 +413,8 @@ void* Request::request_input(const char *title, const char *primary,
 			PurpleAccount *account, const char *who, PurpleConversation *conv,
 			void *user_data)
 {
-	RequestInput* request = new RequestInput(PURPLE_REQUEST_INPUT, title ? title : "", primary ? primary : "", default_value ? default_value : "", (PurpleRequestInputCb)ok_cb, user_data);
+	RequestInput* request = new RequestInput(PURPLE_REQUEST_INPUT, Account(account), title ? title : "", primary ? primary : "", secondary ? secondary : "",
+	                                         default_value ? default_value : "", (PurpleRequestInputCb)ok_cb, user_data);
 	addRequest(request);
 
 	return requests.back();
@@ -410,7 +426,7 @@ void* Request::request_action(const char *title, const char *primary,
 			void *user_data, size_t actioncount,
 			va_list actions)
 {
-	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_ACTION, title ? title : "", primary ? primary : "");
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_ACTION, Account(account), title ? title : "", primary ? primary : "", secondary ? secondary : "");
 	for(size_t i = 0; i < actioncount; ++i)
 	{
 		const char *text = va_arg(actions, const char *);
@@ -431,7 +447,7 @@ void* Request::request_choice(const char *title, const char *primary,
 			PurpleAccount *account, const char *who, PurpleConversation *conv,
 			void *user_data, va_list choices)
 {
-	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_CHOICE, title ? title : "", primary ? primary : "");
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_CHOICE, Account(account), title ? title : "", primary ? primary : "", secondary ? secondary : "");
 	const char* text;
 
 	while ((text = va_arg(choices, const char *)))
@@ -453,8 +469,8 @@ class RequestFieldsString : public RequestInput
 	PurpleRequestField* field;
 public:
 
-	RequestFieldsString(PurpleRequestField* _field, const string& title, const string& question, const string& _default_value)
-		: RequestInput(PURPLE_REQUEST_FIELDS, title, question, _default_value, NULL, NULL),
+	RequestFieldsString(PurpleRequestField* _field, const Account& account, const string& title, const string& primary, const string& secondary, const string& _default_value)
+		: RequestInput(PURPLE_REQUEST_FIELDS, account, title, primary, secondary, _default_value, NULL, NULL),
 		  field(_field)
 	{}
 
@@ -473,8 +489,8 @@ class RequestFieldsInteger : public RequestInput
 	PurpleRequestField* field;
 public:
 
-	RequestFieldsInteger(PurpleRequestField* _field, const string& title, const string& question, const string& _default_value)
-		: RequestInput(PURPLE_REQUEST_FIELDS, title, question, _default_value, NULL, NULL),
+	RequestFieldsInteger(PurpleRequestField* _field, const Account& account, const string& title, const string& primary, const string& secondary, const string& _default_value)
+		: RequestInput(PURPLE_REQUEST_FIELDS, account, title, primary, secondary, _default_value, NULL, NULL),
 		  field(_field)
 	{}
 
@@ -491,8 +507,8 @@ public:
 class RequestFieldsList : public RequestFieldList
 {
 public:
-	RequestFieldsList(const string& title, const string& question)
-		: RequestFieldList(PURPLE_REQUEST_FIELDS, title, question)
+	RequestFieldsList(const Account& account, const string& title, const string& primary, const string& secondary)
+		: RequestFieldList(PURPLE_REQUEST_FIELDS, account, title, primary, secondary)
 	{}
 
 	virtual void close() {
@@ -598,16 +614,19 @@ void* Request::request_fields(const char *title, const char *primary,
 			if(type == PURPLE_REQUEST_FIELD_STRING)
 			{
 				const char* defval = purple_request_field_string_get_default_value(field);
-				addRequest(new RequestFieldsString(field, title ? title : primary ? primary : "", field_label ? field_label : "", defval ? defval : ""));
+				addRequest(new RequestFieldsString(field, Account(account), title ? title : primary ? primary : "", secondary ? secondary : "",
+				                                   field_label ? field_label : "", defval ? defval : ""));
 			}
 			else if(type == PURPLE_REQUEST_FIELD_INTEGER)
 			{
 				string defval = t2s(purple_request_field_int_get_default_value(field));
-				addRequest(new RequestFieldsInteger(field, title ? title : primary ? primary : "", field_label ? field_label : "", defval));
+				addRequest(new RequestFieldsInteger(field, Account(account), title ? title : primary ? primary : "", secondary ? secondary : "",
+				                                    field_label ? field_label : "", defval));
 			}
 			else
 			{
-				RequestFieldsList* request = new RequestFieldsList(title ? title : primary ? primary : "", field_label ? field_label : "");
+				RequestFieldsList* request = new RequestFieldsList(Account(account), title ? title : primary ? primary : "",
+				                                                   secondary ? secondary : "", field_label ? field_label : "");
 				switch(type)
 				{
 					case PURPLE_REQUEST_FIELD_BOOLEAN:
@@ -640,7 +659,9 @@ void* Request::request_fields(const char *title, const char *primary,
 		}
 	}
 
-	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, title ? title : primary ? primary : "", "Do you confirm?");
+	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, Account(account), title ? title : primary ? primary : "",
+	                                                 title ? (primary ? primary : (secondary ? secondary : "")) : secondary ? secondary : "",
+							 "Do you confirm?");
 	request->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(0, "ok", ok, (PurpleRequestFieldsCb)ok_cb, userdata, fields));
 	request->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(1, "cancel", cancel, (PurpleRequestFieldsCb)cancel_cb, userdata, fields));
 
