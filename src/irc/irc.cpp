@@ -499,16 +499,20 @@ bool IRC::ping(void*)
 
 void IRC::notice(Nick* nick, string msg)
 {
-	nick->send(Message(MSG_NOTICE).setSender(this)
-				      .setReceiver(user)
-				      .addArg(msg));
+	string tmp;
+	while((tmp = stringtok(msg, "\n\r")).empty() == false)
+		nick->send(Message(MSG_NOTICE).setSender(this)
+					      .setReceiver(user)
+					      .addArg(tmp));
 }
 
 void IRC::privmsg(Nick* nick, string msg)
 {
-	nick->send(Message(MSG_PRIVMSG).setSender(this)
-				       .setReceiver(user)
-				       .addArg(msg));
+	string tmp;
+	while((tmp = stringtok(msg, "\n\r")).empty() == false)
+		nick->send(Message(MSG_PRIVMSG).setSender(this)
+					       .setReceiver(user)
+					       .addArg(tmp));
 }
 
 bool IRC::readIO(void*)
