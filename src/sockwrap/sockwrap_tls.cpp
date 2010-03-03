@@ -25,7 +25,7 @@
 
 static void tls_debug_message(int level, const char* message)
 {
-	//b_log[W_SOCK] << "TLS debug: " << message;
+	b_log[W_SOCK] << "TLS debug: " << message;
 }
 
 SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
