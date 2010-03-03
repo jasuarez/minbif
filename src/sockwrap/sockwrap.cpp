@@ -53,11 +53,18 @@ SockWrapper::~SockWrapper()
 
 SockWrapper* SockWrapper::Builder(int _recv_fd, int _send_fd)
 {
+	string sec_mode = conf.GetSection("irc")->GetSection("daemon")->GetItem("security")->String();
+	if (sec_mode.compare("none") == 0)
+		return new SockWrapperPlain(_recv_fd, _send_fd);
 #ifdef HAVE_TLS
-	if (conf.GetSection("irc")->GetSection("daemon")->GetItem("security")->String().compare("ssl") == 0)
+	else if (sec_mode.compare("tls") == 0)
 		return new SockWrapperTLS(_recv_fd, _send_fd);
+	else if (sec_mode.compare("starttls") == 0)
+		throw SockError::SockError("Security mode not yet implemented");
+	else if (sec_mode.compare("starttls-mandatory") == 0)
+		throw SockError::SockError("Security mode not yet implemented");
 #endif
-	return new SockWrapperPlain(_recv_fd, _send_fd);
+	throw SockError::SockError("unknown security mode");
 }
 
 string SockWrapper::GetClientHostname()
