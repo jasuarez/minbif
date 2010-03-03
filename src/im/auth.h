@@ -42,7 +42,7 @@ namespace im
 		virtual bool exists() = 0;
 		virtual bool authenticate(const string password) = 0;
 		virtual im::IM* create(const string password);
-		virtual im::IM* getIM();
+		im::IM* getIM() { return im; };
 		virtual bool setPassword(const string& password) = 0;
 		virtual string getPassword() const = 0;
 

@@ -56,9 +56,4 @@ im::IM* Auth::create(const string password)
 
 	return im;
 }
-
-im::IM* Auth::getIM()
-{
-	return im;
-}
 }; /* namespace im */
