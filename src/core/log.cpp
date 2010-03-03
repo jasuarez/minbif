@@ -43,7 +43,7 @@ static struct
 	{ W_WARNING,    LOG_WARNING, "WARNING", false,  true  },
 	{ W_ERR,        LOG_ERR,     "ERR"    , true,   true  },
 	{ W_INFO,       LOG_NOTICE,  "INFO"   , false,  true  },
-	{ W_SOCK,	LOG_DEBUG,   "SOCK"    , true,   false },
+	{ W_SOCK,	LOG_DEBUG,   "SOCK"   , false,  false },
 };
 
 Log::flux::~flux()
