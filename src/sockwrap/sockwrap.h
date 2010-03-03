@@ -43,7 +43,7 @@ public:
 class SockError : public IRCError
 {
 public:
-	SockError(string _reason, uint32_t _log_level = W_SOCK) : IRCError(_reason, _log_level) {};
+	SockError(string _reason, uint32_t _log_level = W_SOCK | W_ERR) : IRCError(_reason, _log_level) {};
 };
 
 class SockWrapper
