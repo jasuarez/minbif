@@ -24,6 +24,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		im/im.cpp
 		im/auth.cpp
 		im/auth_local.cpp
+		im/auth_connection.cpp
 		${MINBIF_EXTRA_FILES_PAM}
 		im/protocol.cpp
 		im/account.cpp

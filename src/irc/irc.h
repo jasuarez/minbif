@@ -164,6 +164,8 @@ namespace irc
 		 */
 		void quit(string reason = "");
 
+		SockWrapper* getSockWrap() const { return sockw; };
+
 		void addChannel(Channel* chan);
 		Channel* getChannel(string channame) const;
 		void removeChannel(string channame);

@@ -77,6 +77,7 @@ Minbif::Minbif()
 #ifdef HAVE_PAM
 	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
 #endif
+	section->AddItem(new ConfigItem_bool("use_connection", "Use connection information instead of local database or PAM", "false"));
 #ifdef HAVE_TLS
 	sub = section->AddSection("tls", "TLS information", MyConfig::OPTIONAL);
 	sub->AddItem(new ConfigItem_string("trust_file", "CA certificate file for TLS", " "));

@@ -23,42 +23,42 @@
 #include "core/util.h"
 #include "core/config.h"
 #include "irc/irc.h"
-#include "auth_local.h"
+#include "irc/user.h"
 #include "auth_connection.h"
-#ifdef HAVE_PAM
-#  include "auth_pam.h"
-#endif
 
 namespace im
 {
-Auth* Auth::build(irc::IRC* _irc, string _username)
+AuthConnection::AuthConnection(irc::IRC* _irc, string _username)
+	: Auth(_irc, _username)
 {
-	if (conf.GetSection("aaa")->GetItem("use_connection")->Boolean())
-		return new AuthConnection(_irc, _username);
-#ifdef HAVE_PAM
-	else if (conf.GetSection("aaa")->GetItem("use_pam")->Boolean())
-		return new AuthPAM(_irc, _username);
-#endif
-	return new AuthLocal(_irc, _username);
 }
 
-Auth::Auth(irc::IRC* _irc, string _username)
-	: username(_username),
-	  irc(_irc)
+bool AuthConnection::exists()
 {
-	im = NULL;
+	return true;
 }
 
-im::IM* Auth::create(const string password)
+bool AuthConnection::authenticate(const string password)
 {
+	if (!im::IM::exists(username))
+		return false;
+
+	SockWrapper* sockw = irc->getSockWrap();
 	im = new im::IM(irc, username);
-	im->setPassword(password);
 
-	return im;
+	b_log[W_DEBUG] << "Authenticating user " << im->getUsername() << " using connection information";
+	return sockw->GetClientUsername() == username;
 }
 
-im::IM* Auth::getIM()
+bool AuthConnection::setPassword(const string& password)
 {
-	return im;
+	b_log[W_ERR] << "PAM: Password change failed: you are not authenticated using a password ";
+	return false;
+}
+
+string AuthConnection::getPassword() const
+{
+	b_log[W_WARNING] << "Cannot fetch current password, you are not authenticated using a password";
+	return "";
 }
 }; /* namespace im */
