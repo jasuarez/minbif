@@ -77,8 +77,6 @@ Log::flux::~flux()
 
 		if(b_log.getServerPoll())
 			b_log.getServerPoll()->log(flag, category + str);
-		else
-			std::cout << category << " " << str << "\r\n";
 
 	}
 }
