@@ -400,19 +400,23 @@ void IRC::sendWelcome()
 	   user->getIdentname().empty())
 		return;
 
-	if(user->getPassword().empty())
-	{
-		quit("Please set a password");
-		return;
-	}
-
 	try
 	{
-		im_auth = im::Auth::build(this, user->getNickname());
-
-		if(!im_auth->exists())
+		if (im::IM::exists(user->getNickname()))
 		{
-			/* New user. */
+			im_auth = im::Auth::validate(this, user->getNickname(), user->getPassword());
+			if (!im_auth)
+				quit("Incorrect credentials");
+		}
+		else
+		{
+			/* New User */
+
+			if (user->getPassword().empty())
+			{
+				quit("Please set a password for this new account");
+				return;
+			}
 
 			string global_passwd = conf.GetSection("irc")->GetItem("password")->String();
 			if(global_passwd != " " && user->getPassword() != global_passwd)
@@ -421,12 +425,9 @@ void IRC::sendWelcome()
 				return;
 			}
 
-			im_auth->create(user->getPassword());
-		}
-		else if(!im_auth->authenticate(user->getPassword()))
-		{
-			quit("Incorrect password");
-			return;
+			im_auth = im::Auth::generate(this, user->getNickname(), user->getPassword());
+			if (!im_auth)
+				quit("Creation of new account failed");
 		}
 
 		im = im_auth->getIM();

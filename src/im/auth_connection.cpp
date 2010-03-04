@@ -44,10 +44,15 @@ bool AuthConnection::authenticate(const string password)
 		return false;
 
 	SockWrapper* sockw = irc->getSockWrap();
-	im = new im::IM(irc, username);
 
-	b_log[W_DEBUG] << "Authenticating user " << im->getUsername() << " using connection information";
-	return sockw->GetClientUsername() == username;
+	b_log[W_DEBUG] << "Authenticating user " << username << " using connection information";
+	if (sockw->GetClientUsername() == username)
+	{
+		im = new im::IM(irc, username);
+		return true;
+	}
+
+	return false;
 }
 
 bool AuthConnection::setPassword(const string& password)

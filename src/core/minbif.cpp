@@ -74,10 +74,11 @@ Minbif::Minbif()
 	sub->AddItem(new ConfigItem_string("password", "IRC operator password"));
 
 	section = conf.AddSection("aaa", "Authentication, Authorization and Accounting", MyConfig::OPTIONAL);
+	section->AddItem(new ConfigItem_bool("use_local", "Use local database to authenticate users", "true"));
 #ifdef HAVE_PAM
-	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
+	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms to authenticate/authorize users", "false"));
 #endif
-	section->AddItem(new ConfigItem_bool("use_connection", "Use connection information instead of local database or PAM", "false"));
+	section->AddItem(new ConfigItem_bool("use_connection", "Use connection information to authenticate/authorize users", "false"));
 #ifdef HAVE_TLS
 	sub = section->AddSection("tls", "TLS information", MyConfig::OPTIONAL);
 	sub->AddItem(new ConfigItem_string("trust_file", "CA certificate file for TLS", " "));

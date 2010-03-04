@@ -45,7 +45,7 @@ bool AuthLocal::authenticate(const string password)
 
 	im = new im::IM(irc, username);
 
-	b_log[W_DEBUG] << "Authenticating user " << im->getUsername() << " using local database";
+	b_log[W_DEBUG] << "Authenticating user " << username << " using local database";
 	return im->getPassword() == password;
 }
 
@@ -53,7 +53,7 @@ bool AuthLocal::setPassword(const string& password)
 {
 	if(password.find(' ') != string::npos || password.size() < 8)
 	{
-		irc->notice(irc->getUser(), "Password must be at least 8 characters, and does not contain whitespaces.");
+		irc->notice(irc->getUser(), "Password must be at least 8 characters, and cannot contain whitespaces.");
 		return false;
 	}
 	im->setPassword(password);

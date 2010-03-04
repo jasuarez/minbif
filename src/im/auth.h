@@ -37,7 +37,9 @@ namespace im
 	class Auth
 	{
 	public:
-		static Auth* build(irc::IRC* _irc, string _username);
+		static Auth* validate(irc::IRC* irc, const string username, const string password);
+		static Auth* generate(irc::IRC* irc, const string username, const string password);
+
 		Auth(irc::IRC* _irc, string _username);
 		virtual bool exists() = 0;
 		virtual bool authenticate(const string password) = 0;

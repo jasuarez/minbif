@@ -127,11 +127,14 @@ bool AuthPAM::authenticate(const string password)
 		retval = pam_acct_mgmt(pamh, 0);	/* permitted access? */
 
 	if (retval == PAM_SUCCESS)
+	{
 		im = new im::IM(irc, username);
+		return true;
+	}
 	else
 		close(retval);
 
-	return (retval == PAM_SUCCESS);
+	return false;
 }
 
 void AuthPAM::close(int retval)

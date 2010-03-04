@@ -18,6 +18,7 @@
 
 #include <cstring>
 #include <cerrno>
+#include <vector>
 #include "auth.h"
 #include "core/log.h"
 #include "core/util.h"
@@ -31,15 +32,62 @@
 
 namespace im
 {
-Auth* Auth::build(irc::IRC* _irc, string _username)
+Auth* Auth::validate(irc::IRC* irc, const string username, const string password)
 {
+	vector<Auth*> mechanisms;
+	Auth* mech_ok = NULL;
+
+	/* check aaa mechanisms, the more secure first */
 	if (conf.GetSection("aaa")->GetItem("use_connection")->Boolean())
-		return new AuthConnection(_irc, _username);
+		mechanisms.push_back(new AuthConnection(irc, username));
 #ifdef HAVE_PAM
-	else if (conf.GetSection("aaa")->GetItem("use_pam")->Boolean())
-		return new AuthPAM(_irc, _username);
+	if (conf.GetSection("aaa")->GetItem("use_pam")->Boolean())
+		mechanisms.push_back(new AuthPAM(irc, username));
 #endif
-	return new AuthLocal(_irc, _username);
+	if (conf.GetSection("aaa")->GetItem("use_local")->Boolean())
+		mechanisms.push_back(new AuthLocal(irc, username));
+
+	if (mechanisms.empty())
+	{
+		b_log[W_ERR] << "Login disabled (please consult your administrator)";
+		throw IMError();
+	}
+
+	for (vector<Auth*>::iterator m = mechanisms.begin(); m != mechanisms.end(); ++m)
+	{
+		if ((mech_ok == NULL) && (*m)->exists() && (*m)->authenticate(password))
+			mech_ok = *m;
+		else
+			delete *m;
+	}
+
+	return mech_ok;
+}
+
+Auth* Auth::generate(irc::IRC* irc, const string username, const string password)
+{
+	vector<Auth*> mechanisms;
+	Auth* mech_ok = NULL;
+
+	/* check aaa mechanisms allowing user creation, the more secure first */
+	if (conf.GetSection("aaa")->GetItem("use_local")->Boolean())
+		mechanisms.push_back(new AuthLocal(irc, username));
+
+	if (mechanisms.empty())
+	{
+		b_log[W_ERR] << "Private server: account creation disabled";
+		throw IMError();
+	}
+
+	for (vector<Auth*>::iterator m = mechanisms.begin(); m != mechanisms.end(); ++m)
+	{
+		if ((mech_ok == NULL) && (*m)->create(password))
+			mech_ok = *m;
+		else
+			delete *m;
+	}
+
+	return mech_ok;
 }
 
 Auth::Auth(irc::IRC* _irc, string _username)
@@ -51,8 +99,13 @@ Auth::Auth(irc::IRC* _irc, string _username)
 
 im::IM* Auth::create(const string password)
 {
+	if (exists())
+		return NULL;
+
+	b_log[W_DEBUG] << "Creating user " << username;
+
 	im = new im::IM(irc, username);
-	im->setPassword(password);
+	setPassword(password);
 
 	return im;
 }
