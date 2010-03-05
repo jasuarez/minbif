@@ -50,8 +50,10 @@ namespace im
 	class Request
 	{
 	protected:
+		Account account;
 		string title;
-		string question;
+		string primary;
+		string secondary;
 		PurpleRequestType type;
 
 		static PurpleNotifyUiOps notify_ops;
@@ -104,7 +106,7 @@ namespace im
 		static Request* getFirstRequest();
 		static void closeFirstRequest();
 
-		Request(PurpleRequestType type, const string& title, const string& question);
+		Request(PurpleRequestType type, const Account& account, const string& title, const string& primary, const string& secondary);
 		virtual ~Request() {}
 
 		virtual void process(const string& answer) const = 0;
@@ -120,9 +122,9 @@ namespace im
 
 	public:
 
-		RequestInput(PurpleRequestType type, const string& title, const string& question,
+		RequestInput(PurpleRequestType type, const Account& account, const string& title, const string& primary, const string& secondary,
 		             const string& _default_value, PurpleRequestInputCb _callback, void* _user_data)
-			: Request(type, title, question),
+			: Request(type, account, title, primary, secondary),
 			  default_value(_default_value),
 			  callback(_callback),
 			  user_data(_user_data)
@@ -138,8 +140,8 @@ namespace im
 
 	public:
 
-		RequestFieldList(PurpleRequestType type, const string& title, const string& question)
-			: Request(type, title, question)
+		RequestFieldList(PurpleRequestType type, const Account& account, const string& title, const string& primary, const string& secondary)
+			: Request(type, account, title, primary, secondary)
 		{}
 		~RequestFieldList();
 

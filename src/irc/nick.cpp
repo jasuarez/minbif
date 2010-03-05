@@ -225,17 +225,21 @@ void Nick::quit(string text)
 
 void Nick::privmsg(Channel* chan, string msg)
 {
-	chan->broadcast(Message(MSG_PRIVMSG).setSender(this)
-			                    .setReceiver(chan)
-					    .addArg(msg),
-			this);
+	string tmp;
+	while((tmp = stringtok(msg, "\n\r")).empty() == false)
+		chan->broadcast(Message(MSG_PRIVMSG).setSender(this)
+						    .setReceiver(chan)
+						    .addArg(tmp),
+				this);
 }
 
 void Nick::privmsg(Nick* nick, string msg)
 {
-	nick->send(Message(MSG_PRIVMSG).setSender(this)
-			               .setReceiver(nick)
-				       .addArg(msg));
+	string tmp;
+	while((tmp = stringtok(msg, "\n\r")).empty() == false)
+		nick->send(Message(MSG_PRIVMSG).setSender(this)
+					       .setReceiver(nick)
+					       .addArg(tmp));
 }
 
 void Nick::m_mode(Nick* user, Message m)

@@ -3,6 +3,6 @@ ADD_LIBRARY(coincoin SHARED
 		message.c
 		)
 
-TARGET_LINK_LIBRARIES(coincoin ${PURPLE_LDFLAGS} pluginlib)
+TARGET_LINK_LIBRARIES(coincoin ${PURPLE_LIBRARIES} pluginlib)
 INSTALL(TARGETS coincoin
 	DESTINATION lib/purple-2)
