@@ -28,7 +28,7 @@
 
 namespace im
 {
-AuthConnection::AuthConnection(irc::IRC* _irc, string _username)
+AuthConnection::AuthConnection(irc::IRC* _irc, const string& _username)
 	: Auth(_irc, _username)
 {
 }
@@ -38,7 +38,7 @@ bool AuthConnection::exists()
 	return true;
 }
 
-bool AuthConnection::authenticate(const string password)
+bool AuthConnection::authenticate(const string& password)
 {
 	if (!im::IM::exists(username))
 		return false;

@@ -29,9 +29,9 @@ namespace im
 	class AuthConnection : public Auth
 	{
 	public:
-		AuthConnection(irc::IRC* _irc, string _username);
+		AuthConnection(irc::IRC* _irc, const string& _username);
 		bool exists();
-		bool authenticate(const string password);
+		bool authenticate(const string& password);
 		bool setPassword(const string& password);
 		string getPassword() const;
 	};

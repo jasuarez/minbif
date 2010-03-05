@@ -40,10 +40,10 @@ namespace im
 		static Auth* validate(irc::IRC* irc, const string& username, const string& password);
 		static Auth* generate(irc::IRC* irc, const string& username, const string& password);
 
-		Auth(irc::IRC* _irc, string _username);
+		Auth(irc::IRC* _irc, const string& _username);
 		virtual bool exists() = 0;
-		virtual bool authenticate(const string password) = 0;
-		virtual im::IM* create(const string password);
+		virtual bool authenticate(const string& password) = 0;
+		virtual im::IM* create(const string& password);
 		im::IM* getIM() { return im; };
 		virtual bool setPassword(const string& password) = 0;
 		virtual string getPassword() const = 0;

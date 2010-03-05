@@ -104,14 +104,14 @@ Auth* Auth::generate(irc::IRC* irc, const string& username, const string& passwo
 	return mech_ok;
 }
 
-Auth::Auth(irc::IRC* _irc, string _username)
+Auth::Auth(irc::IRC* _irc, const string& _username)
 	: username(_username),
 	  irc(_irc)
 {
 	im = NULL;
 }
 
-im::IM* Auth::create(const string password)
+im::IM* Auth::create(const string& password)
 {
 	if (exists())
 		return NULL;

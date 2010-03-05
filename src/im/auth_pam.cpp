@@ -27,7 +27,7 @@
 
 namespace im
 {
-AuthPAM::AuthPAM(irc::IRC* _irc, string _username)
+AuthPAM::AuthPAM(irc::IRC* _irc, const string& _username)
 	: Auth(_irc, _username)
 {
 	pamh = NULL;
@@ -104,7 +104,7 @@ static int pam_conv_func(int num_msg, const struct pam_message **msgm, struct pa
 	return PAM_CONV_ERR;
 }
 
-bool AuthPAM::authenticate(const string password)
+bool AuthPAM::authenticate(const string& password)
 {
 	int retval;
 

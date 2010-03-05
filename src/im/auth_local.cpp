@@ -28,7 +28,7 @@
 
 namespace im
 {
-AuthLocal::AuthLocal(irc::IRC* _irc, string _username)
+AuthLocal::AuthLocal(irc::IRC* _irc, const string& _username)
 	: Auth(_irc, _username)
 {
 }
@@ -38,7 +38,7 @@ bool AuthLocal::exists()
 	return im::IM::exists(username);
 }
 
-bool AuthLocal::authenticate(const string password)
+bool AuthLocal::authenticate(const string& password)
 {
 	if (!im::IM::exists(username))
 		return false;
