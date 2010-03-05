@@ -37,8 +37,8 @@ namespace im
 	class Auth
 	{
 	public:
-		static Auth* validate(irc::IRC* irc, const string username, const string password);
-		static Auth* generate(irc::IRC* irc, const string username, const string password);
+		static Auth* validate(irc::IRC* irc, const string& username, const string& password);
+		static Auth* generate(irc::IRC* irc, const string& username, const string& password);
 
 		Auth(irc::IRC* _irc, string _username);
 		virtual bool exists() = 0;
@@ -49,6 +49,7 @@ namespace im
 		virtual string getPassword() const = 0;
 
 	protected:
+		static vector<Auth*> getMechanisms(irc::IRC* irc, const string& username);
 		string username;
 		irc::IRC* irc;
 

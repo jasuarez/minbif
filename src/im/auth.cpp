@@ -32,20 +32,38 @@
 
 namespace im
 {
-Auth* Auth::validate(irc::IRC* irc, const string username, const string password)
+
+template<typename T>
+static Auth* authFactory(irc::IRC* irc, const string& username)
+{
+	return new T(irc, username);
+}
+
+static struct
+{
+	const char* config_param;
+	Auth* (*factory) (irc::IRC* irc, const string& username);
+} auth_mechanisms[] = {
+	{ "use_connection", authFactory<AuthConnection> },
+#ifdef HAVE_PAM
+	{ "use_pam",        authFactory<AuthPAM> },
+#endif
+	{ "use_local",      authFactory<AuthLocal> }
+};
+
+vector<Auth*> Auth::getMechanisms(irc::IRC* irc, const string& username)
 {
 	vector<Auth*> mechanisms;
-	Auth* mech_ok = NULL;
+	for(size_t i = 0; i < (sizeof auth_mechanisms / sizeof *auth_mechanisms); ++i)
+		if (conf.GetSection("aaa")->GetItem(auth_mechanisms[i].config_param)->Boolean())
+			mechanisms.push_back(auth_mechanisms[i].factory(irc, username));
+	return mechanisms;
+}
 
-	/* check aaa mechanisms, the more secure first */
-	if (conf.GetSection("aaa")->GetItem("use_connection")->Boolean())
-		mechanisms.push_back(new AuthConnection(irc, username));
-#ifdef HAVE_PAM
-	if (conf.GetSection("aaa")->GetItem("use_pam")->Boolean())
-		mechanisms.push_back(new AuthPAM(irc, username));
-#endif
-	if (conf.GetSection("aaa")->GetItem("use_local")->Boolean())
-		mechanisms.push_back(new AuthLocal(irc, username));
+Auth* Auth::validate(irc::IRC* irc, const string& username, const string& password)
+{
+	vector<Auth*> mechanisms = getMechanisms(irc, username);
+	Auth* mech_ok = NULL;
 
 	if (mechanisms.empty())
 	{
@@ -64,14 +82,10 @@ Auth* Auth::validate(irc::IRC* irc, const string username, const string password
 	return mech_ok;
 }
 
-Auth* Auth::generate(irc::IRC* irc, const string username, const string password)
+Auth* Auth::generate(irc::IRC* irc, const string& username, const string& password)
 {
-	vector<Auth*> mechanisms;
+	vector<Auth*> mechanisms = getMechanisms(irc, username);
 	Auth* mech_ok = NULL;
-
-	/* check aaa mechanisms allowing user creation, the more secure first */
-	if (conf.GetSection("aaa")->GetItem("use_local")->Boolean())
-		mechanisms.push_back(new AuthLocal(irc, username));
 
 	if (mechanisms.empty())
 	{
