@@ -20,11 +20,12 @@ You can provide several configuration options to make:
 * ENABLE_VIDEO=(ON|OFF) — Enable the video viewer (default=OFF). Depends on ENABLE_CACA.
 * ENABLE_PLUGIN=(ON|OFF) — Compile libpurple's plugins (default=OFF).
 * ENABLE_PAM=(ON|OFF) — Compile with PAM support (default=OFF).
+* ENABLE_TLS=(ON|OFF) — Compile with TLS support (default=OFF).
 
 Run:
 $ make [PREFIX=path] [MAN_PREFIX=path] [CONF_PREFIX=path] [DOC_PREFIX=path]
        [ENABLE_MINBIF=ON|OFF] [ENABLE_CACA=ON|OFF] [ENABLE_VIDEO=ON|OFF]
-       [ENABLE_PLUGIN=ON|OFF] [ENABLE_PAM=ON|OFF]
+       [ENABLE_PLUGIN=ON|OFF] [ENABLE_PAM=ON|OFF] [ENABLE_TLS=ON|OFF]
 
 To install it use:
 $ make install

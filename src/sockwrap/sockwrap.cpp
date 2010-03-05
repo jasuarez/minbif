@@ -53,7 +53,7 @@ SockWrapper::~SockWrapper()
 
 SockWrapper* SockWrapper::Builder(int _recv_fd, int _send_fd)
 {
-	string sec_mode = conf.GetSection("irc")->GetSection("daemon")->GetItem("security")->String();
+	string sec_mode = conf.GetSection("irc")->GetItem("security")->String();
 	if (sec_mode.compare("none") == 0)
 		return new SockWrapperPlain(_recv_fd, _send_fd);
 #ifdef HAVE_TLS
