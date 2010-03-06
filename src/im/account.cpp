@@ -537,6 +537,7 @@ bool Account::supportsChats() const
 map<string, string> Account::getChatParameters() const
 {
 	assert(isValid());
+	assert(isConnected());
 
 	PurpleConnection* gc = purple_account_get_connection(account);
 	map<string, string> m;

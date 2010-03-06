@@ -987,7 +987,7 @@ void IRC::m_stats(Message message)
 		{
 			string accid = message.countArgs() > 1 ? message.getArg(1) : "";
 			im::Account account = im->getAccount(accid);
-			if(!account.isValid())
+			if(!account.isValid() || !account.isConnected())
 				user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 								     .setReceiver(user)
 								     .addArg(accid)
