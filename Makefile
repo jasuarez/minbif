@@ -8,7 +8,7 @@ CMAKE_OPTIONS = $(EXTRA_CMAKE_FLAGS) $(CMAKE_PREFIX)
 all: build/Makefile
 	$(MAKE) -C build all
 
-build/Makefile: Makefile.options.local
+build/Makefile:
 	@[ -d build ] || mkdir build
 	cd build && cmake .. $(CMAKE_OPTIONS) || cd .. && rm -rf build
 
