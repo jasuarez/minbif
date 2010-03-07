@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Marc Dequènes (Duck)
+ * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,4 +66,13 @@ string AuthConnection::getPassword() const
 	b_log[W_WARNING] << "Cannot fetch current password, you are not authenticated using a password";
 	return "";
 }
+
+im::IM* AuthConnection::create(const string& password)
+{
+	if (irc->getSockWrap()->GetClientUsername() != username)
+		throw IMError("No connection authentication");
+
+	return Auth::create(password);
+}
+
 }; /* namespace im */

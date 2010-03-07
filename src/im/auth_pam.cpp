@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Marc Dequènes (Duck)
+ * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,14 +104,12 @@ static int pam_conv_func(int num_msg, const struct pam_message **msgm, struct pa
 	return PAM_CONV_ERR;
 }
 
-bool AuthPAM::authenticate(const string& password)
+bool AuthPAM::checkPassword(const string& password)
 {
 	int retval;
 
 	if (pamh)
 		close();
-
-	b_log[W_DEBUG] << "Authenticating user " << username << " using PAM mechanism";
 
 	pam_conversation.conv = pam_conv_func;
 	pam_conversation.appdata_ptr = (void*) &pam_conv_func_data;
@@ -126,13 +124,26 @@ bool AuthPAM::authenticate(const string& password)
 	if (retval == PAM_SUCCESS)
 		retval = pam_acct_mgmt(pamh, 0);	/* permitted access? */
 
-	if (retval == PAM_SUCCESS)
+	if (retval != PAM_SUCCESS)
+	{
+		close(retval);
+
+		return false;
+	}
+
+	return true;
+
+}
+
+bool AuthPAM::authenticate(const string& password)
+{
+	b_log[W_DEBUG] << "Authenticating user " << username << " using PAM mechanism";
+
+	if(checkPassword(password))
 	{
 		im = new im::IM(irc, username);
 		return true;
 	}
-	else
-		close(retval);
 
 	return false;
 }
@@ -145,10 +156,8 @@ void AuthPAM::close(int retval)
 		return;
 
 	retval2 = pam_end(pamh, retval);
-	if (retval2 != PAM_SUCCESS) {     /* close Linux-PAM */
-		b_log[W_ERR] << "PAM: Could not release authenticatori: " << pam_strerror(pamh, retval2);
-		throw IMError();
-	}
+	if (retval2 != PAM_SUCCESS)       /* close Linux-PAM */
+		throw IMError("PAM: Could not release authenticatori: " + pam_strerror(pamh, retval2));
 	pamh = NULL;
 }
 
@@ -158,10 +167,7 @@ bool AuthPAM::setPassword(const string& password)
 
 	/* It should never happen */
 	if (!pamh)
-	{
-		b_log[W_ERR] << "Cannot change password if not authenticated";
-		throw IMError();
-	}
+		throw IMError("Cannot change password if not authenticated");
 
 	pam_conv_func_data.update = true;
 	pam_conv_func_data.new_password = password;
@@ -178,4 +184,13 @@ string AuthPAM::getPassword() const
 	b_log[W_WARNING] << "Cannot fetch current password, it is hidden";
 	return "";
 }
+
+im::IM* AuthPAM::create(const string& password)
+{
+	if(!checkPassword(password))
+		throw IMError("PAM: Incorrect login/password");
+
+	return Auth::create(password);
+}
+
 }; /* namespace im */

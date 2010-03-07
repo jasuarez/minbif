@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Marc Dequènes (Duck)
+ * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 #ifndef IM_AUTH_H
 #define IM_AUTH_H
 
-#include <exception>
 #include <string>
 
 #include "im.h"
+#include "core/exception.h"
 
 namespace irc
 {
@@ -33,6 +33,8 @@ namespace irc
 namespace im
 {
 	using std::string;
+
+	STREXCEPTION(UnableToCreate);
 
 	class Auth
 	{

@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Marc Dequènes (Duck)
+ * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ namespace im
 		~AuthPAM();
 		bool exists();
 		bool authenticate(const string& password);
+		im::IM* create(const string& password);
 		bool setPassword(const string& password);
 		string getPassword() const;
 
@@ -50,6 +51,7 @@ namespace im
 		struct _pam_conv_func_data pam_conv_func_data;
 
 		void close(int retval = PAM_SUCCESS);
+		bool checkPassword(const string& password);
 	};
 };
 

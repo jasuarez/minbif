@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Marc Dequènes (Duck)
+ * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,10 +66,7 @@ Auth* Auth::validate(irc::IRC* irc, const string& username, const string& passwo
 	Auth* mech_ok = NULL;
 
 	if (mechanisms.empty())
-	{
-		b_log[W_ERR] << "Login disabled (please consult your administrator)";
-		throw IMError();
-	}
+		throw IMError("Login disabled (please consult your administrator)");
 
 	for (vector<Auth*>::iterator m = mechanisms.begin(); m != mechanisms.end(); ++m)
 	{
@@ -86,35 +83,45 @@ Auth* Auth::generate(irc::IRC* irc, const string& username, const string& passwo
 {
 	vector<Auth*> mechanisms = getMechanisms(irc, username);
 	Auth* mech_ok = NULL;
+	string err;
 
 	if (mechanisms.empty())
-	{
-		b_log[W_ERR] << "Private server: account creation disabled";
-		throw IMError();
-	}
+		throw IMError("Private server: account creation disabled");
 
 	for (vector<Auth*>::iterator m = mechanisms.begin(); m != mechanisms.end(); ++m)
 	{
-		if ((mech_ok == NULL) && (*m)->create(password))
-			mech_ok = *m;
-		else
-			delete *m;
+		try
+		{
+			if ((mech_ok == NULL) && (*m)->create(password))
+			{
+				mech_ok = *m;
+				continue;
+			}
+		}
+		catch(UnableToCreate &e)
+		{
+			err = e.Reason();
+		}
+		delete *m;
 	}
+	if (!mech_ok && !err.empty())
+		throw IMError("Unable to create account: " + err);
 
 	return mech_ok;
 }
 
 Auth::Auth(irc::IRC* _irc, const string& _username)
 	: username(_username),
-	  irc(_irc)
+	  irc(_irc),
+	  im(NULL)
 {
-	im = NULL;
+
 }
 
 im::IM* Auth::create(const string& password)
 {
 	if (exists())
-		return NULL;
+		throw UnableToCreate("Already exists.");
 
 	b_log[W_DEBUG] << "Creating user " << username;
 
