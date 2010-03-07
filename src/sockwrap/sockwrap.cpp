@@ -24,11 +24,6 @@
 #include "core/config.h"
 #include "core/util.h"
 
-IRCError::IRCError(string _reason, uint32_t _log_level = W_ERR) : reason(_reason), log_level(_log_level)
-{
-	b_log[log_level] << Reason();
-}
-
 SockWrapper::SockWrapper(int _recv_fd, int _send_fd) : recv_fd(_recv_fd), send_fd(_send_fd)
 {
 	if (recv_fd < 0)

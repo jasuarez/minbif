@@ -16,42 +16,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <fcntl.h>
-#include <netdb.h>
+#ifndef _MINBIF_EXCEPTION_H
+#define _MINBIF_EXCEPTION_H
+
+#include <exception>
 #include <string>
-#include <vector>
-#include "core/log.h"
-#include "core/callback.h"
 
-#ifndef PF_SOCKWRAP_H
-#define PF_SOCKWRAP_H
-
-using std::string;
-using std::vector;
-
-LOGEXCEPTION2(SockError, LogException, W_SOCK);
-
-class SockWrapper
+class StrException : public std::exception
 {
-	vector<int> callback_ids;
+	std::string reason;
 
 public:
-	static SockWrapper* Builder(int _recv_fd, int _send_fd);
-	SockWrapper(int _recv_fd, int _send_fd);
-	virtual ~SockWrapper();
+	StrException(const std::string& _reason) : reason(_reason) {}
+	virtual ~StrException() throw() {}
 
-	virtual string Read() = 0;
-	virtual void Write(string s) = 0;
-	virtual string GetClientHostname();
-	virtual string GetServerHostname();
-	virtual int AttachCallback(PurpleInputCondition cond, _CallBack* cb);
-	virtual string GetClientUsername();
-
-protected:
-	int recv_fd, send_fd;
-	bool sock_ok;
-
-	virtual void EndSessionCleanup();
+	const std::string& Reason() const { return reason; }
 };
 
-#endif /* PF_SOCKWRAP_H */
+#define EXCEPTION(x) class x : public std::exception {};
+#define STREXCEPTION(x) class x : public StrException { public: x(const std::string& reason) : StrException(reason) {} };
+
+#endif /* _MINBIF_EXCEPTION_H */

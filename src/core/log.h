@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2009 Laurent Defert, Romain Bignon
+ * Copyright(C) 2009-2010 Laurent Defert, Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <string>
 #include <stdint.h>
 #include <sstream>
+#include "core/exception.h"
 
 enum
 {
@@ -116,4 +117,20 @@ inline Log::flux& Log::flux::operator<< <std::string> (std::string s)
 }
 
 extern Log b_log;
+
+class LogException : public StrException
+{
+	uint32_t log_level;
+
+public:
+	LogException(const std::string& reason, uint32_t _log_level = W_ERR)
+		: StrException(reason),
+		  log_level(_log_level)
+	{
+		b_log[log_level] << Reason();
+	}
+};
+#define LOGEXCEPTION(x) class x : public LogException { public: x(const std::string& reason, uint32_t log_level = W_ERR) : LogException(reason, log_level) {} };
+#define LOGEXCEPTION2(x, y, z) class x : public y { public: x(const std::string& reason, uint32_t log_level = z) : y(reason, log_level) {} };
+
 #endif						  /* LOG_H */
