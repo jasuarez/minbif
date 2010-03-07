@@ -1,31 +1,28 @@
-ENABLE_MINBIF ?= ON
-ENABLE_CACA ?= ON
-ENABLE_VIDEO ?= OFF
-ENABLE_PLUGIN ?= OFF
-ENABLE_PAM ?= OFF
-PREFIX ?= /usr/local/
-CMAKE_OPTIONS = -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=0 \
-                -DENABLE_CACA=$(ENABLE_CACA) -DENABLE_VIDEO=$(ENABLE_VIDEO) -DENABLE_PLUGIN=$(ENABLE_PLUGIN) -DENABLE_PAM=$(ENABLE_PAM) -DENABLE_MINBIF=$(ENABLE_MINBIF) \
-                -DCMAKE_INSTALL_PREFIX=$(PREFIX) -DMAN_PREFIX=$(MAN_PREFIX) -DCONF_PREFIX=$(CONF_PREFIX) -DDOC_PREFIX=$(DOC_PREFIX)
+include Makefile.options.defaults
+-include Makefile.options.local
 
-all: build.minbif/Makefile
-	make -C build.minbif all
+include Makefile.parser
 
-build.minbif/Makefile:
-	[ -d build.minbif ] || mkdir build.minbif; \
-	cd build.minbif && cmake $(CMAKE_OPTIONS) .. || cd .. && rm -rf build.minbif
+CMAKE_OPTIONS = $(EXTRA_CMAKE_FLAGS) $(CMAKE_PREFIX)
+
+all: build/Makefile
+	$(MAKE) -C build all
+
+build/Makefile: Makefile.options.local
+	@[ -d build ] || mkdir build
+	cd build && cmake .. $(CMAKE_OPTIONS) || cd .. && rm -rf build
 
 install:
-	make -C build.minbif install
+	$(MAKE) -C build install
 
 clean:
-	rm -rf build.minbif
+	rm -rf build
 	rm -rf release
 
 doc:
 	cd doc/ && /usr/bin/doxygen
 
 tests:
-	make -C tests
+	$(MAKE) -C tests
 
 .PHONY: all clean install doc tests
