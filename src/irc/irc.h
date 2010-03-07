@@ -28,6 +28,7 @@
 #include "server.h"
 #include "im/auth.h"
 #include "sockwrap/sockwrap.h"
+#include "core/exception.h"
 
 class _CallBack;
 class ServerPoll;
@@ -50,6 +51,8 @@ namespace irc
 	class Nick;
 	class Channel;
 	class DCC;
+
+	STREXCEPTION(IRCError);
 
 	/** This class represents the user's server.
 	 *

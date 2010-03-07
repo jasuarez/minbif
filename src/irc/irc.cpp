@@ -411,13 +411,6 @@ void IRC::sendWelcome()
 		else
 		{
 			/* New User */
-
-			if (user->getPassword().empty())
-			{
-				quit("Please set a password for this new account");
-				return;
-			}
-
 			string global_passwd = conf.GetSection("irc")->GetItem("password")->String();
 			if(global_passwd != " " && user->getPassword() != global_passwd)
 			{
@@ -444,7 +437,7 @@ void IRC::sendWelcome()
 	}
 	catch(im::IMError& e)
 	{
-		quit("Unable to initialize IM");
+		quit("Unable to initialize IM: " + e.Reason());
 	}
 }
 
@@ -533,7 +526,7 @@ bool IRC::readIO(void*)
 			}
 		}
 	}
-	catch (IRCError &e)
+	catch (SockError &e)
 	{
 		quit(e.Reason());
 	}

@@ -130,10 +130,7 @@ PurpleCoreUiOps Purple::core_ops =
 void Purple::init(IM* im)
 {
 	if(Purple::im)
-	{
-		b_log[W_ERR] << "These is already a purple instance!";
-		throw PurpleError();
-	}
+		throw PurpleError("These is already a purple instance!");
 	purple_util_set_user_dir(im->getUserPath().c_str());
 
 	purple_core_set_ui_ops(&core_ops);
@@ -141,10 +138,7 @@ void Purple::init(IM* im)
 
 	Purple::im = im;
 	if (!purple_core_init(MINBIF_VERSION_NAME))
-	{
-		b_log[W_ERR] << "Initialization of the Purple core failed.";
-		throw PurpleError();
-	}
+		throw PurpleError("Initialization of the Purple core failed.");
 
 	purple_set_blist(purple_blist_new());
 	purple_blist_load();

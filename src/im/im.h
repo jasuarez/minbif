@@ -19,12 +19,12 @@
 #ifndef IM_IM_H
 #define IM_IM_H
 
-#include <exception>
 #include <string>
 #include <map>
 
 #include "account.h"
 #include "protocol.h"
+#include "core/log.h"
 
 namespace irc
 {
@@ -38,10 +38,10 @@ namespace im
 	using std::map;
 
 	/** Raised when IM can't be initialized. */
-	class IMError : public std::exception {};
+	LOGEXCEPTION(IMError);
 
 	/** Protocol is unknown */
-	class ProtocolUnknown : public std::exception {};
+	EXCEPTION(ProtocolUnknown);
 
 	/** Class used to Instant Messaging things */
 	class IM
