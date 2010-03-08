@@ -32,16 +32,18 @@ static struct
 	int level;
 	const char* s;
 	bool sys_log;
+	bool propagate_to_user;
 } all_flags[] =
 {
-	{ W_SNO,        LOG_NOTICE,  ""       , false    },
-	{ W_DEBUG,      LOG_DEBUG,   "DEBUG"  , false    },
-	{ W_PARSE,      LOG_DEBUG,   "PARSE"  , false    },
-	{ W_PURPLE,     LOG_DEBUG,   "PURPLE" , false    },
-	{ W_DESYNCH,    LOG_WARNING, "DESYNCH", false    },
-	{ W_WARNING,    LOG_WARNING, "WARNING", false    },
-	{ W_ERR,        LOG_ERR,     "ERR"    , true     },
-	{ W_INFO,       LOG_NOTICE,  "INFO"   , false    },
+	{ W_SNO,        LOG_NOTICE,  ""       , false,  true  },
+	{ W_DEBUG,      LOG_DEBUG,   "DEBUG"  , false,  true  },
+	{ W_PARSE,      LOG_DEBUG,   "PARSE"  , false,  true  },
+	{ W_PURPLE,     LOG_DEBUG,   "PURPLE" , false,  true  },
+	{ W_DESYNCH,    LOG_WARNING, "DESYNCH", false,  true  },
+	{ W_WARNING,    LOG_WARNING, "WARNING", false,  true  },
+	{ W_ERR,        LOG_ERR,     "ERR"    , true,   true  },
+	{ W_INFO,       LOG_NOTICE,  "INFO"   , false,  true  },
+	{ W_SOCK,	LOG_DEBUG,   "SOCK"   , false,  false },
 };
 
 Log::flux::~flux()
@@ -61,6 +63,9 @@ Log::flux::~flux()
 		if(all_flags[i].sys_log && b_log.toSyslog())
 			syslog(all_flags[i].level, "[%s] %s", all_flags[i].s, str.c_str());
 
+                if (!all_flags[i].propagate_to_user)
+			return;
+
 		struct timeval t;
 		gettimeofday(&t, NULL);
 
@@ -72,8 +77,6 @@ Log::flux::~flux()
 
 		if(b_log.getServerPoll())
 			b_log.getServerPoll()->log(flag, category + str);
-		else
-			std::cout << category << " " << str << "\r\n";
 
 	}
 }

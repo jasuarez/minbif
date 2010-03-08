@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
+ * Copyright(C) 2009-2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IM_AUTH_LOCAL_H
-#define IM_AUTH_LOCAL_H
+#ifndef _MINBIF_EXCEPTION_H
+#define _MINBIF_EXCEPTION_H
 
-#include "auth.h"
+#include <exception>
+#include <string>
 
-/** IM related classes */
-namespace im
+class StrException : public std::exception
 {
-	using std::string;
+	std::string reason;
 
-	class AuthLocal : public Auth
-	{
-	public:
-		AuthLocal(irc::IRC* _irc, const string& _username);
-		bool exists();
-		bool authenticate(const string& password);
-		im::IM* create(const string& password);
-		bool setPassword(const string& password);
-		string getPassword() const;
-	};
+public:
+	StrException(const std::string& _reason) : reason(_reason) {}
+	virtual ~StrException() throw() {}
+
+	const std::string& Reason() const { return reason; }
 };
 
-#endif /* IM_AUTH_LOCAL_H */
+#define EXCEPTION(x) class x : public std::exception {};
+#define STREXCEPTION(x) class x : public StrException { public: x(const std::string& reason) : StrException(reason) {} };
+
+#endif /* _MINBIF_EXCEPTION_H */

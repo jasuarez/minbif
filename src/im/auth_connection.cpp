@@ -24,51 +24,53 @@
 #include "core/config.h"
 #include "irc/irc.h"
 #include "irc/user.h"
-#include "auth_local.h"
+#include "auth_connection.h"
 
 namespace im
 {
-AuthLocal::AuthLocal(irc::IRC* _irc, const string& _username)
+AuthConnection::AuthConnection(irc::IRC* _irc, const string& _username)
 	: Auth(_irc, _username)
 {
 }
 
-bool AuthLocal::exists()
+bool AuthConnection::exists()
 {
-	return im::IM::exists(username);
+	return true;
 }
 
-bool AuthLocal::authenticate(const string& password)
+bool AuthConnection::authenticate(const string& password)
 {
 	if (!im::IM::exists(username))
 		return false;
 
-	im = new im::IM(irc, username);
+	sock::SockWrapper* sockw = irc->getSockWrap();
 
-	b_log[W_DEBUG] << "Authenticating user " << username << " using local database";
-	return im->getPassword() == password;
-}
-
-bool AuthLocal::setPassword(const string& password)
-{
-	if(password.find(' ') != string::npos || password.size() < 8)
+	b_log[W_DEBUG] << "Authenticating user " << username << " using connection information";
+	if (sockw->GetClientUsername() == username)
 	{
-		irc->notice(irc->getUser(), "Password must be at least 8 characters, and cannot contain whitespaces.");
-		return false;
+		im = new im::IM(irc, username);
+		return true;
 	}
-	im->setPassword(password);
-	return true;
+
+	return false;
 }
 
-string AuthLocal::getPassword() const
+bool AuthConnection::setPassword(const string& password)
 {
-	return im->getPassword();
+	b_log[W_ERR] << "PAM: Password change failed: you are not authenticated using a password ";
+	return false;
 }
 
-im::IM* AuthLocal::create(const string& password)
+string AuthConnection::getPassword() const
 {
-	if (password.empty())
-		throw UnableToCreate("Please set a password for this new account");
+	b_log[W_WARNING] << "Cannot fetch current password, you are not authenticated using a password";
+	return "";
+}
+
+im::IM* AuthConnection::create(const string& password)
+{
+	if (irc->getSockWrap()->GetClientUsername() != username)
+		throw IMError("No connection authentication");
 
 	return Auth::create(password);
 }

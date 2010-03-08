@@ -26,6 +26,7 @@
 #include "core/callback.h"
 #include "core/log.h"
 #include "core/minbif.h"
+#include "sockwrap/sockwrap.h"
 
 InetdServerPoll::InetdServerPoll(Minbif* application)
 	: ServerPoll(application),
@@ -33,7 +34,7 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 {
 	try
 	{
-		irc = new irc::IRC(this, 0,
+		irc = new irc::IRC(this, sock::SockWrapper::Builder(fileno(stdin), fileno(stdout)),
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
 		              conf.GetSection("irc")->GetItem("ping")->Integer());
 #ifndef DEBUG
@@ -42,9 +43,9 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 			close(fileno(stderr));
 #endif /* DEBUG */
 	}
-	catch(irc::AuthError &e)
+	catch(StrException &e)
 	{
-		b_log[W_ERR] << "Unable to start the IRC daemon";
+		b_log[W_ERR] << "Unable to start the IRC daemon: " + e.Reason();
 		throw ServerPollError();
 	}
 }
@@ -62,6 +63,7 @@ void InetdServerPoll::log(size_t level, string msg) const
 	string cmd = MSG_NOTICE;
 	if(level & W_DEBUG)
 		cmd = MSG_PRIVMSG;
+
 	irc->getUser()->send(irc::Message(cmd).setSender(irc)
 					 	     .setReceiver(irc->getUser())
 					 	     .addArg(msg));

@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Marc Dequènes (Duck)
+ * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 #ifndef IM_AUTH_H
 #define IM_AUTH_H
 
-#include <exception>
 #include <string>
 
 #include "im.h"
+#include "core/exception.h"
 
 namespace irc
 {
@@ -34,19 +34,24 @@ namespace im
 {
 	using std::string;
 
+	STREXCEPTION(UnableToCreate);
+
 	class Auth
 	{
 	public:
-		static Auth* build(irc::IRC* _irc, string _username);
-		Auth(irc::IRC* _irc, string _username);
+		static Auth* validate(irc::IRC* irc, const string& username, const string& password);
+		static Auth* generate(irc::IRC* irc, const string& username, const string& password);
+
+		Auth(irc::IRC* _irc, const string& _username);
 		virtual bool exists() = 0;
-		virtual bool authenticate(const string password) = 0;
-		virtual im::IM* create(const string password);
-		virtual im::IM* getIM();
+		virtual bool authenticate(const string& password) = 0;
+		virtual im::IM* create(const string& password);
+		im::IM* getIM() { return im; };
 		virtual bool setPassword(const string& password) = 0;
 		virtual string getPassword() const = 0;
 
 	protected:
+		static vector<Auth*> getMechanisms(irc::IRC* irc, const string& username);
 		string username;
 		irc::IRC* irc;
 

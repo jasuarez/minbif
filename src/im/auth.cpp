@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Marc Dequènes (Duck)
+ * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,44 +18,116 @@
 
 #include <cstring>
 #include <cerrno>
+#include <vector>
 #include "auth.h"
 #include "core/log.h"
 #include "core/util.h"
 #include "core/config.h"
 #include "irc/irc.h"
 #include "auth_local.h"
+#include "auth_connection.h"
 #ifdef HAVE_PAM
 #  include "auth_pam.h"
 #endif
 
 namespace im
 {
-Auth* Auth::build(irc::IRC* _irc, string _username)
+
+template<typename T>
+static Auth* authFactory(irc::IRC* irc, const string& username)
 {
+	return new T(irc, username);
+}
+
+static struct
+{
+	const char* config_param;
+	Auth* (*factory) (irc::IRC* irc, const string& username);
+} auth_mechanisms[] = {
+	{ "use_connection", authFactory<AuthConnection> },
 #ifdef HAVE_PAM
-	if (conf.GetSection("aaa")->GetItem("use_pam")->Boolean())
-		return new AuthPAM(_irc, _username);
+	{ "use_pam",        authFactory<AuthPAM> },
 #endif
-	return new AuthLocal(_irc, _username);
+	{ "use_local",      authFactory<AuthLocal> }
+};
+
+vector<Auth*> Auth::getMechanisms(irc::IRC* irc, const string& username)
+{
+	vector<Auth*> mechanisms;
+	for(size_t i = 0; i < (sizeof auth_mechanisms / sizeof *auth_mechanisms); ++i)
+		if (conf.GetSection("aaa")->GetItem(auth_mechanisms[i].config_param)->Boolean())
+			mechanisms.push_back(auth_mechanisms[i].factory(irc, username));
+	return mechanisms;
 }
 
-Auth::Auth(irc::IRC* _irc, string _username)
+Auth* Auth::validate(irc::IRC* irc, const string& username, const string& password)
+{
+	vector<Auth*> mechanisms = getMechanisms(irc, username);
+	Auth* mech_ok = NULL;
+
+	if (mechanisms.empty())
+		throw IMError("Login disabled (please consult your administrator)");
+
+	for (vector<Auth*>::iterator m = mechanisms.begin(); m != mechanisms.end(); ++m)
+	{
+		if ((mech_ok == NULL) && (*m)->exists() && (*m)->authenticate(password))
+			mech_ok = *m;
+		else
+			delete *m;
+	}
+
+	return mech_ok;
+}
+
+Auth* Auth::generate(irc::IRC* irc, const string& username, const string& password)
+{
+	vector<Auth*> mechanisms = getMechanisms(irc, username);
+	Auth* mech_ok = NULL;
+	string err;
+
+	if (mechanisms.empty())
+		throw IMError("Private server: account creation disabled");
+
+	for (vector<Auth*>::iterator m = mechanisms.begin(); m != mechanisms.end(); ++m)
+	{
+		try
+		{
+			if ((mech_ok == NULL) && (*m)->create(password))
+			{
+				mech_ok = *m;
+				continue;
+			}
+		}
+		catch(UnableToCreate &e)
+		{
+			err = e.Reason();
+		}
+		delete *m;
+	}
+	if (!mech_ok && !err.empty())
+		throw IMError("Unable to create account: " + err);
+
+	return mech_ok;
+}
+
+Auth::Auth(irc::IRC* _irc, const string& _username)
 	: username(_username),
-	  irc(_irc)
+	  irc(_irc),
+	  im(NULL)
 {
-	im = NULL;
+
 }
 
-im::IM* Auth::create(const string password)
+im::IM* Auth::create(const string& password)
 {
+	if (exists())
+		throw UnableToCreate("Already exists.");
+
+	b_log[W_DEBUG] << "Creating user " << username;
+
 	im = new im::IM(irc, username);
-	im->setPassword(password);
+	setPassword(password);
 
-	return im;
-}
-
-im::IM* Auth::getIM()
-{
 	return im;
 }
 }; /* namespace im */

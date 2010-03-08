@@ -19,12 +19,12 @@
 #ifndef IM_PURPLE_H
 #define IM_PURPLE_H
 
-#include <exception>
 #include <map>
 #include <string>
 
 #include "protocol.h"
 #include "account.h"
+#include "core/log.h"
 
 namespace im
 {
@@ -33,7 +33,7 @@ namespace im
 
 	class IM;
 
-	class PurpleError : public std::exception {};
+	LOGEXCEPTION(PurpleError);
 
 	/** Static class to interface with libpurple.
 	 *

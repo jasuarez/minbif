@@ -17,8 +17,6 @@
  */
 
 #include <sys/socket.h>
-#include <fcntl.h>
-#include <netdb.h>
 #include <cstring>
 #include <algorithm>
 #include <cassert>
@@ -28,7 +26,6 @@
 #include "core/util.h"
 #include "core/callback.h"
 #include "core/version.h"
-#include "core/sock.h"
 #include "core/config.h"
 #include "im/im.h"
 #include "server_poll/poll.h"
@@ -85,11 +82,10 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_DIE,     &IRC::m_die,     1, 0, Nick::OPER },
 };
 
-IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
+IRC::IRC(ServerPoll* _poll, sock::SockWrapper* _sockw, string _hostname, unsigned _ping_freq)
 	: Server("localhost.localdomain", MINBIF_VERSION),
 	  poll(_poll),
-	  fd(_fd),
-	  read_id(-1),
+	  sockw(_sockw),
 	  read_cb(NULL),
 	  ping_id(-1),
 	  ping_freq(_ping_freq),
@@ -98,46 +94,24 @@ IRC::IRC(ServerPoll* _poll, int _fd, string _hostname, unsigned _ping_freq)
 	  user(NULL),
 	  im(NULL)
 {
-	struct sockaddr_storage sock;
-	socklen_t socklen = sizeof(sock);
-
-	/* Get the user's hostname. */
-	string userhost = "localhost.localdomain";
-	if(getpeername(fd, (struct sockaddr*) &sock, &socklen) == 0)
-	{
-		char buf[NI_MAXHOST+1];
-
-		if(getnameinfo((struct sockaddr *)&sock, socklen, buf, NI_MAXHOST, NULL, 0, 0) == 0)
-			userhost = buf;
-	}
-
 	/* Get my own hostname (if not given in arguments) */
 	if(_hostname.empty() || _hostname == " ")
-	{
-		if(getsockname(fd, (struct sockaddr*) &sock, &socklen) == 0)
-		{
-			char buf[NI_MAXHOST+1];
-
-			if(getnameinfo((struct sockaddr *) &sock, socklen, buf, NI_MAXHOST, NULL, 0, 0 ) == 0)
-				setName(buf);
-		}
-	}
+		setName(sockw->GetServerHostname());
 	else if(_hostname.find(" ") != string::npos)
 	{
 		/* An hostname can't contain any space. */
 		b_log[W_ERR] << "'" << _hostname << "' is not a valid server hostname";
-		throw AuthError();
+		throw sock::SockError::SockError("Wrong server hostname");
 	}
 	else
 		setName(_hostname);
 
 	/* create a callback on the sock. */
 	read_cb = new CallBack<IRC>(this, &IRC::readIO);
-	/* XXX it appears that it is not free'd */
-	read_id = glib_input_add(fd, (PurpleInputCondition)PURPLE_INPUT_READ, g_callback_input, read_cb);
+	sockw->AttachCallback(PURPLE_INPUT_READ, read_cb);
 
 	/* Create main objects and root joins command channel. */
-	user = new User(fd, this, "*", "", userhost);
+	user = new User(sockw, this, "*", "", sockw->GetClientHostname());
 	addNick(user);
 	im_auth = NULL;
 
@@ -159,14 +133,12 @@ IRC::~IRC()
 	if (im_auth)
 		delete im_auth;
 
-	if(read_id >= 0)
-		g_source_remove(read_id);
 	if(ping_id >= 0)
 		g_source_remove(ping_id);
-	delete read_cb;
 	delete ping_cb;
-	if(fd >= 0)
-		close(fd);
+	if(sockw)
+		delete sockw;
+	delete read_cb;
 	cleanUpNicks();
 	cleanUpServers();
 	cleanUpChannels();
@@ -414,14 +386,10 @@ void IRC::setMotd(const string& path)
 void IRC::quit(string reason)
 {
 	user->send(Message(MSG_ERROR).addArg("Closing Link: " + reason));
-
-	if(read_id >= 0)
-		g_source_remove(read_id);
-	read_id = -1;
-
 	user->close();
-	close(fd);
-	fd = -1;
+
+	delete sockw;
+	sockw = NULL;
 
 	poll->kill(this);
 }
@@ -432,20 +400,17 @@ void IRC::sendWelcome()
 	   user->getIdentname().empty())
 		return;
 
-	if(user->getPassword().empty())
-	{
-		quit("Please set a password");
-		return;
-	}
-
 	try
 	{
-		im_auth = im::Auth::build(this, user->getNickname());
-
-		if(!im_auth->exists())
+		if (im::IM::exists(user->getNickname()))
 		{
-			/* New user. */
-
+			im_auth = im::Auth::validate(this, user->getNickname(), user->getPassword());
+			if (!im_auth)
+				quit("Incorrect credentials");
+		}
+		else
+		{
+			/* New User */
 			string global_passwd = conf.GetSection("irc")->GetItem("password")->String();
 			if(global_passwd != " " && user->getPassword() != global_passwd)
 			{
@@ -453,12 +418,9 @@ void IRC::sendWelcome()
 				return;
 			}
 
-			im_auth->create(user->getPassword());
-		}
-		else if(!im_auth->authenticate(user->getPassword()))
-		{
-			quit("Incorrect password");
-			return;
+			im_auth = im::Auth::generate(this, user->getNickname(), user->getPassword());
+			if (!im_auth)
+				quit("Creation of new account failed");
 		}
 
 		im = im_auth->getIM();
@@ -475,7 +437,7 @@ void IRC::sendWelcome()
 	}
 	catch(im::IMError& e)
 	{
-		quit("Unable to initialize IM");
+		quit("Unable to initialize IM: " + e.Reason());
 	}
 }
 
@@ -517,62 +479,56 @@ void IRC::privmsg(Nick* nick, string msg)
 
 bool IRC::readIO(void*)
 {
-	static char buf[1024];
-	string sbuf, line;
-	ssize_t r;
-
-	if((r = read(fd, buf, sizeof buf - 1)) <= 0)
+	try
 	{
-		if(r == 0)
-			this->quit("Connection reset by peer...");
-		else if(!sockerr_again())
-			this->quit(string("Read error: ") + strerror(errno));
-		else
-			return true; // continue...
-		return false;
-	}
-	buf[r] = 0;
-	sbuf = buf;
+		string sbuf, line;
 
-	while((line = stringtok(sbuf, "\r\n")).empty() == false)
-	{
-		Message m = Message::parse(line);
-		b_log[W_PARSE] << "<< " << line;
-		size_t i;
-		for(i = 0;
-		    i < (sizeof commands / sizeof *commands) &&
-		    strcmp(commands[i].cmd, m.getCommand().c_str());
-		    ++i)
-			;
+		sbuf = sockw->Read();
 
-		user->setLastReadNow();
-
-		if(i >= (sizeof commands / sizeof *commands))
-			user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
-							   .setReceiver(user)
-							   .addArg(m.getCommand())
-							   .addArg("Unknown command"));
-		else if(m.countArgs() < commands[i].minargs)
-			user->send(Message(ERR_NEEDMOREPARAMS).setSender(this)
-							   .setReceiver(user)
-							   .addArg(m.getCommand())
-							   .addArg("Not enough parameters"));
-		else if(commands[i].flags && !user->hasFlag(commands[i].flags))
+		while((line = stringtok(sbuf, "\r\n")).empty() == false)
 		{
-			if(!user->hasFlag(Nick::REGISTERED))
-				user->send(Message(ERR_NOTREGISTERED).setSender(this)
-								     .setReceiver(user)
-								     .addArg("Register first"));
+			Message m = Message::parse(line);
+			b_log[W_PARSE] << "<< " << line;
+			size_t i;
+			for(i = 0;
+			    i < (sizeof commands / sizeof *commands) &&
+			    strcmp(commands[i].cmd, m.getCommand().c_str());
+			    ++i)
+				;
+
+			user->setLastReadNow();
+
+			if(i >= (sizeof commands / sizeof *commands))
+				user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
+								   .setReceiver(user)
+								   .addArg(m.getCommand())
+								   .addArg("Unknown command"));
+			else if(m.countArgs() < commands[i].minargs)
+				user->send(Message(ERR_NEEDMOREPARAMS).setSender(this)
+								   .setReceiver(user)
+								   .addArg(m.getCommand())
+								   .addArg("Not enough parameters"));
+			else if(commands[i].flags && !user->hasFlag(commands[i].flags))
+			{
+				if(!user->hasFlag(Nick::REGISTERED))
+					user->send(Message(ERR_NOTREGISTERED).setSender(this)
+									     .setReceiver(user)
+									     .addArg("Register first"));
+				else
+					user->send(Message(ERR_NOPRIVILEGES).setSender(this)
+									    .setReceiver(user)
+									    .addArg("Permission Denied: Insufficient privileges"));
+			}
 			else
-				user->send(Message(ERR_NOPRIVILEGES).setSender(this)
-						                    .setReceiver(user)
-								    .addArg("Permission Denied: Insufficient privileges"));
+			{
+				commands[i].count++;
+				(this->*commands[i].func)(m);
+			}
 		}
-		else
-		{
-			commands[i].count++;
-			(this->*commands[i].func)(m);
-		}
+	}
+	catch (sock::SockError &e)
+	{
+		quit(e.Reason());
 	}
 
 	return true;

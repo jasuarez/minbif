@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2009 Laurent Defert, Romain Bignon
+ * Copyright(C) 2009-2010 Laurent Defert, Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <string>
 #include <stdint.h>
 #include <sstream>
+#include "core/exception.h"
 
 enum
 {
@@ -31,7 +32,8 @@ enum
 	W_WARNING    = 1 << 4,			  /* Warnings */
 	W_ERR        = 1 << 5,			  /* Errors */
 	W_INFO       = 1 << 6,			  /* Info */
-	W_SNO        = 1 << 7                     /* Server notice */
+	W_SNO        = 1 << 7,                    /* Server notice */
+	W_SOCK       = 1 << 8                     /* Socket error */
 };
 
 #define DEFAULT_LOGGED_FLAGS (W_DESYNCH|W_WARNING|W_ERR|W_INFO|W_SNO)
@@ -115,4 +117,20 @@ inline Log::flux& Log::flux::operator<< <std::string> (std::string s)
 }
 
 extern Log b_log;
+
+class LogException : public StrException
+{
+	uint32_t log_level;
+
+public:
+	LogException(const std::string& reason, uint32_t _log_level = W_ERR)
+		: StrException(reason),
+		  log_level(_log_level)
+	{
+		b_log[log_level] << Reason();
+	}
+};
+#define LOGEXCEPTION(x) class x : public LogException { public: x(const std::string& reason, uint32_t log_level = W_ERR) : LogException(reason, log_level) {} };
+#define LOGEXCEPTION2(x, y, z) class x : public y { public: x(const std::string& reason, uint32_t log_level = z) : y(reason, log_level) {} };
+
 #endif						  /* LOG_H */

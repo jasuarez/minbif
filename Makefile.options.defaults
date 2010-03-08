@@ -23,6 +23,9 @@ ENABLE_PLUGIN ?= OFF
 # Compile with the pam support
 ENABLE_PAM ?= OFF
 
+# Compile with the tls support
+ENABLE_TLS ?= OFF
+
 # Installation prefix
 # PREFIX = /usr/local/
 # MAN_PREFIX = /usr/local/share/man/man8/

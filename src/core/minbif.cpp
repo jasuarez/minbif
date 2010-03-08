@@ -60,6 +60,9 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 	section->AddItem(new ConfigItem_string("buddy_icons_url", "URL to display in /WHOIS to get a buddy icon", " "));
+#ifdef HAVE_TLS
+	section->AddItem(new ConfigItem_string("security", "none/tls/starttls/starttls-mandatory", "none"));
+#endif
 
 	ConfigSection* sub = section->AddSection("daemon", "Daemon information", MyConfig::OPTIONAL);
 	sub->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
@@ -71,8 +74,18 @@ Minbif::Minbif()
 	sub->AddItem(new ConfigItem_string("password", "IRC operator password"));
 
 	section = conf.AddSection("aaa", "Authentication, Authorization and Accounting", MyConfig::OPTIONAL);
+	section->AddItem(new ConfigItem_bool("use_local", "Use local database to authenticate users", "true"));
 #ifdef HAVE_PAM
-	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms instead of local database", "false"));
+	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms to authenticate/authorize users", "false"));
+#endif
+	section->AddItem(new ConfigItem_bool("use_connection", "Use connection information to authenticate/authorize users", "false"));
+#ifdef HAVE_TLS
+	sub = section->AddSection("tls", "TLS information", MyConfig::OPTIONAL);
+	sub->AddItem(new ConfigItem_string("trust_file", "CA certificate file for TLS", " "));
+	sub->AddItem(new ConfigItem_string("crl_file", "CA certificate file for TLS", " "));
+	sub->AddItem(new ConfigItem_string("cert_file", "Server certificate file for TLS"));
+	sub->AddItem(new ConfigItem_string("key_file", "Server key file for TLS"));
+	sub->AddItem(new ConfigItem_string("priority", "Priority list for ciphers, exchange methods, macs and compression methods", "NORMAL"));
 #endif
 
 	section = conf.AddSection("file_transfers", "File transfers parameters", MyConfig::OPTIONAL);

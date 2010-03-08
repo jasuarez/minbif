@@ -42,10 +42,7 @@ void IM::setPath(const string& _path)
 	if(!(d = opendir(path.c_str())))
 	{
 		if(mkdir(path.c_str(), 0700) < 0)
-		{
-			b_log[W_ERR] << "Unable to create directory '" << path << "': " << strerror(errno);
-			throw IMError();
-		}
+			throw IMError("Unable to create directory '" + path + "': " + strerror(errno));
 	}
 	else
 		closedir(d);
@@ -73,10 +70,7 @@ IM::IM(irc::IRC* _irc, string _username)
 	if(!(d = opendir(user_path.c_str())))
 	{
 		if(mkdir(user_path.c_str(), 0700) < 0)
-		{
-			b_log[W_ERR] << "Unable to create user directory '" << user_path << "': " << strerror(errno);
-			throw IMError();
-		}
+			throw IMError("Unable to create user directory '" + user_path + "': " + strerror(errno));
 	}
 	else
 		closedir(d);
@@ -87,7 +81,7 @@ IM::IM(irc::IRC* _irc, string _username)
 	}
 	catch(PurpleError &e)
 	{
-		throw IMError();
+		throw IMError(e.Reason());
 	}
 }
 

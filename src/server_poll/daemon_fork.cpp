@@ -36,7 +36,8 @@
 #include "core/log.h"
 #include "core/minbif.h"
 #include "core/util.h"
-#include "core/sock.h"
+#include "sockwrap/sock.h"
+#include "sockwrap/sockwrap.h"
 
 DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 	: ServerPoll(application),
@@ -215,13 +216,13 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 
 		try
 		{
-			irc = new irc::IRC(this, new_socket,
+			irc = new irc::IRC(this, sock::SockWrapper::Builder(new_socket, new_socket),
 				      conf.GetSection("irc")->GetItem("hostname")->String(),
 				      conf.GetSection("irc")->GetItem("ping")->Integer());
 		}
-		catch(irc::AuthError &e)
+		catch(StrException &e)
 		{
-			b_log[W_ERR] << "Unable to start the IRC daemon";
+			b_log[W_ERR] << "Unable to start the IRC daemon: " + e.Reason();
 			getApplication()->quit();
 		}
 	}

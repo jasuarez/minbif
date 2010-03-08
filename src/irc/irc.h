@@ -27,6 +27,8 @@
 #include "message.h"
 #include "server.h"
 #include "im/auth.h"
+#include "sockwrap/sockwrap.h"
+#include "core/exception.h"
 
 class _CallBack;
 class ServerPoll;
@@ -45,13 +47,12 @@ namespace irc
 	using std::string;
 	using std::map;
 
-	/** Raised when user can't authenticate himself on server */
-	class AuthError : public std::exception {};
-
 	class User;
 	class Nick;
 	class Channel;
 	class DCC;
+
+	STREXCEPTION(IRCError);
 
 	/** This class represents the user's server.
 	 *
@@ -61,8 +62,7 @@ namespace irc
 	class IRC : public Server
 	{
 		ServerPoll* poll;
-		int fd;
-		int read_id;
+		sock::SockWrapper* sockw;
 		_CallBack *read_cb;
 		int ping_id;
 		time_t ping_freq;
@@ -139,11 +139,11 @@ namespace irc
 		/** Create an instance of the IRC class
 		 *
 		 * @param poll  the server poll used by minbif
-		 * @param fd  file descriptor where read and write to user
+		 * @param _sockw  socket wrapper where read and write to user
 		 * @param hostname  server's hostname
 		 * @param ping_freq  frequence of pings
 		 */
-		IRC(ServerPoll* poll, int fd, string hostname, unsigned ping_freq);
+		IRC(ServerPoll* poll, sock::SockWrapper* _sockw, string hostname, unsigned ping_freq);
 		~IRC();
 
 		User* getUser() const { return user; }
@@ -166,6 +166,8 @@ namespace irc
 		 * @param reason  text used in the QUIT message
 		 */
 		void quit(string reason = "");
+
+		sock::SockWrapper* getSockWrap() const { return sockw; };
 
 		void addChannel(Channel* chan);
 		Channel* getChannel(string channame) const;

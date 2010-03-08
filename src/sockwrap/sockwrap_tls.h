@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2010 Romain Bignon, Marc Dequènes (Duck)
+ * Copyright(C) 2009-2010 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,43 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef IM_AUTH_LOCAL_H
-#define IM_AUTH_LOCAL_H
+#include "sockwrap.h"
+#include <gnutls/gnutls.h>
 
-#include "auth.h"
+#ifndef PF_SOCKWRAP_TLS_H
+#define PF_SOCKWRAP_TLS_H
 
-/** IM related classes */
-namespace im
+namespace sock
 {
-	using std::string;
 
-	class AuthLocal : public Auth
-	{
-	public:
-		AuthLocal(irc::IRC* _irc, const string& _username);
-		bool exists();
-		bool authenticate(const string& password);
-		im::IM* create(const string& password);
-		bool setPassword(const string& password);
-		string getPassword() const;
-	};
+class TLSError : public SockError
+{
+public:
+	TLSError(string _reason) : SockError("[TLS] " + _reason) {}
 };
 
-#endif /* IM_AUTH_LOCAL_H */
+class SockWrapperTLS : public SockWrapper
+{
+	gnutls_certificate_credentials_t x509_cred;
+	gnutls_dh_params_t dh_params;
+	gnutls_session_t tls_session;
+	bool tls_handshake;
+	bool tls_ok;
+	bool trust_check;
+
+	int tls_err;
+
+	void EndSessionCleanup();
+	void CheckTLSError();
+
+public:
+	SockWrapperTLS(int _recv_fd, int _send_fd);
+
+	string Read();
+	void Write(string s);
+	virtual string GetClientUsername();
+};
+
+};
+
+#endif /* PF_SOCKWRAP_TLS_H */
