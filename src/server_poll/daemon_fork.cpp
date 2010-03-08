@@ -216,7 +216,7 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 
 		try
 		{
-			irc = new irc::IRC(this, SockWrapper::Builder(new_socket, new_socket),
+			irc = new irc::IRC(this, sock::SockWrapper::Builder(new_socket, new_socket),
 				      conf.GetSection("irc")->GetItem("hostname")->String(),
 				      conf.GetSection("irc")->GetItem("ping")->Integer());
 		}

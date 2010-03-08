@@ -22,6 +22,9 @@
 #ifndef PF_SOCKWRAP_TLS_H
 #define PF_SOCKWRAP_TLS_H
 
+namespace sock
+{
+
 class TLSError : public SockError
 {
 public:
@@ -48,6 +51,8 @@ public:
 	string Read();
 	void Write(string s);
 	virtual string GetClientUsername();
+};
+
 };
 
 #endif /* PF_SOCKWRAP_TLS_H */

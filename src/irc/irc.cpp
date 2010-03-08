@@ -82,7 +82,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_DIE,     &IRC::m_die,     1, 0, Nick::OPER },
 };
 
-IRC::IRC(ServerPoll* _poll, SockWrapper* _sockw, string _hostname, unsigned _ping_freq)
+IRC::IRC(ServerPoll* _poll, sock::SockWrapper* _sockw, string _hostname, unsigned _ping_freq)
 	: Server("localhost.localdomain", MINBIF_VERSION),
 	  poll(_poll),
 	  sockw(_sockw),
@@ -101,7 +101,7 @@ IRC::IRC(ServerPoll* _poll, SockWrapper* _sockw, string _hostname, unsigned _pin
 	{
 		/* An hostname can't contain any space. */
 		b_log[W_ERR] << "'" << _hostname << "' is not a valid server hostname";
-		throw SockError::SockError("Wrong server hostname");
+		throw sock::SockError::SockError("Wrong server hostname");
 	}
 	else
 		setName(_hostname);
@@ -526,7 +526,7 @@ bool IRC::readIO(void*)
 			}
 		}
 	}
-	catch (SockError &e)
+	catch (sock::SockError &e)
 	{
 		quit(e.Reason());
 	}

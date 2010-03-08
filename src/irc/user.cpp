@@ -22,7 +22,7 @@
 
 namespace irc {
 
-User::User(SockWrapper* _sockw, Server* server, string nickname, string identname, string hostname, string realname)
+User::User(sock::SockWrapper* _sockw, Server* server, string nickname, string identname, string hostname, string realname)
 	: Nick(server, nickname, identname, hostname, realname),
 	  sockw(_sockw)
 {

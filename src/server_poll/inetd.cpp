@@ -34,7 +34,7 @@ InetdServerPoll::InetdServerPoll(Minbif* application)
 {
 	try
 	{
-		irc = new irc::IRC(this, SockWrapper::Builder(fileno(stdin), fileno(stdout)),
+		irc = new irc::IRC(this, sock::SockWrapper::Builder(fileno(stdin), fileno(stdout)),
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
 		              conf.GetSection("irc")->GetItem("ping")->Integer());
 #ifndef DEBUG

@@ -23,6 +23,9 @@
 #include <cstring>
 #include "gnutls/x509.h"
 
+namespace sock
+{
+
 static void tls_debug_message(int level, const char* message)
 {
 	b_log[W_SOCK] << "TLS debug: " << message;
@@ -252,4 +255,6 @@ string SockWrapperTLS::GetClientUsername()
 		b_log[W_INFO] << "Client Username: " << username;
 	return username;
 }
+
+};
 

@@ -24,6 +24,9 @@
 #include "core/config.h"
 #include "core/util.h"
 
+namespace sock
+{
+
 SockWrapper::SockWrapper(int _recv_fd, int _send_fd) : recv_fd(_recv_fd), send_fd(_send_fd)
 {
 	if (recv_fd < 0)
@@ -122,4 +125,6 @@ string SockWrapper::GetClientUsername()
 	b_log[W_INFO] << "Client Username not found";
 	return "";
 }
+
+};
 

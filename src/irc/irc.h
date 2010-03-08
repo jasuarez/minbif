@@ -62,7 +62,7 @@ namespace irc
 	class IRC : public Server
 	{
 		ServerPoll* poll;
-		SockWrapper* sockw;
+		sock::SockWrapper* sockw;
 		_CallBack *read_cb;
 		int ping_id;
 		time_t ping_freq;
@@ -143,7 +143,7 @@ namespace irc
 		 * @param hostname  server's hostname
 		 * @param ping_freq  frequence of pings
 		 */
-		IRC(ServerPoll* poll, SockWrapper* _sockw, string hostname, unsigned ping_freq);
+		IRC(ServerPoll* poll, sock::SockWrapper* _sockw, string hostname, unsigned ping_freq);
 		~IRC();
 
 		User* getUser() const { return user; }
@@ -167,7 +167,7 @@ namespace irc
 		 */
 		void quit(string reason = "");
 
-		SockWrapper* getSockWrap() const { return sockw; };
+		sock::SockWrapper* getSockWrap() const { return sockw; };
 
 		void addChannel(Channel* chan);
 		Channel* getChannel(string channame) const;

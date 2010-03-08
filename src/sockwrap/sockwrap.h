@@ -26,32 +26,35 @@
 #ifndef PF_SOCKWRAP_H
 #define PF_SOCKWRAP_H
 
-using std::string;
-using std::vector;
-
-LOGEXCEPTION2(SockError, LogException, W_SOCK);
-
-class SockWrapper
+namespace sock
 {
-	vector<int> callback_ids;
+	using std::string;
+	using std::vector;
 
-public:
-	static SockWrapper* Builder(int _recv_fd, int _send_fd);
-	SockWrapper(int _recv_fd, int _send_fd);
-	virtual ~SockWrapper();
+	LOGEXCEPTION2(SockError, LogException, W_SOCK);
 
-	virtual string Read() = 0;
-	virtual void Write(string s) = 0;
-	virtual string GetClientHostname();
-	virtual string GetServerHostname();
-	virtual int AttachCallback(PurpleInputCondition cond, _CallBack* cb);
-	virtual string GetClientUsername();
+	class SockWrapper
+	{
+		vector<int> callback_ids;
 
-protected:
-	int recv_fd, send_fd;
-	bool sock_ok;
+	public:
+		static SockWrapper* Builder(int _recv_fd, int _send_fd);
+		SockWrapper(int _recv_fd, int _send_fd);
+		virtual ~SockWrapper();
 
-	virtual void EndSessionCleanup();
+		virtual string Read() = 0;
+		virtual void Write(string s) = 0;
+		virtual string GetClientHostname();
+		virtual string GetServerHostname();
+		virtual int AttachCallback(PurpleInputCondition cond, _CallBack* cb);
+		virtual string GetClientUsername();
+
+	protected:
+		int recv_fd, send_fd;
+		bool sock_ok;
+
+		virtual void EndSessionCleanup();
+	};
 };
 
 #endif /* PF_SOCKWRAP_H */

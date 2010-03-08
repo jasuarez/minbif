@@ -43,7 +43,7 @@ bool AuthConnection::authenticate(const string& password)
 	if (!im::IM::exists(username))
 		return false;
 
-	SockWrapper* sockw = irc->getSockWrap();
+	sock::SockWrapper* sockw = irc->getSockWrap();
 
 	b_log[W_DEBUG] << "Authenticating user " << username << " using connection information";
 	if (sockw->GetClientUsername() == username)

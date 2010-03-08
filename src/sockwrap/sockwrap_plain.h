@@ -21,6 +21,9 @@
 #ifndef PF_SOCKWRAP_PLAIN_H
 #define PF_SOCKWRAP_PLAIN_H
 
+namespace sock
+{
+
 class SockWrapperPlain : public SockWrapper
 {
 public:
@@ -29,6 +32,8 @@ public:
 
 	string Read();
 	void Write(string s);
+};
+
 };
 
 #endif /* PF_SOCKWRAP_PLAIN_H */

@@ -27,7 +27,7 @@ namespace irc
 	/** This class represents user connected to minbif */
 	class User : public Nick
 	{
-		SockWrapper* sockw;
+		sock::SockWrapper* sockw;
 		string password;
 		time_t last_read;
 
@@ -42,7 +42,7 @@ namespace irc
 		 * @param hostname  hostname of user
 		 * @param realname  realname of user
 		 */
-		User(SockWrapper* _sockw, Server* server, string nickname, string identname, string hostname, string realname="");
+		User(sock::SockWrapper* _sockw, Server* server, string nickname, string identname, string hostname, string realname="");
 		~User();
 
 		void setPassword(string p) { password = p; }
