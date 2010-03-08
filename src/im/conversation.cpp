@@ -582,15 +582,12 @@ void Conversation::destroy(PurpleConversation* c)
 	{
 		case PURPLE_CONV_TYPE_IM:
 		{
+			conv.setNick(NULL);
+
 			irc::IRC* irc = Purple::getIM()->getIRC();
 			irc::ConvNick* n = dynamic_cast<irc::ConvNick*>(irc->getNick(conv));
 			if(n)
-			{
-				conv.setNick(NULL);
-				if(dynamic_cast<irc::UnknownBuddy*>(n))
-					irc->removeNick(n->getNickname());
 				n->setConversation(Conversation());
-			}
 			break;
 		}
 		case PURPLE_CONV_TYPE_CHAT:
