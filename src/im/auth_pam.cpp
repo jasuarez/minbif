@@ -157,7 +157,7 @@ void AuthPAM::close(int retval)
 
 	retval2 = pam_end(pamh, retval);
 	if (retval2 != PAM_SUCCESS)       /* close Linux-PAM */
-		throw IMError("PAM: Could not release authenticatori: " + pam_strerror(pamh, retval2));
+		throw IMError(string("PAM: Could not release authenticator: ") + pam_strerror(pamh, retval2));
 	pamh = NULL;
 }
 
