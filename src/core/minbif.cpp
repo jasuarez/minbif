@@ -60,9 +60,7 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 	section->AddItem(new ConfigItem_string("buddy_icons_url", "URL to display in /WHOIS to get a buddy icon", " "));
-#ifdef HAVE_TLS
 	section->AddItem(new ConfigItem_string("security", "none/tls/starttls/starttls-mandatory", "none"));
-#endif
 
 	ConfigSection* sub = section->AddSection("daemon", "Daemon information", MyConfig::OPTIONAL);
 	sub->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
