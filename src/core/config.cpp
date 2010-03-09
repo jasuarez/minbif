@@ -157,12 +157,6 @@ bool MyConfig::Load(std::string _path)
 			if(section->IsCopy() && section->Name().empty())
 				Error("Section '" << section->Label() << "' hasn't a name");
 
-			/* This function is usefull to set default values for items,
-			 * and to detect if an item is missing in this section.
-			 * This function will send errors.
-			 */
-			if(section->FindEmpty())
-				error = true;
 			section = section->Parent();
 		}
 		else
@@ -272,12 +266,14 @@ bool MyConfig::FindEmpty()
 	bool error = false;			  // Error() macro change this value
 
 	FORit(SectionMap, sections, it)
-		if(!it->second->Found())
+		if(!it->second->Found() && !it->second->IsOptional())
 		{
 			ConfigSection* s = it->second;
-			if(s->IsOptional() == false)
-				Error(begin << "missing section '" << s->Label() << "' (" << s->Description() << ")");
+			Error(begin << "missing section '" << s->Label() << "' (" << s->Description() << ")");
 		}
+		else
+			it->second->FindEmpty();
+
 
 	return error;
 }
@@ -373,20 +369,25 @@ bool ConfigSection::FindEmpty()
 	int line_count = config->NbLines();		  /* Récuperation des informations de MyConfig */
 	std::string path = config->Path();	  /* pour pouvoir utiliser la macro Error()    */
 
+	if (IsMultiple() && !IsCopy())
+		return true;
+
 	FORit(ItemMap, items, it)
 		if(!it->second->Found())
-	{
-		ConfigItem* item = it->second;
-		if(item->DefValue().empty() || item->SetValue(item->DefValue()) == false)
-			Error(begin << "missing item '" << item->Label() << "' (" << item->Description() << ")");
-	}
+		{
+			ConfigItem* item = it->second;
+			if((item->DefValue().empty() || item->SetValue(item->DefValue()) == false) && Found())
+				Error(begin << "missing item '" << item->Label() << "' (" << item->Description() << ")");
+		}
 
 	FORit(SectionMap, sections, it)
 		if(!it->second->Found() && it->second->IsOptional() == false)
-	{
-		ConfigSection* s = it->second;
-		Error(begin << "missing section '" << s->Label() << "' (" << s->Description() << ")");
-	}
+		{
+			ConfigSection* s = it->second;
+			Error(begin << "missing section '" << s->Label() << "' (" << s->Description() << ")");
+		}
+		else
+			it->second->FindEmpty();
 
 	return error;
 }
