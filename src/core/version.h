@@ -29,19 +29,33 @@
 #define MINBIF_VERSION_EXTRA   ""
 
 #ifdef USE_CACA
-#define MINBIF_SUPPORTS_CACA "-caca"
+#define MINBIF_SUPPORTS_CACA "(caca)"
 #else
 #define MINBIF_SUPPORTS_CACA ""
 #endif
 
 #ifdef HAVE_VIDEO
-#define MINBIF_SUPPORTS_VIDEO "-video"
+#define MINBIF_SUPPORTS_VIDEO "(video)"
 #else
 #define MINBIF_SUPPORTS_VIDEO ""
 #endif
 
+#ifdef HAVE_PAM
+#define MINBIF_SUPPORTS_PAM "(pam)"
+#else
+#define MINBIF_SUPPORTS_PAM ""
+#endif
+
+#ifdef HAVE_TLS
+#define MINBIF_SUPPORTS_TLS "(tls)"
+#else
+#define MINBIF_SUPPORTS_TLS ""
+#endif
+
 #define MINBIF_SUPPORTS      MINBIF_SUPPORTS_CACA \
-	                     MINBIF_SUPPORTS_VIDEO
+	                     MINBIF_SUPPORTS_VIDEO \
+                             MINBIF_SUPPORTS_PAM \
+                             MINBIF_SUPPORTS_TLS
 
 #define MINBIF_BUILD         ("(Build at " __DATE__ " " __TIME__ " with libpurple-" \
                               + t2s(PURPLE_MAJOR_VERSION) + "." \
