@@ -6,7 +6,7 @@
 # This file is used as an abstraction around CMake command line
 
 # Enable debug mde
-DEBUG = 0
+DEBUG ?= OFF
 
 # Compile minbif
 ENABLE_MINBIF ?= ON

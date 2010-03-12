@@ -230,7 +230,7 @@ int Minbif::main(int argc, char** argv)
 	}
 	catch(im::IMError &e)
 	{
-		b_log[W_ERR] << "Unable to load IM settings";
+		b_log[W_ERR] << "Unable to load IM settings: " << e.Reason();
 	}
 	catch(ServerPollError &e)
 	{
