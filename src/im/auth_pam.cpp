@@ -79,7 +79,7 @@ static int pam_conv_func(int num_msg, const struct pam_message **msgm, struct pa
 				b_log[W_ERR] << "PAM: " << msgm[count]->msg;
 				break;
 			case PAM_TEXT_INFO:
-				b_log[W_INFO] << "PAM: " << msgm[count]->msg;
+				b_log[W_DEBUG] << "PAM: " << msgm[count]->msg;
 				break;
 			default:
 				b_log[W_ERR] << "PAM: erroneous conversation (" << msgm[count]->msg_style << ")";
