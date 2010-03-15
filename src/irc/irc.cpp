@@ -92,7 +92,8 @@ IRC::IRC(ServerPoll* _poll, sock::SockWrapper* _sockw, string _hostname, unsigne
 	  uptime(time(NULL)),
 	  ping_cb(NULL),
 	  user(NULL),
-	  im(NULL)
+	  im(NULL),
+	  im_auth(NULL)
 {
 	/* Get my own hostname (if not given in arguments) */
 	if(_hostname.empty() || _hostname == " ")
@@ -113,7 +114,6 @@ IRC::IRC(ServerPoll* _poll, sock::SockWrapper* _sockw, string _hostname, unsigne
 	/* Create main objects and root joins command channel. */
 	user = new User(sockw, this, "*", "", sockw->GetClientHostname());
 	addNick(user);
-	im_auth = NULL;
 
 	/* Ping callback */
 	if(ping_freq > 0)
@@ -402,14 +402,15 @@ void IRC::sendWelcome()
 
 	try
 	{
-		if (im::IM::exists(user->getNickname()))
+		im_auth = im::Auth::validate(this, user->getNickname(), user->getPassword());
+		if (!im_auth)
 		{
-			im_auth = im::Auth::validate(this, user->getNickname(), user->getPassword());
-			if (!im_auth)
+			if (im::IM::exists(user->getNickname()))
+			{
 				quit("Incorrect credentials");
-		}
-		else
-		{
+				return;
+			}
+
 			/* New User */
 			string global_passwd = conf.GetSection("irc")->GetItem("password")->String();
 			if(global_passwd != " " && user->getPassword() != global_passwd)
