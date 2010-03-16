@@ -81,6 +81,10 @@ string Nick::nickize(const string& n)
 	if(nick.size() > MAX_LENGTH)
 		nick = nick.substr(0, MAX_LENGTH);
 
+	/* Empty nicknames are not allowed. */
+	if (nick.empty())
+		nick = "Invalid";
+
 	return nick;
 }
 
