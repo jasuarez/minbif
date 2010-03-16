@@ -22,6 +22,8 @@
 #ifndef PF_SOCKWRAP_TLS_H
 #define PF_SOCKWRAP_TLS_H
 
+#define tlserr_again(tls_err) (tls_err == GNUTLS_E_INTERRUPTED  || tls_err == GNUTLS_E_AGAIN)
+
 namespace sock
 {
 
@@ -43,6 +45,7 @@ class SockWrapperTLS : public SockWrapper
 	int tls_err;
 
 	void EndSessionCleanup();
+	void ProcessTLSHandshake();
 	void CheckTLSError();
 
 public:

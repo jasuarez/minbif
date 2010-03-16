@@ -34,7 +34,6 @@ static void tls_debug_message(int level, const char* message)
 SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
 {
 	tls_ok = false;
-	tls_handshake = false;
 	trust_check = false;
 
 	ConfigSection* c_section = conf.GetSection("aaa");
@@ -107,17 +106,30 @@ SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_f
 		gnutls_certificate_server_set_request(tls_session, GNUTLS_CERT_REQUEST);
 	}
 
-	b_log[W_SOCK] << "Starting GNUTLS handshake";
-	tls_err = gnutls_handshake (tls_session);
-	if (tls_err < 0)
-	{
-		b_log[W_SOCK] << "TLS handshake failed: " << gnutls_strerror(tls_err);
-		throw TLSError::TLSError("TLS initialization failed");
-	}
-	tls_handshake = true;
+	ProcessTLSHandshake();
 
 	b_log[W_SOCK] << "SSL connection initialized";
 	tls_ok = true;
+}
+
+void SockWrapperTLS::ProcessTLSHandshake()
+{
+	b_log[W_SOCK] << "Starting GNUTLS handshake";
+	tls_handshake = false;
+	tls_err = -1;
+	while (tls_err != GNUTLS_E_SUCCESS)
+	{
+		tls_err = gnutls_handshake (tls_session);
+		if (gnutls_error_is_fatal(tls_err))
+		{
+			b_log[W_SOCK] << "TLS handshake failed: " << gnutls_strerror(tls_err);
+			throw TLSError::TLSError("TLS initialization failed");
+		}
+
+		if (tls_err != GNUTLS_E_SUCCESS)
+			usleep(100);
+	}
+	tls_handshake = true;
 }
 
 void SockWrapperTLS::CheckTLSError()
@@ -145,48 +157,72 @@ void SockWrapperTLS::EndSessionCleanup()
 string SockWrapperTLS::Read()
 {
 	static char buf[1024];
-	string sbuf;
-	ssize_t r;
+	string sbuf = "";
+	ssize_t r = GNUTLS_E_AGAIN;
 
-	if (!sock_ok || !tls_ok)
+	if (!sock_ok || !tls_ok || !tls_handshake)
 		return "";
 
-	r = gnutls_record_recv(tls_session, buf, sizeof buf - 1);
-	if (r <= 0)
+	while (tlserr_again(r))
 	{
-		sock_ok = false;
-		if (r == 0)
+		r = gnutls_record_recv(tls_session, buf, sizeof buf - 1);
+		if (r <= 0)
 		{
-			tls_ok = false;
-			throw SockError::SockError("Connection reset by peer...");
+			sock_ok = false;
+			if (r == 0)
+			{
+				tls_ok = false;
+				throw SockError::SockError("Connection reset by peer...");
+			}
+			else if (gnutls_error_is_fatal(r))
+			{
+				tls_err = r;
+				CheckTLSError();
+			}
+			else if (r == GNUTLS_E_REHANDSHAKE)
+			{
+				ProcessTLSHandshake();
+				return "";
+			}
+			else
+				usleep(100);
 		}
 		else
-			throw TLSError::TLSError("Received corrupted data, closing the connection.");
+		{
+			buf[r] = 0;
+			sbuf = buf;
+		}
 	}
-	buf[r] = 0;
-	sbuf = buf;
 
 	return sbuf;
 }
 
 void SockWrapperTLS::Write(string s)
 {
-	ssize_t r;
+	ssize_t r = GNUTLS_E_AGAIN;
 
-	if (!sock_ok || !tls_ok)
+	if (!sock_ok || !tls_ok || !tls_handshake)
 		return;
 
-	r = gnutls_record_send(tls_session, s.c_str(), s.size());
-	if (r <= 0)
+	while (tlserr_again(r))
 	{
-		sock_ok = false;
-		if (r == 0)
+		r = gnutls_record_send(tls_session, s.c_str(), s.size());
+		if (r <= 0)
 		{
-			tls_ok = false;
-			throw SockError::SockError("Connection reset by peer...");
+			sock_ok = false;
+			if (r == 0)
+			{
+				tls_ok = false;
+				throw SockError::SockError("Connection reset by peer...");
+			}
+			else if (gnutls_error_is_fatal(r))
+			{
+				tls_err = r;
+				CheckTLSError();
+			}
+			else
+				usleep(100);
 		}
-		else
-			throw TLSError::TLSError("Problem while sending data, closing the connection.");
 	}
 }
 
