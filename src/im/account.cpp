@@ -1067,9 +1067,17 @@ void Account::disconnect_reason(PurpleConnection *gc,
 				const char *text)
 {
 	Account acc(gc->account);
-	int delay = acc.delayReconnect();
 	b_log[W_ERR|W_SNO] << "Error(" << acc.getServername() << "): " << text;
-	b_log[W_ERR|W_SNO] << "Reconnection in " << delay << " seconds";
+	switch(reason)
+	{
+	case PURPLE_CONNECTION_ERROR_NETWORK_ERROR:
+	case PURPLE_CONNECTION_ERROR_ENCRYPTION_ERROR:
+	case PURPLE_CONNECTION_ERROR_OTHER_ERROR:
+		b_log[W_ERR|W_SNO] << "Reconnection in " << acc.delayReconnect() << " seconds";
+		break;
+	default:
+		break; /* Do not auto reconnect. */
+	}
 }
 
 }; /* namespace im */
