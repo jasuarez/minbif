@@ -1254,7 +1254,12 @@ void IRC::m_map(Message message)
 						notice(user, option->second.getName() + " = " + t2s(option->second.getValueInt()));
 					else
 						notice(user, option->second.getName() + " = " + option->second.getValue());
-					account.setOptions(options);
+
+					try {
+						account.setOptions(options);
+					} catch(im::Protocol::OptionError& e) {
+						notice(user, "Error: " + e.Reason());
+					}
 				}
 				return;
 			}

@@ -194,11 +194,11 @@ void Account::setOptions(const Protocol::Options& options)
 			case Protocol::Option::ACCID:
 			{
 				string value = option.getValue();
-				if(isConnected())
-					throw Protocol::OptionError("Can't change ID of a connected account");
-
 				if(getID() == value)
 					break;
+
+				if(isConnected())
+					throw Protocol::OptionError("Can't change ID of a connected account");
 
 				if(value.empty())
 					value = Purple::getNewAccountName(proto, *this);
@@ -217,6 +217,9 @@ void Account::setOptions(const Protocol::Options& options)
 				setStatusChannel(option.getValue());
 				break;
 			case Protocol::Option::PASSWORD:
+				if (option.getValue() == getPassword())
+					break;
+
 				if (option.getValue().empty())
 					purple_account_set_remember_password(account, FALSE);
 				else
