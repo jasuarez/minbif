@@ -1135,7 +1135,7 @@ void IRC::m_map(Message message)
 					notice(user, "Usage: /MAP add " + proto.getID() + " USERNAME " + s);
 					return;
 				}
-				string username, password, channel;
+				string username;
 				try {
 					for(size_t i = 2; i < message.countArgs(); ++i)
 					{
@@ -1171,9 +1171,9 @@ void IRC::m_map(Message message)
 							}
 							it->second.setValue(value);
 						}
-						else if (password.empty())
+						else if (options["password"].getValue().empty())
 							options["password"].setValue(s);
-						else if (channel.empty())
+						else
 							options["status_channel"].setValue(s);
 					}
 
