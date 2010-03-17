@@ -118,8 +118,8 @@ namespace im
 		/** Register account on server. */
 		void registerAccount() const;
 
-		vector<Protocol::Option> getOptions() const;
-		void setOptions(vector<Protocol::Option>& options);
+		Protocol::Options getOptions() const;
+		void setOptions(const Protocol::Options& options);
 
 		/** Set path to the buddy icon to use for this account. */
 		void setBuddyIcon(const string& filename);

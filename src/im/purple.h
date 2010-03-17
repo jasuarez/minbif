@@ -83,9 +83,9 @@ namespace im
 		static Protocol getProtocolByPurpleID(string id);
 
 		static map<string, Account> getAccountsList();
-		static Account addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options, bool register_account);
+		static Account addAccount(const Protocol& proto, const string& username, const Protocol::Options& options, bool register_account);
 		static void delAccount(PurpleAccount* account);
-		static string getNewAccountName(Protocol proto);
+		static string getNewAccountName(Protocol proto, const Account& butone = Account());
 	};
 };
 

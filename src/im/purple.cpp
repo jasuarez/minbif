@@ -202,6 +202,8 @@ map<string, Account> Purple::getAccountsList()
 	for(; list; list = list->next)
 	{
 		Protocol proto = getProtocolByPurpleID(((PurpleAccount*)list->data)->protocol_id);
+		if(!proto.isValid())
+			continue;
 
 		Account account = Account((PurpleAccount*)list->data, proto);
 		m[account.getID()] = account;
@@ -221,7 +223,7 @@ Protocol Purple::getProtocolByPurpleID(string id)
 	return Protocol();
 }
 
-string Purple::getNewAccountName(Protocol proto)
+string Purple::getNewAccountName(Protocol proto, const Account& butone)
 {
 	GList* list = purple_accounts_get_all();
 	GList* iter;
@@ -230,7 +232,7 @@ string Purple::getNewAccountName(Protocol proto)
 	for(iter = list; iter; iter = (iter ? iter->next : list))
 	{
 		Account acc((PurpleAccount*)iter->data);
-		if(acc.getProtocol() != proto)
+		if(acc == butone || !acc.getProtocol().isValid() || acc.getProtocol() != proto)
 			continue;
 
 		string id = acc.getID();
@@ -243,21 +245,23 @@ string Purple::getNewAccountName(Protocol proto)
 	return proto.getID() + t2s(i);
 }
 
-Account Purple::addAccount(Protocol proto, string username, string password, vector<Protocol::Option> options, bool register_account)
+Account Purple::addAccount(const Protocol& proto, const string& username, const Protocol::Options& options, bool register_account)
 {
-	string id = getNewAccountName(proto);
 	PurpleAccount *account = purple_account_new(username.c_str(), proto.getPurpleID().c_str());
-	purple_accounts_add(account);
-	purple_account_set_remember_password(account, TRUE);
-	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "id", id.c_str());
 
 	Account a(account);
-	a.setID(id);
-	a.setPassword(password);
-	a.setOptions(options);
+
+	try {
+		a.setOptions(options);
+	} catch(Protocol::OptionError& e) {
+		purple_account_destroy(account);
+		throw;
+	}
 
 	if (register_account)
 		a.registerAccount();
+
+	purple_accounts_add(account);
 
 	const PurpleSavedStatus *saved_status;
 	saved_status = purple_savedstatus_get_current();

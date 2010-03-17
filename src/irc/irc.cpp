@@ -1088,7 +1088,8 @@ void IRC::m_map(Message message)
 				message.rebuildWithQuotes();
 				if(message.countArgs() < 2)
 				{
-					notice(user, "Usage: /MAP add PROTO USERNAME PASSWD [OPTIONS] [CHANNEL]");
+					notice(user, "Usage: /MAP add PROTO USERNAME [OPTIONS]");
+					notice(user, "To display available options: /MAP add PROTO");
 					return;
 				}
 				string protoname = message.getArg(1);
@@ -1104,85 +1105,83 @@ void IRC::m_map(Message message)
 					return;
 				}
 
-				vector<im::Protocol::Option> options = proto.getOptions();
-				if(message.countArgs() < 4)
+				im::Protocol::Options options = proto.getOptions();
+				if(message.countArgs() < 3)
 				{
 					string s;
-					FOREACH(vector<im::Protocol::Option>, options, it)
+					FOREACH(im::Protocol::Options, options, it)
 					{
 						if(!s.empty()) s += " ";
 						s += "[-";
-						switch(it->getType())
+						switch(it->second.getType())
 						{
-							case PURPLE_PREF_BOOLEAN:
-								s += "[!]" + it->getName();
+							case im::Protocol::Option::BOOL:
+								s += "[!]" + it->second.getName();
 								break;
-							case PURPLE_PREF_STRING:
-								s += it->getName() + " value";
+							case im::Protocol::Option::ACCID:
+							case im::Protocol::Option::STATUS_CHANNEL:
+							case im::Protocol::Option::PASSWORD:
+							case im::Protocol::Option::STR:
+								s += it->second.getName() + " value";
 								break;
-							case PURPLE_PREF_INT:
-								s += it->getName() + " int";
+							case im::Protocol::Option::INT:
+								s += it->second.getName() + " int";
 								break;
-							default:
+							case im::Protocol::Option::NONE:
 								break;
 						}
 						s += "]";
 					}
-					notice(user, "Usage: /MAP add " + proto.getID() + " USERNAME PASSWD " + s + " [CHANNEL]");
+					notice(user, "Usage: /MAP add " + proto.getID() + " USERNAME " + s);
 					return;
 				}
 				string username, password, channel;
-				for(size_t i = 2; i < message.countArgs(); ++i)
-				{
-					string s = message.getArg(i);
-					if(username.empty())
-						username = s;
-					else if(password.empty())
-						password = s;
-					else if(s[0] == '-')
+				try {
+					for(size_t i = 2; i < message.countArgs(); ++i)
 					{
-						size_t name_pos = 1;
-						string value = "true";
-						if(s[1] == '!')
+						string s = message.getArg(i);
+						if(username.empty())
+							username = s;
+						else if(s[0] == '-')
 						{
-							value = "false";
-							name_pos++;
-						}
+							size_t name_pos = 1;
+							string value = "true";
+							if(s[1] == '!')
+							{
+								value = "false";
+								name_pos++;
+							}
 
-						vector<im::Protocol::Option>::iterator it = std::find(options.begin(), options.end(), s.substr(name_pos));
-						if(it == options.end())
-						{
-							notice(user, "Error: Option '" + s + "' is unknown");
-							return;
+							im::Protocol::Options::iterator it = options.find(s.substr(name_pos));
+							if (it == options.end())
+							{
+								notice(user, "Error: Option '" + s + "' does not exist");
+								return;
+							}
+							if(it->second.getType() == im::Protocol::Option::BOOL)
+							{
+								/* No input value needed, already got above */
+							}
+							else if(i+1 < message.countArgs())
+								value = message.getArg(++i);
+							else
+							{
+								notice(user, "Error: Option '" + s + "' needs a value");
+								return;
+							}
+							it->second.setValue(value);
 						}
-						if(it->getType() == PURPLE_PREF_BOOLEAN)
-						{
-							/* No input value needed, already got above */
-						}
-						else if(i+1 < message.countArgs())
-							value = message.getArg(++i);
-						else
-						{
-							notice(user, "Error: Option '" + s + "' needs a value");
-							return;
-						}
-						it->setValue(value);
+						else if (password.empty())
+							options["password"].setValue(s);
+						else if (channel.empty())
+							options["status_channel"].setValue(s);
 					}
-					else if(channel.empty())
-					{
-						channel = s;
-						if(!Channel::isStatusChannel(channel))
-						{
-							notice(user, "Error: Status channel must start with '&'");
-							return;
-						}
-					}
+
+					added_account = im->addAccount(proto, username, options, register_account);
+				} catch (im::Protocol::OptionError& e) {
+					notice(user, "Error: " + e.Reason());
+					return;
 				}
-
-				added_account = im->addAccount(proto, username, password, options, register_account);
-				if(channel.empty())
-					channel = "&minbif";
-				added_account.setStatusChannel(channel);
 
 				break;
 			}
@@ -1200,20 +1199,30 @@ void IRC::m_map(Message message)
 					notice(user, "Error: Account " + message.getArg(1) + " is unknown");
 					return;
 				}
-				vector<im::Protocol::Option> options = account.getOptions();
+				im::Protocol::Options options = account.getOptions();
 				if(message.countArgs() < 3)
 				{
 					notice(user, "-- Parameters of account " + account.getServername() + " --");
-					FOREACH(vector<im::Protocol::Option>, options, it)
+					FOREACH(im::Protocol::Options, options, it)
 					{
-						im::Protocol::Option& option = *it;
-						notice(user, option.getName() + " = " + option.getValue());
+						im::Protocol::Option& option = it->second;
+						string value;
+						switch(option.getType())
+						{
+							case im::Protocol::Option::PASSWORD:
+								value = "*******";
+								break;
+							default:
+								value = option.getValue();
+								break;
+						}
+						notice(user, option.getName() + " = " + value);
 					}
 					return;
 				}
-				vector<im::Protocol::Option>::iterator option;
+				im::Protocol::Options::iterator option;
 				for(option = options.begin();
-				    option != options.end() && option->getName() != message.getArg(2);
+				    option != options.end() && option->second.getName() != message.getArg(2);
 				    ++option)
 					;
 
@@ -1224,7 +1233,7 @@ void IRC::m_map(Message message)
 				}
 
 				if(message.countArgs() < 4)
-					notice(user, option->getName() + " = " + option->getValue());
+					notice(user, option->second.getName() + " = " + option->second.getValue());
 				else
 				{
 					string value;
@@ -1234,21 +1243,20 @@ void IRC::m_map(Message message)
 						value += message.getArg(i);
 					}
 
-					if(option->getType() == PURPLE_PREF_BOOLEAN && value != "true" && value != "false")
+					if(option->second.getType() == im::Protocol::Option::BOOL && value != "true" && value != "false")
 					{
-						notice(user, "Error: Option '" + option->getName() + "' is a boolean ('true' or 'false')");
+						notice(user, "Error: Option '" + option->second.getName() + "' is a boolean ('true' or 'false')");
 						return;
 					}
 					/* TODO check if value is an integer if option is an integer */
-					option->setValue(value);
-					if(option->getType() == PURPLE_PREF_INT)
-						notice(user, option->getName() + " = " + t2s(option->getValueInt()));
+					option->second.setValue(value);
+					if(option->second.getType() == im::Protocol::Option::INT)
+						notice(user, option->second.getName() + " = " + t2s(option->second.getValueInt()));
 					else
-						notice(user, option->getName() + " = " + option->getValue());
+						notice(user, option->second.getName() + " = " + option->second.getValue());
 					account.setOptions(options);
 				}
 				return;
-				break;
 			}
 			case 'D':
 			case 'd':

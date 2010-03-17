@@ -21,22 +21,39 @@
 
 #include <purple.h>
 #include <string>
-#include <vector>
+#include <map>
+
+#include "core/exception.h"
 
 using std::string;
-using std::vector;
+using std::map;
 
 namespace im
 {
+	class Account;
+
 	class Protocol
 	{
 		PurplePlugin* plugin;
 
 	public:
 
+		STREXCEPTION(OptionError);
+
 		class Option
 		{
-			PurplePrefType type;
+		public:
+			enum type_t {
+				NONE,
+				BOOL,
+				STR,
+				INT,
+				ACCID,
+				PASSWORD,
+				STATUS_CHANNEL
+			};
+		private:
+			enum type_t type;
 			string name;
 			string value;
 			string text;
@@ -45,20 +62,23 @@ namespace im
 
 		public:
 
+			Option(enum type_t type, string name, string text, string value = "");
 			Option(PurplePrefType type, string name, string text, string value = "");
 			Option();
 
 			bool operator==(string s) const;
 
-			PurplePrefType getType() const { return type; }
+			enum type_t getType() const { return type; }
 			string getName() const { return name; }
 			string getText() const { return text; }
 
-			void setValue(string v) { value = v; }
+			virtual void setValue(string v) { value = v; }
 			string getValue() const { return value; }
 			int getValueInt() const;
 			bool getValueBool() const;
 		};
+
+		typedef map<string, Option> Options;
 
 		Protocol(PurplePlugin* plugin);
 		Protocol();
@@ -71,7 +91,7 @@ namespace im
 		string getID() const;
 		string getPurpleID() const;
 
-		vector<Option> getOptions() const;
+		Options getOptions() const;
 
 		PurplePluginProtocolInfo* getPurpleProtocol() const;
 	};

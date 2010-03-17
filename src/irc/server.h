@@ -18,6 +18,8 @@
 #ifndef IRC_SERVER_H
 #define IRC_SERVER_H
 
+#include <vector>
+
 #include "core/entity.h"
 #include "im/account.h"
 
@@ -25,6 +27,7 @@ namespace irc
 {
 	class IRC;
 	class Nick;
+	using std::vector;
 
 	/** This class represents an IRC server */
 	class Server : public Entity

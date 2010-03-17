@@ -19,12 +19,13 @@
 #include <cassert>
 #include <cstring>
 #include "protocol.h"
+#include "account.h"
 #include "core/util.h"
 
 namespace im {
 
 Protocol::Option::Option()
-	: type(PURPLE_PREF_NONE)
+	: type(Protocol::Option::NONE)
 {}
 
 string Protocol::Option::nameFromText(string s) const
@@ -35,12 +36,34 @@ string Protocol::Option::nameFromText(string s) const
 	return s;
 }
 
-Protocol::Option::Option(PurplePrefType _type, string _name, string _text, string _value)
+Protocol::Option::Option(Protocol::Option::type_t _type, string _name, string _text, string _value)
 	: type(_type),
 	  name(_name),
 	  value(_value),
 	  text(_text)
 {}
+
+Protocol::Option::Option(PurplePrefType _type, string _name, string _text, string _value)
+	: name(_name),
+	  value(_value),
+	  text(_text)
+{
+	switch(_type)
+	{
+		case PURPLE_PREF_BOOLEAN:
+			type = Protocol::Option::BOOL;
+			break;
+		case PURPLE_PREF_STRING:
+			type = Protocol::Option::STR;
+			break;
+		case PURPLE_PREF_INT:
+			type = Protocol::Option::INT;
+			break;
+		default:
+			type = Protocol::Option::NONE;
+			break;
+	}
+}
 
 int Protocol::Option::getValueInt() const
 {
@@ -96,9 +119,9 @@ string Protocol::getPurpleID() const
 	return plugin->info->id;
 }
 
-vector<Protocol::Option> Protocol::getOptions() const
+Protocol::Options Protocol::getOptions() const
 {
-	vector<Option> options;
+	Options options;
 	PurplePluginProtocolInfo* prplinfo = PURPLE_PLUGIN_PROTOCOL_INFO(plugin);
 	GList *iter;
 
@@ -129,8 +152,11 @@ vector<Protocol::Option> Protocol::getOptions() const
 				/* This option is not supported */
 				continue;
 		}
-		options.push_back(opt);
+		options[opt.getName()] = opt;
 	}
+	options["accid"] = Option(Option::ACCID, "accid", "Account ID");
+	options["status_channel"] = Option(Option::STATUS_CHANNEL, "status_channel", "Status Channel", "&minbif");
+	options["password"] = Option(Option::PASSWORD, "password", "Account password");
 	return options;
 }
 

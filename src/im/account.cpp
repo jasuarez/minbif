@@ -69,7 +69,7 @@ string Account::getUsername() const
 string Account::getPassword() const
 {
 	assert(isValid());
-	return purple_account_get_password(account);
+	return p2s(purple_account_get_password(account));
 }
 
 void Account::setPassword(string password)
@@ -131,88 +131,105 @@ bool Account::callCommand(const string& cmd) const
 	return false;
 }
 
-vector<Protocol::Option> Account::getOptions() const
+Protocol::Options Account::getOptions() const
 {
 	assert(isValid());
 
-	vector<Protocol::Option> options = getProtocol().getOptions();
-	FOREACH(vector<Protocol::Option>, options, it)
+	Protocol::Options options = getProtocol().getOptions();
+	FOREACH(Protocol::Options, options, it)
 	{
-		Protocol::Option& option = *it;
+		Protocol::Option& option = it->second;
 		switch(option.getType())
 		{
-			case PURPLE_PREF_STRING:
+			case Protocol::Option::STR:
 				option.setValue(purple_account_get_string(account, option.getName().c_str(), option.getValue().c_str()));
 				break;
-			case PURPLE_PREF_INT:
+			case Protocol::Option::INT:
 				option.setValue(t2s(purple_account_get_int(account, option.getName().c_str(), option.getValueInt())));
 				break;
-			case PURPLE_PREF_BOOLEAN:
+			case Protocol::Option::BOOL:
 				option.setValue(purple_account_get_bool(account, option.getName().c_str(), option.getValueBool()) ? "true" : "false");
 				break;
-			default:
+			case Protocol::Option::ACCID:
+				option.setValue(getID());
+				break;
+			case Protocol::Option::STATUS_CHANNEL:
+				option.setValue(getStatusChannel());
+				break;
+			case Protocol::Option::PASSWORD:
+				option.setValue(getPassword());
+				break;
+			case Protocol::Option::NONE:
 				/* not supported. */
 				break;
 		}
 	}
-	/* Minbif specific prefs */
-	options.push_back(Protocol::Option(PURPLE_PREF_STRING, "accid", "ID", getID()));
-	options.push_back(Protocol::Option(PURPLE_PREF_STRING, "status_channel", "Status Channel", getStatusChannel()));
 	return options;
 }
 
-void Account::setOptions(vector<Protocol::Option>& options)
+void Account::setOptions(const Protocol::Options& options)
 {
 	assert(isValid());
-	FOREACH(vector<Protocol::Option>, options, it)
+	for(Protocol::Options::const_iterator it = options.begin(); it != options.end(); ++it)
 	{
-		Protocol::Option& option = *it;
+		const Protocol::Option& option = it->second;
 
 		switch(option.getType())
 		{
-			case PURPLE_PREF_STRING:
-				/* XXX This is fucking ugly. */
-				if(option.getName() == "accid")
-				{
-					if(getID() == option.getValue())
-						{}
-					else if(isConnected())
-						b_log[W_ERR] << "Can't change ID of a connected account";
-					else if(Purple::getIM()->getAccount(option.getValue()).isValid() == true)
-						b_log[W_ERR] << "This ID is already used.";
-					else
-						setID(option.getValue());
-				}
-				else if(option.getName() == "status_channel")
-				{
-					if(getStatusChannel() == option.getValue())
-						{}
-					else if(!irc::Channel::isChanName(option.getValue()) || !irc::Channel::isStatusChannel(option.getValue()))
-						b_log[W_ERR] << "'" << option.getValue() << "' is not a valid channel name";
-					else
-						setStatusChannel(option.getValue());
-				}
-				else
-					purple_account_set_string(account,
-								  option.getName().c_str(),
-								  option.getValue().c_str());
+			case Protocol::Option::STR:
+				purple_account_set_string(account,
+							  option.getName().c_str(),
+							  option.getValue().c_str());
 				break;
-			case PURPLE_PREF_INT:
+			case Protocol::Option::INT:
 				purple_account_set_int(account,
 						       option.getName().c_str(),
 						       option.getValueInt());
 				break;
-			case PURPLE_PREF_BOOLEAN:
+			case Protocol::Option::BOOL:
 				purple_account_set_bool(account,
 						        option.getName().c_str(),
 							option.getValueBool());
 				break;
-			default:
-				/* not supported. */
+			case Protocol::Option::ACCID:
+			{
+				string value = option.getValue();
+				if(isConnected())
+					throw Protocol::OptionError("Can't change ID of a connected account");
+
+				if(getID() == value)
+					break;
+
+				if(value.empty())
+					value = Purple::getNewAccountName(proto, *this);
+				else if(Purple::getIM()->getAccount(value).isValid() == true)
+					throw Protocol::OptionError("This ID is already used.");
+
+				setID(value);
+				break;
+			}
+			case Protocol::Option::STATUS_CHANNEL:
+				if(getStatusChannel() == option.getValue())
+					break;
+
+				if(!irc::Channel::isChanName(option.getValue()) || !irc::Channel::isStatusChannel(option.getValue()))
+					throw Protocol::OptionError("'" + option.getValue() + "' is not a valid channel name");
+				setStatusChannel(option.getValue());
+				break;
+			case Protocol::Option::PASSWORD:
+				if (option.getValue().empty())
+					purple_account_set_remember_password(account, FALSE);
+				else
+				{
+					setPassword(option.getValue());
+					purple_account_set_remember_password(account, TRUE);
+				}
+				break;
+			case Protocol::Option::NONE:
+				/* Not happy. */
 				break;
 		}
 	}
-
 }
 
 void Account::setBuddyIcon(const string& filename)
@@ -255,7 +272,7 @@ string Account::getID() const
 	string n = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "id", "");
 	if(n.empty())
 	{
-		n = Purple::getNewAccountName(proto);
+		n = Purple::getNewAccountName(proto, *this);
 		setID(n);
 	}
 	return n;

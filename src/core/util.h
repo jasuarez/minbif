@@ -42,6 +42,9 @@ std::string t2s( const T & Value )
 	return oss.str();
 }
 
+/** Return a valid std::string from a pointer. */
+static inline string p2s(const char* s) { return s ? s : ""; }
+
 
 guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
                                                            gpointer data);
