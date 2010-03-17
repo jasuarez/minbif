@@ -967,6 +967,22 @@ void IRC::m_stats(Message message)
 								     .addArg(t2s(commands[i].count))
 								     .addArg("0"));
 			break;
+		case 'o':
+		{
+			vector<ConfigSection*> opers = conf.GetSection("irc")->GetSectionClones("oper");
+			for(vector<ConfigSection*>::iterator it = opers.begin(); it != opers.end(); ++it)
+			{
+				ConfigSection* oper = *it;
+
+				user->send(Message(RPL_STATSOLINE).setSender(this)
+						                  .setReceiver(user)
+								  .addArg("O")
+								  .addArg(oper->GetItem("email")->String())
+								  .addArg("*")
+								  .addArg(oper->GetItem("login")->String()));
+			}
+			break;
+		}
 		case 'p':
 		{
 			map<string, im::Protocol> m = im->getProtocolsList();
@@ -993,6 +1009,7 @@ void IRC::m_stats(Message message)
 			notice(user, "a (aways) - List all away messages availables");
 			notice(user, "c (chat params) - List all chat parameters for a specific account");
 			notice(user, "m (commands) - List all IRC commands");
+			notice(user, "o (opers) - List all opers accounts");
 			notice(user, "p (protocols) - List all protocols");
 			notice(user, "u (uptime) - Display the server uptime");
 			break;

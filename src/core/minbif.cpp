@@ -70,6 +70,7 @@ Minbif::Minbif()
 	sub = section->AddSection("oper", "Define an IRC operator", MyConfig::MULTIPLE);
 	sub->AddItem(new ConfigItem_string("login", "Nickname of IRC operator"), true);
 	sub->AddItem(new ConfigItem_string("password", "IRC operator password"));
+	sub->AddItem(new ConfigItem_string("email", "IRC operator email address", "*@*"));
 
 	section = conf.AddSection("aaa", "Authentication, Authorization and Accounting", MyConfig::OPTIONAL);
 	section->AddItem(new ConfigItem_bool("use_local", "Use local database to authenticate users", "true"));

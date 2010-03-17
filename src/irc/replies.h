@@ -30,6 +30,7 @@
 #define RPL_ENDOFSTATS       "219"
 #define RPL_UMODEIS          "221"
 #define RPL_STATSUPTIME      "242"
+#define RPL_STATSOLINE       "243"
 #define RPL_LUSERCLIENT      "251"
 #define RPL_LUSEROP          "252"
 #define RPL_LUSERUNKNOWN     "253"
