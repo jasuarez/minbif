@@ -1480,7 +1480,7 @@ void IRC::m_join(Message message)
 									     .addArg("No such channel"));
 				}
 				else
-					g_timeout_add(500, g_callback_delete, new CallBack<IRC>(this, &IRC::check_channel_join, g_strdup(channame.c_str())));
+					g_timeout_add(1000, g_callback_delete, new CallBack<IRC>(this, &IRC::check_channel_join, g_strdup(channame.c_str())));
 
 #if 0
 				chan = new ConversationChannel(this, conv);
