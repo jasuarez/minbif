@@ -133,6 +133,9 @@ RequestFieldList::~RequestFieldList()
 	map<string, RequestField*>::iterator it;
 	for(it = fields.begin(); it != fields.end(); ++it)
 		delete it->second;
+
+	for(vector<Request*>::iterator r = subrequests.begin(); r != subrequests.end(); r = subrequests.erase(r))
+		delete *r;
 }
 
 void RequestFieldList::addField(RequestField* field)
@@ -152,14 +155,41 @@ RequestField* RequestFieldList::getField(const string& label) const
 	return it->second;
 }
 
+void RequestFieldList::addSubrequest(Request* request)
+{
+	subrequests.push_back(request);
+}
+
 void RequestFieldList::process(const string& answer) const
 {
-	RequestField* field = getField(answer);
-	field->runCallback();
+	if (!subrequests.empty())
+		subrequests.front()->process(answer);
+	else
+	{
+		RequestField* field = getField(answer);
+		field->runCallback();
+	}
+}
+
+void RequestFieldList::close()
+{
+	if (!subrequests.empty())
+	{
+		subrequests.erase(subrequests.begin());
+		display();
+	}
+	else
+		Request::close();
 }
 
 void RequestFieldList::display() const
 {
+	if (!subrequests.empty())
+	{
+		subrequests.front()->display();
+		return;
+	}
+
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	if(account.isValid())
 		nick->privmsg(irc->getUser(), "[" + account.getID() + "] New request: " + title);
@@ -387,8 +417,8 @@ void Request::closeRequest(const Request* request)
 			continue;
 
 		bool first = (it == requests.begin());
-		delete *it;
 		requests.erase(it);
+		delete *it;
 
 		if(first)
 		{
@@ -594,6 +624,10 @@ void* Request::request_fields(const char *title, const char *primary,
 {
 	GList *gl, *fl;
 
+	RequestFieldList* mainrequest = new RequestFieldList(PURPLE_REQUEST_FIELDS, Account(account), title ? title : primary ? primary : "",
+	                                                     title ? (primary ? primary : (secondary ? secondary : "")) : secondary ? secondary : "",
+							     "Do you confirm?");
+
 	for(gl = purple_request_fields_get_groups(fields);
 	    gl != NULL;
 	    gl = gl->next)
@@ -614,14 +648,18 @@ void* Request::request_fields(const char *title, const char *primary,
 			if(type == PURPLE_REQUEST_FIELD_STRING)
 			{
 				const char* defval = purple_request_field_string_get_default_value(field);
-				addRequest(new RequestFieldsString(field, Account(account), title ? title : primary ? primary : "", secondary ? secondary : "",
-				                                   field_label ? field_label : "", defval ? defval : ""));
+				RequestFieldsString* request = new RequestFieldsString(field, Account(account),
+						                                       title ? title : primary ? primary : "", secondary ? secondary : "",
+				                                                       field_label ? field_label : "", defval ? defval : "");
+				mainrequest->addSubrequest(request);
 			}
 			else if(type == PURPLE_REQUEST_FIELD_INTEGER)
 			{
 				string defval = t2s(purple_request_field_int_get_default_value(field));
-				addRequest(new RequestFieldsInteger(field, Account(account), title ? title : primary ? primary : "", secondary ? secondary : "",
-				                                    field_label ? field_label : "", defval));
+				RequestFieldsInteger* request = new RequestFieldsInteger(field, Account(account),
+						                                         title ? title : primary ? primary : "", secondary ? secondary : "",
+				                                                         field_label ? field_label : "", defval);
+				mainrequest->addSubrequest(request);
 			}
 			else
 			{
@@ -654,18 +692,15 @@ void* Request::request_fields(const char *title, const char *primary,
 						 delete request;
 						 continue;
 				}
-				addRequest(request);
+				mainrequest->addSubrequest(request);
 			}
 		}
 	}
 
-	RequestFieldList* request = new RequestFieldList(PURPLE_REQUEST_FIELDS, Account(account), title ? title : primary ? primary : "",
-	                                                 title ? (primary ? primary : (secondary ? secondary : "")) : secondary ? secondary : "",
-							 "Do you confirm?");
-	request->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(0, "ok", ok, (PurpleRequestFieldsCb)ok_cb, userdata, fields));
-	request->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(1, "cancel", cancel, (PurpleRequestFieldsCb)cancel_cb, userdata, fields));
+	mainrequest->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(0, "ok", ok, (PurpleRequestFieldsCb)ok_cb, userdata, fields));
+	mainrequest->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(1, "cancel", cancel, (PurpleRequestFieldsCb)cancel_cb, userdata, fields));
 
-	addRequest(request);
+	addRequest(mainrequest);
 
 	return requests.back();
 }

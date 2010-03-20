@@ -137,6 +137,7 @@ namespace im
 	class RequestFieldList : public Request
 	{
 		map<string, RequestField*> fields;
+		vector<Request*> subrequests;
 
 	public:
 
@@ -148,8 +149,11 @@ namespace im
 		void addField(RequestField* field);
 		RequestField* getField(const string& label) const;
 
+		void addSubrequest(Request* request);
+
 		virtual void process(const string& answer) const;
 		virtual void display() const;
+		virtual void close();
 	};
 
 }; /* namespace im */
