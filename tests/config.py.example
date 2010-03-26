@@ -1,6 +1,18 @@
-# Rename this file to config.py and replaces values
+# How to run the automated tests
+# ==============================
+#
+# 1) run "make tests"
+# 2) Rename this file to config.py and replaces values
+#
+# You need at least two xmpp (jabber) accounts to run the test.
+# 
+# WARNING! Don't use current usage accounts: these accounts' roster
+# will be blindly erased and fill by test datas.
+#
+# YOU WAS WARNED!
 
 from structs import Account
 
-ACCOUNTS = [Account('jabber', 'blah@jabber.fr, 'mypasswd'),
+ACCOUNTS = [Account('jabber', 'blah@jabber.fr', 'mypasswd'),
+            Account('jabber', 'counter@jabber.de', 'otherpasswd'),
             Account('msn', 'blah@hotmail.com', 'pppp')]
