@@ -792,16 +792,19 @@ void Conversation::buddy_typing(PurpleAccount* account, const char* who, gpointe
 			irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 						.setReceiver(irc->getUser())
 						.addArg("\1TYPING 1\1"));
+			break;
 
 		case PURPLE_TYPED:
 			irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 						.setReceiver(irc->getUser())
 						.addArg("\1TYPING 2\1"));
+			break;
 
 		case PURPLE_NOT_TYPING:
 			irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
 						.setReceiver(irc->getUser())
 						.addArg("\1TYPING 0\1"));
+			break;
 	}
 }
 
