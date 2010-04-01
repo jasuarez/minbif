@@ -19,8 +19,8 @@
 #include <glib.h>
 #ifdef USE_CACA
 	#include <caca.h>
-	#include <Imlib2.h>
 #endif
+#include <Imlib2.h>
 
 #include "caca_image.h"
 #include <string.h>

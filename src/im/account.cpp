@@ -18,6 +18,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <Imlib2.h>
 
 #include "im/im.h"
 #include "im/account.h"
@@ -244,12 +245,29 @@ void Account::setBuddyIcon(const string& filename)
 		if (prplinfo != NULL &&
 		    purple_account_get_bool(account, "use-global-buddyicon", TRUE) &&
 		    prplinfo->icon_spec.format) {
-			gchar *contents;
-			gsize len;
-			if (g_file_get_contents(filename.c_str(), &contents, &len, NULL))
-				purple_buddy_icons_set_account_icon(account, (guchar *)contents, len);
+      Imlib_Image img = imlib_load_image(filename.c_str());
 
-			purple_account_set_buddy_icon_path(account, filename.c_str());
+      if (img) {
+        imlib_context_set_image(img);
+        imlib_image_set_format("png");
+
+        gchar* temp_filename;
+        GError* temp_error;
+        gint   temp_fh;
+
+        gchar *contents;
+        gsize len;
+
+        /* Create a stupid tmp file, write it, close it. Save image as png in it. Fuck it. */
+        temp_fh = g_file_open_tmp("minbif_new_icon_XXXXXX.png", &temp_filename, &temp_error);
+        close(temp_fh);
+        imlib_save_image(temp_filename);
+        if (g_file_get_contents(temp_filename, &contents, &len, NULL)) {
+          purple_buddy_icons_set_account_icon(account, (guchar *)contents, len);
+          purple_account_set_buddy_icon_path(account, temp_filename);
+          g_free(temp_filename);
+        }
+      }
 		}
 	}
 
