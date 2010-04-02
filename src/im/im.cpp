@@ -205,7 +205,7 @@ void IM::delAccount(Account user)
 	Purple::delAccount(user.getPurpleAccount());
 }
 
-void IM::setBuddyIcon(string path)
+void IM::setBuddyIcon(const string& path)
 {
 	map<string, Account> alist = getAccountsList();
 	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)

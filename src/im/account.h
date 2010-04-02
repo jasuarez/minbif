@@ -122,7 +122,7 @@ namespace im
 		void setOptions(const Protocol::Options& options);
 
 		/** Set path to the buddy icon to use for this account. */
-		void setBuddyIcon(const string& filename);
+		void setBuddyIcon(string filename);
 
 		/** Set status */
 		void setStatusMessage(const string& message);

@@ -18,7 +18,9 @@
 
 #include <cassert>
 #include <cstring>
-#include <Imlib2.h>
+#ifdef HAVE_IMLIB
+	#include <Imlib2.h>
+#endif /* HAVE_IMLIB */
 
 #include "im/im.h"
 #include "im/account.h"
@@ -236,38 +238,83 @@ void Account::setOptions(const Protocol::Options& options)
 	}
 }
 
-void Account::setBuddyIcon(const string& filename)
+void Account::setBuddyIcon(string filename)
 {
 	assert(isValid());
 	PurplePlugin *plug = purple_find_prpl(purple_account_get_protocol_id(account));
 	if (plug) {
 		PurplePluginProtocolInfo *prplinfo = PURPLE_PLUGIN_PROTOCOL_INFO(plug);
 		if (prplinfo != NULL &&
-		    purple_account_get_bool(account, "use-global-buddyicon", TRUE) &&
-		    prplinfo->icon_spec.format) {
-      Imlib_Image img = imlib_load_image(filename.c_str());
+		    //purple_account_get_bool(account, "use-global-buddyicon", TRUE) &&
+		    prplinfo->icon_spec.format)
+		{
+			GError* temp_error = NULL;
+#ifdef HAVE_IMLIB
+			Imlib_Image img = imlib_load_image(filename.c_str());
+			char* temp_filename = NULL;
 
-      if (img) {
-        imlib_context_set_image(img);
-        imlib_image_set_format("png");
+			if (img) {
+				int temp_fd;
 
-        gchar* temp_filename;
-        GError* temp_error;
-        gint   temp_fh;
+				/* Create a stupid tmp file, write it, close it. Save image as png in it. Fuck it. */
+				temp_fd = g_file_open_tmp("minbif_new_icon_XXXXXX", &temp_filename, &temp_error);
+				if (temp_error) {
+					b_log[W_ERR] << "Unable to create a temporary file: " << temp_error->message;
+					g_error_free(temp_error);
+					temp_filename = NULL;
+				}
+				else
+				{
+					char** prpl_formats = g_strsplit(prplinfo->icon_spec.format,",",0);
+					ImlibLoadError err = IMLIB_LOAD_ERROR_UNKNOWN;
 
-        gchar *contents;
-        gsize len;
+					close(temp_fd);
+					/* Try to encode in a supported format. */
+					imlib_context_set_image(img);
+					for (size_t i = 0; prpl_formats[i] && err != IMLIB_LOAD_ERROR_NONE; ++i)
+					{
+						imlib_image_set_format(prpl_formats[i]);
+						imlib_save_image_with_error_return(temp_filename, &err);
+					}
 
-        /* Create a stupid tmp file, write it, close it. Save image as png in it. Fuck it. */
-        temp_fh = g_file_open_tmp("minbif_new_icon_XXXXXX.png", &temp_filename, &temp_error);
-        close(temp_fh);
-        imlib_save_image(temp_filename);
-        if (g_file_get_contents(temp_filename, &contents, &len, NULL)) {
-          purple_buddy_icons_set_account_icon(account, (guchar *)contents, len);
-          purple_account_set_buddy_icon_path(account, temp_filename);
-          g_free(temp_filename);
-        }
-      }
+					if (err != IMLIB_LOAD_ERROR_NONE)
+						b_log[W_ERR] << "Unable to encode image for " << getID();
+					else
+						filename = temp_filename;
+					g_strfreev(prpl_formats);
+				}
+				imlib_free_image();
+			}
+
+#endif /* HAVE_IMLIB */
+			gchar *contents;
+			gsize len;
+			if (g_file_get_contents(filename.c_str(), &contents, &len, &temp_error))
+			{
+				if ((prplinfo->icon_spec.max_filesize != 0) &&
+				    (len > prplinfo->icon_spec.max_filesize))
+				{
+					b_log[W_ERR] << "Unable to set image on " << getID() << ": image too large";
+				}
+				else
+				{
+					purple_buddy_icons_set_account_icon(account, (guchar *)contents, len);
+					/* Useless, and a temp filename is not safe:
+					 *   purple_account_set_buddy_icon_path(account, temp_filename);
+					 */
+				}
+			}
+			else if (temp_error)
+			{
+				b_log[W_ERR] << "Unable to get image content on " << getID() << ": " << temp_error->message;
+				g_error_free(temp_error);
+			}
+#ifdef HAVE_IMLIB
+			if (temp_filename) {
+				unlink(temp_filename);
+				g_free(temp_filename);
+			}
+#endif /* HAVE_IMLIB */
 		}
 	}
 

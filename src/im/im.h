@@ -102,7 +102,7 @@ namespace im
 		 *
 		 * This buddy icon will used on every IM accounts.
 		 */
-		void setBuddyIcon(string path);
+		void setBuddyIcon(const string& path);
 
 		/** Get path to current buddy icon. */
 		string getBuddyIconPath() const;
