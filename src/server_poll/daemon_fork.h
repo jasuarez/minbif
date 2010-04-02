@@ -65,6 +65,7 @@ class DaemonForkServerPoll : public ServerPoll
 	void m_oper(child_t* child, irc::Message m);        /**< IPC handler for the OPER command. */
 
 	irc::IRC* irc;
+	int maxcon;
 	int sock;
 	int read_id;
 	_CallBack *read_cb;

@@ -52,6 +52,8 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
 		throw ServerPollError();
 	}
 
+	maxcon = section->GetItem("maxcon")->Integer();
+
 	if(section->GetItem("background")->Boolean())
 	{
 		int r = fork();
@@ -150,6 +152,14 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 	if(new_socket < 0)
 	{
 		b_log[W_WARNING] << "Could not accept new connection: " << strerror(errno);
+		return true;
+	}
+
+	if(maxcon > 0 && childs.size() >= (unsigned)maxcon)
+	{
+		static const char error[] = "ERROR :Closing Link: Too much connections on server\r\n";
+		send(new_socket, error, sizeof(error), 0);
+		close(new_socket);
 		return true;
 	}
 
