@@ -37,15 +37,25 @@ OPTION(ENABLE_PLUGIN "Enable plugin build" OFF)
 OPTION(ENABLE_PAM "Enable PAM support" OFF)
 
 IF(ENABLE_MINBIF)
+	OPTION(ENABLE_IMLIB "Use imlib library" ON)
+	IF(ENABLE_IMLIB OR ENABLE_CACA)
+		PKG_CHECK_MODULES(IMLIB imlib2>=1.0)
+
+		IF(IMLIB_FOUND)
+			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_IMLIB")
+		ELSE(IMLIB_FOUND)
+			MESSAGE(FATAL_ERROR "Unable to find the imlib2 library. To disable use of imlib2, run 'make ENABLE_IMLIB=OFF'")
+		ENDIF(IMLIB_FOUND)
+	ENDIF(ENABLE_IMLIB OR ENABLE_CACA)
+
 	OPTION(ENABLE_CACA "Enable libcaca library" ON)
 	IF(ENABLE_CACA)
 		PKG_CHECK_MODULES(CACA caca>=0.99)
-		PKG_CHECK_MODULES(IMLIB imlib2>=1.0)
 
 		IF(IMLIB_FOUND AND CACA_FOUND)
-			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_CACA")
+			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_CACA")
 		ELSE(IMLIB_FOUND AND CACA_FOUND)
-			MESSAGE(FATAL_ERROR "Unable to find the libcaca and/or imlib2 libraries. To disable caca output, run 'make ENABLE_CACA=0'")
+			MESSAGE(FATAL_ERROR "Unable to find the libcaca and/or imlib2 libraries. To disable caca output, run 'make ENABLE_CACA=OFF'")
 		ENDIF(IMLIB_FOUND AND CACA_FOUND)
 
 	ENDIF(ENABLE_CACA)

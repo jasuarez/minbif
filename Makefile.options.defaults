@@ -11,6 +11,9 @@ DEBUG ?= OFF
 # Compile minbif
 ENABLE_MINBIF ?= ON
 
+# Compile minbif with imlib
+ENABLE_IMLIB ?= ON
+
 # Compile with the libcaca support
 ENABLE_CACA ?= ON
 

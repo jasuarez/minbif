@@ -17,15 +17,15 @@
 
 #include <cstdlib>
 #include <glib.h>
-#ifdef USE_CACA
+#ifdef HAVE_CACA
 	#include <caca.h>
+	#include <Imlib2.h>
 #endif
-#include <Imlib2.h>
 
 #include "caca_image.h"
 #include <string.h>
 
-#ifdef USE_CACA
+#ifdef HAVE_CACA
 	struct CacaImage::image
 	{
 		char *pixels;
@@ -40,7 +40,7 @@
 		void create_dither(unsigned bpp);
 		static struct CacaImage::image * load_file(char const * name);
 	};
-#endif /* USE_CACA */
+#endif /* HAVE_CACA */
 
 CacaImage::CacaImage()
 	: width(0),
@@ -57,7 +57,7 @@ CacaImage::CacaImage(string path)
 	  font_height(10),
 	  img(NULL)
 {
-#ifdef USE_CACA
+#ifdef HAVE_CACA
 	img = image::load_file(path.c_str());
 #endif
 }
@@ -69,7 +69,7 @@ CacaImage::CacaImage(void* buf, size_t size, unsigned buf_width, unsigned buf_he
 	  font_height(10),
 	  img(NULL)
 {
-#ifdef USE_CACA
+#ifdef HAVE_CACA
 	img = new image();
 	img->w = buf_width;
 	img->h = buf_height;
@@ -87,7 +87,7 @@ CacaImage::CacaImage(const CacaImage& caca)
 	  font_height(caca.font_height),
 	  img(caca.img)
 {
-#ifdef USE_CACA
+#ifdef HAVE_CACA
 	img->ref++;
 #endif
 }
@@ -101,7 +101,7 @@ CacaImage& CacaImage::operator=(const CacaImage& caca)
 	font_width = caca.font_width;
 	font_height = caca.font_height;
 	img = caca.img;
-#ifdef USE_CACA
+#ifdef HAVE_CACA
 	img->ref++;
 #endif
 	return *this;
@@ -114,7 +114,7 @@ CacaImage::~CacaImage()
 
 void CacaImage::deinit()
 {
-#ifdef USE_CACA
+#ifdef HAVE_CACA
 	if(img)
 	{
 		img->ref--;
@@ -134,7 +134,7 @@ string CacaImage::getIRCBuffer()
 
 string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, const char *output_type, unsigned _font_width, unsigned _font_height)
 {
-#ifndef USE_CACA
+#ifndef HAVE_CACA
 	throw CacaNotLoaded();
 #else
 	if(!img)
@@ -190,10 +190,10 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, const char *ou
 	cucul_free_canvas(cv);
 
 	return buf;
-#endif /* USE_CACA */
+#endif /* HAVE_CACA */
 }
 
-#ifdef USE_CACA
+#ifdef HAVE_CACA
 CacaImage::image::image()
 	: pixels(0),
 	  w(0),
@@ -261,4 +261,4 @@ struct CacaImage::image* CacaImage::image::load_file(char const * name)
 	return im;
 }
 
-#endif /* USE_CACA */
+#endif /* HAVE_CACA */

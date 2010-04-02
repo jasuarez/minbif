@@ -16,6 +16,7 @@ You can provide several configuration options to make:
 * CONF_PREFIX=path — Configuration files installation prefix (default=$PREFIX/etc/minbif)
 * DOC_PREFIX=path — Documentation files installation prefix (default=$PREFIX/share/doc/minbif)
 * ENABLE_MINBIF=(ON|OFF) — Compile minbif (default=ON).
+* ENABLE_IMLIB=(ON|OFF) — Use imlib2 (default=ON).
 * ENABLE_CACA=(ON|OFF) — Do not use libcaca features to display icons (default=ON).
 * ENABLE_VIDEO=(ON|OFF) — Enable the video viewer (default=OFF). Depends on ENABLE_CACA.
 * ENABLE_PLUGIN=(ON|OFF) — Compile libpurple's plugins (default=OFF).
