@@ -373,7 +373,10 @@ void DCCGet::dcc_read(gpointer data, int source, PurpleInputCondition cond)
 			b_log[W_WARNING] << "Unable to send DCC ack";
 
 		if(dcc->callback)
+		{
+			fflush(dcc->fp);
 			dcc->callback->run();
+		}
 		dcc->deinit();
 	}
 
