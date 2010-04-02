@@ -89,7 +89,8 @@ void Buddy::setAlias(string alias) const
 	 *
 	 * Ref: http://developer.pidgin.im/ticket/10393
 	 */
-	serv_alias_buddy(buddy);
+	if (Purple::getIM()->hasServerAliases() && getAccount().hasServerAliases())
+		serv_alias_buddy(buddy);
 }
 
 irc::Buddy* Buddy::getNick() const

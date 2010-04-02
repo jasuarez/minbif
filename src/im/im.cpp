@@ -145,6 +145,16 @@ bool IM::hasVoicedBuddies() const
 	return purple_prefs_get_bool("/minbif/voiced_buddies");
 }
 
+void IM::setServerAliases(bool enabled)
+{
+	purple_prefs_set_bool("/minbif/server_aliases", enabled);
+}
+
+bool IM::hasServerAliases() const
+{
+	return purple_prefs_get_bool("/minbif/server_aliases");
+}
+
 void IM::setAwayIdle(bool enabled)
 {
 	purple_prefs_set_bool("/purple/away/away_when_idle", enabled);

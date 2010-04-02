@@ -162,6 +162,9 @@ Protocol::Options Account::getOptions() const
 			case Protocol::Option::PASSWORD:
 				option.setValue(getPassword());
 				break;
+			case Protocol::Option::SERVER_ALIASES:
+				option.setValue(hasServerAliases() ? "true" : "false");
+				break;
 			case Protocol::Option::NONE:
 				/* not supported. */
 				break;
@@ -230,6 +233,9 @@ void Account::setOptions(const Protocol::Options& options)
 					setPassword(option.getValue());
 					purple_account_set_remember_password(account, TRUE);
 				}
+				break;
+			case Protocol::Option::SERVER_ALIASES:
+				setServerAliases(option.getValueBool());
 				break;
 			case Protocol::Option::NONE:
 				/* Not happy. */
@@ -344,6 +350,18 @@ string Account::getID() const
 		setID(n);
 	}
 	return n;
+}
+
+bool Account::hasServerAliases() const
+{
+	assert(isValid());
+	return purple_account_get_ui_bool(account, MINBIF_VERSION_NAME, "server_aliases", true);
+}
+
+void Account::setServerAliases(bool b)
+{
+	assert(isValid());
+	purple_account_set_ui_bool(account, MINBIF_VERSION_NAME, "server_aliases", b);
 }
 
 string Account::getStatusChannel() const

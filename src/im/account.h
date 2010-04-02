@@ -115,6 +115,10 @@ namespace im
 		string getPassword() const;
 		void setPassword(string password);
 
+		/** Enable/Disable store of aliases server-side. */
+		void setServerAliases(bool b);
+		bool hasServerAliases() const;
+
 		/** Register account on server. */
 		void registerAccount() const;
 

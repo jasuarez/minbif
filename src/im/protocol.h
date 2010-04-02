@@ -50,7 +50,8 @@ namespace im
 				INT,
 				ACCID,
 				PASSWORD,
-				STATUS_CHANNEL
+				STATUS_CHANNEL,
+				SERVER_ALIASES
 			};
 		private:
 			enum type_t type;

@@ -62,6 +62,7 @@ SETTING(Password);
 SETTING(TypingNotice);
 SETTING(AcceptNoBuddiesMessages);
 SETTING(VoicedBuddies);
+SETTING(ServerAliases);
 SETTING(AwayIdle);
 SETTING(Minbif);
 SETTING(LogLevel);

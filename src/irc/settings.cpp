@@ -98,6 +98,25 @@ bool SettingVoicedBuddies::setValue(string v)
 	return true;
 }
 
+string SettingServerAliases::getValue() const
+{
+	return getIM()->hasServerAliases() ? "true" : "false";
+}
+
+bool SettingServerAliases::setValue(string v)
+{
+	if(v == "1" || v == "true")
+		getIM()->setServerAliases(true);
+	else if(v == "0" || v == "false")
+		getIM()->setServerAliases(false);
+	else
+	{
+		getIRC()->notice(getIRC()->getUser(), "Value must be 'true' or 'false'");
+		return false;
+	}
+	return true;
+}
+
 string SettingAwayIdle::getValue() const
 {
 	return getIM()->hasAwayIdle() ? "true" : "false";

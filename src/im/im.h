@@ -94,6 +94,10 @@ namespace im
 		void setVoicedBuddies(bool enabled);
 		bool hasVoicedBuddies() const;
 
+		/** Does it store aliases server side. */
+		void setServerAliases(bool enabled);
+		bool hasServerAliases() const;
+
 		/** Set away idle */
 		void setAwayIdle(bool enabled);
 		bool hasAwayIdle() const;

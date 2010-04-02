@@ -1115,6 +1115,7 @@ void IRC::m_map(Message message)
 						s += "[-";
 						switch(it->second.getType())
 						{
+							case im::Protocol::Option::SERVER_ALIASES:
 							case im::Protocol::Option::BOOL:
 								s += "[!]" + it->second.getName();
 								break;
@@ -1158,16 +1159,20 @@ void IRC::m_map(Message message)
 								notice(user, "Error: Option '" + s + "' does not exist");
 								return;
 							}
-							if(it->second.getType() == im::Protocol::Option::BOOL)
+							switch(it->second.getType())
 							{
-								/* No input value needed, already got above */
-							}
-							else if(i+1 < message.countArgs())
-								value = message.getArg(++i);
-							else
-							{
-								notice(user, "Error: Option '" + s + "' needs a value");
-								return;
+								case im::Protocol::Option::BOOL:
+								case im::Protocol::Option::SERVER_ALIASES:
+									/* No input value needed, already got above */
+									break;
+								default:
+									if(i+1 < message.countArgs())
+										value = message.getArg(++i);
+									else
+									{
+										notice(user, "Error: Option '" + s + "' needs a value");
+										return;
+									}
 							}
 							it->second.setValue(value);
 						}
@@ -1382,6 +1387,7 @@ void IRC::m_admin(Message message)
 		{ "typing_notice",             true,  new SettingTypingNotice(this, im) },
 		{ "accept_nobuddies_messages", true,  new SettingAcceptNoBuddiesMessages(this, im) },
 		{ "voiced_buddies",            true,  new SettingVoicedBuddies(this, im) },
+		{ "server_aliases",            true,  new SettingServerAliases(this, im) },
 		{ "away_idle",                 true,  new SettingAwayIdle(this, im) },
 		{ "log_level",                 true,  new SettingLogLevel(this, im) },
 		{ "proxy",                     true,  new SettingProxy(this, im) },
