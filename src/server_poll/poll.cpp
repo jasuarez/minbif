@@ -23,12 +23,16 @@
 
 ServerPoll* ServerPoll::build(ServerPoll::poll_type_t type, Minbif* application)
 {
+	ConfigSection* config;
+
 	switch(type)
 	{
 		case ServerPoll::INETD:
-			return new InetdServerPoll(application);
+			config = conf.GetSection("irc")->GetSection("inetd");
+			return new InetdServerPoll(application, config);
 		case ServerPoll::DAEMON_FORK:
-			return new DaemonForkServerPoll(application);
+			config = conf.GetSection("irc")->GetSection("daemon");
+			return new DaemonForkServerPoll(application, config);
 		case ServerPoll::DAEMON:
 		default:
 			b_log[W_ERR] << "Type " << type << " is not implemented yet.";
@@ -37,6 +41,6 @@ ServerPoll* ServerPoll::build(ServerPoll::poll_type_t type, Minbif* application)
 	throw ServerPollError();
 }
 
-ServerPoll::ServerPoll(Minbif* _app)
-	: application(_app)
+ServerPoll::ServerPoll(Minbif* _app, ConfigSection* _config)
+	: application(_app), config(_config)
 {}

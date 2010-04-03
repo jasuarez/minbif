@@ -26,12 +26,10 @@
 #include <arpa/inet.h>
 
 #include "daemon_fork.h"
-#include "core/config.h"
 #include "irc/irc.h"
 #include "irc/user.h"
 #include "irc/message.h"
 #include "irc/replies.h"
-#include "core/config.h"
 #include "core/callback.h"
 #include "core/log.h"
 #include "core/minbif.h"
@@ -39,13 +37,13 @@
 #include "sockwrap/sock.h"
 #include "sockwrap/sockwrap.h"
 
-DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application)
-	: ServerPoll(application),
+DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application, ConfigSection* config)
+	: ServerPoll(application, config),
 	  irc(NULL),
 	  sock(-1),
 	  read_cb(NULL)
 {
-	ConfigSection* section = conf.GetSection("irc")->GetSection("daemon");
+	ConfigSection* section = getConfig();
 	if(section->Found() == false)
 	{
 		b_log[W_ERR] << "Missing section irc/daemon";
@@ -226,7 +224,7 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 
 		try
 		{
-			irc = new irc::IRC(this, sock::SockWrapper::Builder(new_socket, new_socket),
+			irc = new irc::IRC(this, sock::SockWrapper::Builder(getConfig(), new_socket, new_socket),
 				      conf.GetSection("irc")->GetItem("hostname")->String(),
 				      conf.GetSection("irc")->GetItem("ping")->Integer());
 		}

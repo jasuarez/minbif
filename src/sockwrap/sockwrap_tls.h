@@ -49,7 +49,7 @@ class SockWrapperTLS : public SockWrapper
 	void CheckTLSError();
 
 public:
-	SockWrapperTLS(int _recv_fd, int _send_fd);
+	SockWrapperTLS(ConfigSection* config, int _recv_fd, int _send_fd);
 
 	string Read();
 	void Write(string s);

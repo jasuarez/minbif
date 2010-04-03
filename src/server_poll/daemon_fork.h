@@ -100,7 +100,7 @@ class DaemonForkServerPoll : public ServerPoll
 
 public:
 
-	DaemonForkServerPoll(Minbif* application);
+	DaemonForkServerPoll(Minbif* application, ConfigSection* _config);
 	~DaemonForkServerPoll();
 
 	bool new_client_cb(void*);

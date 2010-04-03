@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include "core/log.h"
+#include "core/config.h"
 #include "core/callback.h"
 
 #ifndef PF_SOCKWRAP_H
@@ -35,12 +36,15 @@ namespace sock
 
 	class SockWrapper
 	{
+		ConfigSection* config;
 		vector<int> callback_ids;
 
 	public:
-		static SockWrapper* Builder(int _recv_fd, int _send_fd);
-		SockWrapper(int _recv_fd, int _send_fd);
+		static SockWrapper* Builder(ConfigSection* _config, int _recv_fd, int _send_fd);
+		SockWrapper(ConfigSection* _config, int _recv_fd, int _send_fd);
 		virtual ~SockWrapper();
+
+		ConfigSection* getConfig() const { return config; }
 
 		virtual string Read() = 0;
 		virtual void Write(string s) = 0;

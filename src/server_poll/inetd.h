@@ -31,7 +31,7 @@ class InetdServerPoll : public ServerPoll
 
 public:
 
-	InetdServerPoll(Minbif* application);
+	InetdServerPoll(Minbif* application, ConfigSection* _config);
 	~InetdServerPoll();
 
 	void rehash();

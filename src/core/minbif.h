@@ -20,6 +20,7 @@
 #define MINBIF_H
 
 #include <string>
+#include "config.h"
 
 using std::string;
 
@@ -32,6 +33,7 @@ class Minbif
 	ServerPoll* server_poll;
 	string pidfile;
 
+	void add_server_block_common_params(ConfigSection* section);
 	void usage(int argc, char** argv);
 	void version(void);
 	void remove_pidfile(void);

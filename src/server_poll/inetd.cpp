@@ -22,19 +22,18 @@
 #include "inetd.h"
 #include "irc/irc.h"
 #include "irc/user.h"
-#include "core/config.h"
 #include "core/callback.h"
 #include "core/log.h"
 #include "core/minbif.h"
 #include "sockwrap/sockwrap.h"
 
-InetdServerPoll::InetdServerPoll(Minbif* application)
-	: ServerPoll(application),
+InetdServerPoll::InetdServerPoll(Minbif* application, ConfigSection* config)
+	: ServerPoll(application, config),
 	  irc(NULL)
 {
 	try
 	{
-		irc = new irc::IRC(this, sock::SockWrapper::Builder(fileno(stdin), fileno(stdout)),
+		irc = new irc::IRC(this, sock::SockWrapper::Builder(getConfig(), fileno(stdin), fileno(stdout)),
 		              conf.GetSection("irc")->GetItem("hostname")->String(),
 		              conf.GetSection("irc")->GetItem("ping")->Integer());
 #ifndef DEBUG

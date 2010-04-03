@@ -28,7 +28,6 @@
 #include "minbif.h"
 #include "sighandler.h"
 #include "version.h"
-#include "config.h"
 #include "log.h"
 #include "util.h"
 #include "im/im.h"
@@ -50,6 +49,8 @@ Minbif::Minbif()
 	  server_poll(0)
 {
 	ConfigSection* section;
+	ConfigSection* sub;
+
 	section = conf.AddSection("path", "Path information", MyConfig::NORMAL);
 	section->AddItem(new ConfigItem_string("users", "Users directory"));
 	section->AddItem(new ConfigItem_string("motd", "Path to motd", " "));
@@ -60,13 +61,16 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_int("type", "Type of daemon", 0, 2, "0"));
 	section->AddItem(new ConfigItem_int("ping", "Ping frequence (s)", 0, 65535, "60"));
 	section->AddItem(new ConfigItem_string("buddy_icons_url", "URL to display in /WHOIS to get a buddy icon", " "));
-	section->AddItem(new ConfigItem_string("security", "none/tls/starttls/starttls-mandatory", "none"));
 
-	ConfigSection* sub = section->AddSection("daemon", "Daemon information", MyConfig::OPTIONAL);
+	sub = section->AddSection("inetd", "Inetd information", MyConfig::OPTIONAL);
+	add_server_block_common_params(sub);
+
+	sub = section->AddSection("daemon", "Daemon information", MyConfig::OPTIONAL);
 	sub->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
 	sub->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
 	sub->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
 	sub->AddItem(new ConfigItem_int("maxcon", "Maximum simultaneous connections", 0, 65535, "0"));
+	add_server_block_common_params(sub);
 
 	sub = section->AddSection("oper", "Define an IRC operator", MyConfig::MULTIPLE);
 	sub->AddItem(new ConfigItem_string("login", "Nickname of IRC operator"), true);
@@ -79,14 +83,6 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms to authenticate/authorize users", "false"));
 #endif
 	section->AddItem(new ConfigItem_bool("use_connection", "Use connection information to authenticate/authorize users", "false"));
-#ifdef HAVE_TLS
-	sub = section->AddSection("tls", "TLS information", MyConfig::OPTIONAL);
-	sub->AddItem(new ConfigItem_string("trust_file", "CA certificate file for TLS", " "));
-	sub->AddItem(new ConfigItem_string("crl_file", "CA certificate file for TLS", " "));
-	sub->AddItem(new ConfigItem_string("cert_file", "Server certificate file for TLS"));
-	sub->AddItem(new ConfigItem_string("key_file", "Server key file for TLS"));
-	sub->AddItem(new ConfigItem_string("priority", "Priority list for ciphers, exchange methods, macs and compression methods", "NORMAL"));
-#endif
 
 	section = conf.AddSection("file_transfers", "File transfers parameters", MyConfig::OPTIONAL);
 	section->AddItem(new ConfigItem_bool("enabled", "Enable file transfers", "true"));
@@ -98,6 +94,19 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_bool("to_syslog", "Log error and warnings to syslog"));
 	section->AddItem(new ConfigItem_bool("conv_logs", "Enable conversation logging", "false"));
 
+}
+
+void Minbif::add_server_block_common_params(ConfigSection* section)
+{
+	section->AddItem(new ConfigItem_string("security", "none/tls/starttls/starttls-mandatory", "none"));
+#ifdef HAVE_TLS
+	ConfigSection* sub = section->AddSection("tls", "TLS information", MyConfig::OPTIONAL);
+	sub->AddItem(new ConfigItem_string("trust_file", "CA certificate file for TLS", " "));
+	sub->AddItem(new ConfigItem_string("crl_file", "CA certificate file for TLS", " "));
+	sub->AddItem(new ConfigItem_string("cert_file", "Server certificate file for TLS"));
+	sub->AddItem(new ConfigItem_string("key_file", "Server key file for TLS"));
+	sub->AddItem(new ConfigItem_string("priority", "Priority list for ciphers, exchange methods, macs and compression methods", "NORMAL"));
+#endif
 }
 
 Minbif::~Minbif()

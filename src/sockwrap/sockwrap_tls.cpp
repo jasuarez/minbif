@@ -18,7 +18,6 @@
 
 #include "sockwrap_tls.h"
 #include "sock.h"
-#include "core/config.h"
 #include <sys/socket.h>
 #include <cstring>
 #include "gnutls/x509.h"
@@ -31,17 +30,15 @@ static void tls_debug_message(int level, const char* message)
 	b_log[W_SOCK] << "TLS debug: " << message;
 }
 
-SockWrapperTLS::SockWrapperTLS(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
+SockWrapperTLS::SockWrapperTLS(ConfigSection* _config, int _recv_fd, int _send_fd)
+	: SockWrapper(_config, _recv_fd, _send_fd)
 {
 	tls_ok = false;
 	trust_check = false;
 
-	ConfigSection* c_section = conf.GetSection("aaa");
+	ConfigSection* c_section = getConfig()->GetSection("tls");
 	if (!c_section->Found())
-		throw TLSError::TLSError("Missing section aaa");
-	c_section = c_section->GetSection("tls");
-	if (!c_section->Found())
-		throw TLSError::TLSError("Missing section aaa/tls");
+		throw TLSError::TLSError("Missing section <inetd|daemon>/tls");
 
 	/* GNUTLS init */
 	b_log[W_SOCK] << "Initializing GNUTLS";

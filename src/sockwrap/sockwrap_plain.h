@@ -27,7 +27,7 @@ namespace sock
 class SockWrapperPlain : public SockWrapper
 {
 public:
-	SockWrapperPlain(int _recv_fd, int _send_fd);
+	SockWrapperPlain(ConfigSection* config, int _recv_fd, int _send_fd);
 	~SockWrapperPlain();
 
 	string Read();

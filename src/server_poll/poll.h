@@ -21,6 +21,7 @@
 
 #include <exception>
 #include <string>
+#include "core/config.h"
 
 using std::string;
 
@@ -37,10 +38,12 @@ class ServerPollError : public std::exception {};
 class ServerPoll
 {
 	Minbif* application;
+	ConfigSection* config;
 
 protected:
 
 	Minbif* getApplication() const { return application; }
+	ConfigSection* getConfig() const { return config; }
 
 public:
 
@@ -53,7 +56,7 @@ public:
 
 	static ServerPoll* build(poll_type_t type, Minbif* application);
 
-	ServerPoll(Minbif* application);
+	ServerPoll(Minbif* application, ConfigSection* _config);
 	virtual ~ServerPoll() {}
 
 	virtual void kill(irc::IRC* irc) = 0;

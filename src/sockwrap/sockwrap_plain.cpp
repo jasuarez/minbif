@@ -24,7 +24,8 @@
 namespace sock
 {
 
-SockWrapperPlain::SockWrapperPlain(int _recv_fd, int _send_fd) : SockWrapper(_recv_fd, _send_fd)
+SockWrapperPlain::SockWrapperPlain(ConfigSection* _config, int _recv_fd, int _send_fd)
+	: SockWrapper(_config, _recv_fd, _send_fd)
 {
 	b_log[W_SOCK] << "Plain connection initialized";
 }
