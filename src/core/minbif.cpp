@@ -66,7 +66,7 @@ Minbif::Minbif()
 	sub->AddItem(new ConfigItem_string("bind", "IP address to listen on"));
 	sub->AddItem(new ConfigItem_int("port", "Port to listen on", 1, 65535), true);
 	sub->AddItem(new ConfigItem_bool("background", "Start minbif in background", "true"));
-	sub->AddItem(new ConfigItem_int("maxcon", "Maximum simultaneous connections", 0));
+	sub->AddItem(new ConfigItem_int("maxcon", "Maximum simultaneous connections", 0, 65535, "0"));
 
 	sub = section->AddSection("oper", "Define an IRC operator", MyConfig::MULTIPLE);
 	sub->AddItem(new ConfigItem_string("login", "Nickname of IRC operator"), true);
