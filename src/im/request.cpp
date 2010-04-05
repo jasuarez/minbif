@@ -418,7 +418,7 @@ void Request::closeRequest(const Request* request)
 
 		bool first = (it == requests.begin());
 		requests.erase(it);
-		delete *it;
+		delete request;
 
 		if(first)
 		{
