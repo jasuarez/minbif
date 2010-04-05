@@ -1,3 +1,39 @@
+Minbif 1.0.2 (2010-04-05)
+	* TLS support.
+	* New 'maxcon' parameter to limit simultaneous connections.
+	* /TOPIC on a status channel change your status on attached accounts.
+	* Can put '%XX' in remote channel names to join, to insert special
+	  characters (for example spaces).
+	* Auto-reconnect on accounts only when disconnection was because of a
+	  network error.
+	* Display account ID and more information in requests.
+	* Aibility to not store password on an account (it is requested at
+	  connection).
+	* Aibility to edit password with '/MAP edit'.
+	* Use imlib2 to convert received buddyicons to right encoded images.
+	* Send several PRIVMSG or NOTICE when there are \n in message.
+	* Better display of /MAP replies (with stats on accounts).
+	* /ADMIN voiced_buddies: enable or disable voices on status channels.
+	* /ADMIN accept_nobuddies_messages: if disabled, messages from unknown
+	  buddies are not displayed (prevent spam).
+	* /ADMIN server_aliases: enable or disable sending of aliases
+	  server-side.
+	* 'server_aliases' accounts parameter to enable or disable sending of
+	  aliases server-side on a specific account.
+	* Command '/STATS u' to display server uptime.
+	* Command '/STATS o' to display every available minbif administrator
+	  and their email address.
+	* Command '/INFO' to display copyright information.
+	* Irssi script to auto-rename facebook buddies.
+	* Fix: pam default configuration.
+	* Fix: chat buddy's nickname when users have a jabber resource.
+	* Fix: crash with '/STATS c' on a disconnected account.
+	* Fix: compilation on strange compilers.
+	* Fix: typing notices were broken.
+	* Fix: crash when removing an account which have an active request.
+	* Fix: prevent empty nicknames.
+	* Fix: sent buddy icons cut on the bottom.
+
 Minbif 1.0.1 (2010-01-16)
 	* PAM authentication.
 	* /MAP CMD command to run a specific command on an account, which
