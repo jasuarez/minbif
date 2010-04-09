@@ -24,6 +24,11 @@
 #include "core/config.h"
 #include "core/callback.h"
 
+#if defined(__FreeBSD__) || defined(__FreeBSD)
+#include <sys/types.h>
+#include <sys/socket.h>
+#endif
+
 #ifndef PF_SOCKWRAP_H
 #define PF_SOCKWRAP_H
 
