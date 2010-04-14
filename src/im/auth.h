@@ -43,6 +43,7 @@ namespace im
 		static Auth* generate(irc::IRC* irc, const string& username, const string& password);
 
 		Auth(irc::IRC* _irc, const string& _username);
+		virtual ~Auth() {}
 		virtual bool exists() = 0;
 		virtual bool authenticate(const string& password) = 0;
 		virtual im::IM* create(const string& password);
