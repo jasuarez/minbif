@@ -157,7 +157,7 @@ Protocol::Options Protocol::getOptions() const
 	options["accid"] = Option(Option::ACCID, "accid", "Account ID");
 	options["status_channel"] = Option(Option::STATUS_CHANNEL, "status_channel", "Status Channel", "&minbif");
 	options["password"] = Option(Option::PASSWORD, "password", "Account password");
-	options["server_aliases"] = Option(Option::SERVER_ALIASES, "server_aliases", "Store aliases server-side", "false");
+	options["server_aliases"] = Option(Option::SERVER_ALIASES, "server_aliases", "Store aliases server-side", "true");
 	return options;
 }
 
