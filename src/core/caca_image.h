@@ -53,7 +53,7 @@ public:
 
 	/** Constructor from buffer
 	 */
-	CacaImage(void* buffer, size_t size, unsigned width, unsigned height, unsigned bpp);
+	CacaImage(const void* buffer, size_t size, unsigned width, unsigned height, unsigned bpp);
 
 	CacaImage(const CacaImage& caca);
 	CacaImage& operator=(const CacaImage& caca);

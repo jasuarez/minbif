@@ -25,6 +25,7 @@
 #include "purple.h"
 #include "irc/irc.h"
 #include "irc/user.h"
+#include "core/caca_image.h"
 #include "core/util.h"
 #include "core/log.h"
 #include "core/config.h"
@@ -175,6 +176,7 @@ void RequestFieldList::close()
 {
 	if (!subrequests.empty())
 	{
+		delete subrequests.front();
 		subrequests.erase(subrequests.begin());
 		display();
 	}
@@ -534,6 +536,63 @@ public:
 	}
 };
 
+class RequestFieldsImage : public Request
+{
+	PurpleRequestField* field;
+public:
+	RequestFieldsImage(const Account& account, PurpleRequestField* _field)
+		: Request(PURPLE_REQUEST_FIELDS, account, "","",""),
+		  field(_field)
+	{}
+
+	void process(const string& answer) const
+	{
+	}
+
+	void close()
+	{
+		Request::closeRequest(this);
+	}
+
+	void display() const
+	{
+		GError* temp_error = NULL;
+		gchar* temp_filename = NULL;
+		int temp_fd = g_file_open_tmp("minbif_request_XXXXXX.img", &temp_filename, &temp_error);
+
+		if(temp_error)
+		{
+			b_log[W_ERR] << "Unable to create a temporary file: " << temp_error->message;
+			g_error_free(temp_error);
+		}
+		else
+		{
+			write(temp_fd,
+			      purple_request_field_image_get_buffer(field),
+			      purple_request_field_image_get_size(field));
+			::close(temp_fd);
+
+			irc::IRC* irc = Purple::getIM()->getIRC();
+			nick->privmsg(irc->getUser(), string("Image (") + temp_filename + ")");
+
+#ifdef HAVE_CACA
+			CacaImage img(temp_filename);
+			string line, buf = img.getIRCBuffer(60);
+			while((line = stringtok(buf, "\r\n")).empty() == false)
+			{
+				nick->privmsg(irc->getUser(), line);
+			}
+#endif /* HAVE_CACA */
+		}
+
+		Request* request = Request::getFirstRequest();
+		if (request)
+			request->close();
+	}
+
+
+};
+
 class RequestFieldsList : public RequestFieldList
 {
 public:
@@ -661,6 +720,11 @@ void* Request::request_fields(const char *title, const char *primary,
 				                                                         field_label ? field_label : "", defval);
 				mainrequest->addSubrequest(request);
 			}
+			else if(type == PURPLE_REQUEST_FIELD_IMAGE)
+			{
+				RequestFieldsImage* request = new RequestFieldsImage(Account(account), field);
+				mainrequest->addSubrequest(request);
+			}
 			else
 			{
 				RequestFieldsList* request = new RequestFieldsList(Account(account), title ? title : primary ? primary : "",
@@ -689,8 +753,9 @@ void* Request::request_fields(const char *title, const char *primary,
 						break;
 					}
 					default:
-						 delete request;
-						 continue;
+						b_log[W_ERR] << "Skipped a field " << type;
+						delete request;
+						continue;
 				}
 				mainrequest->addSubrequest(request);
 			}

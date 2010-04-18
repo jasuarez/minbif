@@ -62,7 +62,7 @@ CacaImage::CacaImage(string path)
 #endif
 }
 
-CacaImage::CacaImage(void* buf, size_t size, unsigned buf_width, unsigned buf_height, unsigned bpp)
+CacaImage::CacaImage(const void* buf, size_t size, unsigned buf_width, unsigned buf_height, unsigned bpp)
 	: width(0),
 	  height(0),
 	  font_width(6),
@@ -73,7 +73,7 @@ CacaImage::CacaImage(void* buf, size_t size, unsigned buf_width, unsigned buf_he
 	img = new image();
 	img->w = buf_width;
 	img->h = buf_height;
-	img->pixels = g_strndup((char*)buf, size);
+	img->pixels = g_strndup((const char*)buf, size);
 
 	img->create_dither(bpp);
 #endif
