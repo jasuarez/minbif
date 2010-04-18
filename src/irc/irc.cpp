@@ -1807,6 +1807,7 @@ void IRC::m_kill(Message message)
 void IRC::m_svsnick(Message message)
 {
 	Nick* n = getNick(message.getArg(0));
+	Nick* n2 = NULL;
 	if(!n)
 	{
 		user->send(Message(ERR_NOSUCHNICK).setSender(this)
@@ -1832,7 +1833,7 @@ void IRC::m_svsnick(Message message)
 		return;
 	}
 
-	if(getNick(message.getArg(1), true))
+	if((n2 = getNick(message.getArg(1))) && n2 != n)
 	{
 		user->send(Message(ERR_NICKNAMEINUSE).setSender(this)
 				                     .setReceiver(user)
