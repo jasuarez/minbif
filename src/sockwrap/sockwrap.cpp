@@ -30,9 +30,9 @@ SockWrapper::SockWrapper(ConfigSection* _config, int _recv_fd, int _send_fd)
 	: config(_config), recv_fd(_recv_fd), send_fd(_send_fd)
 {
 	if (recv_fd < 0)
-		throw SockError::SockError("Wrong input file descriptor");
+		throw SockError("Wrong input file descriptor");
 	if (send_fd < 0)
-		throw SockError::SockError("Wrong output file descriptor");
+		throw SockError("Wrong output file descriptor");
 
 	sock_ok = true;
 }
@@ -58,11 +58,11 @@ SockWrapper* SockWrapper::Builder(ConfigSection* _config, int _recv_fd, int _sen
 	else if (sec_mode.compare("tls") == 0)
 		return new SockWrapperTLS(_config, _recv_fd, _send_fd);
 	else if (sec_mode.compare("starttls") == 0)
-		throw SockError::SockError("Security mode not yet implemented");
+		throw SockError("Security mode not yet implemented");
 	else if (sec_mode.compare("starttls-mandatory") == 0)
-		throw SockError::SockError("Security mode not yet implemented");
+		throw SockError("Security mode not yet implemented");
 #endif
-	throw SockError::SockError("unknown security mode");
+	throw SockError("unknown security mode");
 }
 
 string SockWrapper::GetClientHostname()

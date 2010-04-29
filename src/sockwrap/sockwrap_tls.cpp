@@ -169,7 +169,7 @@ string SockWrapperTLS::Read()
 			if (r == 0)
 			{
 				tls_ok = false;
-				throw SockError::SockError("Connection reset by peer...");
+				throw SockError("Connection reset by peer...");
 			}
 			else if (gnutls_error_is_fatal(r))
 			{
@@ -210,7 +210,7 @@ void SockWrapperTLS::Write(string s)
 			if (r == 0)
 			{
 				tls_ok = false;
-				throw SockError::SockError("Connection reset by peer...");
+				throw SockError("Connection reset by peer...");
 			}
 			else if (gnutls_error_is_fatal(r))
 			{

@@ -102,7 +102,7 @@ IRC::IRC(ServerPoll* _poll, sock::SockWrapper* _sockw, string _hostname, unsigne
 	{
 		/* An hostname can't contain any space. */
 		b_log[W_ERR] << "'" << _hostname << "' is not a valid server hostname";
-		throw sock::SockError::SockError("Wrong server hostname");
+		throw sock::SockError("Wrong server hostname");
 	}
 	else
 		setName(_hostname);
