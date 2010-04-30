@@ -295,11 +295,13 @@ Request* Request::getFirstRequest()
 	return requests.empty() ? NULL : requests.front();
 }
 
-void Request::addRequest(Request* request)
+Request* Request::addRequest(Request* request)
 {
 	requests.push_back(request);
 	if(requests.size() == 1)
 		request->display();
+
+	return request;
 }
 
 void* Request::notify_message(PurpleNotifyMsgType type, const char *title,
@@ -447,9 +449,7 @@ void* Request::request_input(const char *title, const char *primary,
 {
 	RequestInput* request = new RequestInput(PURPLE_REQUEST_INPUT, Account(account), title ? title : "", primary ? primary : "", secondary ? secondary : "",
 	                                         default_value ? default_value : "", (PurpleRequestInputCb)ok_cb, user_data);
-	addRequest(request);
-
-	return requests.back();
+	return addRequest(request);
 }
 
 void* Request::request_action(const char *title, const char *primary,
@@ -467,9 +467,7 @@ void* Request::request_action(const char *title, const char *primary,
 
 		request->addField(new RequestFieldAction<PurpleRequestActionCb>((int)i, strlower(stringtok(tmp, "_ ")), text, callback, user_data));
 	}
-	addRequest(request);
-
-	return requests.back();
+	return addRequest(request);
 }
 
 void* Request::request_choice(const char *title, const char *primary,
@@ -491,9 +489,7 @@ void* Request::request_choice(const char *title, const char *primary,
 	}
 	request->addField(new RequestFieldAction<PurpleRequestChoiceCb>(0, "cancel", "Cancel", (PurpleRequestChoiceCb)cancel_cb, user_data));
 
-	addRequest(request);
-
-	return requests.back();
+	return addRequest(request);
 }
 
 class RequestFieldsString : public RequestInput
@@ -765,9 +761,7 @@ void* Request::request_fields(const char *title, const char *primary,
 	mainrequest->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(0, "ok", ok, (PurpleRequestFieldsCb)ok_cb, userdata, fields));
 	mainrequest->addField(new RequestFieldTmplt<PurpleRequestFieldsCb,PurpleRequestFields*>(1, "cancel", cancel, (PurpleRequestFieldsCb)cancel_cb, userdata, fields));
 
-	addRequest(mainrequest);
-
-	return requests.back();
+	return addRequest(mainrequest);
 }
 
 void* Request::request_file(const char *title, const char *filename,

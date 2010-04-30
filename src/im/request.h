@@ -65,7 +65,7 @@ namespace im
 
 		static PurpleRequestUiOps uiops;
 		static RequestNick* nick;
-		static void addRequest(Request* request);
+		static Request* addRequest(Request* request);
 		static void closeRequest(const Request* request);
 		static void * request_input(const char *title, const char *primary,
 			const char *secondary, const char *default_value,
