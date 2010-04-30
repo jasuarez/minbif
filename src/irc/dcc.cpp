@@ -94,7 +94,6 @@ void DCCServer::connected(gpointer data, int source, PurpleInputCondition cond)
 	dcc->watcher = 0;
 	close(dcc->fd);
 	dcc->fd = conn;
-	dcc->listen_data = NULL;
 
 	flags = fcntl(conn, F_GETFL);
 	fcntl(conn, F_SETFL, flags | O_NONBLOCK);
@@ -110,6 +109,7 @@ void DCCServer::listen_cb(int sock, void* data)
 	struct in_addr addr;
 
 	dcc->fd = sock;
+	dcc->listen_data = NULL;
 	dcc->port = purple_network_get_port_from_fd(sock);
 	inet_aton(purple_network_get_my_ip(-1), &addr);
 
@@ -162,7 +162,7 @@ void DCCSend::deinit()
 void DCCSend::updated(bool destroy)
 {
 	if(destroy)
-		ft = im::FileTransfert(); /* No-valid object */
+		this->ft = im::FileTransfert(); /* No-valid object */
 
 	if((fd < 0 || listen_data) && (start_time + TIMEOUT < time(NULL)))
 		deinit();
