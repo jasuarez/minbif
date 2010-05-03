@@ -64,12 +64,7 @@ void ConversationChannel::showBanList(Nick* to)
 					  .addArg("End of Channel Ban List"));
 }
 
-void ConversationChannel::processAddBan(Nick* from, string nick, string ident, string host, string accid)
-{
-
-}
-
-void ConversationChannel::processRemoveBan(Nick* from, string nick, string ident, string host, string accid)
+void ConversationChannel::processBan(Nick* from, string pattern, bool add)
 {
 
 }

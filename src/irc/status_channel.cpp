@@ -45,6 +45,16 @@ void StatusChannel::removeAccount(const im::Account& account)
 		accounts.erase(it);
 }
 
+string StatusChannel::getMaskFromName(const string& name, const im::Account& acc) const
+{
+	string ban = "*!" + name;
+	if(ban.find('@') == string::npos)
+		ban += "@" + acc.getID();
+	else
+		ban += ":" + acc.getID();
+	return ban;
+}
+
 void StatusChannel::showBanList(Nick* to)
 {
 	FOREACH(vector<im::Account>, accounts, account)
@@ -52,16 +62,10 @@ void StatusChannel::showBanList(Nick* to)
 		vector<string> deny_list = account->getDenyList();
 		FOREACH(vector<string>, deny_list, str)
 		{
-			string ban = "*!" + *str;
-			if(ban.find('@') == string::npos)
-				ban += "@" + account->getID();
-			else
-				ban += ":" + account->getID();
-
 			to->send(Message(RPL_BANLIST).setSender(irc)
 					             .setReceiver(to)
 						     .addArg(getName())
-						     .addArg(ban)
+						     .addArg(getMaskFromName(*str, *account))
 						     .addArg(account->getServername())
 						     .addArg("0"));
 		}
@@ -72,135 +76,79 @@ void StatusChannel::showBanList(Nick* to)
 					  .addArg("End of Channel Ban List"));
 }
 
-void StatusChannel::processAddBan(Nick* from, string nick, string ident, string host, string accid)
+void StatusChannel::processBan(Nick* from, string pattern, bool add)
 {
-	string deny;
-	im::Account account;
+	bool (im::Account::*func) (const string&) const;
+	string mode;
 
-	if(nick.empty() == false && nick != "*")
+	if (add)
 	{
-		/* User gives a nick, perhaps just 'nick', perhaps 'nick!user@host:acc', but in
-		 * this case we only consider this is a connected nick, and find the banned mask
-		 * and account from his buddy.
-		 */
-		Buddy* banned = dynamic_cast<Buddy*>(irc->getNick(nick));
-		if(!banned || banned->getBuddy().getAccount().getStatusChannel() != getName())
-		{
-			from->send(Message(ERR_NOSUCHNICK).setSender(irc)
-					                  .setReceiver(from)
-							  .addArg(nick)
-							  .addArg("No such nick."));
-			return;
-		}
-		deny = banned->getBuddy().getName();
-		account = banned->getBuddy().getAccount();
+		mode = "+b";
+		func = &im::Account::deny;
 	}
 	else
 	{
-		/* No nick given, trying to get account and banned mask. */
-		if(!ident.empty() && ident[0] == '*')
-			ident = ident.substr(1);
+		mode = "-b";
+		func = &im::Account::allow;
+	}
 
-		vector<im::Account>::iterator it;
-		for(it = accounts.begin(); it != accounts.end() && it->getID() != accid; ++it)
-			;
-
-		if(it == accounts.end())
+	vector<Nick*> results = irc->matchNick(pattern);
+	if(!results.empty())
+	{
+		for(vector<Nick*>::iterator n = results.begin(); n != results.end(); ++n)
 		{
-			/* So bad, accid is not a valid account ID. If there is only
-			 * one account, we can consider this is it.
-			 * In othes case we warn user.
-			 */
-			if(accounts.size() == 1)
-			{
-				account = accounts.front();
-				if(host.empty())
-					host = accid;
-				accid = account.getID();
-			}
-			else
+			Buddy* nick = dynamic_cast<Buddy*>(*n);
+			if (!nick)
+				continue;
+
+			im::Buddy buddy = nick->getBuddy();
+			if ((buddy.getAccount().*func)(buddy.getName()))
+				broadcast(Message(MSG_MODE).setSender(from)
+							   .setReceiver(this)
+							   .addArg(mode)
+							   .addArg(getMaskFromName(nick->getBuddy().getName(), nick->getBuddy().getAccount())));
+		}
+	}
+	else
+	{
+		im::Account acc;
+		if (pattern.find(':') != string::npos)
+		{
+			string accid = pattern;
+			pattern = stringtok(accid, ":");
+
+			vector<im::Account>::iterator it;
+			for(it = accounts.begin(); it != accounts.end() && it->getID() != accid; ++it)
+				;
+
+			if (it == accounts.end())
 			{
 				from->send(Message(ERR_NOSUCHNICK).setSender(irc)
-								  .setReceiver(from)
-								  .addArg(host)
-								  .addArg("Please sufix mask with ':accountID'"));
+						                  .setReceiver(from)
+								  .addArg(accid)
+								  .addArg("No suck account"));
 				return;
 			}
+			acc = *it;
 		}
+		else if(accounts.size() == 1)
+			acc = accounts.front();
 		else
-			account = *it;
-
-		deny = ident;
-		if(host.empty() == false)
-			deny += "@" + host;
-	}
-
-	/* Hm, there is so nothing to ban?? */
-	if(deny.empty())
-		return;
-
-	account.deny(deny);
-
-	string ban = "*!" + deny;
-	if(ban.find('@') == string::npos)
-		ban += "@" + account.getID();
-	else
-		ban += ":" + account.getID();
-
-	broadcast(Message(MSG_MODE).setSender(from)
-			           .setReceiver(this)
-				   .addArg("+b")
-				   .addArg(ban));
-}
-
-void StatusChannel::processRemoveBan(Nick* from, string nick, string ident, string host, string accid)
-{
-	string deny;
-	im::Account account;
-
-	if(nick.empty() == false && nick != "*")
-	{
-		Buddy* banned = dynamic_cast<Buddy*>(irc->getNick(nick));
-		if(!banned || banned->getBuddy().getAccount().getStatusChannel() != getName())
 		{
 			from->send(Message(ERR_NOSUCHNICK).setSender(irc)
-					                  .setReceiver(from)
-							  .addArg(nick)
-							  .addArg("No such nick."));
+							  .setReceiver(from)
+							  .addArg(pattern)
+							  .addArg("Please sufix mask with ':accountID'"));
 			return;
 		}
-		deny = banned->getBuddy().getName();
-		account = banned->getBuddy().getAccount();
+
+		if ((acc.*func)(pattern))
+			broadcast(Message(MSG_MODE).setSender(from)
+						   .setReceiver(this)
+						   .addArg(mode)
+						   .addArg(getMaskFromName(pattern, acc)));
 
 	}
-	else
-	{
-		vector<im::Account>::iterator it;
-		for(it = accounts.begin(); it != accounts.end() && it->getID() != accid; ++it)
-			;
-
-		if(it == accounts.end())
-			return;
-
-		account = *it;
-		deny = ident;
-		if(!host.empty())
-			deny += "@" + host;
-	}
-
-	account.allow(deny);
-
-	string ban = "*!" + deny;
-	if(ban.find('@') == string::npos)
-		ban += "@" + account.getID();
-	else
-		ban += ":" + account.getID();
-
-	broadcast(Message(MSG_MODE).setSender(from)
-			           .setReceiver(this)
-				   .addArg("-b")
-				   .addArg(ban));
-
 }
 
 bool StatusChannel::invite(Nick* from, const string& nickname, const string& message)

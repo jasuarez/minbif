@@ -180,6 +180,7 @@ namespace irc
 		Nick* getNick(string nick, bool case_sensitive = false) const;
 		Nick* getNick(const im::Buddy& buddy) const;
 		Nick* getNick(const im::Conversation& c) const;
+		vector<Nick*> matchNick(string pattern) const;
 		void removeNick(string nick);
 		void renameNick(Nick* n, string newnick);
 

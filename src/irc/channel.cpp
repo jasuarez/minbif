@@ -234,26 +234,7 @@ void Channel::m_mode(Nick* user, Message m)
 				if(arg == args.end())
 					showBanList(user);
 				else
-				{
-					string nick, ident, host, accid;
-					im::Account account;
-
-					accid = *arg++;
-					if(accid.find(':') != string::npos)
-					{
-						host = stringtok(accid, ":");
-						ident = stringtok(host, "@");
-					}
-					else
-						ident = stringtok(accid, "@");
-					if(accid.empty() || ident.find('!') != string::npos)
-						nick = stringtok(ident, "!");
-
-					if(add)
-						processAddBan(user, nick, ident, host, accid);
-					else
-						processRemoveBan(user, nick, ident, host, accid);
-				}
+					processBan(user, *arg++, add);
 				break;
 			default:
 				break;

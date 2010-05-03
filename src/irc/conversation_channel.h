@@ -47,8 +47,7 @@ namespace irc
 
 		virtual void showBanList(Nick* to);
 
-		virtual void processAddBan(Nick* from, string nick, string ident, string host, string accid);
-		virtual void processRemoveBan(Nick* from, string nick, string ident, string host, string accid);
+		virtual void processBan(Nick* from, string pattern, bool add);
 
 		virtual void broadcast(Message m, Nick* butone = NULL);
 		virtual ChanUser* getChanUser(string nick) const;

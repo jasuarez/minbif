@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
+#include <fnmatch.h>
 
 #include "core/log.h"
 #include "core/util.h"
@@ -278,6 +279,33 @@ Nick* IRC::getNick(const im::Conversation& conv) const
 		return NULL;
 	else
 		return it->second;
+}
+
+vector<Nick*> IRC::matchNick(string pattern) const
+{
+	map<string, Nick*>::const_iterator it;
+	vector<Nick*> result;
+
+	if (pattern.find('!') == string::npos)
+	{
+		if (pattern.find('@') != string::npos)
+			pattern = "*!" + pattern;
+		else if (pattern.find(':') != string::npos)
+			pattern = "*!*@" + pattern;
+		else
+			pattern = pattern + "!*@*";
+	}
+	else if (pattern.find('@') == string::npos)
+		pattern += "@*";
+
+	for (it = users.begin(); it != users.end(); ++it)
+	{
+		string longname = it->second->getLongName();
+		if (!fnmatch(pattern.c_str(), longname.c_str(), FNM_NOESCAPE|FNM_CASEFOLD))
+			result.push_back(it->second);
+	}
+
+	return result;
 }
 
 void IRC::removeNick(string nickname)

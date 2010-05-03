@@ -586,18 +586,25 @@ vector<string> Account::getDenyList() const
 	return list;
 }
 
-void Account::deny(const string& who) const
+bool Account::deny(const string& who) const
 {
 	assert(isValid());
 
-	purple_privacy_deny(account, who.c_str(), FALSE, FALSE);
+	if (account->perm_deny != PURPLE_PRIVACY_DENY_USERS)
+	{
+		account->perm_deny = PURPLE_PRIVACY_DENY_USERS;
+		if (purple_account_is_connected(account))
+			serv_set_permit_deny(purple_account_get_connection(account));
+	}
+
+	return purple_privacy_deny_add(account, who.c_str(), FALSE);
 }
 
-void Account::allow(const string& who) const
+bool Account::allow(const string& who) const
 {
 	assert(isValid());
 
-	purple_privacy_allow(account, who.c_str(), FALSE, FALSE);
+	return purple_privacy_deny_remove(account, who.c_str(), FALSE);
 }
 
 void Account::addBuddy(const string& username, const string& group) const

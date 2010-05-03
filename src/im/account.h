@@ -200,10 +200,10 @@ namespace im
 		vector<string> getDenyList() const;
 
 		/** Deny a user. */
-		void deny(const string& who) const;
+		bool deny(const string& who) const;
 
 		/** Allow a user. */
-		void allow(const string& who) const;
+		bool allow(const string& who) const;
 
 		/** Add a buddy on this account
 		 *

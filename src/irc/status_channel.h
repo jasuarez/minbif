@@ -32,6 +32,8 @@ namespace irc
 	{
 		vector<im::Account> accounts;
 
+		string getMaskFromName(const string& name, const im::Account& acc) const;
+
 	public:
 		StatusChannel(IRC* irc, string name);
 		virtual ~StatusChannel() {}
@@ -49,8 +51,7 @@ namespace irc
 
 		virtual void showBanList(Nick* to);
 
-		virtual void processAddBan(Nick* from, string nick, string ident, string host, string accid);
-		virtual void processRemoveBan(Nick* from, string nick, string ident, string host, string accid);
+		virtual void processBan(Nick* from, string pattern, bool add);
 	};
 
 }; /* ns irc */
