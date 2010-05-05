@@ -284,6 +284,8 @@ PurpleBlistUiOps Buddy::blist_ui_ops =
 void Buddy::init()
 {
 	purple_blist_set_ui_ops(&blist_ui_ops);
+	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-on", getHandler(), PURPLE_CALLBACK(buddy_signonoff_cb), NULL);
+	purple_signal_connect(purple_blist_get_handle(), "buddy-signed-off", getHandler(), PURPLE_CALLBACK(buddy_signonoff_cb), NULL);
 }
 
 void Buddy::uninit()
@@ -296,6 +298,11 @@ void* Buddy::getHandler()
 	static int handler;
 
 	return &handler;
+}
+
+void Buddy::buddy_signonoff_cb(PurpleBuddy* buddy)
+{
+	update_node(NULL, (PurpleBlistNode*)buddy);
 }
 
 void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
@@ -331,6 +338,11 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 
 void Buddy::removed_node(PurpleBuddyList *list, PurpleBlistNode *node)
 {
+	purple_request_close_with_handle(node);
+
+	if (node->parent)
+		update_node(list, node->parent);
+
 	if (PURPLE_BLIST_NODE_IS_BUDDY(node))
 	{
 		Buddy buddy = Buddy((PurpleBuddy*)node);

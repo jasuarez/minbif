@@ -46,6 +46,7 @@ namespace im
 
 		static void* getHandler();
 		static PurpleBlistUiOps blist_ui_ops;
+		static void buddy_signonoff_cb(PurpleBuddy* buddy);
 		static void update_node(PurpleBuddyList *list, PurpleBlistNode *node);
 		static void removed_node(PurpleBuddyList *list, PurpleBlistNode *node);
 
