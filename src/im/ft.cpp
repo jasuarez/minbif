@@ -23,6 +23,7 @@
 #include "im/ft.h"
 #include "im/buddy.h"
 #include "irc/irc.h"
+#include "irc/buddy.h"
 #include "irc/dcc.h"
 #include "core/log.h"
 #include "core/config.h"
@@ -118,7 +119,7 @@ void FileTransfert::destroy(PurpleXfer* xfer)
 
 void FileTransfert::add_xfer(PurpleXfer* xfer)
 {
-	irc::Nick* n = NULL;
+	irc::ConvNick* n = NULL;
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	FileTransfert ft(xfer);
 	Buddy buddy = ft.getBuddy();

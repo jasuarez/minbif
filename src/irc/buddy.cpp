@@ -58,8 +58,7 @@ Buddy::Buddy(Server* server, im::Buddy _buddy)
 
 Buddy::~Buddy()
 {
-	if(conv.isValid() && conv.getNick() == this)
-		conv.setNick(NULL);
+	setConversation(NULL); /* eventually purge the pointer to me in conv */
 	if(im_buddy.isValid())
 		im_buddy.setNick(NULL);
 }
@@ -80,15 +79,27 @@ void Buddy::send(Message m)
 			if(process_dcc_get(text))
 				return;
 
-			if(!conv.isValid())
-			{
-				conv = im::Conversation(im_buddy.getAccount(), im_buddy);
-				conv.present();
-				conv.setNick(this);
-			}
+			check_conv();
 			conv.sendMessage(text);
 		}
 	}
+}
+
+void Buddy::check_conv(void)
+{
+	if(!conv.isValid())
+	{
+		conv = im::Conversation(im_buddy.getAccount(), im_buddy);
+		conv.present();
+		conv.setNick(this);
+	}
+}
+
+void Buddy::setConversation(const im::Conversation& c)
+{
+	if (conv.isValid() && conv.getNick() == this)
+		conv.setNick(NULL);
+	conv = c;
 }
 
 bool Buddy::process_dcc_get(const string& text)
@@ -180,6 +191,7 @@ bool Buddy::retrieveInfo() const
 
 int Buddy::sendCommand(const string& cmd)
 {
+	check_conv();
 	return conv.sendCommand(cmd);
 }
 

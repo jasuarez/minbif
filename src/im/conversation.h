@@ -24,7 +24,7 @@
 
 namespace irc
 {
-	class Nick;
+	class ConvNick;
 	class ConversationChannel;
 }
 
@@ -109,10 +109,10 @@ namespace im
 		 *                       irc::UnknownBuddy object, purge it
 		 *                       from IRC.
 		 */
-		void setNick(irc::Nick* n, bool purge_unknown = true);
+		void setNick(irc::ConvNick* n, bool purge_unknown = true);
 
 		/** Get the irc::Nick* object associated to this conversation. */
-		irc::Nick* getNick() const;
+		irc::ConvNick* getNick() const;
 
 		void setChannel(irc::ConversationChannel* c) const;
 		irc::ConversationChannel* getChannel() const;

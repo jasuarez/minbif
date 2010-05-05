@@ -49,6 +49,8 @@ namespace irc
 
 	class User;
 	class Nick;
+	class ConvNick;
+	class Buddy;
 	class Channel;
 	class DCC;
 
@@ -178,8 +180,8 @@ namespace irc
 
 		void addNick(Nick* nick);
 		Nick* getNick(string nick, bool case_sensitive = false) const;
-		Nick* getNick(const im::Buddy& buddy) const;
-		Nick* getNick(const im::Conversation& c) const;
+		Buddy* getNick(const im::Buddy& buddy) const;
+		ConvNick* getNick(const im::Conversation& c) const;
 		vector<Nick*> matchNick(string pattern) const;
 		void removeNick(string nick);
 		void renameNick(Nick* n, string newnick);

@@ -23,6 +23,7 @@
 #include "irc/irc.h"
 #include "irc/dcc.h"
 #include "irc/user.h"
+#include "irc/buddy.h"
 #include "core/log.h"
 #include "core/caca_image.h"
 #include "core/util.h"
@@ -171,7 +172,7 @@ void Media::checkBuffer()
 			if(!dcc)
 			{
 				irc::IRC* irc = Purple::getIM()->getIRC();
-				irc::Nick* sender = irc->getNick(buddy);
+				irc::Buddy* sender = irc->getNick(buddy);
 				dcc = new irc::DCCChat(sender, irc->getUser());
 			}
 			string buf = it->getIRCBuffer(0, 20, "ansi"), line;

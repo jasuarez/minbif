@@ -34,6 +34,7 @@ namespace irc
 
 		bool process_dcc_get(const string& text);
 		bool received_file(void* data);
+		void check_conv(void);
 
 	public:
 
@@ -59,7 +60,7 @@ namespace irc
 
 		im::Buddy getBuddy() const { return im_buddy; }
 		im::Conversation getConversation() const { return conv; }
-		void setConversation(const im::Conversation& c) { conv = c; }
+		void setConversation(const im::Conversation& c);
 
 		virtual int sendCommand(const string& cmd);
 

@@ -199,12 +199,12 @@ PurpleConversationType Conversation::getType() const
 	return purple_conversation_get_type(conv);
 }
 
-void Conversation::setNick(irc::Nick* n, bool purge_unknown)
+void Conversation::setNick(irc::ConvNick* n, bool purge_unknown)
 {
 	assert(isValid());
 	assert(getType() == PURPLE_CONV_TYPE_IM);
 
-	irc::Nick* last = getNick();
+	irc::ConvNick* last = getNick();
 	conv->ui_data = n;
 
 	if(last && last != n)
@@ -214,14 +214,16 @@ void Conversation::setNick(irc::Nick* n, bool purge_unknown)
 			irc::IRC* irc = Purple::getIM()->getIRC();
 			irc->removeNick(last->getNickname());
 		}
+		else
+			last->setConversation(Conversation());
 	}
 }
 
-irc::Nick* Conversation::getNick() const
+irc::ConvNick* Conversation::getNick() const
 {
 	assert(isValid());
 	assert(getType() == PURPLE_CONV_TYPE_IM);
-	return static_cast<irc::Nick*>(conv->ui_data);
+	return static_cast<irc::ConvNick*>(conv->ui_data);
 }
 
 void Conversation::setChannel(irc::ConversationChannel* c) const
@@ -323,6 +325,7 @@ void Conversation::destroyChannel() const
 
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	irc->removeChannel(getChannel()->getName());
+	setChannel(NULL);
 }
 
 PurpleConvChat* Conversation::getPurpleChat() const
@@ -421,18 +424,18 @@ void Conversation::recvMessage(string from, string text, bool action)
 	{
 		case PURPLE_CONV_TYPE_IM:
 		{
-			irc::Nick* n = getNick();
+			irc::ConvNick* n = getNick();
 			if(!n)
 			{
 				/* There isn't any Nick associated to this conversation. Try to
 				 * find a Nick with this conversation object. */
-				n = irc->getNick(*this);
+				n = dynamic_cast<irc::ConvNick*>(irc->getNick(*this));
 				if(!n)
 				{
 					/* If there isn't any conversation, try to find a buddy. */
-					n = irc->getNick(from);
+					n = dynamic_cast<irc::Buddy*>(irc->getNick(from));
 
-					if(!n || !dynamic_cast<irc::Buddy*>(n))
+					if(!n)
 					{
 						if (!Purple::getIM()->hasAcceptNoBuddiesMessages())
 							return;
@@ -445,6 +448,7 @@ void Conversation::recvMessage(string from, string text, bool action)
 					}
 				}
 				setNick(n);
+				n->setConversation(*this);
 			}
 
 			string line;

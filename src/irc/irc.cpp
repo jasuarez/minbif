@@ -251,7 +251,7 @@ Nick* IRC::getNick(string nickname, bool case_sensitive) const
 	return it->second;
 }
 
-Nick* IRC::getNick(const im::Buddy& buddy) const
+Buddy* IRC::getNick(const im::Buddy& buddy) const
 {
 	map<string, Nick*>::const_iterator it;
 	Buddy* nb;
@@ -263,10 +263,10 @@ Nick* IRC::getNick(const im::Buddy& buddy) const
 	if(it == users.end())
 		return NULL;
 	else
-		return it->second;
+		return nb;
 }
 
-Nick* IRC::getNick(const im::Conversation& conv) const
+ConvNick* IRC::getNick(const im::Conversation& conv) const
 {
 	map<string, Nick*>::const_iterator it;
 	ConvNick* n;
@@ -278,7 +278,7 @@ Nick* IRC::getNick(const im::Conversation& conv) const
 	if(it == users.end())
 		return NULL;
 	else
-		return it->second;
+		return n;
 }
 
 vector<Nick*> IRC::matchNick(string pattern) const
