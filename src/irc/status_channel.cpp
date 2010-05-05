@@ -112,35 +112,34 @@ void StatusChannel::processBan(Nick* from, string pattern, bool add)
 	else
 	{
 		im::Account acc;
-		if (pattern.find(':') != string::npos)
+		string accid = pattern;
+		pattern = stringtok(accid, ":");
+		if (accid.empty())
 		{
-			string accid = pattern;
-			pattern = stringtok(accid, ":");
-
-			vector<im::Account>::iterator it;
-			for(it = accounts.begin(); it != accounts.end() && it->getID() != accid; ++it)
-				;
-
-			if (it == accounts.end())
-			{
-				from->send(Message(ERR_NOSUCHNICK).setSender(irc)
-						                  .setReceiver(from)
-								  .addArg(accid)
-								  .addArg("No suck account"));
-				return;
-			}
-			acc = *it;
+			accid = pattern;
+			pattern = stringtok(accid, "@");
 		}
+
+		vector<im::Account>::iterator it;
+		for(it = accounts.begin(); it != accounts.end() && it->getID() != accid; ++it)
+			;
+
+		if (it != accounts.end())
+			acc = *it;
 		else if(accounts.size() == 1)
 			acc = accounts.front();
 		else
 		{
 			from->send(Message(ERR_NOSUCHNICK).setSender(irc)
 							  .setReceiver(from)
-							  .addArg(pattern)
-							  .addArg("Please sufix mask with ':accountID'"));
+							  .addArg(accid.empty() ? pattern : accid)
+							  .addArg(accid.empty() ? "Please sufix mask with ':accountID'" : "No such account"));
 			return;
 		}
+
+		if (pattern.find('!') != string::npos)
+			stringtok(pattern, "!");
+		b_log[W_ERR] << "unban " << pattern;
 
 		if ((acc.*func)(pattern))
 			broadcast(Message(MSG_MODE).setSender(from)
