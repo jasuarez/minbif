@@ -106,12 +106,13 @@ void FileTransfert::destroy(PurpleXfer* xfer)
 {
 	FileTransfert ft(xfer);
 	Purple::getIM()->getIRC()->updateDCC(ft, true);
+
 	if(ft.isCompleted())
 	{
-		if(ft.isReceiving())
-			b_log[W_INFO|W_SNO] << "File saved as: " << ft.getLocalFileName();
-		else
+		if(ft.isSending())
 			b_log[W_INFO|W_SNO] << "File " << ft.getFileName() << " sent to " << ft.getRemoteUser();
+		else if(conf.GetSection("file_transfers")->GetItem("dcc")->Boolean() == false)
+			b_log[W_INFO|W_SNO] << "File saved as: " << ft.getLocalFileName();
 	}
 }
 
@@ -154,7 +155,8 @@ void FileTransfert::add_xfer(PurpleXfer* xfer)
 void FileTransfert::update_progress(PurpleXfer* xfer, double percent)
 {
 	/* Note: 0 <= percent <= 1 */
-	Purple::getIM()->getIRC()->updateDCC(FileTransfert(xfer));
+	if(conf.GetSection("file_transfers")->GetItem("dcc")->Boolean())
+		Purple::getIM()->getIRC()->updateDCC(FileTransfert(xfer));
 }
 
 void FileTransfert::cancel_local(PurpleXfer* xfer)
