@@ -139,7 +139,6 @@ void StatusChannel::processBan(Nick* from, string pattern, bool add)
 
 		if (pattern.find('!') != string::npos)
 			stringtok(pattern, "!");
-		b_log[W_ERR] << "unban " << pattern;
 
 		if ((acc.*func)(pattern))
 			broadcast(Message(MSG_MODE).setSender(from)
