@@ -141,6 +141,11 @@ void Purple::init(IM* im)
 	if (!purple_core_init(MINBIF_VERSION_NAME))
 		throw PurpleError("Initialization of the Purple core failed.");
 
+	/* XXX the currently implementation of this function works only with
+	 * dbus, but minbif does not use it. */
+	if (!purple_core_ensure_single_instance())
+		throw PurpleError("You are already connected on this account with minbif.");
+
 	purple_set_blist(purple_blist_new());
 	purple_blist_load();
 }

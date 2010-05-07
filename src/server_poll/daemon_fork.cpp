@@ -175,6 +175,7 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 	if(client_pid < 0)
 	{
 		b_log[W_ERR] << "Unable to fork while receiving a new connection: " << strerror(errno);
+		close(new_socket);
 		return true;
 	}
 	else if(client_pid > 0)
@@ -242,8 +243,13 @@ DaemonForkServerPoll::ipc_cmds_t DaemonForkServerPoll::ipc_cmds[] = {
 	{ MSG_REHASH,     &DaemonForkServerPoll::m_rehash,   0 },
 	{ MSG_DIE,        &DaemonForkServerPoll::m_die,      2 },
 	{ MSG_OPER,       &DaemonForkServerPoll::m_oper,     1 },
+	{ MSG_USER,       &DaemonForkServerPoll::m_user,     1 },
 };
 
+/** OPER nick
+ *
+ * A user on a minbif instance is now an IRC Operator
+ */
 void DaemonForkServerPoll::m_oper(child_t* child, irc::Message m)
 {
 	if(child)
@@ -251,6 +257,10 @@ void DaemonForkServerPoll::m_oper(child_t* child, irc::Message m)
 	b_log[W_SNO|W_INFO] << m.getArg(0) << " is now an IRC Operator!";
 }
 
+/** WALLOPS nick message
+ *
+ * Send a message to every minbif instances.
+ */
 void DaemonForkServerPoll::m_wallops(child_t* child, irc::Message m)
 {
 	if(child)
@@ -260,11 +270,19 @@ void DaemonForkServerPoll::m_wallops(child_t* child, irc::Message m)
 				                         .addArg(m.getArg(1)));
 }
 
+/** REHASH
+ *
+ * Reload configuration.
+ */
 void DaemonForkServerPoll::m_rehash(child_t* child, irc::Message m)
 {
 	rehash();
 }
 
+/** DIE
+ *
+ * Close server.
+ */
 void DaemonForkServerPoll::m_die(child_t* child, irc::Message m)
 {
 	if(child)
@@ -275,6 +293,23 @@ void DaemonForkServerPoll::m_die(child_t* child, irc::Message m)
 		irc->quit("Shutdown requested by " + m.getArg(0));
 	else
 		getApplication()->quit();
+}
+
+/** USER nick
+ *
+ * New minbif instance tells his username.
+ */
+void DaemonForkServerPoll::m_user(child_t* child, irc::Message m)
+{
+	if (child)
+	{
+		child->username = m.getArg(0);
+		/* Disconnect any other minbif instance logged on the same user. */
+		for(vector<child_t*>::iterator it = childs.begin(); it != childs.end(); ++it)
+			if (*it != child && !strcasecmp((*it)->username.c_str(), child->username.c_str()))
+				ipc_master_send(*it, irc::Message(MSG_DIE).addArg(child->username)
+						                          .addArg("You are logged from another location."));
+	}
 }
 
 bool DaemonForkServerPoll::ipc_read(void* data)

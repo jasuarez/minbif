@@ -455,6 +455,7 @@ void IRC::sendWelcome()
 		im = im_auth->getIM();
 
 		user->setFlag(Nick::REGISTERED);
+		poll->ipc_send(Message(MSG_USER).addArg(getUser()->getNickname()));
 
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif IRC gateway, " + user->getNickname() + "!"));
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Your host is " + getServerName() + ", running " MINBIF_VERSION));

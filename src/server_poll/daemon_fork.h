@@ -39,6 +39,7 @@ class DaemonForkServerPoll : public ServerPoll
 		int fd;
 		int read_id;
 		_CallBack* read_cb;
+		string username;
 	};
 
 	/** IPC commands array. */
@@ -63,6 +64,7 @@ class DaemonForkServerPoll : public ServerPoll
 	void m_rehash(child_t* child, irc::Message m);      /**< IPC handler for the REHASH command. */
 	void m_die(child_t* child, irc::Message m);         /**< IPC handler for the DIE command. */
 	void m_oper(child_t* child, irc::Message m);        /**< IPC handler for the OPER command. */
+	void m_user(child_t* child, irc::Message m);        /**< IPC handler for the USER command. */
 
 	irc::IRC* irc;
 	int maxcon;
