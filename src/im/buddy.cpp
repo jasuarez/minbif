@@ -243,7 +243,7 @@ CacaImage Buddy::getIcon() const
 	if(!bicon)
 		return CacaImage();
 
-	return CacaImage(purple_buddy_icon_get_full_path(bicon));
+	return CacaImage(p2s(purple_buddy_icon_get_full_path(bicon)));
 }
 
 string Buddy::getIconPath() const
@@ -253,7 +253,7 @@ string Buddy::getIconPath() const
 	if(!bicon)
 		return "";
 
-	return purple_buddy_icon_get_full_path(bicon);
+	return p2s(purple_buddy_icon_get_full_path(bicon));
 }
 
 PurpleGroup* Buddy::getPurpleGroup() const
