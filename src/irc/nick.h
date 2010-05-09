@@ -179,6 +179,8 @@ namespace irc
 
 		virtual bool retrieveInfo() const { return false; }
 
+		virtual string getStatusMessage() const { return ""; }
+
 		void setFlag(unsigned flag) { flags |= flag; }
 		void delFlag(unsigned flag) { flags &= ~flag; }
 		bool hasFlag(unsigned flag) const { return flags & flag; }

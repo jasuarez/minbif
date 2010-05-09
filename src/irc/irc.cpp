@@ -757,11 +757,20 @@ void IRC::m_whois(Message message)
 					    .setReceiver(user)
 					    .addArg(n->getNickname())
 					    .addArg(n->getAwayMessage()));
+
+	string status = n->getStatusMessage();
+	if (!status.empty())
+		user->send(Message(RPL_WHOISACTUALLY).setSender(this)
+						     .setReceiver(user)
+						     .addArg(n->getNickname())
+						     .addArg(status));
+
 	if(n->hasFlag(Nick::OPER))
 		user->send(Message(RPL_WHOISOPERATOR).setSender(this)
 				                     .setReceiver(user)
 						     .addArg(n->getNickname())
 						     .addArg("is an IRC Operator"));
+
 
 	CacaImage icon = n->getIcon();
 	try

@@ -195,7 +195,10 @@ string Buddy::getStatus() const
 	if(!status)
 		return "";
 
-	string s = purple_status_get_name(status);
+	string s;
+
+	if (!isAvailable())
+		s = purple_status_get_name(status);
 
 	PurplePlugin* prpl = purple_find_prpl(purple_account_get_protocol_id(buddy->account));
 	PurplePluginProtocolInfo* prpl_info = NULL;
@@ -217,7 +220,9 @@ string Buddy::getStatus() const
 				tmp = utf8;
 			}
 			char* tmp2 = purple_markup_strip_html(tmp);
-			s += string(": ") + tmp2;
+			if (!s.empty())
+				s += ": ";
+			s += tmp2;
 			g_free(tmp2);
 			g_free(tmp);
 		}

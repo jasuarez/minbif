@@ -181,6 +181,14 @@ string Buddy::getRealName() const
 	return im_buddy.getRealName() + " [Group: " + im_buddy.getGroupName() + "]";
 }
 
+string Buddy::getStatusMessage() const
+{
+	if (isAway())
+		return "";
+
+	return im_buddy.getStatus();
+}
+
 string Buddy::getAwayMessage() const
 {
 	if(im_buddy.isOnline() == false)

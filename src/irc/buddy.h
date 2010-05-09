@@ -53,6 +53,9 @@ namespace irc
 		/** Buddy sends a message to someone. */
 		virtual void sendMessage(Nick* to, const string& text, bool action = false);
 
+		/** Get status. */
+		virtual string getStatusMessage() const;
+
 		/** Get buddy's away message. */
 		virtual string getAwayMessage() const;
 
