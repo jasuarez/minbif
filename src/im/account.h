@@ -26,6 +26,11 @@
 
 #include "im/protocol.h"
 
+namespace irc
+{
+	class StatusChannel;
+}
+
 namespace im
 {
 	using std::string;
@@ -129,7 +134,7 @@ namespace im
 		void setBuddyIcon(string filename);
 
 		/** Set status */
-		void setStatusMessage(const string& message);
+		void setStatus(PurpleStatusPrimitive pri, string message);
 
 		/** Get status message */
 		string getStatusMessage() const;
@@ -146,10 +151,13 @@ namespace im
 		string getServername() const;
 
 		/** Get status channel name */
-		string getStatusChannel() const;
+		string getStatusChannelName() const;
 
 		/** Set status channel name */
-		void setStatusChannel(const string& c);
+		void setStatusChannelName(const string& c);
+
+		/** Get the Status Channel instance. */
+		irc::StatusChannel* getStatusChannel() const;
 
 		/** Enqueue a channel name to join at connection. */
 		void enqueueChannelJoin(const string& c);
@@ -191,10 +199,10 @@ namespace im
 		void disconnect() const;
 
 		/** Create the status channel on the IRC network */
-		void createStatusChannel() const;
+		void createStatusChannel();
 
 		/** Leave the status channel */
-		void leaveStatusChannel() const;
+		void leaveStatusChannel();
 
 		/** Get list of denied people */
 		vector<string> getDenyList() const;

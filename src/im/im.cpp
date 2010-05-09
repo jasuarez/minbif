@@ -198,7 +198,7 @@ Account IM::getAccountFromChannel(string name) const
 {
 	map<string, Account> alist = getAccountsList();
 	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)
-		if(it->second.getStatusChannel() == name)
+		if(it->second.getStatusChannelName() == name)
 			return it->second;
 	return Account();
 }
@@ -233,20 +233,22 @@ bool IM::setStatus(string away)
 	if(away.empty() == false)
 	{
 		string s = strlower(away);
-		unsigned i;
-		string status_list;
+		int i;
 		/* Looking for an existant status equivalent to the away message. */
-		for(i = 0; i < (unsigned)PURPLE_STATUS_NUM_PRIMITIVES &&
-		           strlower(purple_primitive_get_name_from_type((PurpleStatusPrimitive)i)) != s &&
-			   purple_primitive_get_id_from_type((PurpleStatusPrimitive)i) != s;
+		for(i = 0;
+		    (
+		      i < PURPLE_STATUS_NUM_PRIMITIVES &&
+		      strlower(purple_primitive_get_name_from_type((PurpleStatusPrimitive)i)) != s &&
+		      purple_primitive_get_id_from_type((PurpleStatusPrimitive)i) != s
+		    );
 		    ++i)
-			status_list += string(" ") + purple_primitive_get_id_from_type((PurpleStatusPrimitive)i);
+			;
 
 		if(i >= PURPLE_STATUS_NUM_PRIMITIVES)
 		{
-			/* If the status does not exist, set the EXTENDED_AWAY status and set the message
+			/* If the status does not exist, set the AWAY status and set the message
 			 * given in the \b away string as the status message. */
-			prim = PURPLE_STATUS_EXTENDED_AWAY;
+			prim = PURPLE_STATUS_AWAY;
 		}
 		else
 		{
@@ -255,12 +257,9 @@ bool IM::setStatus(string away)
 		}
 	}
 
-	PurpleSavedStatus* status = purple_savedstatus_find_transient_by_type_and_message(prim, purple_primitive_get_name_from_type(prim));
-	if(!status)
-		status = purple_savedstatus_new(NULL, prim);
-	if(away.empty() == false)
-		purple_savedstatus_set_message(status, away.c_str());
-	purple_savedstatus_activate(status);
+	map<string, Account> alist = getAccountsList();
+	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)
+		it->second.setStatus(prim, away);
 
 	return true;
 }

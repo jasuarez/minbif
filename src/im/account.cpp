@@ -157,7 +157,7 @@ Protocol::Options Account::getOptions() const
 				option.setValue(getID());
 				break;
 			case Protocol::Option::STATUS_CHANNEL:
-				option.setValue(getStatusChannel());
+				option.setValue(getStatusChannelName());
 				break;
 			case Protocol::Option::PASSWORD:
 				option.setValue(getPassword());
@@ -215,12 +215,12 @@ void Account::setOptions(const Protocol::Options& options)
 				break;
 			}
 			case Protocol::Option::STATUS_CHANNEL:
-				if(getStatusChannel() == option.getValue())
+				if(getStatusChannelName() == option.getValue())
 					break;
 
 				if(!irc::Channel::isChanName(option.getValue()) || !irc::Channel::isStatusChannel(option.getValue()))
 					throw Protocol::OptionError("'" + option.getValue() + "' is not a valid channel name");
-				setStatusChannel(option.getValue());
+				setStatusChannelName(option.getValue());
 				break;
 			case Protocol::Option::PASSWORD:
 				if (option.getValue() == getPassword())
@@ -326,12 +326,46 @@ void Account::setBuddyIcon(string filename)
 
 }
 
-void Account::setStatusMessage(const string& message)
+void Account::setStatus(PurpleStatusPrimitive prim, string message)
+{
+	const char *id;
+	PurpleStatus* status;
+
+	if (prim == PURPLE_STATUS_UNSET)
+	{
+		status = purple_account_get_active_status(account);
+		id = purple_status_get_id(status);
+	}
+	else
+	{
+		id = purple_primitive_get_id_from_type(prim);
+		status = purple_account_get_status(account, id);
+	}
+
+	if (!status)
+		return;
+
+	if (message.empty())
+	{
+		irc::StatusChannel* chan = getStatusChannel();
+		if (chan)
+			message = chan->getTopic();
+	}
+	if (message.empty())
+		message = p2s(purple_status_get_attr_string(status, "message"));
+
+	purple_account_set_status(account, id, TRUE, "message", message.c_str(), (char*)NULL);
+}
+
+string Account::getStatusMessage() const
 {
 	assert(isValid());
 
-	purple_account_set_status(account, purple_primitive_get_id_from_type(PURPLE_STATUS_AVAILABLE),
-			                   TRUE, "message", message.c_str(), (char*)NULL);
+	PurpleStatus* s = purple_account_get_active_status(account);
+	if (!s)
+		return "";
+
+	return p2s(purple_status_get_attr_string(s, "message"));
 }
 
 void Account::setID(string id) const
@@ -364,14 +398,14 @@ void Account::setServerAliases(bool b)
 	purple_account_set_ui_bool(account, MINBIF_VERSION_NAME, "server_aliases", b);
 }
 
-string Account::getStatusChannel() const
+string Account::getStatusChannelName() const
 {
 	assert(isValid());
 	string n = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "channel", "");
 	return n;
 }
 
-void Account::setStatusChannel(const string& c)
+void Account::setStatusChannelName(const string& c)
 {
 	assert(isValid());
 
@@ -522,13 +556,32 @@ void Account::removeReconnection(bool verbose) const
 	purple_account_set_ui_int(account, MINBIF_VERSION_NAME, "id-reconnect", -1);
 }
 
-void Account::createStatusChannel() const
+irc::StatusChannel* Account::getStatusChannel() const
+{
+	irc::IRC* irc = Purple::getIM()->getIRC();
+	irc::StatusChannel* chan;
+	string channame = getStatusChannelName();
+
+	if(!irc::Channel::isStatusChannel(channame))
+		return NULL;
+
+	chan = dynamic_cast<irc::StatusChannel*>(irc->getChannel(channame));
+	if(!chan)
+	{
+		b_log[W_ERR] << "Status channel " << channame << " is not found.";
+		return NULL;
+	}
+
+	return chan;
+}
+
+void Account::createStatusChannel()
 {
 	assert(isValid());
 
 	irc::IRC* irc = Purple::getIM()->getIRC();
 	irc::StatusChannel* chan;
-	string channame = getStatusChannel();
+	string channame = getStatusChannelName();
 
 	if(!irc::Channel::isStatusChannel(channame))
 		return;
@@ -540,6 +593,13 @@ void Account::createStatusChannel() const
 		irc->addChannel(chan);
 		irc->getUser()->join(chan, irc::ChanUser::OP);
 	}
+
+	string status = getStatusMessage();
+	if (!status.empty())
+		chan->setTopic(NULL, status);
+	else if (!chan->getTopic().empty())
+		setStatus(PURPLE_STATUS_UNSET, chan->getTopic());
+
 	chan->addAccount(*this);
 
 	vector<Buddy> buddies = getBuddies();
@@ -547,23 +607,15 @@ void Account::createStatusChannel() const
 		b->updated();
 }
 
-void Account::leaveStatusChannel() const
+void Account::leaveStatusChannel()
 {
 	assert(isValid());
 
 	irc::IRC* irc = Purple::getIM()->getIRC();
-	irc::StatusChannel* chan;
-	string channame = getStatusChannel();
-
-	if(!irc::Channel::isStatusChannel(channame))
+	irc::StatusChannel* chan = getStatusChannel();
+	if (!chan)
 		return;
 
-	chan = dynamic_cast<irc::StatusChannel*>(irc->getChannel(channame));
-	if(!chan)
-	{
-		b_log[W_ERR] << "Status channel " << channame << " is not found.";
-		return;
-	}
 	chan->removeAccount(*this);
 
 	vector<Buddy> buddies = getBuddies();
@@ -572,7 +624,7 @@ void Account::leaveStatusChannel() const
 			b->getNick()->part(chan, "Leaving status channel");
 
 	if(chan->countAccounts() == 0)
-		irc->removeChannel(channame);
+		irc->removeChannel(chan->getName());
 }
 
 vector<string> Account::getDenyList() const
@@ -1108,7 +1160,6 @@ void Account::connected(PurpleConnection* gc)
 	b_log[W_INFO|W_SNO] << "Connection to " << account.getServername() << " established!";
 	irc->addServer(new irc::RemoteServer(irc, account));
 	account.flushChannelJoins();
-
 }
 
 void Account::account_signed_on_cb(PurpleConnection *gc, gpointer event)

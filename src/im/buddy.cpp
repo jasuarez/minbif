@@ -27,6 +27,7 @@
 #include "irc/buddy.h"
 #include "irc/irc.h"
 #include "irc/channel.h"
+#include "irc/status_channel.h"
 
 namespace im {
 
@@ -131,12 +132,7 @@ void Buddy::sendFile(string filename)
 
 void Buddy::updated() const
 {
-	string channame = getAccount().getStatusChannel();
-	if(channame.empty())
-		return;
-
-	irc::Channel* chan = Purple::getIM()->getIRC()->getChannel(channame);
-
+	irc::StatusChannel* chan = getAccount().getStatusChannel();
 	if(!chan)
 		return;
 

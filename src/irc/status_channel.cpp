@@ -201,7 +201,7 @@ bool StatusChannel::kick(ChanUser* from, ChanUser* victim, const string& message
 bool StatusChannel::setTopic(Entity* from, const string& message)
 {
 	for(vector<im::Account>::iterator acc = accounts.begin(); acc != accounts.end(); ++acc)
-		acc->setStatusMessage(message);
+		acc->setStatus(PURPLE_STATUS_UNSET, message);
 	return Channel::setTopic(from, message);
 }
 
