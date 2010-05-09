@@ -266,6 +266,8 @@ void Channel::delMode(const Entity* sender, int modes, ChanUser* chanuser)
 
 bool Channel::setTopic(Entity* chanuser, const string& topic)
 {
+	if (this->topic == topic)
+		return true;
 
 	this->topic = topic;
 	broadcast(Message(MSG_TOPIC).setSender(chanuser ? chanuser : irc)
