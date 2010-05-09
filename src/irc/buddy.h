@@ -31,6 +31,7 @@ namespace irc
 	{
 		im::Buddy im_buddy;
 		im::Conversation conv;
+		bool public_msgs;
 
 		bool process_dcc_get(const string& text);
 		bool received_file(void* data);
@@ -48,6 +49,9 @@ namespace irc
 
 		/** Implementation of the message routing to this buddy */
 		virtual void send(Message m);
+
+		/** Buddy sends a message to someone. */
+		virtual void sendMessage(Nick* to, const string& text, bool action = false);
 
 		/** Get buddy's away message. */
 		virtual string getAwayMessage() const;

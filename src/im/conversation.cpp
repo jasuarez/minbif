@@ -453,13 +453,7 @@ void Conversation::recvMessage(string from, string text, bool action)
 
 			string line;
 			while((line = stringtok(text, "\n\r")).empty() == false)
-			{
-				if(action)
-					line = "\001ACTION " + line + "\001";
-				irc->getUser()->send(irc::Message(MSG_PRIVMSG).setSender(n)
-									      .setReceiver(irc->getUser())
-									      .addArg(line));
-			}
+				n->sendMessage(irc->getUser(), line, action);
 			break;
 		}
 		case PURPLE_CONV_TYPE_CHAT:

@@ -259,4 +259,14 @@ ConvNick::ConvNick(Server* server, string nickname, string identname, string hos
 
 }
 
+void ConvNick::sendMessage(Nick* to, const string& t, bool action)
+{
+	string line = t;
+	if(action)
+		line = "\001ACTION " + line + "\001";
+	to->send(irc::Message(MSG_PRIVMSG).setSender(this)
+					  .setReceiver(to)
+					  .addArg(line));
+}
+
 }; /* namespace irc */

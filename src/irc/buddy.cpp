@@ -22,6 +22,7 @@
 #include "irc/buddy.h"
 #include "irc/server.h"
 #include "irc/channel.h"
+#include "irc/status_channel.h"
 #include "irc/dcc.h"
 #include "irc/irc.h"
 #include "im/im.h"
@@ -35,7 +36,8 @@ namespace irc {
 
 Buddy::Buddy(Server* server, im::Buddy _buddy)
 	: ConvNick(server, "","","",_buddy.getRealName()),
-	  im_buddy(_buddy)
+	  im_buddy(_buddy),
+	  public_msgs(false)
 {
 	string hostname = im_buddy.getName();
 	string identname = stringtok(hostname, "@");
@@ -73,7 +75,12 @@ void Buddy::send(Message m)
 		if(m.getReceiver() == this || (chan && chan->isStatusChannel() && text.find(getNickname() + ": ") == 0))
 		{
 			if(chan && chan->isStatusChannel())
+			{
+				public_msgs = true;
 				stringtok(text, " ");
+			}
+			else
+				public_msgs = false;
 
 			/* Check if this is a DCC SEND message. */
 			if(process_dcc_get(text))
@@ -83,6 +90,24 @@ void Buddy::send(Message m)
 			conv.sendMessage(text);
 		}
 	}
+}
+
+void Buddy::sendMessage(Nick* to, const string& t, bool action)
+{
+	Channel* chan;
+	if (public_msgs && (chan = im_buddy.getAccount().getStatusChannel()))
+	{
+		string line = t;
+		if (action)
+			line = "\001ACTION " + to->getNickname() + ": " + line + "\001";
+		else
+			line = to->getNickname() + ": " + line;
+		to->send(irc::Message(MSG_PRIVMSG).setSender(this)
+						  .setReceiver(chan)
+						  .addArg(line));
+	}
+	else
+		ConvNick::sendMessage(to, t, action);
 }
 
 void Buddy::check_conv(void)
