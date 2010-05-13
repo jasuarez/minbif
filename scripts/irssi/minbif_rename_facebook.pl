@@ -7,7 +7,7 @@ use Irssi::Irc;
 
 use vars qw( $VERSION %IRSSI );
 
-($VERSION) = '$Revision: 0.02 $' =~ m{ (\d+[.]\d+) };
+($VERSION) = '$Revision: 0.03 $' =~ m{ (\d+[.]\d+) };
 
 %IRSSI = (
     name        => 'Minbif Facebook Renamer',
@@ -20,7 +20,7 @@ use vars qw( $VERSION %IRSSI );
 
 my $minbif_channel  = '&minbif';
 my $facebook_server = qr/chat[.]facebook[.]com/i;
-my $unnamed_pattern = qr/^u\d+/;
+my $unnamed_pattern = qr/^[u-]\d+/;
 
 my %minbif_servers;
 my %changed_nicks;
