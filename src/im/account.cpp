@@ -615,7 +615,6 @@ void Account::createStatusChannel()
 	}
 
 	string status = getStatusMessage(PURPLE_STATUS_AVAILABLE);
-	b_log[W_ERR] << getID() << ": " << status;
 	if (chan->getTopic() != status)
 	{
 		if (!status.empty())
