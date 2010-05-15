@@ -32,6 +32,8 @@ namespace irc
 		im::Buddy im_buddy;
 		im::Conversation conv;
 		bool public_msgs;
+		time_t public_msgs_last;
+		static const int PUBLIC_MSGS_TIMEOUT = 3600;
 
 		bool process_dcc_get(const string& text);
 		bool received_file(void* data);

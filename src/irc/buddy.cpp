@@ -18,6 +18,7 @@
 
 #include <cstring>
 #include <cerrno>
+#include <ctime>
 
 #include "irc/buddy.h"
 #include "irc/server.h"
@@ -37,7 +38,8 @@ namespace irc {
 Buddy::Buddy(Server* server, im::Buddy _buddy)
 	: ConvNick(server, "","","",_buddy.getRealName()),
 	  im_buddy(_buddy),
-	  public_msgs(false)
+	  public_msgs(false),
+	  public_msgs_last(0)
 {
 	string hostname = im_buddy.getName();
 	string identname = stringtok(hostname, "@");
@@ -81,6 +83,7 @@ void Buddy::send(Message m)
 			}
 			else
 				public_msgs = false;
+			public_msgs_last = time(NULL);
 
 			/* Check if this is a DCC SEND message. */
 			if(process_dcc_get(text))
@@ -95,6 +98,10 @@ void Buddy::send(Message m)
 void Buddy::sendMessage(Nick* to, const string& t, bool action)
 {
 	Channel* chan;
+
+	if (public_msgs_last + Buddy::PUBLIC_MSGS_TIMEOUT < time(NULL))
+		public_msgs = false;
+
 	if (public_msgs && (chan = im_buddy.getAccount().getStatusChannel()))
 	{
 		string line = t;
