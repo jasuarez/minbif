@@ -58,6 +58,10 @@ IF(ENABLE_MINBIF)
 			MESSAGE(FATAL_ERROR "Unable to find the libcaca and/or imlib2 libraries. To disable caca output, run 'make ENABLE_CACA=OFF'")
 		ENDIF(IMLIB_FOUND AND CACA_FOUND)
 
+		PKG_CHECK_MODULES(NEWCACA caca>=0.99.beta17)
+		IF(NOT NEWCACA_FOUND)
+			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_OLD_CACA")
+		ENDIF(NOT NEWCACA_FOUND)
 	ENDIF(ENABLE_CACA)
 
 	OPTION(ENABLE_VIDEO "Enable video support" ON)

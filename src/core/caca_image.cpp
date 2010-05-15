@@ -177,7 +177,11 @@ string CacaImage::getIRCBuffer(unsigned _width, unsigned _height, const char *ou
 
 	size_t len;
 	char* tmp;
+#ifdef HAVE_OLD_CACA
 	tmp = (char*)cucul_export_memory(cv, output_type, &len);
+#else
+	tmp = (char*)caca_export_canvas_to_memory(cv, output_type, &len);
+#endif
 	if(!tmp)
 		throw CacaError();
 
