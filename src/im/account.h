@@ -134,10 +134,13 @@ namespace im
 		void setBuddyIcon(string filename);
 
 		/** Set status */
-		void setStatus(PurpleStatusPrimitive pri, string message);
+		void setStatus(PurpleStatusPrimitive pri, string message = "");
+
+		/** Get status */
+		PurpleStatusPrimitive getStatus() const;
 
 		/** Get status message */
-		string getStatusMessage() const;
+		string getStatusMessage(PurpleStatusPrimitive pri = PURPLE_STATUS_UNSET) const;
 
 		/** Get room list from this account.
 		 * The roomlist callbacks will be called.

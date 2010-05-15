@@ -328,6 +328,8 @@ void Account::setBuddyIcon(string filename)
 
 void Account::setStatus(PurpleStatusPrimitive prim, string message)
 {
+	assert(isValid());
+
 	const char *id;
 	PurpleStatus* status;
 
@@ -345,23 +347,41 @@ void Account::setStatus(PurpleStatusPrimitive prim, string message)
 	if (!status)
 		return;
 
-	if (message.empty())
+	irc::StatusChannel* chan = getStatusChannel();
+	if (message.empty() && chan)
+		message = chan->getTopic();
+	if (message.empty() && prim != PURPLE_STATUS_UNSET)
 	{
-		irc::StatusChannel* chan = getStatusChannel();
-		if (chan)
-			message = chan->getTopic();
-	}
-	if (message.empty())
+		/* Get the status' message only if we change it. */
 		message = p2s(purple_status_get_attr_string(status, "message"));
+		if (!message.empty() && chan && purple_primitive_get_type_from_id(id) == PURPLE_STATUS_AVAILABLE)
+			chan->setTopic(NULL, message);
+	}
 
 	purple_account_set_status(account, id, TRUE, "message", message.c_str(), (char*)NULL);
 }
 
-string Account::getStatusMessage() const
+PurpleStatusPrimitive Account::getStatus() const
 {
 	assert(isValid());
 
-	PurpleStatus* s = purple_account_get_active_status(account);
+	PurpleStatus *s = purple_account_get_active_status(account);
+	if (!s)
+		return PURPLE_STATUS_UNSET;
+
+	return purple_primitive_get_type_from_id(purple_status_get_id(s));
+}
+
+string Account::getStatusMessage(PurpleStatusPrimitive prim) const
+{
+	assert(isValid());
+
+	PurpleStatus *s;
+	if (prim == PURPLE_STATUS_UNSET)
+		s = purple_account_get_active_status(account);
+	else
+		s = purple_account_get_status(account, purple_primitive_get_id_from_type(prim));
+
 	if (!s)
 		return "";
 
@@ -594,11 +614,15 @@ void Account::createStatusChannel()
 		irc->getUser()->join(chan, irc::ChanUser::OP);
 	}
 
-	string status = getStatusMessage();
-	if (!status.empty())
-		chan->setTopic(NULL, status);
-	else if (!chan->getTopic().empty())
-		setStatus(PURPLE_STATUS_UNSET, chan->getTopic());
+	string status = getStatusMessage(PURPLE_STATUS_AVAILABLE);
+	b_log[W_ERR] << getID() << ": " << status;
+	if (chan->getTopic() != status)
+	{
+		if (!status.empty())
+			chan->setTopic(NULL, status);
+		else
+			setStatus(PURPLE_STATUS_UNSET, chan->getTopic());
+	}
 
 	chan->addAccount(*this);
 

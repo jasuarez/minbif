@@ -464,6 +464,14 @@ void IRC::sendWelcome()
 		m_motd(Message());
 
 		im->restore();
+
+		if (im->isAway())
+		{
+			user->setAwayMessage("Away");
+			user->send(Message(RPL_NOWAWAY).setSender(this)
+					               .setReceiver(user)
+						       .addArg("You have been marked as being away"));
+		}
 	}
 	catch(im::IMError& e)
 	{

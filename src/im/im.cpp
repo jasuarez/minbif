@@ -227,6 +227,23 @@ string IM::getBuddyIconPath() const
 	return string(purple_user_dir()) + "/buddy_icon/";
 }
 
+bool IM::isAway() const
+{
+	PurpleStatusPrimitive prim = PURPLE_STATUS_AVAILABLE;
+	map<string, Account> alist = getAccountsList();
+
+	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)
+		if (it->second.getStatus() > PURPLE_STATUS_AVAILABLE)
+			prim = it->second.getStatus();
+
+	for(map<string, Account>::iterator it = alist.begin(); it != alist.end(); ++it)
+		if (it->second.getStatus() != PURPLE_STATUS_OFFLINE &&
+		    it->second.getStatus() <= PURPLE_STATUS_AVAILABLE)
+			it->second.setStatus(prim);
+
+	return prim != PURPLE_STATUS_AVAILABLE;
+}
+
 bool IM::setStatus(string away)
 {
 	PurpleStatusPrimitive prim = PURPLE_STATUS_AVAILABLE;

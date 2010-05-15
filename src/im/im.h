@@ -150,6 +150,9 @@ namespace im
 
 		/** Set status on IM accounts */
 		bool setStatus(string status);
+
+		/** Is away? */
+		bool isAway() const;
 	};
 
 };
