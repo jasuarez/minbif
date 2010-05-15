@@ -1,4 +1,4 @@
-.TH MINBIF 8 "15 January 2010"
+.TH MINBIF 8 "15 May 2010"
 .SH NAME
 minbif \- The IRC instant messaging gateway
 .SH SYNOPSIS
@@ -13,9 +13,9 @@ Minbif is an IRC gateway to IM networks which provides the following features:
 * Minbif uses a library which abstracts all IM calls, and has several plugins to support more than 15 IM protocols (IRC included!);
 * Two modes: inetd and daemon fork;
 * Only IRC commands are used to control Minbif;
-* Certificates check;
+* IM Certificates check;
 * Buddies are IRC users;
-* Each account has a status channel. You see in all connected buddies, and their status on it;
+* Each account is associated to a status channel, where all connected buddies are;
 * Add and remove buddies from list with /INVITE and /KICK commands;
 * Blocked users are bans on the account's status channel;
 * Display when a buddy is typing a message;
@@ -23,16 +23,16 @@ Minbif is an IRC gateway to IM networks which provides the following features:
 * You can see buddies' icons (with libcaca) or download them;
 * DCC SEND an image to set your icon on IM networks;
 * Display extended information about buddies with /WII command;
-* Support away messages;
+* Status management;
 * Can send and receive files, which are sent or received to/from your IRC client with DCC SEND;
 * Conversation channels are supported;
 * Auto\-rejoin conversation channels at connection;
 * Display list of channels on an IM account with /LIST;
 * irssi scripts to increase your user experience of minbif;
-* CACAcam (webcam in ascii art).
-* CoinCoin plugin for libpurple.
-* PAM support.
-* TLS support.
+* CACAcam (webcam in ascii art);
+* CoinCoin plugin for libpurple;
+* PAM support;
+* TLS support with certificate auth.
 .fi
 
 .SH OPTIONS
@@ -74,7 +74,7 @@ connect to minbif with this nickname, the account is created and the
 
 Next, use the \fB/map help\fP command to know how to add a network.
 
-See also: http://symlink.me/wiki/minbif/Quick_start
+See also: http://minbif.im/Quick_start
 
 .SH COPYRIGHT
 Copyright(C) 2009-2010 Romain Bignon

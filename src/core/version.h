@@ -25,7 +25,7 @@
 
 #define MINBIF_VERSION_MAJOR   "1"
 #define MINBIF_VERSION_MINOR   "0"
-#define MINBIF_VERSION_PATCH   ".2"
+#define MINBIF_VERSION_PATCH   ".3"
 #define MINBIF_VERSION_EXTRA   ""
 
 #ifdef HAVE_CACA

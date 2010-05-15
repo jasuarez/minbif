@@ -1,3 +1,24 @@
+Minbif 1.0.3 (2010-05-15)
+	* Use /topic on status channels to change your status message (#210).
+	* With field requests, display image fields with libcaca.
+	* Improvement of bans management (match wildcards, fix parsing, etc.).
+	* When starting to chat with a buddy in a status channel, every
+	  received messages from this buddy are displayed in the status channel
+	  (#179).
+	* Do not allow two IRC clients to be logged at the same time on the
+	  same account (only with the daemon fork mode) (#178).
+	* Display the current status of a buddy in /WHOIS when he is not away.
+	* Default value of 'server_alias' is now 'true'.
+	* Works with libpurple 2.7.0.
+	* Fix: crash with conversations (occured when a buddy sends a message,
+	  then disconnects/reconnects and re-send a message) (#258).
+	* Fix: crash when closing a request.
+	* Fix: compilation on FreeBSD (now using a buildbot slave on this OS)
+	  (#255).
+	* Fix: /svsnick collision detection.
+	* Fix: crash when nobody connects to DCC server.
+	* Fix: crash when a buddy has an icon without any path (wtf).
+
 Minbif 1.0.2 (2010-04-05)
 	* TLS support.
 	* New 'maxcon' parameter to limit simultaneous connections.
@@ -151,9 +172,9 @@ Minbif 1.0-beta (2009-09-28)
 	* Imported some bitlbee's irssi scripts and changed them to support
 	  minbif.
 	* Added a manpage.
-	* Fix: crash at remote channel member leave.
+	* Fix: crash when a remote channel member leaves.
 	* Fix: crash when a remote channel member changes his nickname.
-	* Fix: hilight message are not displayed.
+	* Fix: hilight messages were not displayed.
 	* Fix: correctly handle when a user tries to add me in his buddy list.
 
 Minbif 1.0-alpha (2009-05-10)
