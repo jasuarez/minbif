@@ -183,6 +183,11 @@ static PurplePluginProtocolInfo ga_plugin_prpl_info =
 	NULL,                    		/* get_account_text_table */
 	NULL,                    		/* initiate_media */
 	NULL					 /* can_do_media */
+#if (PURPLE_MAJOR_VERSION == 2 && PURPLE_MINOR_VERSION >= 7)
+	, NULL,					 /* get_moods */
+	NULL,					 /* set_public_alias */
+	NULL					 /* get_public_alias */
+#endif
 };
 
 static gboolean ga_plugin_load (PurplePlugin *plugin) {
