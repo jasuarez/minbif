@@ -38,7 +38,7 @@ SockWrapperTLS::SockWrapperTLS(ConfigSection* _config, int _recv_fd, int _send_f
 
 	ConfigSection* c_section = getConfig()->GetSection("tls");
 	if (!c_section->Found())
-		throw TLSError::TLSError("Missing section <inetd|daemon>/tls");
+		throw TLSError("Missing section <inetd|daemon>/tls");
 
 	/* GNUTLS init */
 	b_log[W_SOCK] << "Initializing GNUTLS";
@@ -59,7 +59,7 @@ SockWrapperTLS::SockWrapperTLS(ConfigSection* _config, int _recv_fd, int _send_f
 		tls_err = gnutls_certificate_set_x509_trust_file(x509_cred,
 			trust_file.c_str(), GNUTLS_X509_FMT_PEM);
 		if (tls_err == GNUTLS_E_SUCCESS)
-			throw TLSError::TLSError("trust file is empty or does not contain any valid CA certificate");
+			throw TLSError("trust file is empty or does not contain any valid CA certificate");
 		else if (tls_err < 0)
 			CheckTLSError();
 		trust_check = true;
@@ -92,7 +92,7 @@ SockWrapperTLS::SockWrapperTLS(ConfigSection* _config, int _recv_fd, int _send_f
 	CheckTLSError();
 	tls_err = gnutls_priority_set_direct(tls_session, c_section->GetItem("priority")->String().c_str(), NULL);
 	if (tls_err == GNUTLS_E_INVALID_REQUEST)
-		throw TLSError::TLSError("syntax error in tls_priority parameter");
+		throw TLSError("syntax error in tls_priority parameter");
 	CheckTLSError();
 	tls_err = gnutls_credentials_set(tls_session, GNUTLS_CRD_CERTIFICATE, x509_cred);
 	CheckTLSError();
@@ -120,7 +120,7 @@ void SockWrapperTLS::ProcessTLSHandshake()
 		if (gnutls_error_is_fatal(tls_err))
 		{
 			b_log[W_SOCK] << "TLS handshake failed: " << gnutls_strerror(tls_err);
-			throw TLSError::TLSError("TLS initialization failed");
+			throw TLSError("TLS initialization failed");
 		}
 
 		if (tls_err != GNUTLS_E_SUCCESS)
@@ -132,7 +132,7 @@ void SockWrapperTLS::ProcessTLSHandshake()
 void SockWrapperTLS::CheckTLSError()
 {
 	if (tls_err != GNUTLS_E_SUCCESS)
-		throw TLSError::TLSError(gnutls_strerror(tls_err));
+		throw TLSError(gnutls_strerror(tls_err));
 }
 
 void SockWrapperTLS::EndSessionCleanup()
