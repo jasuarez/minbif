@@ -24,8 +24,8 @@
 #define MINBIF_DEV_WEBSITE  "http://symlink.me/projects/show/minbif"
 
 #define MINBIF_VERSION_MAJOR   "1"
-#define MINBIF_VERSION_MINOR   "0"
-#define MINBIF_VERSION_PATCH   ".3"
+#define MINBIF_VERSION_MINOR   "1"
+#define MINBIF_VERSION_PATCH   "-dev"
 #define MINBIF_VERSION_EXTRA   ""
 
 #ifdef HAVE_CACA
