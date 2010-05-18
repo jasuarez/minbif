@@ -7,7 +7,7 @@ use Irssi::Irc;
 
 use vars qw( $VERSION %IRSSI );
 
-($VERSION) = '$Revision: 0.03 $' =~ m{ (\d+[.]\d+) };
+($VERSION) = '$Revision: 0.04 $' =~ m{ (\d+[.]\d+) };
 
 %IRSSI = (
     name        => 'Minbif Facebook Renamer',
@@ -92,7 +92,7 @@ sub _change_nickname {
 
     Irssi::print("Renaming $old_nick to $new_nick");
 
-    $server->command("SVSNICK $old_nick $new_nick");
+    $server->command("quote SVSNICK $old_nick $new_nick");
 
     return;
 }
