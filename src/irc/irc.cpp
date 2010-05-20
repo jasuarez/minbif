@@ -680,9 +680,24 @@ void IRC::m_who(Message message)
 {
 	string arg;
 	Channel* chan = NULL;
+    bool status = false;
+    unsigned int i, j;
+	
 	if(message.countArgs() > 0)
-		arg = message.getArg(0);
-
+	{
+		for (i = 0; i < message.countArgs() - 1; i++)
+		{
+			if (message.getArg(i)[0] == '+' || message.getArg(i)[0] == '-')
+				for (j = 0; j < message.getArg(i).length(); j++)
+					switch (message.getArg(i)[j]) {
+						case 's':
+							status = true;
+							break;
+					}
+		}
+		arg = message.getArg(i);
+	}
+	
 	if(arg.empty() || !Channel::isChanName(arg) || (chan = getChannel(arg)))
 		for(std::map<string, Nick*>::iterator it = users.begin(); it != users.end(); ++it)
 		{
@@ -711,7 +726,7 @@ void IRC::m_who(Message message)
 							.addArg(n->getServer()->getServerName())
 							.addArg(n->getNickname())
 							.addArg(n->isAway() ? "G" : "H")
-							.addArg("0 " + n->getRealName()));
+                            .addArg("0 " + (status ? n->getStatusMessage() : n->getRealName())));
 		}
 	user->send(Message(RPL_ENDOFWHO).setSender(this)
 					.setReceiver(user)
