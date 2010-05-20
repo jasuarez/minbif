@@ -179,7 +179,10 @@ namespace irc
 
 		virtual bool retrieveInfo() const { return false; }
 
-		virtual string getStatusMessage() const { return ""; }
+		/** Get status.
+		 * @param away  if false, do not return anything if the buddy is away.
+		 */
+		virtual string getStatusMessage(bool away = false) const { return ""; }
 
 		void setFlag(unsigned flag) { flags |= flag; }
 		void delFlag(unsigned flag) { flags &= ~flag; }

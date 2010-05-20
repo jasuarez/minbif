@@ -680,24 +680,41 @@ void IRC::m_who(Message message)
 {
 	string arg;
 	Channel* chan = NULL;
-    bool status = false;
-    unsigned int i, j;
-	
+	enum
+	{
+		WHO_STATUS = 1 << 0
+	};
+#define fset(i, b, v) b ? i|v : i&(~v)
+	int flags = 0;
+
 	if(message.countArgs() > 0)
 	{
-		for (i = 0; i < message.countArgs() - 1; i++)
+		vector<string> args = message.getArgs();
+		for(vector<string>::iterator it = args.begin(); it != args.end(); ++it)
 		{
-			if (message.getArg(i)[0] == '+' || message.getArg(i)[0] == '-')
-				for (j = 0; j < message.getArg(i).length(); j++)
-					switch (message.getArg(i)[j]) {
-						case 's':
-							status = true;
-							break;
-					}
+			bool add = true;
+			if (!strchr("+-", (*it)[0]))
+			{
+				arg = *it;
+				continue;
+			}
+
+			for (string::iterator c = it->begin(); c != it->end(); ++c)
+				switch (*c) {
+					case '+':
+						add = true;
+						break;
+					case '-':
+						add = false;
+						break;
+					case 's':
+						flags = fset(flags, add, WHO_STATUS);
+						break;
+				}
 		}
-		arg = message.getArg(i);
 	}
-	
+#undef fset
+
 	if(arg.empty() || !Channel::isChanName(arg) || (chan = getChannel(arg)))
 		for(std::map<string, Nick*>::iterator it = users.begin(); it != users.end(); ++it)
 		{
@@ -726,7 +743,8 @@ void IRC::m_who(Message message)
 							.addArg(n->getServer()->getServerName())
 							.addArg(n->getNickname())
 							.addArg(n->isAway() ? "G" : "H")
-                            .addArg("0 " + (status ? n->getStatusMessage() : n->getRealName())));
+							.addArg("0 " + (flags & WHO_STATUS ? n->getStatusMessage(true)
+							                                   : n->getRealName())));
 		}
 	user->send(Message(RPL_ENDOFWHO).setSender(this)
 					.setReceiver(user)

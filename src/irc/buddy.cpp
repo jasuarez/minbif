@@ -188,9 +188,9 @@ string Buddy::getRealName() const
 	return im_buddy.getRealName() + " [Group: " + im_buddy.getGroupName() + "]";
 }
 
-string Buddy::getStatusMessage() const
+string Buddy::getStatusMessage(bool away) const
 {
-	if (isAway())
+	if (!away && isAway())
 		return "";
 
 	return im_buddy.getStatus();

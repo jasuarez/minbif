@@ -55,8 +55,10 @@ namespace irc
 		/** Buddy sends a message to someone. */
 		virtual void sendMessage(Nick* to, const string& text, bool action = false);
 
-		/** Get status. */
-		virtual string getStatusMessage() const;
+		/** Get status.
+		 * @param away  if false, do not return anything if the buddy is away.
+		 */
+		virtual string getStatusMessage(bool away = false) const;
 
 		/** Get buddy's away message. */
 		virtual string getAwayMessage() const;
