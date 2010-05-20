@@ -684,7 +684,7 @@ void IRC::m_who(Message message)
 	{
 		WHO_STATUS = 1 << 0
 	};
-#define fset(i, b, v) b ? i|v : i&(~v)
+#define fset(v, b, f) v = b ? v|f : v&(~f)
 	int flags = 0;
 
 	if(message.countArgs() > 0)
@@ -708,7 +708,7 @@ void IRC::m_who(Message message)
 						add = false;
 						break;
 					case 's':
-						flags = fset(flags, add, WHO_STATUS);
+						fset(flags, add, WHO_STATUS);
 						break;
 				}
 		}
