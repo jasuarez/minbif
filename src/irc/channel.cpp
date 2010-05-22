@@ -124,11 +124,13 @@ void Channel::sendNames(Nick* nick) const
 	string names;
 	for(vector<ChanUser*>::const_iterator it = users.begin(); it != users.end(); ++it)
 	{
-		if(!names.empty())
-			names += " ";
 		names += (*it)->getPrefix();
 		names += (*it)->getNick()->getNickname();
-
+		// We're detecting that a space exists before prepending : to arguments.
+		// If we don't do it this way, a single-user channel won't prepend the colon to the
+		// user list.
+		// See Message::format()
+		names += " ";
 	}
 
 	nick->send(Message(RPL_NAMREPLY).setSender(irc)
