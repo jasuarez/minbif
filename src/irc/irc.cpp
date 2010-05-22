@@ -457,9 +457,13 @@ void IRC::sendWelcome()
 		user->setFlag(Nick::REGISTERED);
 		poll->ipc_send(Message(MSG_USER).addArg(getUser()->getNickname()));
 
+		// http://irchelp.org/irchelp/rfc/rfc2812.txt 5.1 -
+		// "The server sends Replies 001 to 004 to a user upon successful registration."
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif IRC gateway, " + user->getNickname() + "!"));
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Your host is " + getServerName() + ", running " MINBIF_VERSION));
 		user->send(Message(RPL_CREATED).setSender(this).setReceiver(user).addArg("This server was created " __DATE__ " " __TIME__));
+		// TODO - <available user modes> and <available channel modes> should be provided in RPL_MYINFO. See RFC.
+		user->send(Message(RPL_MYINFO).setSender(this).setReceiver(user).addArg(getServerName() + MINBIF_VERSION + "available user modes" + "available channel modes"));
 
 		m_motd(Message());
 
