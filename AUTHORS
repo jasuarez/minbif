@@ -13,6 +13,9 @@ Sebastien Delafond <sdelafond@gmail.com>
         * Maintainer of the Debian package;
         * irssi scripts.
 
+Josh Marchán <sykopomp@sykosomatic.org>
+        * Fixes related to the IRC protocol.
+
 Julien Miotte <jmiotte@inl.fr>
         * Various patches on the IRC protocol.
 
