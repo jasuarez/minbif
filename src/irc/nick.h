@@ -56,6 +56,7 @@ namespace irc
 		static const char *nick_lc_chars;
 		static const char *nick_uc_chars;
 		static const size_t MAX_LENGTH = 29;
+		static const char* UMODES;
 		static string nickize(const string& n);
 
 		/** States of the user */

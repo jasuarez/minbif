@@ -29,6 +29,7 @@ namespace irc {
 
 const char *Nick::nick_lc_chars = "0123456789abcdefghijklmnopqrstuvwxyz{}^`-_|";
 const char *Nick::nick_uc_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ[]~`-_\\";
+const char *Nick::UMODES = "o";
 
 Nick::Nick(Server* _server, string nickname, string _identname, string _hostname, string _realname)
 	: Entity(nickname),

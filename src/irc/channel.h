@@ -112,6 +112,8 @@ namespace irc
 
 	public:
 
+		static const char *CHMODES;
+
 		/** Build the Channel object.
 		 *
 		 * @param irc  the IRC object of main server

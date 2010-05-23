@@ -462,8 +462,10 @@ void IRC::sendWelcome()
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif IRC gateway, " + user->getNickname() + "!"));
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Your host is " + getServerName() + ", running " MINBIF_VERSION));
 		user->send(Message(RPL_CREATED).setSender(this).setReceiver(user).addArg("This server was created " __DATE__ " " __TIME__));
-		// TODO - <available user modes> and <available channel modes> should be provided in RPL_MYINFO. See RFC.
-		user->send(Message(RPL_MYINFO).setSender(this).setReceiver(user).addArg(getServerName() + MINBIF_VERSION + "available user modes" + "available channel modes"));
+		user->send(Message(RPL_MYINFO).setSender(this).setReceiver(user).addArg(getServerName() + " " +
+		                                                                        MINBIF_VERSION + " " +
+											Nick::UMODES + " " +
+											Channel::CHMODES));
 
 		m_motd(Message());
 
