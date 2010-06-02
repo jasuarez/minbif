@@ -24,10 +24,10 @@ ENABLE_VIDEO ?= OFF
 ENABLE_PLUGIN ?= OFF
 
 # Compile with the pam support
-ENABLE_PAM ?= OFF
+ENABLE_PAM ?= ON
 
 # Compile with the tls support
-ENABLE_TLS ?= OFF
+ENABLE_TLS ?= ON
 
 # Installation prefix
 # PREFIX = /usr/local/

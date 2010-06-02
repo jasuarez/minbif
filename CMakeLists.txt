@@ -34,7 +34,8 @@ PKG_CHECK_MODULES(GTHREAD REQUIRED gthread-2.0)
 
 OPTION(ENABLE_MINBIF "Enable minbif compilation" ON)
 OPTION(ENABLE_PLUGIN "Enable plugin build" OFF)
-OPTION(ENABLE_PAM "Enable PAM support" OFF)
+OPTION(ENABLE_PAM "Enable PAM support" ON)
+OPTION(ENABLE_TLS "Enable TLS support" ON)
 
 IF(ENABLE_MINBIF)
 	OPTION(ENABLE_IMLIB "Use imlib library" ON)
