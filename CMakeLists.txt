@@ -45,7 +45,7 @@ IF(ENABLE_MINBIF)
 		IF(IMLIB_FOUND)
 			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_IMLIB")
 		ELSE(IMLIB_FOUND)
-			MESSAGE(FATAL_ERROR "Unable to find the imlib2 library. To disable use of imlib2, run 'make ENABLE_IMLIB=OFF'")
+			MESSAGE(FATAL_ERROR "Unable to find the imlib2 library. To disable use of imlib2, run 'make ENABLE_IMLIB=OFF ENABLE_CACA=OFF'")
 		ENDIF(IMLIB_FOUND)
 	ENDIF(ENABLE_IMLIB OR ENABLE_CACA)
 
