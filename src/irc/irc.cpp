@@ -1931,7 +1931,7 @@ void IRC::m_svsnick(Message message)
 				    .addArg(message.getArg(1)));
 
 	renameNick(buddy, message.getArg(1));
-	buddy->getBuddy().setAlias(message.getArg(1));
+	buddy->getBuddy().setAlias(message.getArg(1), true);
 }
 
 /** AWAY [message] */

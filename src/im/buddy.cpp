@@ -70,7 +70,7 @@ string Buddy::getAlias() const
 		return getName();
 }
 
-void Buddy::setAlias(string alias) const
+void Buddy::setAlias(string alias, bool server_side) const
 {
 	assert(isValid());
 	purple_blist_alias_buddy(buddy, alias.c_str());
@@ -90,7 +90,7 @@ void Buddy::setAlias(string alias) const
 	 *
 	 * Ref: http://developer.pidgin.im/ticket/10393
 	 */
-	if (Purple::getIM()->hasServerAliases() && getAccount().hasServerAliases())
+	if (server_side && Purple::getIM()->hasServerAliases() && getAccount().hasServerAliases())
 		serv_alias_buddy(buddy);
 }
 
@@ -331,7 +331,7 @@ void Buddy::update_node(PurpleBuddyList *list, PurpleBlistNode *node)
 		 *       instances will be inserted, with one lost.
 		 */
 		if(buddy.getAlias() != n->getNickname())
-			buddy.setAlias(n->getNickname());
+			buddy.setAlias(n->getNickname(), false);
 
 		buddy.updated();
 	}

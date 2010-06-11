@@ -78,7 +78,7 @@ namespace im
 		string getAlias() const;
 
 		/** Set minbif alias */
-		void setAlias(string alias) const;
+		void setAlias(string alias, bool server_side = true) const;
 
 		/** Get IM real name */
 		string getRealName() const;
