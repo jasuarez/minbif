@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include "account.h"
 #include "protocol.h"
+#include "plugin.h"
 #include "core/log.h"
 
 namespace irc
@@ -112,6 +113,9 @@ namespace im
 		string getBuddyIconPath() const;
 
 		irc::IRC* getIRC() const { return irc; }
+
+		/** Get all plugins available. */
+		map<string, Plugin> getPluginsList() const;
 
 		/** Get list of protocols in a map. */
 		map<string, Protocol> getProtocolsList() const;

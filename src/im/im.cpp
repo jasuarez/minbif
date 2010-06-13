@@ -170,6 +170,11 @@ map<string, Protocol> IM::getProtocolsList() const
 	return Purple::getProtocolsList();
 }
 
+map<string, Plugin> IM::getPluginsList() const
+{
+	return Purple::getPluginsList();
+}
+
 Protocol IM::getProtocol(string id) const
 {
 	map<string, Protocol> plist = getProtocolsList();

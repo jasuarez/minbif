@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -183,6 +183,34 @@ void Purple::uninit()
 	Request::uninit();
 	FileTransfert::uninit();
 	Media::uninit();
+}
+
+map<string, Plugin> Purple::getPluginsList()
+{
+	map<string, Plugin> m;
+	GList* list;
+
+	purple_plugins_probe(G_MODULE_SUFFIX);
+
+	for(list = purple_plugins_get_all(); list; list = list->next)
+	{
+		PurplePlugin* plugin = (PurplePlugin*)list->data;
+
+		if (plugin->info->type == PURPLE_PLUGIN_LOADER)
+		{
+			GList *cur;
+			for (cur = PURPLE_PLUGIN_LOADER_INFO(plugin)->exts; cur != NULL; cur = cur->next)
+				purple_plugins_probe((const char*)cur->data);
+			continue;
+		}
+
+		if (plugin->info->type != PURPLE_PLUGIN_STANDARD ||
+		    plugin->info->flags & PURPLE_PLUGIN_FLAG_INVISIBLE)
+			continue;
+
+		m[plugin->info->id] = Plugin(plugin);
+	}
+	return m;
 }
 
 map<string, Protocol> Purple::getProtocolsList()

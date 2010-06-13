@@ -1079,6 +1079,71 @@ void IRC::m_stats(Message message)
 			}
 			break;
 		}
+		case 'P':
+		{
+			map<string, im::Plugin> plugins = im->getPluginsList();
+			if (message.countArgs() < 2)
+			{
+				/* No argument */
+				for (map<string, im::Plugin>::iterator it = plugins.begin();
+				     it != plugins.end(); ++it)
+				{
+					im::Plugin plug = it->second;
+					string s = "[";
+					if (plug.isLoaded())
+						s += "+";
+					else
+						s += " ";
+					s += "] ";
+					s += plug.getID();
+					s += " (";
+					s += plug.getName() + ": " + plug.getSummary();
+					s += ")";
+					notice(user, s);
+				}
+				break;
+			}
+			map<string, im::Plugin>::iterator it = plugins.find(message.getArg(1));
+			if (it == plugins.end())
+			{
+				notice(user, message.getArg(1) + ": No such plugin");
+				break;
+			}
+			im::Plugin plug = it->second;
+			if (message.countArgs() < 3)
+			{
+				/* Only give a plugin name. */
+				notice(user, "-- Information about " + plug.getID());
+				notice(user, "Description: ");
+				notice(user, plug.getDescription());
+				notice(user, string("Loaded: ") + (plug.isLoaded() ? "true" : "false"));
+				break;
+			}
+			string command = message.getArg(2);
+			switch(command[0])
+			{
+				case 'l':
+					try {
+						plug.load();
+						notice(user, "Plugin '" + plug.getID() + "' loaded.");
+					} catch (im::Plugin::LoadError &e) {
+						notice(user, e.Reason());
+					}
+					break;
+				case 'u':
+					try {
+						plug.unload();
+						notice(user, "Plugin '" + plug.getID() + "' unloaded.");
+					} catch(im::Plugin::LoadError &e) {
+						notice(user, e.Reason());
+					}
+					break;
+				default:
+					notice(user, "No suck command: " + command);
+					break;
+			}
+			break;
+		}
 		case 'u':
 		{
 			unsigned now = time(NULL) - uptime;
@@ -1096,6 +1161,7 @@ void IRC::m_stats(Message message)
 			notice(user, "m (commands) - List all IRC commands");
 			notice(user, "o (opers) - List all opers accounts");
 			notice(user, "p (protocols) - List all protocols");
+			notice(user, "P (plugins) - List, load and configure plugins");
 			notice(user, "u (uptime) - Display the server uptime");
 			break;
 	}

@@ -26,6 +26,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		im/auth_local.cpp
 		im/auth_connection.cpp
 		${MINBIF_EXTRA_FILES_PAM}
+		im/plugin.cpp
 		im/protocol.cpp
 		im/account.cpp
 		im/roomlist.cpp
