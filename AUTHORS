@@ -35,7 +35,11 @@ Francois Lallart <fraff@free.fr>
         * Parameters management with /WHO.
 
 Thomas Lecavelier <ook@ookook.fr>
-        * Ass-kisser on DLFP.
+        * Ass-kisser on DLFP;
+        * Use of imlib to load sent buddy icons.
+
+Michael Scherer <misc@ephaone.org>
+        * Patch on cmake files.
 
 Want to be a celebrity? Learn how to contribute to Minbif!
 http://symlink.me/wiki/minbif/How_to_contribute
