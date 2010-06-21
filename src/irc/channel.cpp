@@ -23,7 +23,7 @@
 
 namespace irc {
 
-const char *Channel::CHMODES = "b";
+const char *Channel::CHMODES = "qohvb";
 
 ChanUser::ChanUser(Channel* _chan, Nick* _nick, int _status)
 	: Entity(_nick->getNickname()),
