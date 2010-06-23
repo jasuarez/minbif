@@ -149,8 +149,9 @@ void ConversationChannel::delUser(Nick* nick, Message message)
 ChanUser* ConversationChannel::getChanUser(string nick) const
 {
 	map<im::ChatBuddy, ChanUser*>::const_iterator it;
+	nick = strlower(nick);
 	for(it = cbuddies.begin(); it != cbuddies.end(); ++it)
-		if(it->first.getName() == nick)
+		if(strlower(it->first.getName()) == nick)
 			return it->second;
 	return NULL;
 }

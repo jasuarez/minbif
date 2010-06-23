@@ -192,8 +192,10 @@ void Channel::delUser(Nick* nick, Message m)
 
 ChanUser* Channel::getChanUser(string nick) const
 {
+	/* Match is case sensitive */
+	nick = strlower(nick);
 	for(vector<ChanUser*>::const_iterator it = users.begin(); it != users.end(); ++it)
-		if((*it)->getNick()->getNickname() == nick)
+		if(strlower((*it)->getNick()->getNickname()) == nick)
 			return *it;
 	return NULL;
 }
