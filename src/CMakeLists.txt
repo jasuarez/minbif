@@ -38,6 +38,9 @@ ADD_EXECUTABLE(${BIN_NAME}
 		im/purple.cpp
 		irc/settings.cpp
 		irc/irc.cpp
+		irc/cmds.cpp
+		irc/cmds_accounts.cpp
+		irc/cmds_channels.cpp
 		irc/dcc.cpp
 		irc/message.cpp
 		irc/server.cpp
