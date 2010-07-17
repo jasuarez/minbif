@@ -563,9 +563,9 @@ public:
 		}
 		else
 		{
-			write(temp_fd,
-			      purple_request_field_image_get_buffer(field),
-			      purple_request_field_image_get_size(field));
+			(void)write(temp_fd,
+			            purple_request_field_image_get_buffer(field),
+			            purple_request_field_image_get_size(field));
 			::close(temp_fd);
 
 			irc::IRC* irc = Purple::getIM()->getIRC();
@@ -578,7 +578,9 @@ public:
 			{
 				nick->privmsg(irc->getUser(), line);
 			}
+			unlink(temp_filename);
 #endif /* HAVE_CACA */
+
 		}
 
 		Request* request = Request::getFirstRequest();

@@ -66,13 +66,21 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application, ConfigSection* c
 		setsid();
 
 		for (r=getdtablesize();r>=0;--r) close(r);
+
+		/* Redirect the default streams to /dev/null.
+		 * We hope that the descriptors will be 0, 1 and 2
+		 */
 		r=open("/dev/null",O_RDWR); /* open stdin */
-		dup(r); /* stdout */
-		dup(r); /* stderr */
+		(void)dup(r); /* stdout */
+		(void)dup(r); /* stderr */
 
 		umask(027);
 		string path = conf.GetSection("path")->GetItem("users")->String();
-		chdir(path.c_str());
+		if (chdir(path.c_str()) < 0)
+		{
+			b_log[W_ERR] << "Unable to change directory: " << strerror(errno);
+			throw ServerPollError();
+		}
 	}
 
 	struct addrinfo *addrinfo_bind, *res, hints;
