@@ -36,6 +36,7 @@ class ServerPoll;
 namespace im
 {
 	class IM;
+	class Account;
 	class Buddy;
 	class Conversation;
 	class FileTransfert;
@@ -116,6 +117,13 @@ namespace irc
 		void m_connect(Message m);  /**< Handler for the CONNECT message */
 		void m_squit(Message m);    /**< Handler for the SQUIT message */
 		void m_map(Message m);      /**< Handler for the MAP message */
+		bool m_map_registeradd(Message& m, im::Account&, bool);
+		bool m_map_register(Message& m, im::Account&);
+		bool m_map_add(Message& m, im::Account&);
+		bool m_map_edit(Message& m, im::Account&);
+		bool m_map_delete(Message& m, im::Account&);
+		bool m_map_command(Message& m, im::Account&);
+		bool m_map_help(Message& m, im::Account&);
 		void m_admin(Message m);    /**< Handler for the ADMIN message */
 		void m_join(Message m);     /**< Handler for the JOIN message */
 		void m_part(Message m);     /**< Handler for the PART message */
