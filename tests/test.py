@@ -407,7 +407,7 @@ class Instance:
             if not msg:
                 return acc
 
-            m = re.match("-- Parameters of account (.+):([a-zA-Z]+)([0-9]+) --", msg.args[0])
+            m = re.match("-- Parameters of account (.+):([a-zA-Z]+)([0-9]*) --", msg.args[0])
             if m:
                 acc = Account(proto=m.group(2), username=m.group(1))
             else:
