@@ -279,7 +279,7 @@ string Purple::getNewAccountName(Protocol proto, const Account& butone)
 			iter = NULL; // restart
 		}
 	}
-	return proto.getID() + t2s(i);
+	return proto.getID() + (i ? t2s(i) : string());
 }
 
 Account Purple::addAccount(const Protocol& proto, const string& username, const Protocol::Options& options, bool register_account)
