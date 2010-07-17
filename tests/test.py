@@ -383,7 +383,7 @@ class Instance:
             if not line.startswith('|') and not line.startswith('`'):
                 continue
 
-            m = re.match(".([- ][\*\+]*)(.+):([[a-zA-Z]+)([0-9]+)", line)
+            m = re.match(".([- ][\*\+]*)(.+):([[a-zA-Z]+)([0-9]*)", line)
             if m:
                 acc = Account(proto=m.group(3), username=m.group(2))
                 prompt2state = {'-':  'connected',
