@@ -532,14 +532,13 @@ bool IRC::readIO(void*)
 			b_log[W_PARSE] << "<< " << line;
 			size_t i;
 			for(i = 0;
-			    i < (sizeof commands / sizeof *commands) &&
-			    strcmp(commands[i].cmd, m.getCommand().c_str());
+			    commands[i].cmd != NULL && strcmp(commands[i].cmd, m.getCommand().c_str());
 			    ++i)
 				;
 
 			user->setLastReadNow();
 
-			if(i >= (sizeof commands / sizeof *commands))
+			if(commands[i].cmd == NULL)
 				user->send(Message(ERR_UNKNOWNCOMMAND).setSender(this)
 								   .setReceiver(user)
 								   .addArg(m.getCommand())
