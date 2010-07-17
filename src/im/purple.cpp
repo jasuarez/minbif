@@ -269,10 +269,13 @@ string Purple::getNewAccountName(Protocol proto, const Account& butone)
 		if(acc == butone || !acc.getProtocol().isValid() || acc.getProtocol() != proto)
 			continue;
 
-		string id = acc.getID();
-		if(id == proto.getID() + t2s(i))
+		string id = acc.getID(false);
+		if(id == proto.getID() + (i ? t2s(i) : string()))
 		{
-			i = s2t<int>(id.substr(proto.getID().size())) + 1;
+			if (i)
+				i = s2t<int>(id.substr(proto.getID().size())) + 1;
+			else
+				i = 1;
 			iter = NULL; // restart
 		}
 	}

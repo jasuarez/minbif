@@ -394,11 +394,11 @@ void Account::setID(string id) const
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "id", id.c_str());
 }
 
-string Account::getID() const
+string Account::getID(bool calculate_newone) const
 {
 	assert(isValid());
 	string n = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "id", "");
-	if(n.empty())
+	if(calculate_newone && n.empty())
 	{
 		n = Purple::getNewAccountName(proto, *this);
 		setID(n);

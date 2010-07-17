@@ -107,9 +107,10 @@ namespace im
 
 		/** Get ID of account.
 		 *
+		 * @param calculate_newone  if true, when the ID is not set, calculate a new one.
 		 * @return  a string un form \a "<protocol><number>"
 		 */
-		string getID() const;
+		string getID(bool calculate_newone = true) const;
 
 		void setID(string id) const;
 
