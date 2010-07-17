@@ -167,8 +167,11 @@ bool DaemonForkServerPoll::new_client_cb(void*)
 		b_log[W_WARNING] << "Unable to create IPC socket for client: " << strerror(errno);
 		fds[0] = fds[1] = -1;
 	}
-	sock_make_nonblocking(fds[0]);
-	sock_make_nonblocking(fds[1]);
+	else
+	{
+		sock_make_nonblocking(fds[0]);
+		sock_make_nonblocking(fds[1]);
+	}
 
 	pid_t client_pid = fork();
 
@@ -338,6 +341,7 @@ bool DaemonForkServerPoll::ipc_read(void* data)
 				else
 					++it;
 
+			close(child->fd);
 			g_source_remove(child->read_id);
 			delete child->read_cb;
 			delete child;
@@ -349,6 +353,7 @@ bool DaemonForkServerPoll::ipc_read(void* data)
 			read_id = -1;
 			delete read_cb;
 			read_cb = NULL;
+			close(sock);
 			sock = -1;
 		}
 		return false;
