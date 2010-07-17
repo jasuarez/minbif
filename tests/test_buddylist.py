@@ -30,10 +30,10 @@ class TestBuddyList(Test):
 
     def test_init(self):
         if not self['minbif1'].create_account('jabber', channel='&minbif'): return False
-        if not self['minbif1'].wait_connected('jabber0'): return False
+        if not self['minbif1'].wait_connected('jabber'): return False
         if not self['minbif1'].clean_buddies(): return False
         if not self['minbif2'].create_account('jabber', channel='&minbif'): return False
-        if not self['minbif2'].wait_connected('jabber0'): return False
+        if not self['minbif2'].wait_connected('jabber'): return False
         if not self['minbif2'].clean_buddies(): return False
 
         return True
@@ -41,7 +41,7 @@ class TestBuddyList(Test):
     def test_addbuddy(self):
         self['minbif1'].request_answer('New request:', 'authorize', 1)
         acc1name, acc1 = self['minbif1'].get_accounts().popitem()
-        self['minbif2'].write('INVITE %s:jabber0 &minbif' % acc1.username)
+        self['minbif2'].write('INVITE %s:jabber &minbif' % acc1.username)
         self['minbif1'].request_answer('New request:', 'authorize', 5)
 
         self['minbif2'].log('Wait for join')

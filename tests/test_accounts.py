@@ -40,29 +40,29 @@ class TestAccounts(Test):
         return False
 
     def test_connected(self):
-        return self['minbif1'].wait_connected('jabber0')
+        return self['minbif1'].wait_connected('jabber')
 
     def test_editaccount(self):
         # flush
         while self['minbif1'].readline():
             pass
 
-        acc = self['minbif1'].get_full_account('jabber0')
+        acc = self['minbif1'].get_full_account('jabber')
         require_tls = acc.options['require_tls']
 
-        self['minbif1'].write("MAP edit jabber0 require_tls %s" % (require_tls == "true" and "false" or "true"))
+        self['minbif1'].write("MAP edit jabber require_tls %s" % (require_tls == "true" and "false" or "true"))
         self['minbif1'].readmsg('NOTICE', 1)
 
-        acc = self['minbif1'].get_full_account('jabber0')
+        acc = self['minbif1'].get_full_account('jabber')
         return acc.options['require_tls'] == (require_tls == "true" and "false" or "true")
 
     def test_disconnect(self):
-        self['minbif1'].write('SQUIT jabber0')
+        self['minbif1'].write('SQUIT jabber')
         accounts = self['minbif1'].get_accounts()
         return accounts.popitem()[1].state == 'disconnected'
 
     def test_removeaccount(self):
-        self['minbif1'].remove_account('jabber0')
+        self['minbif1'].remove_account('jabber')
         accounts = self['minbif1'].get_accounts()
         return len(accounts) == 0
 
