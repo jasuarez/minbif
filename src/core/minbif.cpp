@@ -136,6 +136,7 @@ void Minbif::usage(int argc, char** argv)
 	std::cerr << "Options:" << std::endl;
 	std::cerr << "  -h, --help             Display this notice" << std::endl;
 	std::cerr << "  -v, --version          Version of minbif" << std::endl;
+	std::cerr << "  -m, --mode=MODE        Mode to run (MODE is a number)" << std::endl;
 	std::cerr << "  -p, --pidfile=PIDFILE  Path to pid file" << std::endl;
 }
 
@@ -152,12 +153,17 @@ int Minbif::main(int argc, char** argv)
 		{ "pidfile",       1, NULL, 'p' },
 		{ "help",          0, NULL, 'h' },
 		{ "version",       0, NULL, 'v' },
+		{ "mode",          1, NULL, 'm' },
 		{ NULL,            0, NULL, 0   }
 	};
 	int option_index = 0, c;
-	while((c = getopt_long(argc, argv, "p:hv", long_options, &option_index)) != -1)
+	int mode = -1;
+	while((c = getopt_long(argc, argv, "m:p:hv", long_options, &option_index)) != -1)
 		switch(c)
 		{
+		case 'm':
+			mode = atoi(optarg);
+			break;
 		case 'h':
 			usage(argc, argv);
 			return EXIT_SUCCESS;
@@ -210,8 +216,10 @@ int Minbif::main(int argc, char** argv)
 		/* Set users directory path and if I have rights to write in. */
 		im::IM::setPath(conf.GetSection("path")->GetItem("users")->String());
 
-		server_poll = ServerPoll::build((ServerPoll::poll_type_t)conf.GetSection("irc")->GetItem("type")->Integer(),
-				                this);
+		if (mode < 0)
+			mode = conf.GetSection("irc")->GetItem("type")->Integer();
+
+		server_poll = ServerPoll::build((ServerPoll::poll_type_t)mode, this);
 		b_log.setServerPoll(server_poll);
 
 		if(!pidfile.empty())
