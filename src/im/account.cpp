@@ -358,7 +358,10 @@ void Account::setStatus(PurpleStatusPrimitive prim, string message)
 			chan->setTopic(NULL, message);
 	}
 
-	purple_account_set_status(account, id, TRUE, "message", message.c_str(), (char*)NULL);
+	char *utf8 = purple_utf8_try_convert(message.c_str());
+	purple_account_set_status(account, id, TRUE, "message", utf8, (char*)NULL);
+
+	g_free(utf8);
 }
 
 PurpleStatusPrimitive Account::getStatus() const

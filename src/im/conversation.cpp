@@ -284,8 +284,9 @@ bool Conversation::setTopic(const string& topic)
 	if(prpl_info->set_chat_topic == NULL)
 		return false;
 
-	prpl_info->set_chat_topic(gc, purple_conv_chat_get_id(getPurpleChat()),
-			topic.c_str());
+	char *utf8 = purple_utf8_try_convert(topic.c_str());
+	prpl_info->set_chat_topic(gc, purple_conv_chat_get_id(getPurpleChat()), utf8);
+	g_free(utf8);
 	return true;
 }
 
