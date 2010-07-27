@@ -461,15 +461,18 @@ void Account::abortChannelJoins()
 {
 	assert(isValid());
 
-	irc::IRC* irc = Purple::getIM()->getIRC();
-	string list = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
-	string cname;
+	if (isConnected())
+	{
+		irc::IRC* irc = Purple::getIM()->getIRC();
+		string list = purple_account_get_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
+		string cname;
 
-	while((cname = stringtok(list, ",")).empty() == false)
-		irc->getUser()->send(irc::Message(ERR_NOSUCHCHANNEL).setSender(irc)
-		                                                    .setReceiver(irc->getUser())
-		                                                    .addArg("#" + cname + ":" + getID())
-		                                                    .addArg("No such channel"));
+		while((cname = stringtok(list, ",")).empty() == false)
+			irc->getUser()->send(irc::Message(ERR_NOSUCHCHANNEL).setSender(irc)
+									    .setReceiver(irc->getUser())
+									    .addArg("#" + cname + ":" + getID())
+									    .addArg("No such channel"));
+	}
 
 	purple_account_set_ui_string(account, MINBIF_VERSION_NAME, "join_queue", "");
 
