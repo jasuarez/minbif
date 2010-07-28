@@ -448,17 +448,15 @@ bool DaemonForkServerPoll::ipc_send(const irc::Message& m)
 
 void DaemonForkServerPoll::log(size_t level, string msg) const
 {
-	if(msg.find("\n") != string::npos)
-		msg = msg.substr(0, msg.find("\n"));
-
 	string cmd = MSG_NOTICE;
 	if(level & W_DEBUG)
 		cmd = MSG_PRIVMSG;
 
 	if(irc)
-		irc->getUser()->send(irc::Message(cmd).setSender(irc)
-							     .setReceiver(irc->getUser())
-							     .addArg(msg));
+		for(string line; (line = stringtok(msg, "\n\r")).empty() == false;)
+			irc->getUser()->send(irc::Message(cmd).setSender(irc)
+								     .setReceiver(irc->getUser())
+								     .addArg(line));
 	else if(!(level & W_SNO))
 		std::cout << msg << std::endl;
 }

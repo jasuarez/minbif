@@ -25,6 +25,7 @@
 #include "core/callback.h"
 #include "core/log.h"
 #include "core/minbif.h"
+#include "core/util.h"
 #include "sockwrap/sockwrap.h"
 
 InetdServerPoll::InetdServerPoll(Minbif* application, ConfigSection* config)
@@ -56,16 +57,14 @@ InetdServerPoll::~InetdServerPoll()
 
 void InetdServerPoll::log(size_t level, string msg) const
 {
-	if(msg.find("\n") != string::npos)
-		msg = msg.substr(0, msg.find("\n"));
-
 	string cmd = MSG_NOTICE;
 	if(level & W_DEBUG)
 		cmd = MSG_PRIVMSG;
 
-	irc->getUser()->send(irc::Message(cmd).setSender(irc)
-					 	     .setReceiver(irc->getUser())
-					 	     .addArg(msg));
+	for(string line; (line = stringtok(msg, "\n\r")).empty() == false;)
+		irc->getUser()->send(irc::Message(cmd).setSender(irc)
+							     .setReceiver(irc->getUser())
+							     .addArg(line));
 }
 
 void InetdServerPoll::rehash()

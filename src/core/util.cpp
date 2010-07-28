@@ -341,6 +341,13 @@ gchar* markup2irc(const gchar* markup)
 				case 'b':
 					if(ptr+1 == next)
 						g_string_append_c(s, '\002');
+					else
+					{
+						g_string_append_c(s, '<');
+						if(closed)
+							g_string_append_c(s, '/');
+						g_string_append_len(s, ptr, next-ptr);
+					}
 					break;
 				case 'F':
 				case 'f':
