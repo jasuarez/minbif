@@ -1,14 +1,14 @@
 # SETTINGS & INSTALLATION
 # [minbif]
 # /admin typing_notice true
-# /set typing_notice = ON
+# /set typing_notice ON
 #   -> use typing notices
 # /statusbar window add typing_notice
 #
 # [bitlbee]
-# /set bitlbee_send_typing = ON
+# /set bitlbee_send_typing ON
 #   -> send typing messages to buddies
-# /set bitlbee_typing_allwin = OFF
+# /set bitlbee_typing_allwin OFF
 #   -> show typing notifications in all windows
 # /statusbar window add typing_notice
 #
@@ -231,7 +231,7 @@ sub window_change {
 }
 
 sub key_pressed {
-    return unless (Irssi::settings_get_bool("bitlbee_send_typing") || 
+    return unless (Irssi::settings_get_bool("bitlbee_send_typing") ||
 		   Irssi::settings_get_bool("typing_notice"));
     my $key = shift;
     if ($key != 9 && $key != 10 && $lastkey != 27 && $key != 27
