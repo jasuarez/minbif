@@ -20,6 +20,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/unistd.h>
 #include <string>
 #include <cstdarg>
 

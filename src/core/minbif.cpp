@@ -23,6 +23,8 @@
 #include <cstring>
 #include <sys/resource.h>
 #include <getopt.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "minbif.h"
 #include "sighandler.h"

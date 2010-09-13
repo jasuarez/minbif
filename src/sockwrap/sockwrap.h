@@ -24,7 +24,7 @@
 #include "core/config.h"
 #include "core/callback.h"
 
-#if defined(__FreeBSD__) || defined(__FreeBSD)
+#if defined(__FreeBSD__) || defined(__FreeBSD) || defined(__OpenBSD__)
 #include <sys/types.h>
 #include <sys/socket.h>
 #endif
