@@ -356,6 +356,7 @@ void IRC::m_join(Message message)
 					g_timeout_add(1000, g_callback_delete, new CallBack<IRC>(this, &IRC::check_channel_join, g_strdup(channame.c_str())));
 
 #if 0
+				/* wait the signal from libpurple to create the conversation channel. */
 				chan = new ConversationChannel(this, conv);
 
 				user->send(Message(ERR_CHANFORWARDING).setSender(this)

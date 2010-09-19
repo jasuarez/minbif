@@ -131,7 +131,7 @@ bool IRC::m_map_registeradd(Message& message, im::Account& added_account, bool r
 		{
 			string s = message.getArg(i);
 			if(username.empty())
-				username = s;
+				username = purple_url_decode(s.c_str()); /* static buffer, does not need free */
 			else if(s[0] == '-')
 			{
 				size_t name_pos = 1;
