@@ -196,7 +196,7 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 		if(*start == '[' && *(start+1) == ':')
 		{
 			gchar* end = start;
-			while(*end && *end != ']' && *end != ' ')
+			while(*end && *end != ']')
 				end = g_utf8_next_char(end);
 			if(*end == ']')
 			{
