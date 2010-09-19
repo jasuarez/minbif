@@ -213,6 +213,7 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 		else if((*start >= '0' && *start <= '9') || *start == ':')
 		{
 			unsigned ref = 1;
+			gboolean ref_no_secs = FALSE;
 			gchar* end = start;
 			gchar* clock;
 
@@ -228,12 +229,20 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 			}
 
 			clock = g_strndup(start, end-start);
-			if(sscanf(clock, "%02d:%02d:%02d", &t.tm_hour, &t.tm_min, &t.tm_sec) == 3)
+			if(sscanf(clock, "%02d:%02d:%02d", &t.tm_hour, &t.tm_min, &t.tm_sec) == 3 ||
+			   (sscanf(clock, "%02d:%02d", &t.tm_hour, &t.tm_min) == 2 && (ref_no_secs = TRUE)))
 			{
-				time_t ts = mktime(&t);
 				GSList* m;
-				for(m = messages; m && (((CoinCoinMessage*)m->data)->timestamp != ts || (((CoinCoinMessage*)m->data)->ref != ref)); m = m->next)
-					;
+				struct tm m_t;
+				for(m = messages; m; m = m->next)
+				{
+					CoinCoinMessage* cur = m->data;
+					localtime_r(&cur->timestamp, &m_t);
+					if (t.tm_hour == m_t.tm_hour &&
+					    t.tm_min == m_t.tm_min &&
+					    (ref_no_secs || (t.tm_sec == m_t.tm_sec && cur->ref == ref)))
+						break;
+				}
 				if(m)
 				{
 					g_string_append(s, ((CoinCoinMessage*)m->data)->from);
