@@ -169,8 +169,12 @@ static void coincoin_chat_leave (PurpleConnection *gc, int id)
 static void coincoin_message_posted(HttpHandler *handler, gchar *response, gsize len,
 		gpointer userdata)
 {
+	CoinCoinAccount* cca = handler->data;
+
 	if(len)
 		purple_debug(PURPLE_DEBUG_ERROR, "coincoin", "Unable to send message to tribune.\n");
+	else
+		coincoin_check_new_messages(cca);
 }
 
 static int coincoin_chat_send(PurpleConnection *gc, int id, const char *what, PurpleMessageFlags flags)
