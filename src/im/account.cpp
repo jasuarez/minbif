@@ -1229,13 +1229,16 @@ void Account::disconnected(PurpleConnection* gc)
 {
 	Account account = Account(gc->account);
 	GList* list = purple_get_chats();
+	GList* next = NULL;
 
 	account.abortChannelJoins();
 
 	/* Enqueue channels to auto-rejoin. */
-	for(; list; list = list->next)
+	for(; list; list = next)
 	{
 		Conversation c((PurpleConversation*)list->data);
+		next = list->next;
+
 		if(c.getAccount() != account)
 			continue;
 		if(purple_conv_chat_has_left(c.getPurpleChat()))
