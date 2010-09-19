@@ -38,14 +38,47 @@ this settings:
 
 Full example for a custom Da Portative Bouchot board:
 	/MAP ADD coincoin ToTo@tribioune.mydomain.tld
-	     md5=xxxxxxxxxxxxxxxxxxxxxxxx;unique_id=yyyyyyyyyyyyyyyyyyyyyyy
+	     -password md5=xxxxxxxxxxxxxxxxxxxxxxxx;unique_id=yyyyyyyyyyyyyyyyyyyyyyy
 	     -board /remote.xml -post /index.php/add
 
 4. You're connected
 
-he *status* channel is always created in minbif, but always empty for coincoin
+The *status* channel is always created in minbif, but always empty for coincoin
 accounts, as this system as no presence information.
 
 The *board* channel is automatically created, and you can chat!
+
+5. Help for readability
+
+Each totoz is colored in green, and clocks are colored in blue.
+
+6. Clocks
+
+Your purple client, unlike other coincoin clients, doesn't hilight referenced
+message when you put your mouse on a timestamp. To increase readability,
+prpl-coincoin adds the sender nickname of the referenced message before
+the timestamp
+
+For example, if there are two messages with timestamp:
+	10:23:09 <blah> hey guys
+	10:28:43 <ho> 10:23:09 f0ck you
+
+the last message is replaced with:
+	10:28:43 <ho> blah: 10:23:09 f0ck you
+
+Also, when you write a message, to reference to a previous message, instead of
+putting the timestamp, you can use the nickname, eventually suffixed with the
+number of message from last.
+
+For example:
+	10:23:09 <blah> hey guys
+	10:28:43 <ho> 10:23:09 f0ck you
+	10:30:21 <blah> hey nigger
+
+If you write:
+	10:32:33 <me> blah:2: youhou ho¹: you're bad
+
+The message sent is:
+	10:32:33 <me> 10:23:03 youhou 10:28:43 you're bad
 
 Have fun.

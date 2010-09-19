@@ -169,6 +169,7 @@ CoinCoinMessage* coincoin_message_new(gint64 id, xmlnode* post)
 	msg->timestamp = tt;
 	msg->id = id;
 	msg->ref = 1;
+	msg->multiple = FALSE;
 
 	g_free(data);
 	return msg;
@@ -180,6 +181,75 @@ void coincoin_message_free(CoinCoinMessage* msg)
 	g_free(msg->info);
 	g_free(msg->from);
 	g_free(msg);
+}
+
+gchar* coincoin_convert_message(CoinCoinAccount* cca, const char* msg)
+{
+	GString* s;
+	const gchar *start, *next;
+
+	if(purple_account_get_bool(cca->account, "no_reformat_messages", FALSE))
+		return g_strdup(msg);
+
+	s = g_string_sized_new(strlen(msg));
+
+	for(start = msg; *start; start = next)
+	{
+		next = g_utf8_next_char(start);
+		while(*next && *next != ' ')
+			next = g_utf8_next_char(next);
+
+		if(next > start+2 && *next && next[-1] == ':')
+		{
+			unsigned ref = 1;
+			const gchar *end = start;
+			gchar *nickname;
+
+			while(*end && *end != ':' && *end != '\xc2')
+				end = g_utf8_next_char(end);
+
+			nickname = g_strndup(start, end-start);
+			if (*end == ':')
+				++end;
+			if(*end >= '0' && *end <= '9')
+			{
+				ref = strtoul(end, NULL, 10);
+			}
+			else if(*end == '\xc2')
+			{
+				if(end[1] == '\xb9') ref = 1;       // ¹
+				else if(end[1] == '\xb2') ref = 2;  // ²
+				else if(end[1] == '\xb3') ref = 3;  // ³
+			}
+
+			purple_debug(PURPLE_DEBUG_ERROR, "coincoin", "Nickname: [%s], ref: [%d].\n", nickname, ref);
+
+			GSList *m;
+			CoinCoinMessage* cur = NULL;
+			unsigned found = 0;
+			for(m = cca->messages; m; m = m->next)
+			{
+				cur = m->data;
+				if (!strcasecmp(cur->from, nickname) && ++found == ref)
+					break;
+			}
+			g_free(nickname);
+			if(m)
+			{
+				struct tm t;
+				localtime_r(&cur->timestamp, &t);
+				g_string_append_printf(s, "%02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
+				if (cur->multiple)
+					g_string_append_printf(s, ":%d", cur->ref);
+				continue;
+			}
+		}
+		if(*next == ' ')
+			next = g_utf8_next_char(next);
+
+		g_string_append_len(s, start, next-start);
+	}
+	return g_string_free(s, FALSE);
 }
 
 static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
@@ -324,7 +394,10 @@ void coincoin_parse_message(HttpHandler* handler, gchar* response, gsize len, gp
 				 msg->message,
 				 msg->timestamp);
 		if(cca->messages && ((CoinCoinMessage*)cca->messages->data)->timestamp == msg->timestamp)
+		{
+			msg->multiple = ((CoinCoinMessage*)cca->messages->data)->multiple = TRUE;
 			msg->ref = ((CoinCoinMessage*)cca->messages->data)->ref + 1;
+		}
 
 		GSList* link = iter;
 		iter = iter->next;

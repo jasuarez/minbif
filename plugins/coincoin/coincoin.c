@@ -185,12 +185,14 @@ static int coincoin_chat_send(PurpleConnection *gc, int id, const char *what, Pu
 	if (purple_account_get_bool(cca->account, "ssl", FALSE))
 		http_flags |= HTTP_METHOD_SSL;
 
-	gchar* msg = http_url_encode(what, 1);
-	gchar* postdata = g_strdup_printf("message=%s&section=1", msg);
+	gchar* msg = coincoin_convert_message(cca, what);
+	gchar* encoded_msg = http_url_encode(msg, 1);
+	gchar* postdata = g_strdup_printf("message=%s&section=1", encoded_msg);
 	http_post_or_get(cca->http_handler, http_flags , cca->hostname,
 			purple_account_get_string(cca->account, "post", CC_DEFAULT_POST),
 			postdata, coincoin_message_posted, NULL, FALSE);
 	g_free(postdata);
+	g_free(encoded_msg);
 	g_free(msg);
 	return 0;
 }

@@ -32,9 +32,11 @@ struct _CoinCoinMessage
 	gchar* from;
 	time_t timestamp;
 	unsigned ref;
+	gboolean multiple;
 	gint64 id;
 };
 
+gchar* coincoin_convert_message(CoinCoinAccount* cca, const char* msg);
 void coincoin_parse_message(HttpHandler* handler, gchar* response, gsize len, gpointer userdata);
 xmlnode* coincoin_xmlparse(gchar* response, gsize len);
 void coincoin_message_free(CoinCoinMessage* msg);
