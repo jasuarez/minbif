@@ -91,6 +91,7 @@ void Purple::minbif_prefs_init()
 	purple_prefs_add_string("/minbif/password", "");
 	purple_prefs_add_int("/minbif/typing_notice", 0);
 	purple_prefs_add_bool("/minbif/accept_nobuddies_messages", true);
+	purple_prefs_add_int("/minbif/send_delay", 300);
 	purple_prefs_add_bool("/minbif/voiced_buddies", true);
 	purple_prefs_add_bool("/minbif/server_aliases", true);
 }

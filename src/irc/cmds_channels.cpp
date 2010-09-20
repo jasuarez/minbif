@@ -279,7 +279,9 @@ void IRC::m_privmsg(Message message)
 					    .addArg(n->getAwayMessage()));
 		}
 	}
-}/** JOIN channame */
+}
+
+/** JOIN channame */
 void IRC::m_join(Message message)
 {
 	string names = message.getArg(0);

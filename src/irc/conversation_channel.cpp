@@ -25,9 +25,9 @@
 
 namespace irc {
 
-ConversationChannel::ConversationChannel(IRC* irc, const im::Conversation& _conv)
-	: Channel(irc, _conv.getChanName()),
-	  conv(_conv),
+ConversationChannel::ConversationChannel(IRC* irc, const im::Conversation& conv)
+	: Channel(irc, conv.getChanName()),
+	  ConvEntity(conv),
 	  upserver(NULL)
 {
 
@@ -143,7 +143,7 @@ void ConversationChannel::delUser(Nick* nick, Message message)
 	if(cb)
 		irc->removeNick(cb->getNickname());
 	else if(nick == irc->getUser())
-		conv.leave();
+		getConversation().leave();
 }
 
 ChanUser* ConversationChannel::getChanUser(string nick) const
@@ -169,7 +169,7 @@ void ConversationChannel::broadcast(Message m, Nick* butone)
 {
 	if(m.getCommand() == MSG_PRIVMSG && m.getSender() == irc->getUser())
 	{
-		conv.sendMessage(m.getArg(0));
+		enqueueMessage(m.getArg(0), irc->getIM()->getSendDelay());
 	}
 	else
 		Channel::broadcast(m, butone);
@@ -177,12 +177,12 @@ void ConversationChannel::broadcast(Message m, Nick* butone)
 
 string ConversationChannel::getTopic() const
 {
-	return conv.getChanTopic();
+	return getConversation().getChanTopic();
 }
 
 bool ConversationChannel::invite(Nick* nick, const string& buddy, const string& message)
 {
-	conv.invite(buddy, message);
+	getConversation().invite(buddy, message);
 	return true;
 }
 
@@ -195,14 +195,14 @@ bool ConversationChannel::kick(ChanUser* from, ChanUser* victim, const string& m
 bool ConversationChannel::setTopic(Entity* from, const string& topic)
 {
 	if(irc->getUser() == from)
-		return conv.setTopic(topic);
+		return getConversation().setTopic(topic);
 	else
 		return Channel::setTopic(from, topic);
 }
 
 int ConversationChannel::sendCommand(const string& cmd)
 {
-	return conv.sendCommand(cmd);
+	return getConversation().sendCommand(cmd);
 }
 
 }; /* namespace irc */

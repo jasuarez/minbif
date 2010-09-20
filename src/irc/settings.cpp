@@ -79,6 +79,17 @@ bool SettingAcceptNoBuddiesMessages::setValue(string v)
 	return true;
 }
 
+string SettingSendDelay::getValue() const
+{
+	return t2s(getIM()->getSendDelay());
+}
+
+bool SettingSendDelay::setValue(string v)
+{
+	getIM()->setSendDelay(s2t<int>(v));
+	return true;
+}
+
 string SettingVoicedBuddies::getValue() const
 {
 	return getIM()->hasVoicedBuddies() ? "true" : "false";

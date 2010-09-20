@@ -158,6 +158,7 @@ namespace irc
 
 		User* getUser() const { return user; }
 
+		virtual IRC* getIRC() const { return (IRC*)this; }
 		im::IM* getIM() const { return im; }
 		im::Auth* getIMAuth() const { return im_auth; }
 

@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 #ifndef IRC_CHAT_BUDDY_H
 #define IRC_CHAT_BUDDY_H
 
-#include "nick.h"
-#include "im/conversation.h"
+#include "irc/conv_entity.h"
 
 namespace irc
 {
@@ -29,7 +28,6 @@ namespace irc
 	class ChatBuddy : public ConvNick
 	{
 		im::ChatBuddy im_cbuddy;
-		im::Conversation conv;
 
 	public:
 
@@ -55,9 +53,6 @@ namespace irc
 
 		im::ChatBuddy getChatBuddy() const { return im_cbuddy; }
 		void setChatBuddy(im::ChatBuddy cb) { im_cbuddy = cb; }
-
-		im::Conversation getConversation() const { return conv; }
-		void setConversation(const im::Conversation& c) { conv = c; }
 
 		/** Get buddy's real name. */
 		virtual string getRealName() const;

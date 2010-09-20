@@ -61,6 +61,7 @@ namespace irc
 SETTING(Password);
 SETTING(TypingNotice);
 SETTING(AcceptNoBuddiesMessages);
+SETTING(SendDelay);
 SETTING(VoicedBuddies);
 SETTING(ServerAliases);
 SETTING(AwayIdle);

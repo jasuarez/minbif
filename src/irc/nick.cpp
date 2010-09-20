@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -252,22 +252,6 @@ void Nick::m_mode(Nick* user, Message m)
 	user->send(Message(ERR_NOPRIVILEGES).setSender(getServer())
 					    .setReceiver(user)
 					    .addArg("Permission Denied: Insufficient privileges"));
-}
-
-ConvNick::ConvNick(Server* server, string nickname, string identname, string hostname, string realname)
-	: Nick(server, nickname, identname, hostname, realname)
-{
-
-}
-
-void ConvNick::sendMessage(Nick* to, const string& t, bool action)
-{
-	string line = t;
-	if(action)
-		line = "\001ACTION " + line + "\001";
-	to->send(irc::Message(MSG_PRIVMSG).setSender(this)
-					  .setReceiver(to)
-					  .addArg(line));
 }
 
 }; /* namespace irc */

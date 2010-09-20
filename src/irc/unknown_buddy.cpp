@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,15 @@
 
 #include <cstring>
 
+#include "irc/irc.h"
 #include "irc/unknown_buddy.h"
 #include "im/account.h"
 #include "core/util.h"
 
 namespace irc {
 
-UnknownBuddy::UnknownBuddy(Server* server, im::Conversation _conv)
-	: ConvNick(server, "","","",""),
-	  conv(_conv)
+UnknownBuddy::UnknownBuddy(Server* server, im::Conversation& conv)
+	: ConvNick(server, conv, "","","","")
 {
 	string hostname = conv.getName();
 	string identname = stringtok(hostname, "@");
@@ -47,6 +47,7 @@ UnknownBuddy::UnknownBuddy(Server* server, im::Conversation _conv)
 
 UnknownBuddy::~UnknownBuddy()
 {
+	im::Conversation conv = getConversation();
 	if(conv.isValid() && conv.getNick() == this)
 		conv.setNick(NULL, false);
 }
@@ -56,14 +57,14 @@ void UnknownBuddy::send(Message m)
 	if(m.getCommand() == MSG_PRIVMSG)
 	{
 		string text = m.getArg(0);
-		if(m.getReceiver() == this && conv.isValid())
-			conv.sendMessage(text);
+		if(m.getReceiver() == this && getConversation().isValid())
+			enqueueMessage(text, getServer()->getIRC()->getIM()->getSendDelay());
 	}
 }
 
 string UnknownBuddy::getRealName() const
 {
-	return conv.getName();
+	return getConversation().getName();
 }
 
 string UnknownBuddy::getAwayMessage() const

@@ -91,6 +91,10 @@ namespace im
 		void setAcceptNoBuddiesMessages(bool enabled);
 		bool hasAcceptNoBuddiesMessages() const;
 
+		/** Delay before sending a message */
+		void setSendDelay(int delay);
+		int getSendDelay() const;
+
 		/** Set voiced buddies */
 		void setVoicedBuddies(bool enabled);
 		bool hasVoicedBuddies() const;

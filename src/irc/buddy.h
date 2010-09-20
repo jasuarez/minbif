@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,8 @@
 #ifndef IRC_BUDDY_H
 #define IRC_BUDDY_H
 
-#include "nick.h"
+#include "irc/conv_entity.h"
 #include "im/buddy.h"
-#include "im/conversation.h"
 
 namespace irc
 {
@@ -30,7 +29,6 @@ namespace irc
 	class Buddy : public ConvNick
 	{
 		im::Buddy im_buddy;
-		im::Conversation conv;
 		bool public_msgs;
 		time_t public_msgs_last;
 		static const int PUBLIC_MSGS_TIMEOUT = 3600;
@@ -70,8 +68,6 @@ namespace irc
 		virtual bool isOnline() const;
 
 		im::Buddy getBuddy() const { return im_buddy; }
-		im::Conversation getConversation() const { return conv; }
-		void setConversation(const im::Conversation& c);
 
 		virtual int sendCommand(const string& cmd);
 
@@ -85,6 +81,7 @@ namespace irc
 
 		virtual bool retrieveInfo() const;
 
+		virtual void setConversation(const im::Conversation& c);
 	};
 
 }; /* namespace irc */

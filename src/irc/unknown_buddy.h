@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 #ifndef IRC_UNKNOWN_BUDDY_H
 #define IRC_UNKNOWN_BUDDY_H
 
-#include "nick.h"
-#include "im/conversation.h"
+#include "irc/conv_entity.h"
 
 namespace irc
 {
@@ -28,8 +27,6 @@ namespace irc
 	/** This class represents an unknown buddy on IRC */
 	class UnknownBuddy : public ConvNick
 	{
-		im::Conversation conv;
-
 	public:
 
 		/** Build buddy object
@@ -37,7 +34,7 @@ namespace irc
 		 * @param server  up-server
 		 * @param conv  conversation object
 		 */
-		UnknownBuddy(Server* server, im::Conversation conv);
+		UnknownBuddy(Server* server, im::Conversation& conv);
 		~UnknownBuddy();
 
 		/** Implementation of the message routing to this buddy */
@@ -51,9 +48,6 @@ namespace irc
 
 		/** Check if buddy is online or not. */
 		virtual bool isOnline() const { return true; }
-
-		im::Conversation getConversation() const { return conv; }
-		void setConversation(const im::Conversation& c) { conv = c; }
 
 		/** Get buddy's real name. */
 		virtual string getRealName() const;

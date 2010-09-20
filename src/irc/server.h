@@ -52,6 +52,8 @@ namespace irc
 
 		unsigned countNicks() const;
 		unsigned countOnlineNicks() const;
+
+		virtual IRC* getIRC() const = 0;
 	};
 
 	/** This class represents a remote IRC server.

@@ -127,6 +127,16 @@ bool IM::hasAcceptNoBuddiesMessages() const
 	return purple_prefs_get_bool("/minbif/accept_nobuddies_messages");
 }
 
+void IM::setSendDelay(int delay)
+{
+	purple_prefs_set_int("/minbif/send_delay", delay);
+}
+
+int IM::getSendDelay() const
+{
+	return purple_prefs_get_int("/minbif/send_delay");
+}
+
 void IM::setVoicedBuddies(bool enabled)
 {
 	if(hasVoicedBuddies() != enabled)

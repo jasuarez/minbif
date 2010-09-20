@@ -146,6 +146,7 @@ void IRC::m_admin(Message message)
 		{ "password",                  true,  new SettingPassword(this, im) },
 		{ "typing_notice",             true,  new SettingTypingNotice(this, im) },
 		{ "accept_nobuddies_messages", true,  new SettingAcceptNoBuddiesMessages(this, im) },
+		{ "send_delay",                true,  new SettingSendDelay(this, im) },
 		{ "voiced_buddies",            true,  new SettingVoicedBuddies(this, im) },
 		{ "server_aliases",            true,  new SettingServerAliases(this, im) },
 		{ "away_idle",                 true,  new SettingAwayIdle(this, im) },

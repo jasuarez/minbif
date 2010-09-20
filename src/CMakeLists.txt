@@ -47,6 +47,7 @@ ADD_EXECUTABLE(${BIN_NAME}
 		irc/nick.cpp
 		irc/user.cpp
 		irc/buddy_icon.cpp
+		irc/conv_entity.cpp
 		irc/buddy.cpp
 		irc/unknown_buddy.cpp
 		irc/chat_buddy.cpp

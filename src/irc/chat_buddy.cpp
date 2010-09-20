@@ -18,6 +18,7 @@
 
 #include <cstring>
 
+#include "irc/irc.h"
 #include "irc/chat_buddy.h"
 #include "irc/server.h"
 #include "im/account.h"
@@ -26,7 +27,7 @@
 namespace irc {
 
 ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
-	: ConvNick(server, "","","",""),
+	: ConvNick(server, im::Conversation(), "","","",""),
 	  im_cbuddy(_cbuddy)
 {
 	string hostname = im_cbuddy.getRealName();
@@ -48,6 +49,7 @@ ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
 
 ChatBuddy::~ChatBuddy()
 {
+	im::Conversation conv = getConversation();
 	if(conv.isValid() && conv.getNick() == this)
 		conv.setNick(NULL);
 }
@@ -59,13 +61,14 @@ void ChatBuddy::send(Message m)
 		string text = m.getArg(0);
 		if(m.getReceiver() == this)
 		{
-			if(!conv.isValid())
+			if(!getConversation().isValid())
 			{
-				conv = im::Conversation(im_cbuddy.getAccount(), im_cbuddy);
+				im::Conversation conv = im::Conversation(im_cbuddy.getAccount(), im_cbuddy);
 				conv.present();
 				conv.setNick(this);
+				setConversation(conv);
 			}
-			conv.sendMessage(text);
+			enqueueMessage(text, getServer()->getIRC()->getIM()->getSendDelay());
 		}
 	}
 }

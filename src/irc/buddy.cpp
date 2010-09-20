@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@
 namespace irc {
 
 Buddy::Buddy(Server* server, im::Buddy _buddy)
-	: ConvNick(server, "","","",_buddy.getRealName()),
+	: ConvNick(server, im::Conversation(), "","","",_buddy.getRealName()),
 	  im_buddy(_buddy),
 	  public_msgs(false),
 	  public_msgs_last(0)
@@ -90,7 +90,7 @@ void Buddy::send(Message m)
 				return;
 
 			check_conv();
-			conv.sendMessage(text);
+			enqueueMessage(text, getServer()->getIRC()->getIM()->getSendDelay());
 		}
 	}
 }
@@ -119,19 +119,22 @@ void Buddy::sendMessage(Nick* to, const string& t, bool action)
 
 void Buddy::check_conv(void)
 {
-	if(!conv.isValid())
+	if(!getConversation().isValid())
 	{
-		conv = im::Conversation(im_buddy.getAccount(), im_buddy);
+		im::Conversation conv = im::Conversation(im_buddy.getAccount(), im_buddy);
 		conv.present();
 		conv.setNick(this);
+		setConversation(conv);
 	}
 }
 
 void Buddy::setConversation(const im::Conversation& c)
 {
+	im::Conversation conv = getConversation();
 	if (conv.isValid() && conv.getNick() == this)
 		conv.setNick(NULL);
-	conv = c;
+
+	ConvNick::setConversation(c);
 }
 
 bool Buddy::process_dcc_get(const string& text)
@@ -232,7 +235,7 @@ bool Buddy::retrieveInfo() const
 int Buddy::sendCommand(const string& cmd)
 {
 	check_conv();
-	return conv.sendCommand(cmd);
+	return getConversation().sendCommand(cmd);
 }
 
 }; /* namespace irc */

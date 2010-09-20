@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,6 @@
 #include "irc/message.h"
 
 class CacaImage;
-
-namespace im
-{
-	class Conversation;
-}
 
 namespace irc
 {
@@ -198,20 +193,6 @@ namespace irc
 		virtual string getIconPath() const { return ""; }
 	};
 
-	class ConvNick : public Nick
-	{
-	public:
-		ConvNick(Server* server, string nickname, string identname, string hostname, string realname="");
-
-		/** Get the conversation associated to this nick */
-		virtual im::Conversation getConversation() const = 0;
-
-		/** Set the conversation associated. */
-		virtual void setConversation(const im::Conversation& c) = 0;
-
-		/** The ConvNick sends a message to someone. */
-		virtual void sendMessage(Nick* to, const string& text, bool action = false);
-	};
 
 }; /* namespace irc */
 

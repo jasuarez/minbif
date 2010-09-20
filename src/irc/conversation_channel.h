@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2010 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,9 @@
 
 #include <map>
 
-#include "channel.h"
-#include "server.h"
+#include "irc/channel.h"
+#include "irc/server.h"
+#include "irc/conv_entity.h"
 #include "im/conversation.h"
 
 namespace irc
@@ -30,9 +31,8 @@ namespace irc
 	using std::map;
 	class ChatBuddy;
 
-	class ConversationChannel : public Channel
+	class ConversationChannel : public Channel, public ConvEntity
 	{
-		im::Conversation conv;
 		RemoteServer* upserver;
 
 		map<im::ChatBuddy, ChanUser*> cbuddies;
