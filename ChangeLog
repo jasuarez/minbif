@@ -1,3 +1,33 @@
+Minbif 1.0.4 (2010-09-20)
+	* libpurple 2.4 isn't supported anymore.
+	* /WHO can take -s to display status instead of realname.
+	* Support multilines messages by waiting a delay before sending buffer
+	  (#195).
+	* Send RPL_MYINFO and RPL_ISUPPORT at connection to be RFC 2812
+	  compliant.
+	* Only /SVSNICK sends aliases server side.
+	* New command '/STATS p' to manage libpurple plugins.
+	* /MAP commands have to match the start of the exact name.
+	* With '/MAP add', decode usernames as URL-encoded (#338).
+	* Do not add '0' at the end of the new account ID when it's the first
+	  one.
+	* Allow joining a remote channel even if account is disconnected
+	  (#387).
+	* New option '-m' to binary to select the server mode to create.
+	* Add im_typing_notice script for weechat.
+	* prpl-coincoin new features: support clocks without seconds, can
+	  refer to a previous message by writing the nickname, etc.
+	* Fix: crash when which occurs sometimes when disconnecting from an
+	  account.
+	* Fix: don't warn about aborted joins if the account is not connected
+	  while removing it (#337).
+	* Fix: issues with multilines received messages (#331).
+	* Fix: use unicode in status channel topics.
+	* Fix: ability to unset status.
+	* Fix: file descriptor leak in daemon fork mode.
+	* Fix: infinite loop when there are more than 2 accounts without any
+	  ID set.
+
 Minbif 1.0.3 (2010-05-15)
 	* Use /topic on status channels to change your status message (#210).
 	* With field requests, display image fields with libcaca.
