@@ -323,7 +323,8 @@ void IRC::m_join(Message message)
 					continue;
 
 				string accid = channame.substr(1);
-				string convname = stringtok(accid, ":");
+				/* purple_url_decode() returns a static buffer, no free needed. */
+				string convname = purple_url_decode(stringtok(accid, ":").c_str());
 				string param = stringtok(parameters, ",");
 				if(accid.empty() || convname.empty())
 				{
@@ -334,26 +335,18 @@ void IRC::m_join(Message message)
 					continue;
 				}
 				im::Account account = im->getAccount(accid);
-				if(!account.isValid() || account.isConnected() == false)
-				{
-					if(account.isValid() && account.isConnecting())
-						account.enqueueChannelJoin(convname);
-					else
-						user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
-										     .setReceiver(user)
-										     .addArg(channame)
-										     .addArg("No such channel"));
-					continue;
-				}
-
-				/* purple_url_decode() returns a static buffer, no free needed. */
-				if(!account.joinChat(purple_url_decode(convname.c_str()), param))
-				{
+				if(!account.isValid())
 					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
 									     .setReceiver(user)
 									     .addArg(channame)
 									     .addArg("No such channel"));
-				}
+				else if(!account.isConnected())
+					account.enqueueChannelJoin(convname);
+				else if(!account.joinChat(convname, param))
+					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
+									     .setReceiver(user)
+									     .addArg(channame)
+									     .addArg("No such channel"));
 				else
 					g_timeout_add(1000, g_callback_delete, new CallBack<IRC>(this, &IRC::check_channel_join, g_strdup(channame.c_str())));
 
