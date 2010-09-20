@@ -212,7 +212,7 @@ static PurplePluginInfo ga_plugin_info =
 	"gayattitude Protocol Plugin",                    /**  summary        */
 	"www.gayattitude.com chat",                       /**  description    */
 	"Marc Dequènes, Romain Bignon",                   /**< author         */
-	"http://symlink.me/wiki/minbif",                  /**< homepage       */
+	"http://minbif.im",                               /**< homepage       */
 
 	ga_plugin_load,                                   /**< load           */
 	NULL,                                             /**< unload         */

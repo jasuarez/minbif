@@ -327,7 +327,7 @@ static PurplePluginInfo info =
 	"coincoin Protocol Plugin",                       /**  summary        */
 	"The Coincoin Protocol",                          /**  description    */
 	"Romain Bignon",                                  /**< author         */
-	"http://symlink.me/wiki/minbif",                  /**< homepage       */
+	"http://minbif.im/CoinCoin",                      /**< homepage       */
 
 	load_plugin,                                      /**< load           */
 	NULL,                                             /**< unload         */

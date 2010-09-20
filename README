@@ -63,7 +63,7 @@ bomb, so set the RLIMIT_NPROC ulimit parameter to prevent that way.
 ================
 
 You can see an online documentation on the Minbif website at
-http://symlink.me/wiki/minbif
+http://minbif.im
 
 5. Support
 ==========
