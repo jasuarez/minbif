@@ -222,8 +222,6 @@ gchar* coincoin_convert_message(CoinCoinAccount* cca, const char* msg)
 				else if(end[1] == '\xb3') ref = 3;  // ³
 			}
 
-			purple_debug(PURPLE_DEBUG_ERROR, "coincoin", "Nickname: [%s], ref: [%d].\n", nickname, ref);
-
 			GSList *m;
 			CoinCoinMessage* cur = NULL;
 			unsigned found = 0;
