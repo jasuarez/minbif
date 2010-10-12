@@ -88,6 +88,7 @@ Minbif::Minbif()
 	section = conf.AddSection("file_transfers", "File transfers parameters", MyConfig::OPTIONAL);
 	section->AddItem(new ConfigItem_bool("enabled", "Enable file transfers", "true"));
 	section->AddItem(new ConfigItem_bool("dcc", "Send files to IRC user with DCC", "true"));
+	section->AddItem(new ConfigItem_string("dcc_own_ip", "Force minbif to always send DCC requests from a particular IP address", " "));
 	section->AddItem(new ConfigItem_intrange("port_range", "Port range to listen on for DCC", 1024, 65535, "1024-65535"));
 
 	section = conf.AddSection("logging", "Log information", MyConfig::NORMAL);

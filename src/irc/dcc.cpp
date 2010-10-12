@@ -108,11 +108,19 @@ void DCCServer::listen_cb(int sock, void* data)
 {
 	DCCServer* dcc = static_cast<DCCServer*>(data);
 	struct in_addr addr;
+	string bind_addr = conf.GetSection("file_transfers")->GetItem("dcc_own_ip")->String();
+	if (bind_addr == " ")
+		bind_addr = purple_network_get_my_ip(-1);
 
 	dcc->fd = sock;
 	dcc->listen_data = NULL;
 	dcc->port = purple_network_get_port_from_fd(sock);
-	inet_aton(purple_network_get_my_ip(-1), &addr);
+	if (!inet_aton(bind_addr.c_str(), &addr))
+	{
+		b_log[W_ERR] << "Unable to parse this IP address: [" << bind_addr << "]: Unable to send DCC request.";
+		dcc->deinit();
+		return;
+	}
 
 	dcc->watcher = purple_input_add(sock, PURPLE_INPUT_READ,
 					connected, dcc);
