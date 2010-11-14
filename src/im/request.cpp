@@ -52,6 +52,10 @@ public:
 			return;
 
 		string answer = m.getArg(0);
+
+		if (answer[0] == '\001')
+			return;
+
 		irc::IRC* irc = Purple::getIM()->getIRC();
 		Request* request = Request::getFirstRequest();
 		if(!request)
