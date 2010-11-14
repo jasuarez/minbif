@@ -36,7 +36,7 @@ def input_changed(data,signal,type_data)
 
     if buffer_name =~ /^#{Weechat.config_get_plugin("minbif_server")}\.(.*)/
         nick = $1
-        if nick == "buffer"
+        if nick == "request"
             return Weechat::WEECHAT_RC_OK
         end
 
