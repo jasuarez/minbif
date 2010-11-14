@@ -304,6 +304,12 @@ Request* Request::addRequest(Request* request)
 	requests.push_back(request);
 	if(requests.size() == 1)
 		request->display();
+	else {
+		irc::IRC* irc = Purple::getIM()->getIRC();
+		nick->privmsg(irc->getUser(),
+		              "Hint: Received a new request (" + request->title + "). "
+		              "There are " + t2s(requests.size() - 1) + " requests in stack");
+	}
 
 	return request;
 }
