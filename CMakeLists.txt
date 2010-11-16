@@ -78,6 +78,8 @@ IF(ENABLE_MINBIF)
 
 		IF (PAM_FOUND)
 			SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_PAM")
+		ELSE (PAM_FOUND)
+			MESSAGE(FATAL_ERROR "Dependencies for PAM were not met. Install libpam-dev. Or to disable PAM support, run 'make ENABLE_PAM=0'")
 		ENDIF (PAM_FOUND)
 	ENDIF (ENABLE_PAM)
 
