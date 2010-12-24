@@ -18,6 +18,10 @@ endif (DEBUG)
 
 PKG_CHECK_MODULES(PURPLE REQUIRED purple>=2.5)
 
+IF(NOT PURPLE_FOUND)
+	MESSAGE(FATAL_ERROR "Please install the purple library (version >=2.5).")
+ENDIF(NOT PURPLE_FOUND)
+
 OPTION(ENABLE_MINBIF "Enable minbif compilation" ON)
 IF(ENABLE_MINBIF)
 	PKG_CHECK_MODULES(GTHREAD REQUIRED gthread-2.0)
