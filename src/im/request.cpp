@@ -493,7 +493,7 @@ void* Request::request_choice(const char *title, const char *primary,
 	while ((text = va_arg(choices, const char *)))
 	{
 		int val = va_arg(choices, int);
-		string tmp;
+		string tmp = text;
 
 		request->addField(new RequestFieldAction<PurpleRequestChoiceCb>(val, strlower(stringtok(tmp, "_ ")), text, (PurpleRequestChoiceCb)ok_cb, user_data));
 	}
