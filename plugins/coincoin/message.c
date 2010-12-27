@@ -297,7 +297,8 @@ static void coincoin_message_ref(CoinCoinMessage* msg, GSList* messages)
 			}
 
 			clock = g_strndup(start, end-start);
-			if(sscanf(clock, "%02d:%02d:%02d", &t.tm_hour, &t.tm_min, &t.tm_sec) == 3 ||
+			if(sscanf(clock, "%02d:%02d:%02d:%u", &t.tm_hour, &t.tm_min, &t.tm_sec, &ref) == 4 ||
+			   sscanf(clock, "%02d:%02d:%02d", &t.tm_hour, &t.tm_min, &t.tm_sec) == 3 ||
 			   (sscanf(clock, "%02d:%02d", &t.tm_hour, &t.tm_min) == 2 && (ref_no_secs = TRUE)))
 			{
 				GSList* m;
