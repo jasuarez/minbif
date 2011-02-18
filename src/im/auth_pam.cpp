@@ -18,6 +18,9 @@
 
 #include <cstring>
 #include <cerrno>
+#include <sys/types.h>
+#include <pwd.h>
+
 #include "auth.h"
 #include "core/log.h"
 #include "core/util.h"
@@ -119,7 +122,21 @@ bool AuthPAM::checkPassword(const string& password)
 
 	retval = pam_start("minbif", username.c_str(), &pam_conversation, &pamh);
 	if (retval == PAM_SUCCESS)
+	{
+		if (conf.GetSection("aaa")->GetItem("pam_setuid")->Boolean() == true)
+		{
+			struct passwd *pwd;
+			pwd = getpwnam(username.c_str());
+			if (setuid(pwd->pw_uid) != 0)
+			{
+				b_log[W_ERR] << "Minbif needs to be launched in root for setuid_pam: ";
+				close();
+				return false;
+			}
+		}
+
 		retval = pam_authenticate(pamh, 0);	/* is user really user? */
+	}
 
 	if (retval == PAM_SUCCESS)
 		retval = pam_acct_mgmt(pamh, 0);	/* permitted access? */

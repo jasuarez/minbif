@@ -82,6 +82,7 @@ Minbif::Minbif()
 	section->AddItem(new ConfigItem_bool("use_local", "Use local database to authenticate users", "true"));
 #ifdef HAVE_PAM
 	section->AddItem(new ConfigItem_bool("use_pam", "Use PAM mechanisms to authenticate/authorize users", "false"));
+	section->AddItem(new ConfigItem_bool("pam_setuid", "Child process setuid with the pam user (needs root and pam auth)", "false"));
 #endif
 	section->AddItem(new ConfigItem_bool("use_connection", "Use connection information to authenticate/authorize users", "false"));
 
