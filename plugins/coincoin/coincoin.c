@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2011 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -187,7 +187,24 @@ static int coincoin_chat_send(PurpleConnection *gc, int id, const char *what, Pu
 
 	gchar* msg = coincoin_convert_message(cca, what);
 	gchar* encoded_msg = http_url_encode(msg, 1);
-	gchar* postdata = g_strdup_printf("message=%s&section=1", encoded_msg);
+
+	const char* post_template = purple_account_get_string(cca->account, "template", CC_DEFAULT_TEMPLATE);
+	GString* s = g_string_sized_new(strlen(post_template));
+	const char *start, *next;
+
+	for(start = post_template; *start; start = next)
+	{
+		next = g_utf8_next_char(start);
+		if (*start == '%' && *(start+1) == 's') {
+			g_string_append(s, encoded_msg);
+			next++;
+		}
+		else
+			g_string_append_len(s, start, next-start);
+	}
+
+	gchar* postdata = g_string_free(s, FALSE);
+
 	http_post_or_get(cca->http_handler, http_flags , cca->hostname,
 			purple_account_get_string(cca->account, "post", CC_DEFAULT_POST),
 			postdata, coincoin_message_posted, NULL, FALSE);
@@ -364,6 +381,9 @@ static void _init_plugin(PurplePlugin *plugin)
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_string_new("Post path", "post", CC_DEFAULT_POST);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+	option = purple_account_option_string_new("POST template", "template", CC_DEFAULT_TEMPLATE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_bool_new("Use SSL", "ssl", FALSE);
