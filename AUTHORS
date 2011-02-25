@@ -16,6 +16,9 @@ Sebastien Delafond <sdelafond@gmail.com>
 Josh Marchán <sykopomp@sykosomatic.org>
         * Fixes related to the IRC protocol.
 
+William Lallemand <wlallemand@gmail.com>
+        * Patch related to PAM.
+
 Julien Miotte <jmiotte@inl.fr>
         * Various patches on the IRC protocol.
 
@@ -47,5 +50,5 @@ Michael Scherer <misc@ephaone.org>
 Landry Breuil <landry@rhaalovely.net>
         * Maintainer of the OpenBSD port.
 
-Want to be a celebrity? Learn how to contribute to Minbif!
+Discover how to contribute to this great software:
 http://minbif.im/How_to_contribute

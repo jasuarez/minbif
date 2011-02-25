@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009-2010 Romain Bignon, Marc Dequènes (Duck)
+ * Copyright(C) 2009-2011 Romain Bignon, Marc Dequènes (Duck)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ const char* infotxt[] = {
 	MINBIF_VERSION,
 	strdup(MINBIF_BUILD.c_str()), /* don't care if we don't free it as it can be used until exit. */
 	"",
-	"Copyright(C) 2009-2010 Romain Bignon",
+	"Copyright(C) 2009-2011 Romain Bignon",
 	"This program is free software; you can redistribute it and/or modify",
 	"it under the terms of the GNU General Public License as published by",
 	"the Free Software Foundation, version 2 of the License.",
