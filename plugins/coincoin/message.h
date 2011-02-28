@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2011 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #include "coincoin.h"
 
-#define CC_LAST_MESSAGE_MAX 50
+#define CC_LAST_MESSAGE_MAX 80
 
 typedef struct _CoinCoinMessage CoinCoinMessage;
 
