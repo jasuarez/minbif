@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2011 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -330,17 +330,17 @@ gchar* markup2irc(const gchar* markup)
 			{
 				case 'i':
 				case 'I':
-					if(ptr+1 == next)
-						g_string_append_c(s, '\011');
+					if(ptr+2 == next)
+						g_string_append(s, "\037\002");
 					break;
 				case 'u':
 				case 'U':
-					if(ptr+1 == next)
+					if(ptr+2 == next)
 						g_string_append_c(s, '\037');
 					break;
 				case 'B':
 				case 'b':
-					if(ptr+1 == next)
+					if(ptr+2 == next)
 						g_string_append_c(s, '\002');
 					else
 					{
