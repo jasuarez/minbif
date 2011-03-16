@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009 Romain Bignon
+ * Copyright(C) 2009-2011 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -188,12 +188,14 @@ gchar* coincoin_convert_message(CoinCoinAccount* cca, const char* msg)
 	GString* s;
 	const gchar *start, *next;
 
+	gchar* _msg = purple_markup_strip_html(msg);
+
 	if(purple_account_get_bool(cca->account, "no_reformat_messages", FALSE))
-		return g_strdup(msg);
+		return _msg;
 
-	s = g_string_sized_new(strlen(msg));
+	s = g_string_sized_new(strlen(_msg));
 
-	for(start = msg; *start; start = next)
+	for(start = _msg; *start; start = next)
 	{
 		next = g_utf8_next_char(start);
 		while(*next && *next != ' ')
@@ -247,6 +249,7 @@ gchar* coincoin_convert_message(CoinCoinAccount* cca, const char* msg)
 
 		g_string_append_len(s, start, next-start);
 	}
+	g_free(_msg);
 	return g_string_free(s, FALSE);
 }
 

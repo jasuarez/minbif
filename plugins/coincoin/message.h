@@ -21,7 +21,7 @@
 
 #include "coincoin.h"
 
-#define CC_LAST_MESSAGE_MAX 80
+#define CC_LAST_MESSAGE_MAX 100
 
 typedef struct _CoinCoinMessage CoinCoinMessage;
 
