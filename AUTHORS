@@ -40,6 +40,9 @@ Frank Steinborn <steinex@nognu.de>
 Francois Lallart <fraff@free.fr>
         * Parameters management with /WHO.
 
+Brandon Williams <driftx@gmail.com>
+        * Patch on /JOIN command.
+
 Thomas Lecavelier <ook@ookook.fr>
         * Ass-kisser on DLFP;
         * Use of imlib to load sent buddy icons.

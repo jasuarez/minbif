@@ -1,6 +1,6 @@
 /*
  * Minbif - IRC instant messaging gateway
- * Copyright(C) 2009-2010 Romain Bignon
+ * Copyright(C) 2009-2011 Romain Bignon
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -325,7 +325,7 @@ void IRC::m_join(Message message)
 				string accid = channame.substr(1);
 				/* purple_url_decode() returns a static buffer, no free needed. */
 				string convname = purple_url_decode(stringtok(accid, ":").c_str());
-				string param = stringtok(parameters, ",");
+				string param = purple_url_decode(stringtok(parameters, ",").c_str());
 				if(accid.empty() || convname.empty())
 				{
 					user->send(Message(ERR_NOSUCHCHANNEL).setSender(this)
