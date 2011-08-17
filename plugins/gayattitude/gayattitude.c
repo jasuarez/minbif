@@ -188,6 +188,10 @@ static PurplePluginProtocolInfo ga_plugin_prpl_info =
 	NULL,					 /* set_public_alias */
 	NULL					 /* get_public_alias */
 #endif
+#if (PURPLE_MAJOR_VERSION == 2 && PURPLE_MINOR_VERSION >= 8)
+	, NULL,					/* add_buddy_with_invite */
+	NULL					/* add_budies_with_invite */
+#endif
 };
 
 static gboolean ga_plugin_load (PurplePlugin *plugin) {
