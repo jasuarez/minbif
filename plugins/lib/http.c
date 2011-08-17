@@ -313,8 +313,7 @@ static void http_post_or_get_connect_cb(gpointer data, gint source,
 
 	if (error_message)
 	{
-		purple_debug_error("httpproxy", "post_or_get_connect_cb %s\n",
-				error_message);
+		purple_debug_error("httpproxy", "post_or_get_connect_cb %s\n", error_message);
 		http_fatal_connection_cb(fbconn);
 		return;
 	}
@@ -322,9 +321,15 @@ static void http_post_or_get_connect_cb(gpointer data, gint source,
 	purple_debug_info("httpproxy", "post_or_get_connect_cb\n");
 	fbconn->fd = source;
 
-	/* TODO: Check the return value of write() */
-	len = write(fbconn->fd, fbconn->request->str,
-			fbconn->request->len);
+	len = write(fbconn->fd, fbconn->request->str, fbconn->request->len);
+	if (len < 0 && errno == EAGAIN)
+		return;
+	else if (len <= 0) {
+		purple_debug_error("httpproxy", "post_or_get_connect_cb %s\n", g_strerror(errno));
+		http_fatal_connection_cb(fbconn);
+		return;
+	}
+
 	fbconn->input_watcher = purple_input_add(fbconn->fd,
 			PURPLE_INPUT_READ,
 			http_post_or_get_readdata_cb, fbconn);
@@ -340,9 +345,16 @@ static void http_post_or_get_ssl_connect_cb(gpointer data,
 
 	purple_debug_info("httpproxy", "post_or_get_ssl_connect_cb\n");
 
-	/* TODO: Check the return value of write() */
-	len = purple_ssl_write(fbconn->ssl_conn,
-			fbconn->request->str, fbconn->request->len);
+	len = purple_ssl_write(fbconn->ssl_conn, fbconn->request->str, fbconn->request->len);
+
+	if (len < 0 && errno == EAGAIN)
+		return;
+	else if (len <= 0) {
+		purple_debug_error("httpproxy", "post_or_get_ssl_connect_cb %s\n", g_strerror(errno));
+		http_fatal_connection_cb(fbconn);
+		return;
+	}
+
 	purple_ssl_input_add(fbconn->ssl_conn,
 			http_post_or_get_ssl_readdata_cb, fbconn);
 }
