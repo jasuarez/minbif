@@ -51,6 +51,7 @@ IRC::command_t IRC::commands[] = {
 	{ MSG_WHOWAS,  &IRC::m_whowas,  1, 0, Nick::REGISTERED },
 	{ MSG_STATS,   &IRC::m_stats,   0, 0, Nick::REGISTERED },
 	{ MSG_CONNECT, &IRC::m_connect, 1, 0, Nick::REGISTERED },
+	{ MSG_SCONNECT,&IRC::m_connect, 1, 0, Nick::REGISTERED },
 	{ MSG_SQUIT,   &IRC::m_squit,   1, 0, Nick::REGISTERED },
 	{ MSG_MAP,     &IRC::m_map,     0, 0, Nick::REGISTERED },
 	{ MSG_ADMIN,   &IRC::m_admin,   0, 0, Nick::REGISTERED },
