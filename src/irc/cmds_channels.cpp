@@ -17,6 +17,7 @@
  */
 
 #include <cstring>
+#include <fnmatch.h>
 
 #include "core/caca_image.h"
 #include "irc/irc.h"
@@ -71,7 +72,8 @@ void IRC::m_who(Message message)
 		{
 			Nick* n = it->second;
 			string channame = "*";
-			if(arg.empty() || arg == "*" || arg == "0" || arg == n->getNickname() || n->getServer()->getServerName().find(arg) != string::npos)
+			if(arg.empty() || arg == "*" || arg == "0" || n->getServer()->getServerName().find(arg) != string::npos ||
+			   !fnmatch(arg.c_str(), n->getNickname().c_str(), FNM_NOESCAPE|FNM_CASEFOLD))
 			{
 				vector<ChanUser*> chans = n->getChannels();
 				if(!chans.empty())
