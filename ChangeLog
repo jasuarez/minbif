@@ -1,3 +1,19 @@
+Minbif 1.0.5 (2011-12-04)
+	* Add an option 'file_transfers/dcc_own_ip' in config file.
+	* Change weechat's script to ignore the 'request' nick.
+	* When a new request is received during process of an other one, tell
+	  user.
+	* Add a facebook rename script for weechat.
+	* Change users of child process with pam authentification.
+	* Escape URL entities in /JOIN params.
+	* Add a /SCONNECT alias to /CONNECT.
+	* Can use wildcards to match buddies with /WHO.
+	* prpl-coincoin: support hh:mm:ss:ref norloge syntax.
+	* prpl-coincoin: works with the new version of the DLFP board.
+	* Fix: prevent crash with the msn plugin.
+	* Fix: conversion to IRC escape chars.
+	* Fix: compatibility with libpurple 2.8+.
+
 Minbif 1.0.4 (2010-09-20)
 	* libpurple 2.4 isn't supported anymore.
 	* /WHO can take -s to display status instead of realname.
