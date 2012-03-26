@@ -20,7 +20,7 @@
 #include <cassert>
 #include <cstring>
 #include <cerrno>
-#include <glib/gmain.h>
+#include <glib.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>

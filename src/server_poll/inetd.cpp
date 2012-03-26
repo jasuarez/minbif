@@ -17,7 +17,7 @@
  */
 
 #include <cassert>
-#include <glib/gmain.h>
+#include <glib.h>
 
 #include "inetd.h"
 #include "irc/irc.h"
