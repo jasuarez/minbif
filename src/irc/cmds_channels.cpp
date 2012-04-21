@@ -441,15 +441,17 @@ void IRC::m_list(Message message)
 	}
 }
 
-/** ISON :[nick list] */
+/** ISON [nick list] */
 void IRC::m_ison(Message message)
 {
-	string buf = message.getArg(0);
 	string nick;
 	string list;
-	while((nick = stringtok(buf, " ")).empty() == false)
+	Nick* n;
+
+	for (size_t i = 0; i < message.countArgs(); i++)
 	{
-		Nick* n;
+
+		nick = message.getArg(i);
 		if((n = getNick(nick)) && n->isOnline())
 		{
 			if(!list.empty())
