@@ -18,6 +18,7 @@
 
 #include <cassert>
 #include <glib.h>
+#include <unistd.h>
 
 #include "inetd.h"
 #include "irc/irc.h"

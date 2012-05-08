@@ -246,7 +246,7 @@ Nick* IRC::getNick(string nickname, bool case_sensitive) const
 Buddy* IRC::getNick(const im::Buddy& buddy) const
 {
 	map<string, Nick*>::const_iterator it;
-	Buddy* nb;
+	Buddy* nb = NULL;
 	for(it = users.begin();
 	    it != users.end() && (!(nb = dynamic_cast<Buddy*>(it->second)) || nb->getBuddy() != buddy);
 	    ++it)
@@ -261,7 +261,7 @@ Buddy* IRC::getNick(const im::Buddy& buddy) const
 ConvNick* IRC::getNick(const im::Conversation& conv) const
 {
 	map<string, Nick*>::const_iterator it;
-	ConvNick* n;
+	ConvNick* n = NULL;
 	for(it = users.begin();
 	    it != users.end() && (!(n = dynamic_cast<ConvNick*>(it->second)) || n->getConversation() != conv);
 	    ++it)
