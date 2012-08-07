@@ -70,7 +70,9 @@ string Nick::nickize(const string& n)
 	gchar* conv = g_convert_with_iconv(n.c_str(), n.size(), ic, NULL, NULL, NULL);
 
 	for(const char* c = conv ? conv : n.c_str(); *c; ++c)
-		if(strchr(nick_lc_chars, *c) || strchr(nick_uc_chars, *c))
+		if (*c == ' ')
+			nick += "_";
+		else if (strchr(nick_lc_chars, *c) || strchr(nick_uc_chars, *c))
 			nick += *c;
 
 	g_iconv_close(ic);
