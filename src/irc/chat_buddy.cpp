@@ -33,8 +33,8 @@ ChatBuddy::ChatBuddy(Server* server, im::ChatBuddy _cbuddy)
 	string hostname = im_cbuddy.getRealName();
 	string identname = stringtok(hostname, "@");
 	string nickname = im_cbuddy.getName();
-	if(nickname.find('@') != string::npos || nickname.find(' ') != string::npos)
-		nickname = nickize(stringtok(nickname, " @"));
+	if(nickname.find('@') != string::npos)
+		nickname = nickize(stringtok(nickname, "@"));
 	else
 		nickname = nickize(nickname);
 	if(hostname.empty())
