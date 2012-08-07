@@ -474,6 +474,7 @@ void Conversation::recvMessage(string from, string text, bool action)
 			 */
 			if(!n)
 			{
+				from = irc::Nick::nickize(from);
 				while((irc->getNick(from)))
 					from += "_";
 			}
