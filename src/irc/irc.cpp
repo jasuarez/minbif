@@ -461,7 +461,7 @@ void IRC::sendWelcome()
 		user->send(Message(RPL_ISUPPORT).setSender(this).setReceiver(user).addArg("CMDS=MAP")
 				                                                  /* TODO it doesn't compile because g++ is crappy.
 										   * .addArg("NICKLEN=" + t2s(Nick::MAX_LENGTH)) */
-										  .addArg("CHANTYPE=#&")
+										  .addArg("CHANTYPES=#&")
 										  .addArg("PREFIX=(qohv)~@%+")
 										  .addArg("STATUSMSG=~@%+")
 										  .addArg("are supported by this server"));
