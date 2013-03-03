@@ -86,7 +86,7 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application, ConfigSection* c
 	struct addrinfo *addrinfo_bind, *res, hints;
 	string bind_addr = section->GetItem("bind")->String();
 	uint16_t port = (uint16_t)section->GetItem("port")->Integer();
-	unsigned int reuse_addr = 1;
+	unsigned int reuse_addr = 1, ipv6_only = 0;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;
@@ -106,6 +106,8 @@ DaemonForkServerPoll::DaemonForkServerPoll(Minbif* application, ConfigSection* c
 			continue;
 
 		setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof reuse_addr);
+		setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &ipv6_only, sizeof ipv6_only);
+
 		if(bind(sock, res->ai_addr, res->ai_addrlen) < 0 ||
 		   listen(sock, 5) < 0)
 		{
