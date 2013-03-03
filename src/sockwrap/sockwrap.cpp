@@ -24,6 +24,7 @@
 #  include "sockwrap_tls.h"
 #endif
 #include "core/util.h"
+#include <unistd.h>
 
 namespace sock
 {
