@@ -80,8 +80,6 @@ void ConversationChannel::addBuddy(im::ChatBuddy cbuddy, int status)
 		if(it == cbuddies.end())
 		{
 			ChatBuddy* n = new ChatBuddy(upserver, cbuddy);
-			while(irc->getNick(n->getNickname()))
-				n->setNickname(n->getNickname() + "_");
 
 			irc->addNick(n);
 			cul = n->join(this, status);
