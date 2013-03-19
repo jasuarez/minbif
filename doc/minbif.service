@@ -1,10 +1,14 @@
 [Unit]
 Description=minbif daemon
+After=syslog.target network.target
 
 [Service]
 Type=forking
 PIDFile=/run/minbif/minbif.pid
 User=minbif
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /run/minbif
+ExecStartPre=/bin/chown minbif:minbif /run/minbif
 ExecStart=/usr/bin/minbif --pidfile /run/minbif/minbif.pid /etc/minbif/minbif.conf
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
