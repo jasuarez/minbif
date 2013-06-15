@@ -454,10 +454,10 @@ void IRC::sendWelcome()
 		user->send(Message(RPL_WELCOME).setSender(this).setReceiver(user).addArg("Welcome to the Minbif IRC gateway, " + user->getNickname() + "!"));
 		user->send(Message(RPL_YOURHOST).setSender(this).setReceiver(user).addArg("Your host is " + getServerName() + ", running " MINBIF_VERSION));
 		user->send(Message(RPL_CREATED).setSender(this).setReceiver(user).addArg("This server was created " __DATE__ " " __TIME__));
-		user->send(Message(RPL_MYINFO).setSender(this).setReceiver(user).addArg(getServerName() + " " +
-		                                                                        MINBIF_VERSION + " " +
-											Nick::UMODES + " " +
-											Channel::CHMODES));
+		user->send(Message(RPL_MYINFO).setSender(this).setReceiver(user).addArg(getServerName())
+										  .addArg(MINBIF_VERSION)
+										  .addArg(Nick::UMODES)
+										  .addArg(Channel::CHMODES));
 		user->send(Message(RPL_ISUPPORT).setSender(this).setReceiver(user).addArg("CMDS=MAP")
 				                                                  /* TODO it doesn't compile because g++ is crappy.
 										   * .addArg("NICKLEN=" + t2s(Nick::MAX_LENGTH)) */
