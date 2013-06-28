@@ -43,6 +43,9 @@ Frank Steinborn <steinex@nognu.de>
 Francois Lallart <fraff@free.fr>
         * Parameters management with /WHO.
 
+Kevin Easton <caf@guarana.org>
+        * Fix related to the IRC protocol.
+
 Brandon Williams <driftx@gmail.com>
         * Patch on /JOIN command.
 
