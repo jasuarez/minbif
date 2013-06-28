@@ -239,7 +239,10 @@ int Minbif::main(int argc, char** argv)
 		}
 		sighandler.setApplication(this);
 
+/* g_thread_init() has been deprecated since glib 2.32 */
+#if !GLIB_CHECK_VERSION(2, 32, 0)
 		g_thread_init(NULL);
+#endif
 		loop = g_main_new(FALSE);
 		g_main_run(loop);
 
