@@ -22,11 +22,13 @@
 #include <purple.h>
 #include <string>
 #include <map>
+#include <vector>
 
 #include "core/exception.h"
 
 using std::string;
 using std::map;
+using std::vector;
 
 namespace im
 {
@@ -48,6 +50,7 @@ namespace im
 				BOOL,
 				STR,
 				INT,
+				STR_LIST,
 				ACCID,
 				PASSWORD,
 				STATUS_CHANNEL,
@@ -58,6 +61,7 @@ namespace im
 			string name;
 			string value;
 			string text;
+			vector<string> choices;
 
 			string nameFromText(string s) const;
 
@@ -72,6 +76,9 @@ namespace im
 			enum type_t getType() const { return type; }
 			string getName() const { return name; }
 			string getText() const { return text; }
+
+			void setChoices(const vector<string>& choices) { this->choices = choices; }
+			vector<string> getChoices() const { return choices; }
 
 			virtual void setValue(string v) { value = v; }
 			string getValue() const { return value; }

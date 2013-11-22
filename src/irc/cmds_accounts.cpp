@@ -114,6 +114,18 @@ bool IRC::m_map_registeradd(Message& message, im::Account& added_account, bool r
 				case im::Protocol::Option::STR:
 					s += it->second.getName() + " value";
 					break;
+				case im::Protocol::Option::STR_LIST:
+				{
+					string choices;
+					vector<string> choices_vec = it->second.getChoices();
+					for(vector<string>::iterator c = choices_vec.begin(); c != choices_vec.end(); ++c)
+					{
+						if (!choices.empty()) choices += "|";
+						choices += *c;
+					}
+					s += it->second.getName() + " [" + choices + "]";
+					break;
+				}
 				case im::Protocol::Option::INT:
 					s += it->second.getName() + " int";
 					break;

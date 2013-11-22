@@ -59,6 +59,9 @@ Protocol::Option::Option(PurplePrefType _type, string _name, string _text, strin
 		case PURPLE_PREF_INT:
 			type = Protocol::Option::INT;
 			break;
+		case PURPLE_PREF_STRING_LIST:
+			type = Protocol::Option::STR_LIST;
+			break;
 		default:
 			type = Protocol::Option::NONE;
 			break;
@@ -143,6 +146,24 @@ Protocol::Options Protocol::getOptions() const
 				const char* s = purple_account_option_get_default_string(option);
 				if(s && *s)
 					opt.setValue(s);
+				break;
+			}
+			case PURPLE_PREF_STRING_LIST:
+			{
+				const char* s = purple_account_option_get_default_list_value(option);
+				vector<string> choices;
+				GList* list = purple_account_option_get_list(option);
+
+				if(s && *s)
+					opt.setValue(s);
+
+				for(; list; list = list->next)
+				{
+					PurpleKeyValuePair *kvp = static_cast<PurpleKeyValuePair*>(list->data);
+					choices.push_back((const char*)kvp->value);
+				}
+				opt.setChoices(choices);
+
 				break;
 			}
 			case PURPLE_PREF_INT:

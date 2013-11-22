@@ -146,6 +146,7 @@ Protocol::Options Account::getOptions() const
 		switch(option.getType())
 		{
 			case Protocol::Option::STR:
+			case Protocol::Option::STR_LIST:
 				option.setValue(purple_account_get_string(account, option.getName().c_str(), option.getValue().c_str()));
 				break;
 			case Protocol::Option::INT:
@@ -184,6 +185,7 @@ void Account::setOptions(const Protocol::Options& options)
 		switch(option.getType())
 		{
 			case Protocol::Option::STR:
+			case Protocol::Option::STR_LIST:
 				purple_account_set_string(account,
 							  option.getName().c_str(),
 							  option.getValue().c_str());
