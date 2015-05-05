@@ -275,7 +275,7 @@ void Account::setBuddyIcon(string filename)
 				else
 				{
 					char** prpl_formats = g_strsplit(prplinfo->icon_spec.format,",",0);
-					ImlibLoadError err = IMLIB_LOAD_ERROR_UNKNOWN;
+					Imlib_Load_Error err = IMLIB_LOAD_ERROR_UNKNOWN;
 
 					close(temp_fd);
 					/* Try to encode in a supported format. */
