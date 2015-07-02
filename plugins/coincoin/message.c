@@ -155,7 +155,7 @@ CoinCoinMessage* coincoin_message_new(gint64 id, xmlnode* post)
 
 	/* Skip chars before message. */
 	ptr = data = xmlnode_get_data(message);
-	while(ptr && (*ptr == '\t' || *ptr == '\n' || *ptr == '\r'))
+	while(ptr && *ptr && (*ptr == '\t' || *ptr == '\n' || *ptr == '\r'))
 		++ptr;
 
 	msg = g_new0(CoinCoinMessage, 1);
